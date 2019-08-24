@@ -3,6 +3,8 @@ import './db-configure.css'
 import { Form, Input, Tooltip, Switch } from 'antd';
 import { createFormField } from 'rc-form';
 
+import Documentation from '../documentation/Documentation';
+
 function DbConfigure(props) {
   const { getFieldDecorator } = props.form;
   return (
@@ -27,6 +29,8 @@ function DbConfigure(props) {
           )}
         </Form.Item>
       </Form>
+      <div>
+      </div>
     </div>
   )
 }

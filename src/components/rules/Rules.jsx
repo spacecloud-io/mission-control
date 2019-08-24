@@ -1,85 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import ReactGA from 'react-ga';
 import './rules.css';
-import { Row, Col, Icon } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
 
-const Rules = (props) => {
-	const [selected, setSelected] = useState(null)
+// pages
+import DBOverview from './db-overview/DBOverview';
+import DBRules from './db-rules/DBRules';
+import DBSchema from './db-schema/DBSchema';
 
-	useEffect(() => {
-		if (props.array && props.rules.length) {
-			setSelected(0)
-		} else if (!props.array && Object.keys(props.rules).length) {
-			setSelected(Object.keys(props.rules)[0])
-		}
-	}, [])
+// antd
+import { Tabs } from 'antd';
+const { TabPane } = Tabs;
 
-	const handleDeleteClick = (e, rule) => {
-		e.stopPropagation()
-		props.handleDeleteRule(rule)
-	}
-	var rules = props.array ? props.rules.map((_, index) => (`Rule ${index + 1}`)) : Object.keys(props.rules);
+export default class Rules extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { modalVisible: false };
+    this.handleModalVisiblity = this.handleModalVisiblity.bind(this);
+  }
 
-	return (
-		<div className="rules-main-wrapper">
-			<Row>
-				<Col span={6}>
-					<div className="addaRule" onClick={props.handleAddRuleClick}>
-						<Icon className="addIcon" type="plus" /> {props.addText}
-					</div>
-					<div className="rulesTable">
+  componentDidMount() {
+    ReactGA.pageview('/projects/database/rules');
+  }
 
-						{rules.map((rule, index) => {
-							return (
-								<div
-									className={`rule ${selected === (props.array ? index : rule) ? 'selected' : ''}`}
-									id="rule"
-									value={rule}
-									key={rule}
-									onClick={() => setSelected(props.array ? index : rule)}
-								>
-									<div className="add-a-rule">
-										{rule}
-										<i class="material-icons delete-icon" onClick={(e) => handleDeleteClick(e, props.array ? index : rule)}>delete</i>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</Col>
-				<Col span={18}>
-					<div className="code">
-						<div className="code-hint">
-							Hint : To indent press ctrl + A in the editor and then shift + tab
-						</div>
-						<div className="code-mirror">
-							<CodeMirror
-								value={props.rules[selected]}
-								options={{
-									mode: { name: "javascript", json: true },
-									lineNumbers: true,
-									styleActiveLine: true,
-									matchBrackets: true,
-									autoCloseBrackets: true,
-									tabSize: 2,
-									autofocus: true
-								}}
-								onBeforeChange={(editor, data, value) => {
-									props.handleRuleChange(selected, value);
-								}}
-							/>
-						</div>
-					</div>
-				</Col>
-			</Row>
-		</div>
-	);
+  handleModalVisiblity(visible) {
+    this.setState({ modalVisible: visible });
+  }
+
+  render() {
+    console.log(this.props.rules);
+    return (
+      <div>
+        <Tabs defaultActiveKey='1' onChange={this.callback}>
+          <TabPane
+            tab='Overview'
+            key='1'
+          >
+            <DBOverview
+              match={this.props.match}
+              rules={this.props.rules}
+              updateFormState={this.props.updateFormState}
+              formState={this.props.formState}
+            />
+          </TabPane>
+          <TabPane
+            tab='Rules'
+            key='2'
+          >
+            <DBRules match={this.props.match} rules={this.props.rules} />
+          </TabPane>
+          <TabPane
+            tab='Schema'
+            key='3'
+          >
+            <DBSchema match={this.props.match} rules={this.props.rules}/>
+          </TabPane>
+        </Tabs>
+      </div>
+    );
+  }
 }
-
-export default Rules;
