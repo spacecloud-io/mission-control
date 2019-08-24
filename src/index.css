@@ -1,10 +1,11 @@
 body {
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
   margin: 0;
 }
 
 .page-content {
-  padding: 48px 120px 0 56px;
+  /* padding: 48px 120px 0 56px; */
+  padding: 0px 56px 0px 0px;
   position: absolute;
   top: 51px;
   left: 250px;

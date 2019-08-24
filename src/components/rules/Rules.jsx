@@ -1,14 +1,17 @@
-import React from 'react';
-import ReactGA from 'react-ga';
-import './rules.css';
+import React from "react";
+import ReactGA from "react-ga";
+import "./rules.css";
 
 // pages
-import DBOverview from './db-overview/DBOverview';
-import DBRules from './db-rules/DBRules';
-import DBSchema from './db-schema/DBSchema';
+import DBOverview from "../../pages/database/db-overview/DBOverview";
+import DBRules from "../../pages/database/db-rules/DBRules";
+import DBSchema from "../../pages/database/db-schema/DBSchema";
+
+// react-router
+import { Redirect } from "react-router-dom";
 
 // antd
-import { Tabs } from 'antd';
+import { Tabs } from "antd";
 const { TabPane } = Tabs;
 
 export default class Rules extends React.Component {
@@ -19,7 +22,7 @@ export default class Rules extends React.Component {
   }
 
   componentDidMount() {
-    ReactGA.pageview('/projects/database/rules');
+    ReactGA.pageview("/projects/database/rules");
   }
 
   handleModalVisiblity(visible) {
@@ -30,11 +33,8 @@ export default class Rules extends React.Component {
     console.log(this.props.rules);
     return (
       <div>
-        <Tabs defaultActiveKey='1' onChange={this.callback}>
-          <TabPane
-            tab='Overview'
-            key='1'
-          >
+        <Tabs defaultActiveKey="1" onChange={this.callback}>
+          <TabPane tab="Overview" key="1">
             <DBOverview
               match={this.props.match}
               rules={this.props.rules}
@@ -42,17 +42,17 @@ export default class Rules extends React.Component {
               formState={this.props.formState}
             />
           </TabPane>
-          <TabPane
-            tab='Rules'
-            key='2'
-          >
-            <DBRules match={this.props.match} rules={this.props.rules} />
+          <TabPane tab="Rules" key="2">
+            <Redirect
+              to={{
+                pathname: `/mission-control/projects/:projectId/database/rules/${
+                  this.props.match.params.database
+                }`
+              }}
+            />
           </TabPane>
-          <TabPane
-            tab='Schema'
-            key='3'
-          >
-            <DBSchema match={this.props.match} rules={this.props.rules}/>
+          <TabPane tab="Schema" key="3">
+            <DBSchema match={this.props.match} rules={this.props.rules} />
           </TabPane>
         </Tabs>
       </div>
