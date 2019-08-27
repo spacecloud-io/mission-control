@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-import { get, set } from 'automate-redux';
-import store from '../../../store';
 import { connect } from 'react-redux';
 
 import { Redirect, Link } from 'react-router-dom';
@@ -12,12 +10,13 @@ import Topbar from '../../../components/topbar/Topbar';
 import Documentation from '../../../components/documentation/Documentation';
 import DbConfigure from '../../../components/database-rules/DbConfigure';
 import EditItemModal from '../../../components/edit-item-modal/EditItemModal';
-import projectId from '../../../assets/projectId.svg';
 import rulesImg from '../../../assets/rules.svg';
 import EmptyState from '../../../components/rules/EmptyState';
 
 import '../style.css';
 import '../../../index.css';
+
+import {mapStateToProps, mapDispatchToProps } from '../db-store';
 
 // antd
 import { Col, Row, Button, Icon, Divider, Switch } from 'antd';
@@ -25,27 +24,22 @@ import { Tabs } from 'antd';
 const { TabPane } = Tabs;
 
 const Overview = props => {
-  const [selected, setSelected] = useState(null);
   const [modalVisible, handleModalVisiblity] = useState(false);
 
   useEffect(() => {
-    if (props.array && props.rules.length) {
-      setSelected(0);
-    } else if (!props.array && Object.keys(props.rules).length) {
-      setSelected(Object.keys(props.rules)[0]);
-    }
-  }, []);
+    //
+  });
 
-  const handleDeleteClick = (e, rule) => {
+  /*   const handleDeleteClick = (e, rule) => {
     e.stopPropagation();
     props.handleDeleteRule(rule);
-  };
-  
-  var rules = props.array
-    ? props.rules.map((_, index) => `Rule ${index + 1}`)
-    : Object.keys(props.rules);
+  }; */
 
-  const noOfRules = Object.keys(props.rules).length;
+  var graphs = props.array
+    ? props.graphs.map((_, index) => `Graph ${index + 1}`)
+    : Object.keys(props.graphs);
+
+  const noOfGraphs = Object.keys(props.graphs).length;
 
   return (
     <React.Fragment>
@@ -90,7 +84,7 @@ const Overview = props => {
                 formState={props.formState}
               />
             </div>
-            {noOfRules > 0 && (
+            {noOfGraphs > 0 && (
               <div>
                 <Row style={{ marginBottom: 30 }}>
                   <Col span={16}>
@@ -111,9 +105,13 @@ const Overview = props => {
                 <Row>
                   <Col span={6}>
                     <div className='tablehead'>Name</div>
-                    {rules.map((value, index) => (
+                    {graphs.map((value, index) => (
                       <li
-                        className={index === props.selectedCollection ? 'tabledata activedata' : 'tabledata'}
+                        className={
+                          index === props.selectedCollection
+                            ? 'tabledata activedata'
+                            : 'tabledata'
+                        }
                         key={value}
                         onClick={() => props.handleSelection(index)}
                       >
@@ -123,8 +121,15 @@ const Overview = props => {
                   </Col>
                   <Col span={6}>
                     <div className='tablehead'>Actions</div>
-                    {rules.map((value, index) => (
-                      <li className={index === props.selectedCollection ? 'tabledata activedatabackground' : 'tabledata'} key={value}>
+                    {graphs.map((value, index) => (
+                      <li
+                        className={
+                          index === props.selectedCollection
+                            ? 'tabledata activedatabackground'
+                            : 'tabledata'
+                        }
+                        key={value}
+                      >
                         <Link to='/mission-control/projects/:projectId/database/schema/mongo'>
                           Edit Schema
                         </Link>
@@ -137,8 +142,15 @@ const Overview = props => {
                   </Col>
                   <Col span={4}>
                     <div className='tablehead'>Realtime</div>
-                    {rules.map((value, index) => (
-                      <li className={index === props.selectedCollection ? 'tabledata activedatabackground' : 'tabledata'} key={value}>
+                    {graphs.map((value, index) => (
+                      <li
+                        className={
+                          index === props.selectedCollection
+                            ? 'tabledata activedatabackground'
+                            : 'tabledata'
+                        }
+                        key={value}
+                      >
                         <Switch defaultChecked />
                       </li>
                     ))}
@@ -147,7 +159,7 @@ const Overview = props => {
               </div>
             )}
 
-            {!noOfRules && (
+            {!noOfGraphs && (
               <EmptyState
                 graphics={rulesImg}
                 desc='Guard your data with rules that define who has access to it and how it is structured.'
@@ -156,103 +168,19 @@ const Overview = props => {
               />
             )}
             <EditItemModal
-              graphics={projectId}
-              heading='Table name'
-              name='Give a table name'
-              desc="Note: This doesn't actually creates a table. It's for writing rules for a table"
+              heading='Add a Collection'
               placeholder='Enter a table name'
+              rulesInitialValue = 'rules'
+              schemaInitialValue = 'schema'
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={props.handleCreateRule}
+              handleSubmit={props.handleCreateGraph}
             />
           </div>
         </div>
       </div>
     </React.Fragment>
   );
-};
-
-const mapStateToProps = (state, ownProps) => {
-  return {
-    selectedDb: ownProps.match.params.database,
-    formState: {
-      enabled: get(
-        state,
-        `config.modules.crud.${ownProps.match.params.database}.enabled`,
-        false
-      ),
-      conn: get(
-        state,
-        `config.modules.crud.${ownProps.match.params.database}.conn`
-      )
-    },
-    rules: get(
-      state,
-      `config.modules.crud.${ownProps.match.params.database}.collections`,
-      {}
-    ),
-    selectedCollection: get(state, 'collection', 0)
-  };
-};
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  const selectedDb = ownProps.match.params.database;
-  return {
-    handleRuleChange: (ruleName, value) => {
-      dispatch(
-        set(`config.modules.crud.${selectedDb}.collections.${ruleName}`, value)
-      );
-    },
-    handleDeleteRule: ruleName => {
-      const rules = get(
-        store.getState(),
-        `config.modules.crud.${selectedDb}.collections`
-      );
-      delete rules[ruleName];
-      dispatch(set(`config.modules.crud.${selectedDb}.collections`, rules));
-    },
-    handleCreateRule: ruleName => {
-      const defaultRule = {
-        isRealtimeEnabled: true,
-        rules: {
-          create: {
-            rule: 'allow'
-          },
-          read: {
-            rule: 'allow'
-          },
-          update: {
-            rule: 'allow'
-          },
-          delete: {
-            rule: 'allow'
-          }
-        }
-      };
-      dispatch(
-        set(
-          `config.modules.crud.${selectedDb}.collections.${ruleName}`,
-          JSON.stringify(defaultRule, null, 2)
-        )
-      );
-    },
-    updateFormState: fields => {
-      const dbConfig = get(
-        store.getState(),
-        `config.modules.crud.${selectedDb}`,
-        {}
-      );
-      dispatch(
-        set(
-          `config.modules.crud.${selectedDb}`,
-          Object.assign({}, dbConfig, fields)
-        )
-      );
-    },
-    handleSelection: collectionid => {
-      dispatch(set('collection', collectionid));
-    }
-  };
 };
 
 export default connect(
