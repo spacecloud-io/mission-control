@@ -3,14 +3,15 @@ import React, { useState, useEffect } from 'react';
 import '../style.css';
 import '../../../index.css';
 
+import { get, set } from 'automate-redux';
+
 import { connect } from 'react-redux';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 
-import { Redirect } from 'react-router-dom';
-
 import EditItemModal from '../../../components/edit-item-modal/EditItemModal';
+import DBTabs from '../../../components/database/Tabs';
 
 import rulesImg from '../../../assets/rules.svg';
 import EmptyState from '../../../components/rules/EmptyState';
@@ -23,8 +24,6 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
-import {mapStateToProps, mapDispatchToProps } from '../db-store';
-
 // antd
 import { Button, Icon, Col, Row } from 'antd';
 import { Tabs } from 'antd';
@@ -36,22 +35,12 @@ const Schema = props => {
     ? props.location.state.rules.map((_, index) => `Rule ${index + 1}`)
     : Object.keys(props.location.state.rules); */
 
-  const [selected, setSelected] = useState(Object.keys(props.graphs)[0]);
+  const [selected, setSelected] = useState(Object.keys(props.collections)[props.selectedCollection]);
   const [modalVisible, handleModalVisiblity] = useState(false);
 
-  useEffect(() => {
-    if (props.array && props.rules.length) {
-      setSelected(0);
-    } else if (!props.array && Object.keys(props.rules).length) {
-      setSelected(Object.keys(props.graphs)[0]);
-    }
-  }, []);
+  var collections = Object.keys(props.collections);
 
-  var graphs = props.array
-    ? props.graphs.map((_, index) => `Rule ${index + 1}`)
-    : Object.keys(props.graphs);
-
-  const noOfGraphs = Object.keys(props.graphs).length;
+  const noOfCollections = Object.keys(props.collections).length;
   return (
     <React.Fragment>
       <Topbar
@@ -61,33 +50,11 @@ const Schema = props => {
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />
-        <div className='page-content'>
-          <Tabs defaultActiveKey='3'>
-            <TabPane tab='Overview' key='1'>
-              <Redirect
-                to={{
-                  pathname: `/mission-control/projects/:projectId/database/overview/${props.match.params.database}`
-                }}
-              />
-            </TabPane>
-            <TabPane tab='Rules' key='2'>
-              <Redirect
-                to={{
-                  pathname: `/mission-control/projects/:projectId/database/rules/${props.match.params.database}`
-                }}
-              />
-            </TabPane>
-            <TabPane tab='Schema' key='3'>
-              <Redirect
-                to={{
-                  pathname: `/mission-control/projects/:projectId/database/schema/${props.match.params.database}`
-                }}
-              />
-            </TabPane>
-          </Tabs>
-          {noOfGraphs > 0 && (
-            <div>
-              <div style={{ marginTop: 100, marginLeft: 75, marginBottom: 27 }}>
+        <div className='db-page-content'>
+        <DBTabs path={props.match.params.database} defaultKey="3"/>
+          {noOfCollections > 0 && (
+            <div className='rules-schema-table'>
+              <div style={{ marginTop: 50, marginLeft: 75, marginBottom: 27 }}>
                 <span className='collections'>Collections</span>
                 <Button
                   type='primary'
@@ -101,54 +68,67 @@ const Schema = props => {
                   <Icon type='plus' /> Add a collection
                 </Button>
               </div>
-              <Row style={{ marginLeft: 75 }}>
-                <Col span={6}>
-                  <div className='tablehead'>Name</div>
-                  {graphs.map((value, index) => (
-                    <li
-                      className={
-                        props.selectedCollection === index
-                          ? 'tabledata activedata'
-                          : 'tabledata'
-                      }
-                      key={value}
-                      onClick={() => {
-                      
-                        props.handleSelection(index);
-                        setSelected(Object.keys(props.graphs)[index]);
-                      }}
+              <div className='rules-main-wrapper'>
+                <Row>
+                  <Col span={6}>
+                    <div
+                      className='addaRule'
                     >
-                      {value}
-                    </li>
-                  ))}
-                </Col>
-                <Col span={18}>
-                  <div className='codebox'>
-                    Hint : To indent press <b>ctrl + A</b> in the editor and
-                    then <b>shift + tab</b>
-                  </div>
-                  <div className='code-mirror'>
-                    <CodeMirror
-                      value={props.graphs[selected].schema}
-                      options={{
-                        mode: { name: 'javascript', json: true },
-                        lineNumbers: true,
-                        styleActiveLine: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        tabSize: 2,
-                        autofocus: true
-                      }}
-                      onBeforeChange={(editor, data, value) => {
-                        props.handleRuleChange(selected, value);
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
+                      Name
+                    </div>
+                    <div className='rulesTable'>
+                      {collections.map((collection, index) => {
+                        return (
+                          <div
+                            className={
+                              props.selectedCollection === index
+                                ? 'tabledata activedata'
+                                : 'tabledata'
+                            }
+                            id='rule'
+                            value={collection}
+                            key={collection}
+                            onClick={() => {
+                              props.handleSelection(index);
+                              setSelected(Object.keys(props.collections)[index]);
+                            }}
+                          >
+                            <div className='add-a-rule'>{collection}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Col>
+                  <Col span={18}>
+                    <div className='code'>
+                      <div className='code-hint'>
+                        Hint : To indent press ctrl + A in the editor and then
+                        shift + tab
+                      </div>
+                      <div className='code-mirror'>
+                        <CodeMirror
+                          value={props.collections[selected].schema}
+                          options={{
+                            mode: { name: 'javascript', json: true },
+                            lineNumbers: true,
+                            styleActiveLine: true,
+                            matchBrackets: true,
+                            autoCloseBrackets: true,
+                            tabSize: 2,
+                            autofocus: true
+                          }}
+                          onBeforeChange={(editor, data, value) => {
+                            props.handleRuleChange(selected, value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
             </div>
           )}
-          {!noOfGraphs && (
+          {!noOfCollections && (
             <EmptyState
               graphics={rulesImg}
               desc='Guard your data with rules that define who has access to it and how it is structured.'
@@ -157,25 +137,75 @@ const Schema = props => {
             />
           )}
           <EditItemModal
-            heading='Add a Collection'
-            placeholder='Enter a table name'
-            rulesInitialValue='rules'
-            schemaInitialValue='schema'
-            visible={modalVisible}
-            handleCancel={() => handleModalVisiblity(false)}
-            handleSubmit={(values) => {
-              props.handleSelection(graphs.length);
-              setSelected(values.item);
-              props.handleCreateGraph(values);
-            }}
-          />
+              heading='Add a Collection'
+              placeholder='Enter a table name'
+              rulesInitialValue='"create": {
+                "rule": "allow"
+              },
+              "read": {
+                "rule": "allow"
+              },
+              "update": {
+                "rule": "allow"
+              },
+              "delete": {
+                "rule": "allow"
+              }'
+              schemaInitialValue='type Todos {}'
+              visible={modalVisible}
+              handleCancel={() => handleModalVisiblity(false)}
+              handleSubmit={(values) => {
+                props.handleSelection(collections.length);
+                setSelected(values.item);
+                props.handleCreateCollection(values);
+              }}
+            />
         </div>
       </div>
     </React.Fragment>
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Schema);
+ const mapStateToProps = (state, ownProps) => {
+    const selectedDb = ownProps.match.params.database;
+    return {
+      selectedDb: ownProps.match.params.database,
+      rules: get(
+        state,
+        `config.modules.crud.${ownProps.match.params.database}.collections`,
+        {}
+      ),
+
+      selectedCollection: get(state, 'collection', 0),
+
+      collections: get(state, `config.modules.crud.${selectedDb}.collections`, {})
+    };
+  };
+  
+ const mapDispatchToProps = (dispatch, ownProps, state) => {
+    const selectedDb = ownProps.match.params.database;
+    return {
+
+      handleCreateCollection: values => {
+        const callName = values.item;
+        let collection = {
+          isRealtimeEnabled: true,
+          rules: values.rules,
+          schema: values.schema
+        };
+  
+        dispatch(
+          set(`config.modules.crud.${selectedDb}.collections.${callName}`, collection)
+        );
+      },
+     
+      handleSelection: collectionid => {
+        dispatch(set('collection', collectionid));
+      }
+    };
+  };
+
+  export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(Schema);

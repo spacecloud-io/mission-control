@@ -4,8 +4,7 @@ body {
 }
 
 .page-content {
-  /* padding: 48px 120px 0 56px; */
-  padding: 0px 56px 0px 0px;
+  padding: 48px 120px 0 56px;
   position: absolute;
   top: 51px;
   left: 250px;

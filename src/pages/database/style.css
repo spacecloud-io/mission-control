@@ -1,14 +1,13 @@
 .rules-main-wrapper {
-  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04),
-    0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625),
-    0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
+  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04), 0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625), 0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
   margin-top: 40px;
 }
 
 .rules-main-wrapper .rulesTable {
-  border: 1px solid #e4e4e4;
+  border: 1px solid #E4E4E4;
   height: 300px;
   overflow-y: scroll;
+
 }
 
 ::-webkit-scrollbar {
@@ -21,32 +20,39 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
+  background: #E0E0E0;
 }
 
 .rules-main-wrapper .rulesTable .rule {
   padding: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #E0E0E0;
   color: #000;
   font-weight: 600;
 }
 
 .rules-main-wrapper .rulesTable .selected {
-  border-left: 5px solid #ff6700;
+  border-left: 5px solid #FF6700;
+
 }
 
-.rules-main-wrapper .addaRule {
-  color: #1890ff;
+.rules-main-wrapper {
+    color: black;
   padding: 20px;
 }
 
+.addaRule {
+    padding: 20px;
+    color: black;
+    border: 1px solid #E4E4E4;
+}
+
 .rules-main-wrapper .rulesTable .addaRule .addIcon {
-  margin-right: 20px;
+  margin-right: 20px
 }
 
 .rules-main-wrapper .code .code-hint {
   padding: 20px;
-  border: 1px solid #e4e4e4;
+  border: 1px solid #E4E4E4;
 }
 
 .rules-main-wrapper .code .code-mirror {
@@ -59,9 +65,7 @@
   justify-content: space-between;
   cursor: pointer;
 }
-
-.rules-main-wrapper .add-a-rule .delete-icon,
-.rules-main-wrapper .addaRule {
+ .add-a-rule   {
   cursor: pointer;
 }
 
@@ -92,7 +96,7 @@
   line-height: 22px;
   text-align: center;
   color: black;
-  padding: 12px 0;
+  padding: 12px 20px;
   border-bottom: 1px solid #e4e4e4;
   border-left: 1px solid #e4e4e4;
   border-right: 1px solid #e4e4e4;
@@ -101,7 +105,8 @@
 }
 .activedata {
   background: #ecf6fd;
-  border-left: 8px solid #ff6700;
+  border-left: 5px solid #ff6700;
+  padding: 12px 20px;
 }
 
 .activedatabackground {
@@ -134,4 +139,17 @@
   font-size: 18px;
   line-height: 25px;
   color: black;
+}
+
+.db-page-content {
+
+  position: absolute;
+  top: 51px;
+  left: 250px;
+  right: 0;
+}
+
+.rules-schema-table {
+
+  padding: 0px 120px 0 56px;
 }

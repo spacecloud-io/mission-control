@@ -1,14 +1,13 @@
 .rules-main-wrapper {
-  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04),
-    0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625),
-    0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
+  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04), 0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625), 0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
   margin-top: 40px;
 }
 
 .rules-main-wrapper .rulesTable {
-  border: 1px solid #e4e4e4;
+  border: 1px solid #E4E4E4;
   height: 300px;
   overflow-y: scroll;
+
 }
 
 ::-webkit-scrollbar {
@@ -21,32 +20,33 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
+  background: #E0E0E0;
 }
 
 .rules-main-wrapper .rulesTable .rule {
   padding: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #E0E0E0;
   color: #000;
   font-weight: 600;
 }
 
 .rules-main-wrapper .rulesTable .selected {
-  border-left: 5px solid #ff6700;
+  border-left: 5px solid #FF6700;
+
 }
 
 .rules-main-wrapper .addaRule {
-  color: #1890ff;
+  color: #1890FF;
   padding: 20px;
 }
 
 .rules-main-wrapper .rulesTable .addaRule .addIcon {
-  margin-right: 20px;
+  margin-right: 20px
 }
 
 .rules-main-wrapper .code .code-hint {
   padding: 20px;
-  border: 1px solid #e4e4e4;
+  border: 1px solid #E4E4E4;
 }
 
 .rules-main-wrapper .code .code-mirror {
@@ -60,52 +60,6 @@
   cursor: pointer;
 }
 
-.rules-main-wrapper .add-a-rule .delete-icon,
-.rules-main-wrapper .addaRule {
+.rules-main-wrapper .add-a-rule .delete-icon, .rules-main-wrapper .addaRule {
   cursor: pointer;
-}
-
-.collections {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 20px;
-  line-height: 27px;
-
-  color: #000000;
-}
-
-.tablehead {
-  color: black;
-  text-align: center;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 27px;
-  padding: 12px 0;
-  border: 1px solid #e4e4e4;
-}
-
-.tabledata {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 22px;
-  text-align: center;
-  color: black;
-  padding: 12px 0;
-  border: 1px solid #e4e4e4;
-}
-.active {
-  background: #ecf6fd;
-  border-color: #ff6700;
-}
-
-.codebox {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 19px;
-  padding: 16px 0;
-  border-top: 1px solid #e4e4e4;
-  color: rgba(3, 27, 78, 0.7);
 }
