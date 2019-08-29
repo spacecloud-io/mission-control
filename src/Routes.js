@@ -18,9 +18,9 @@ import Plans from "./pages/plans/Plans";
 import SigninModal from "./components/signin-modal/SigninModal";
 import Explorer from "./pages/explorer/Explorer";
 
-import DBRules from "./pages/database/db-rules/DBRules";
-import DBSchema from "./pages/database/db-schema/DBSchema";
-import DBOverview from "./pages/database/db-overview/DBOverview";
+import DBRules from "./pages/database/rules/DBRules";
+import DBSchema from "./pages/database/schema/DBSchema";
+import DBOverview from "./pages/database/overview/DBOverview";
 
 export default () => {
   return (

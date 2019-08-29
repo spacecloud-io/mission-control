@@ -6,25 +6,25 @@ const { TabPane } = Tabs;
 export default (props) => {
 
     return(
-         <Tabs defaultActiveKey={props.defaultKey} >
-            <TabPane tab='Overview' key='1'>
+         <Tabs defaultActiveKey={props.activeKey} >
+            <TabPane tab='Overview' key='overview'>
               <Redirect
                 to={{
-                  pathname: `/mission-control/projects/:projectId/database/overview/${props.path}`
+                  pathname: `/mission-control/projects/${props.projectId}/database/overview/${props.selectedDatabase}`
                 }}
               />
             </TabPane>
-            <TabPane tab='Rules' key='2'>
+            <TabPane tab='Rules' key='rules'>
               <Redirect
                 to={{
-                  pathname: `/mission-control/projects/:projectId/database/rules/${props.path}`
+                  pathname: `/mission-control/projects/${props.projectId}/database/rules/${props.selectedDatabase}`
                 }}
               />
             </TabPane>
-            <TabPane tab='Schema' key='3'>
+            <TabPane tab='Schema' key='schema'>
               <Redirect
                 to={{
-                  pathname: `/mission-control/projects/:projectId/database/schema/${props.path}`
+                  pathname: `/mission-control/projects/${props.projectId}/database/schema/${props.selectedDatabase}`
                 }}
               />
             </TabPane>
