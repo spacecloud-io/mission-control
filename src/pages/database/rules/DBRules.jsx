@@ -30,10 +30,11 @@ import { Button, Icon, Col, Row } from 'antd';
 
 const Rules = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
+  
 
-  var collections = Object.keys(props.collections);
-
-  const noOfCollections = Object.keys(props.collections).length;
+  var collections = Object.keys(props.allCollections);
+  var selectedRule = props.allCollections[props.selectedCollection].rules;
+  const noOfCollections = Object.keys(props.allCollections).length;
 
   return (
     <React.Fragment>
@@ -104,7 +105,7 @@ const Rules = props => {
                       <div className='code-mirror'>
                         <CodeMirror
                           value={
-                            props.collections[props.selectedCollection].rules
+                            selectedRule
                           }
                           options={{
                             mode: { name: 'javascript', json: true },
@@ -149,7 +150,7 @@ const Rules = props => {
             visible={modalVisible}
             handleCancel={() => handleModalVisiblity(false)}
             handleSubmit={(item, rules, schema) => {
-              props.handleSelection(collections.length);
+              props.handleSelection(item);
 
               props.handleCreateCollection(item, rules, schema);
             }}
@@ -171,7 +172,10 @@ const mapStateToProps = (state, ownProps) => {
       'default'
     ),
 
-    collections: get(state, `config.modules.crud.${selectedDb}.collections`, {})
+    allCollections: get(
+      state, 
+      `config.modules.crud.${selectedDb}.collections`, 
+      {})
   };
 };
 
