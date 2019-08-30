@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import '../database.css';
-import '../../../index.css';
 
 import { get, set } from 'automate-redux';
 
@@ -30,11 +29,16 @@ import { Button, Icon, Col, Row } from 'antd';
 
 const Rules = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
-  
 
-  var collections = Object.keys(props.allCollections);
-  var selectedRule = props.allCollections[props.selectedCollection].rules;
-  const noOfCollections = Object.keys(props.allCollections).length;
+  const collections = Object.keys(props.allCollections);
+  let selectedRule;
+  const noOfCollections = collections.length;
+  if(noOfCollections < 1){
+    selectedRule = '';
+  }
+  else{
+   selectedRule = props.allCollections[props.selectedCollection].rules;
+  }
 
   return (
     <React.Fragment>
@@ -53,7 +57,7 @@ const Rules = props => {
           />
           {noOfCollections > 0 && (
             <div className='rules-schema-table'>
-              <div style={{ marginTop: 50, marginLeft: 75, marginBottom: 27 }}>
+              <div style={{ marginTop: 50, marginBottom: 27 }}>
                 <span className='collections'>
                   {props.selectedDb === 'mongo' ? 'Collection' : 'Table'}
                 </span>
@@ -73,7 +77,7 @@ const Rules = props => {
               <div className='rules-main-wrapper'>
                 <Row>
                   <Col span={6}>
-                    <div className='addaRule'>Name</div>
+                    <div className='box-heading'>Name</div>
                     <div className='rulesTable'>
                       {collections.map((collection, index) => {
                         return (
@@ -139,20 +143,13 @@ const Rules = props => {
             />
           )}
           <CreateNewCollectionForm
-            heading={
-              props.selectedDb === 'mongo' ? 'Add a collection' : 'Add a table'
-            }
-            placeholder={
-              props.selectedDb === 'mongo'
-                ? 'Enter a collection'
-                : 'Enter a table'
-            }
+            selectedDb={props.selectedDb}
             visible={modalVisible}
             handleCancel={() => handleModalVisiblity(false)}
-            handleSubmit={(item, rules, schema) => {
+            handleSubmit={(item, rules, schema, realtime) => {
               props.handleSelection(item);
 
-              props.handleCreateCollection(item, rules, schema);
+              props.handleCreateCollection(item, rules, schema, realtime);
             }}
           />
         </div>
@@ -168,7 +165,7 @@ const mapStateToProps = (state, ownProps) => {
 
     selectedCollection: get(
       state,
-      'uiState.database.selectedCollection',
+      `uiState.database.${selectedDb}.selectedCollection`,
       'default'
     ),
 
@@ -191,9 +188,9 @@ const mapDispatchToProps = (dispatch, ownProps, state) => {
       );
     },
 
-    handleCreateCollection: (name, rules, schema) => {
+    handleCreateCollection: (name, rules, schema, realtime) => {
       let collection = {
-        isRealtimeEnabled: true,
+        isRealtimeEnabled: realtime,
         rules: rules,
         schema: schema
       };
@@ -204,7 +201,7 @@ const mapDispatchToProps = (dispatch, ownProps, state) => {
     },
 
     handleSelection: collectionname => {
-      dispatch(set('uiState.database.selectedCollection', collectionname));
+      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionname));
     }
   };
 };

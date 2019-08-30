@@ -116,7 +116,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
     handleSelect(value) {
       const projectId = get(store.getState(), "config.id", "")
-      history.push(`/mission-control/projects/${projectId}/database/rules/${value}`)
+      history.push(`/mission-control/projects/${projectId}/database/overview/${value}`)
     }
   }
 }

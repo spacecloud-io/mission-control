@@ -26,7 +26,7 @@ export const adjustConfig = (config) => {
     Object.keys(config.modules.crud).forEach(db => {
       if (config.modules.crud[db].collections) {
         Object.keys(config.modules.crud[db].collections).forEach(col => {
-          config.modules.crud[db].collections[col] = JSON.stringify(config.modules.crud[db].collections[col], null, 2)
+          config.modules.crud[db].collections[col].rules = JSON.stringify(config.modules.crud[db].collections[col].rules, null, 2)
         })
       }
     })

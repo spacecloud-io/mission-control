@@ -64,6 +64,14 @@
   height: 300px;
 }
 
+.box-heading {
+  padding: 20px;
+  color: black;
+  border: 1px solid #E4E4E4;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .rules-main-wrapper .add-a-rule {
   display: flex;
   align-items: center;
@@ -161,4 +169,8 @@
 
 ::placeholder{
   padding-left: 15px
+}
+
+.flex-blox {
+  display: flex;
 }

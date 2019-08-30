@@ -94,13 +94,13 @@ const Overview = props => {
                         onClick={() => props.handleSelection(value)}
                       >
                         <Link
-                          to={`/mission-control/projects/${props.match.params.database}/database/schema/mongo`}
+                          to={`/mission-control/projects/${props.projectId}/database/schema/${props.selectedDb}`}
                         >
                           Edit Schema
                         </Link>
                         <Divider type='vertical' />
                         <Link
-                          to={`/mission-control/projects/${props.match.params.database}/database/rules/mongo`}
+                          to={`/mission-control/projects/${props.projectId}/database/rules/${props.selectedDb}`}
                         >
                           Edit Rules
                         </Link>
@@ -109,9 +109,16 @@ const Overview = props => {
                   </Col>
                   <Col span={4}>
                     <div className='tablehead'>Realtime</div>
-                    {allCollections.map((value, index) => (
+                    {allCollections.map(value => (
                       <li className='tabledata' key={value}>
-                        <Switch defaultChecked />
+                        <Switch
+                          defaultChecked={
+                            props.allCollections[value].isRealtimeEnabled
+                          }
+                          onChange={checked =>
+                            props.onChangeRealtimeEnabled(value, checked)
+                          }
+                        />
                       </li>
                     ))}
                   </Col>
@@ -128,21 +135,12 @@ const Overview = props => {
               />
             )}
             <CreateNewCollectionForm
-              heading={
-                props.selectedDb === 'mongo'
-                  ? 'Add a Collection'
-                  : 'Add a Table'
-              }
-              placeholder={
-                props.selectedDb === 'mongo'
-                  ? 'Enter a collection'
-                  : 'Enter a table'
-              }
+              selectedDb={props.selectedDb}
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={(item, rules, schema) => {
+              handleSubmit={(item, rules, schema, realtime) => {
                 props.handleSelection(item);
-                props.handleCreateCollection(item, rules, schema);
+                props.handleCreateCollection(item, rules, schema, realtime);
               }}
             />
           </div>
@@ -156,6 +154,7 @@ const mapStateToProps = (state, ownProps) => {
   const selectedDb = ownProps.match.params.database;
   return {
     selectedDb: ownProps.match.params.database,
+    projectId: ownProps.match.params.projectId,
     formState: {
       enabled: get(
         state,
@@ -174,29 +173,38 @@ const mapStateToProps = (state, ownProps) => {
     ),
     selectedCollection: get(
       state,
-      'uiState.database.selectedCollection',
+      `uiState.database.${selectedDb}.selectedCollection`,
       'default'
     ),
 
     allCollections: get(
-      state, 
-      `config.modules.crud.${selectedDb}.collections`, 
-      {})
+      state,
+      `config.modules.crud.${selectedDb}.collections`,
+      {}
+    )
   };
 };
 
-const mapDispatchToProps = (dispatch, ownProps, state) => {
+const mapDispatchToProps = (dispatch, ownProps) => {
   const selectedDb = ownProps.match.params.database;
   return {
-    handleCreateCollection: (name, rules, schema) => {
+    handleCreateCollection: (name, rules, schema, realtime) => {
       let collection = {
-        isRealtimeEnabled: true,
+        isRealtimeEnabled: realtime,
         rules: rules,
         schema: schema
       };
 
       dispatch(
         set(`config.modules.crud.${selectedDb}.collections.${name}`, collection)
+      );
+    },
+    onChangeRealtimeEnabled: (name, checked) => {
+      dispatch(
+        set(
+          `config.modules.crud.${selectedDb}.collections.${name}.isRealtimeEnabled`,
+          checked
+        )
       );
     },
     updateFormState: fields => {
@@ -213,7 +221,7 @@ const mapDispatchToProps = (dispatch, ownProps, state) => {
       );
     },
     handleSelection: collectionname => {
-      dispatch(set('uiState.database.selectedCollection', collectionname));
+      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionname));
     }
   };
 };

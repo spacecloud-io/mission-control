@@ -1,26 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Row, Col, Switch } from 'antd';
 import './collection-form.css';
 import { Form, Input, Button } from 'antd';
 import FormItem from 'antd/lib/form/FormItem';
 
-let initalSchema = {
-  name: ''
-}
+let initalSchema = '';
 
-function EditItemModal(props) {
-
+function NewCollectionForm(props) {
   const [schemaName, setSchemaName] = useState('');
+  const [switchChecked, setSwitchChecked] = useState(true);
 
-    initalSchema = {
-      name: schemaName
-    }
+  initalSchema = `type ${schemaName} {}`
+
+  const onSwitchChange = checked => {
+    setSwitchChecked(checked);
+  };
 
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.item, values.rules, values.schema);
+        props.handleSubmit(
+          values.item,
+          values.rules,
+          values.schema,
+          values.realtime
+        );
         props.handleCancel();
         props.form.resetFields();
       }
@@ -28,7 +33,7 @@ function EditItemModal(props) {
   };
 
   const handleNameChange = e => {
-    setSchemaName(e.target.value);
+    setSchemaName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1));
   };
   const { getFieldDecorator } = props.form;
   const { TextArea } = Input;
@@ -54,14 +59,16 @@ function EditItemModal(props) {
       <Modal
         className='edit-item-modal'
         footer={null}
-        title={props.heading}
+        title={
+          props.selectedDb === 'mongo' ? 'Add a Collection' : 'Add a Table'
+        }
         visible={props.visible}
         onCancel={props.handleCancel}
       >
         <div className='modal-flex'>
           <div className='content'>
             <Form onSubmit={handleSubmit} className='edit-form'>
-              <span className='tablename'>Table Name</span>
+              <span className='tablename'>{ props.selectedDb === 'mongo' ? 'Collection Name' : 'Table Nmae'}</span>
               <Form.Item>
                 {getFieldDecorator('item', {
                   rules: [
@@ -70,15 +77,19 @@ function EditItemModal(props) {
                 })(
                   <Input
                     className='input'
-                    placeholder='Enter table name'
+                    placeholder={
+                      props.selectedDb === 'mongo'
+                        ? 'Enter a collection'
+                        : 'Enter a table'
+                    }
                     onChange={handleNameChange}
                   />
                 )}
                 {getFieldDecorator('realtime', {
-                  initialValue: props.initialValue
+                  initialValue: switchChecked
                 })(
                   <span className='realtime'>
-                    Realtime <Switch defaultChecked />
+                    Realtime <Switch defaultChecked onChange={onSwitchChange} />
                   </span>
                 )}
               </Form.Item>
@@ -107,17 +118,18 @@ function EditItemModal(props) {
                   <br />
                   <FormItem>
                     {getFieldDecorator('schema', {
-                      initialValue: JSON.stringify(initalSchema, null, 2)
+                      initialValue: initalSchema
                     })(<TextArea rows={8} />)}
                   </FormItem>
                 </Col>
               </Row>
               <Form.Item>
-                {/*                 <Button type="primary" htmlType="submit" className="button">
-                  DONE
-                </Button> */}
                 <div className='form-bottom'>
-                  <Button size='large' className='cancel-btn' onClick={props.handleCancel}>
+                  <Button
+                    size='large'
+                    className='cancel-btn'
+                    onClick={props.handleCancel}
+                  >
                     Cancel
                   </Button>
                   <Button
@@ -139,7 +151,7 @@ function EditItemModal(props) {
 }
 
 const WrappedNormalLoginForm = Form.create({ name: 'normal_login' })(
-  EditItemModal
+  NewCollectionForm
 );
 
 export default WrappedNormalLoginForm;

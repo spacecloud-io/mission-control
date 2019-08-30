@@ -59,7 +59,3 @@ typings/
 
 # next.js build output
 .next
-
-# space-cloud
-space-cloud.exe
-raft-store
