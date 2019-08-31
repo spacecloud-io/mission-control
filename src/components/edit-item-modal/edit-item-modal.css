@@ -1,92 +1,52 @@
+.ant-modal.edit-item-modal{
+  width: 620px !important;
+}
+
 .edit-item-modal .ant-modal-header {
-  background: #002c39;
+  background: #002C39;
 }
 
-.edit-item-modal .ant-modal-title,
-.edit-item-modal .ant-modal-close-x {
-  color: #fff;
+.edit-item-modal .ant-modal-title,.edit-item-modal .ant-modal-close-x  {
+  color: #FFF;
 }
 
-/* .edit-item-modal .vector {
+.edit-item-modal .modal-flex {
+  display: flex;
+}
+
+.edit-item-modal .desc {
+  color: #BDBDBD;
+  font-size: 14px;
+}
+
+.edit-item-modal .header .line{
+  margin-bottom: 18px;
+}
+
+.edit-item-modal .edit-form {
+  padding-top: 12px;
+}
+
+.edit-item-modal .input {
+  width: 93%;
+}
+
+.edit-item-modal .button {
+  height: 26px;
+  width:  60px;
+  font-size: 12px;
+  align-items: center;
+  padding: 0;
+  float: right;
+  position: relative;
+  right: 2vw;
+}
+
+.edit-item-modal .vector {
   width: 220px;
   height: 220px;
-} */
+}
 
 .edit-item-modal .content {
   margin-right: 24px;
-}
-
-.tablename {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 19px;
-  color: #000000;
-}
-
-.realtime {
-  float: right;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 19px;
-  color: #000000;
-}
-
-.settings-box {
-  width: 180px;
-}
-.settings-heading {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 23px;
-  color: #000000;
-}
-
-.settings-default {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 16px;
-  float: right;
-  color: #bdbdbd;
-}
-
-.settings-subheading {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 16px;
-
-  color: #bdbdbd;
-}
-
-.form-title {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 19px;
-  color: #000000;
-}
-
-.form-bottom {
-  float: right;
-}
-
-.input {
-  width: 30%;
-}
-
-.ant-input {
-  padding: 8px 0;
-}
-.cancel-btn {
-  color: #ff6700;
-  border-color: #ff6700;
-  margin-right: 20px;
-}
-
-.save-btn {
-  margin-left: 20px;
 }

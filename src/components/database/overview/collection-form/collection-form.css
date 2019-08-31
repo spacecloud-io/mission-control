@@ -1,18 +1,18 @@
-.edit-item-modal .ant-modal-header {
+.form-modal .ant-modal-header {
     background: #002c39;
   }
   
-  .edit-item-modal .ant-modal-title,
-  .edit-item-modal .ant-modal-close-x {
+  .form-modal .ant-modal-title,
+  .form-modal .ant-modal-close-x {
     color: #fff;
   }
   
-  /* .edit-item-modal .vector {
+  /* .form-modal .vector {
     width: 220px;
     height: 220px;
   } */
   
-  .edit-item-modal .content {
+  .form-modal .content {
     margin-right: 24px;
   }
   
@@ -76,11 +76,9 @@
   
   .input {
     width: 30%;
+    padding: 15px;
   }
-  
-  .ant-input {
-    padding: 8px 0;
-  }
+
   .cancel-btn {
     color: #ff6700;
     border-color: #ff6700;
@@ -89,8 +87,4 @@
   
   .save-btn {
     margin-left: 20px;
-  }
-  
-  ::placeholder{
-    padding-left: 15px;
   }

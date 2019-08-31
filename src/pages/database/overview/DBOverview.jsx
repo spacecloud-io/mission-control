@@ -18,7 +18,6 @@ import EmptyState from '../../../components/rules/EmptyState';
 import DBTabs from '../../../components/database/Tabs';
 
 import '../database.css';
-import '../../../index.css';
 
 // antd
 import { Col, Row, Button, Icon, Divider, Switch } from 'antd';
@@ -26,7 +25,7 @@ import { Col, Row, Button, Icon, Divider, Switch } from 'antd';
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
 
-  var allCollections = Object.keys(props.allCollections);
+  const allCollections = Object.keys(props.allCollections);
 
   const noOfCollections = Object.keys(props.allCollections).length;
 
@@ -220,8 +219,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         )
       );
     },
-    handleSelection: collectionname => {
-      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionname));
+    handleSelection: collectionName => {
+      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
     }
   };
 };

@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { Modal, Row, Col, Switch } from 'antd';
 import './collection-form.css';
 import { Form, Input, Button } from 'antd';
-import FormItem from 'antd/lib/form/FormItem';
+
 
 let initalSchema = '';
 
 function NewCollectionForm(props) {
   const [schemaName, setSchemaName] = useState('');
-  const [switchChecked, setSwitchChecked] = useState(true);
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
 
   initalSchema = `type ${schemaName} {}`
 
   const onSwitchChange = checked => {
-    setSwitchChecked(checked);
+    setRealTimeEnabled(checked);
   };
 
   const handleSubmit = e => {
@@ -57,7 +57,7 @@ function NewCollectionForm(props) {
   return (
     <div>
       <Modal
-        className='edit-item-modal'
+        className='form-modal'
         footer={null}
         title={
           props.selectedDb === 'mongo' ? 'Add a Collection' : 'Add a Table'
@@ -86,7 +86,7 @@ function NewCollectionForm(props) {
                   />
                 )}
                 {getFieldDecorator('realtime', {
-                  initialValue: switchChecked
+                  initialValue: realTimeEnabled
                 })(
                   <span className='realtime'>
                     Realtime <Switch defaultChecked onChange={onSwitchChange} />
@@ -107,20 +107,20 @@ function NewCollectionForm(props) {
                 <Col span={12}>
                   <span className='form-title'>Rules</span>
                   <br />
-                  <FormItem>
+                  <Form.Item>
                     {getFieldDecorator('rules', {
                       initialValue: JSON.stringify(initalRule, null, 2)
                     })(<TextArea rows={8} />)}
-                  </FormItem>
+                  </Form.Item>
                 </Col>
                 <Col span={12}>
                   <span className='form-title'>Schema</span>
                   <br />
-                  <FormItem>
+                  <Form.Item>
                     {getFieldDecorator('schema', {
                       initialValue: initalSchema
                     })(<TextArea rows={8} />)}
-                  </FormItem>
+                  </Form.Item>
                 </Col>
               </Row>
               <Form.Item>

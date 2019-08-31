@@ -166,11 +166,6 @@
 
   padding: 0px 120px 0 56px;
 }
-
-::placeholder{
-  padding-left: 15px
-}
-
 .flex-blox {
   display: flex;
 }

@@ -57,7 +57,7 @@ export const unAdjustConfig = (c, s) => {
       if (config.modules.crud[db].collections) {
         Object.keys(config.modules.crud[db].collections).forEach(col => {
           try {
-            config.modules.crud[db].collections[col] = JSON.parse(config.modules.crud[db].collections[col])
+            config.modules.crud[db].collections[col].rules = JSON.parse(config.modules.crud[db].collections[col].rules)
           } catch (error) {
             result.ack = false
             result.errors.crud[db] = result.errors.crud[db] ? [...result.errors.crud[db], col] : [col]

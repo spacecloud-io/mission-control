@@ -58,7 +58,7 @@ const Schema = props => {
             <div className='rules-schema-table'>
               <div style={{ marginTop: 50, marginBottom: 27 }}>
                 <span className='collections'>
-                  {props.selectedDb === 'mongo' ? 'Collection' : 'Table'}
+                  {props.selectedDb === 'mongo' ? 'Collections' : 'Tables'}
                 </span>
                 <Button
                   type='primary'
@@ -198,8 +198,8 @@ const mapDispatchToProps = (dispatch, ownProps, state) => {
       );
     },
 
-    handleSelection: collectionname => {
-      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionname));
+    handleSelection: collectionName => {
+      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
     }
   };
 };
