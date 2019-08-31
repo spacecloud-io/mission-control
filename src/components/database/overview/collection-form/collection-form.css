@@ -1,0 +1,90 @@
+.form-modal .ant-modal-header {
+    background: #002c39;
+  }
+  
+  .form-modal .ant-modal-title,
+  .form-modal .ant-modal-close-x {
+    color: #fff;
+  }
+  
+  /* .form-modal .vector {
+    width: 220px;
+    height: 220px;
+  } */
+  
+  .form-modal .content {
+    margin-right: 24px;
+  }
+  
+  .tablename {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 19px;
+    color: #000000;
+  }
+  
+  .realtime {
+    float: right;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: #000000;
+  }
+  
+  .settings-box {
+    width: 180px;
+  }
+  .settings-heading {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 23px;
+    color: #000000;
+  }
+  
+  .settings-default {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 16px;
+    float: right;
+    color: #bdbdbd;
+  }
+  
+  .settings-subheading {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 16px;
+  
+    color: #bdbdbd;
+  }
+  
+  .form-title {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 19px;
+    color: #000000;
+  }
+  
+  .form-bottom {
+    float: right;
+  }
+  
+  .input {
+    width: 30%;
+    padding: 15px;
+  }
+
+  .cancel-btn {
+    color: #ff6700;
+    border-color: #ff6700;
+    margin-right: 20px;
+  }
+  
+  .save-btn {
+    margin-left: 20px;
+  }

@@ -1,0 +1,65 @@
+projects:
+- secret: b203b904-e685-4470-bd58-a97c21d679d0
+  id: todos
+  name: todos
+  modules:
+    crud:
+      mongo:
+        conn: mongodb://localhost:27017
+        collections:
+          default:
+            isRealtimeEnabled: true
+            rules:
+              create:
+                rule: allow
+              delete:
+                rule: allow
+              read:
+                rule: allow
+              update:
+                rule: allow
+        isPrimary: false
+        enabled: true
+    auth: {}
+    functions:
+      enabled: true
+      broker: nats
+      conn: nats://localhost:4222
+      services:
+        default:
+          functions:
+            default:
+              rule:
+                rule: allow
+    realtime:
+      enabled: true
+      broker: nats
+      conn: nats://localhost:4222
+    fileStore:
+      enabled: false
+      storeType: local
+      conn: ./
+      endpoint: ""
+      bucket: ""
+      rules: []
+ssl:
+  enabled: false
+  crt: ""
+  key: ""
+admin:
+  secret: some-secret
+  operation:
+    mode: 0
+    userId: ""
+    key: ""
+  users:
+  - user: admin
+    pass: "123"
+    scopes:
+      all:
+      - all
+deploy:
+  enabled: false
+gateway: null
+cluster: ""
+nodeId: 05cbd89c-ca76-11e9-92b0-408d5c634c09

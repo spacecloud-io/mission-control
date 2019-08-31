@@ -24,7 +24,7 @@ function Database(props) {
   }, [])
 
   if (props.selectedDb) {
-    return <Redirect to={`/mission-control/projects/${props.projectId}/database/rules/${props.selectedDb}`} />;
+    return <Redirect to={`/mission-control/projects/${props.projectId}/database/overview/${props.selectedDb}`} />;
   }
   return (
     <div className="database">
