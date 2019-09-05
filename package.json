@@ -3,7 +3,6 @@
   "version": "0.12.0",
   "private": true,
   "dependencies": {
-    "@apollo/react-hooks": "^3.0.1",
     "antd": "^3.19.2",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",

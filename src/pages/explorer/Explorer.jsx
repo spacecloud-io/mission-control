@@ -20,7 +20,6 @@ import 'codemirror/addon/edit/closebrackets.js';
 import './explorer.css';
 import { notify } from '../../utils';
 import GraphiQL from 'graphiql';
-import fetch from 'isomorphic-fetch';
 import 'graphiql/graphiql.css';
 
 const { Option } = Select;
@@ -29,29 +28,30 @@ const generateAdminToken = secret => {
   return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
 };
 
-function graphQLFetcher(graphQLParams, project) {
-
-  return fetch(`/v1/api/graphql/${project}`, {
-    method: 'post',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(graphQLParams)
-  }).then(response => response.json());
-
+function graphQLFetcher(graphQLParams, projectId) {
+  return service.execGraphQLQuery(projectId, graphQLParams.query)
 }
 
 const Explorer = props => {
-  const [useAdminToken, setUseAdminToken] = useState(true);
-  const [token, setToken] = useState(null);
+
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
 
   useEffect(() => {
-    if (useAdminToken && props.secret) {
-      setToken(generateAdminToken(props.secret));
+    if (props.graphqlUseAdminToken && props.secret) {
+      props.setToken(generateAdminToken(props.secret), 'graphql');
     } else {
-      setToken(null);
+      props.setToken(null, 'graphql');
     }
-  }, [useAdminToken, props.secret]);
+  }, [props.graphqlUseAdminToken, props.secret]);
+
+  useEffect(() => {
+    if (props.spaceApiUseAdminToken && props.secret) {
+      props.setToken(generateAdminToken(props.secret), 'spaceApi');
+    } else {
+      props.setToken(null, 'spaceApi');
+    }
+  }, [props.spaceApiUseAdminToken, props.secret]);
 
   const applyRequest = () => {
     let code = props.spaceApiQuery;
@@ -71,7 +71,7 @@ const Explorer = props => {
 
     setLoading(true);
     service
-      .execSpaceAPI(props.projectId, code, token)
+      .execSpaceAPI(props.projectId, code, props.spaceApiToken)
       .then(res => {
         setResponse(res);
       })
@@ -106,22 +106,13 @@ const Explorer = props => {
             </Button.Group>
           </div>
           {props.selectedIDE === 'graphql' && (
-            <div className='graphql'>
-              <GraphiQL fetcher={(graphQLParams) => graphQLFetcher(graphQLParams, props.match.params.projectId)} />
-            </div>
-          )}
-          {props.selectedIDE === 'spaceapi' && (
-            <div className='spaceapi'>
-              <div className='row'>
-                Trigger requests to Space Cloud directly by coding below. No
-                need to setup any frontend project. (Note: Only javascript code
-                is allowed below.) The <code>api</code> object is available in
-                all requests.
-              </div>
+            <div>
               <div className='row'>
                 <Checkbox
-                  checked={useAdminToken}
-                  onChange={e => setUseAdminToken(e.target.checked)}
+                  checked={props.graphqlUseAdminToken}
+                  onChange={e =>
+                    props.setUseAdminToken(e.target.checked, 'graphql')
+                  }
                 >
                   Use admin token
                 </Checkbox>
@@ -135,12 +126,56 @@ const Explorer = props => {
                   />
                 </Tooltip>
               </div>
-              {!useAdminToken && (
+              {!props.graphqlUseAdminToken && (
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={token}
-                    onChange={e => setToken(e.target.value)}
+                    value={props.graphqlToken}
+                    onChange={e => props.setToken(e.target.value, 'graphql')}
+                  />
+                </div>
+              )}
+              <div className='graphql' style={{ marginTop: 10 }}>
+                <GraphiQL
+                  fetcher={graphQLParams =>
+                    graphQLFetcher(graphQLParams, props.projectId)
+                  }
+                  schema={null}
+                />
+              </div>
+            </div>
+          )}
+          {props.selectedIDE === 'spaceapi' && (
+            <div className='spaceapi'>
+              <div className='row'>
+                Trigger requests to Space Cloud directly by coding below. No
+                need to setup any frontend project. (Note: Only javascript code
+                is allowed below.) The <code>api</code> object is available in
+                all requests.
+              </div>
+              <div className='row'>
+                <Checkbox
+                  checked={props.spaceApiUseAdminToken}
+                  onChange={e => props.setUseAdminToken(e.target.checked, 'spaceApi')}
+                >
+                  Use admin token
+                </Checkbox>
+                <Tooltip
+                  placement='bottomLeft'
+                  title='Use an admin token generated by Space Cloud to bypass all security rules for this request '
+                >
+                  <Icon
+                    type='info-circle'
+                    style={{ color: 'rgba(0,0,0,.45)' }}
+                  />
+                </Tooltip>
+              </div>
+              {!props.spaceApiUseAdminToken && (
+                <div className='row'>
+                  <Input.Password
+                    placeholder='Token to authorize request'
+                    value={props.spaceApiToken}
+                    onChange={e => props.setToken(e.target.value, 'spaceApi')}
                   />
                 </div>
               )}
@@ -223,6 +258,24 @@ const mapStateToProps = state => {
       state,
       'uiState.explorer.spaceApi.query',
       templates.defaultTemplate
+    ),
+    spaceApiUseAdminToken: get(
+      state,
+      'uiState.explorer.spaceApi.useAdminToken',
+      true
+    ),
+    graphqlUseAdminToken: get(
+      state,
+      'uiState.explorer.graphql.useAdminToken',
+      true
+    ),
+    spaceApiToken: get(
+      state,
+      'uiState.explorer.spaceApi.token'
+    ),
+    graphqlToken: get(
+      state,
+      'uiState.explorer.graphql.token'
     )
   };
 };
@@ -237,6 +290,18 @@ const mapDispatchToProps = dispatch => {
     },
     handleSpaceApiQueryChange: query => {
       dispatch(set('uiState.explorer.spaceApi.query', query));
+    },
+    setUseAdminToken: (useAdminToken, query) => {
+      query === 'graphql'
+        ? dispatch(set('uiState.explorer.graphql.useAdminToken', useAdminToken))
+        : dispatch(
+            set('uiState.explorer.spaceApi.useAdminToken', useAdminToken)
+          );
+    },
+    setToken: (token, query) => {
+      query === 'graphql'
+        ? dispatch(set('uiState.explorer.graphql.token', token))
+        : dispatch(set('uiState.explorer.spaceApi.token', token));
     }
   };
 };
