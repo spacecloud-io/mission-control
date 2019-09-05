@@ -29,11 +29,14 @@ const generateAdminToken = secret => {
 };
 
 function graphQLFetcher(graphQLParams, projectId) {
-  return service.execGraphQLQuery(projectId, graphQLParams.query)
+  return service.execGraphQLQuery(
+    projectId,
+    graphQLParams.query,
+    graphQLParams.variables
+  );
 }
 
 const Explorer = props => {
-
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
 
@@ -156,7 +159,9 @@ const Explorer = props => {
               <div className='row'>
                 <Checkbox
                   checked={props.spaceApiUseAdminToken}
-                  onChange={e => props.setUseAdminToken(e.target.checked, 'spaceApi')}
+                  onChange={e =>
+                    props.setUseAdminToken(e.target.checked, 'spaceApi')
+                  }
                 >
                   Use admin token
                 </Checkbox>
@@ -269,14 +274,8 @@ const mapStateToProps = state => {
       'uiState.explorer.graphql.useAdminToken',
       true
     ),
-    spaceApiToken: get(
-      state,
-      'uiState.explorer.spaceApi.token'
-    ),
-    graphqlToken: get(
-      state,
-      'uiState.explorer.graphql.token'
-    )
+    spaceApiToken: get(state, 'uiState.explorer.spaceApi.token'),
+    graphqlToken: get(state, 'uiState.explorer.graphql.token')
   };
 };
 

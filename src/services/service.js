@@ -267,7 +267,7 @@ class Service {
 
   }
 
-  execGraphQLQuery(projectId, graphqlQuery) {
+  execGraphQLQuery(projectId, graphqlQuery, variables) {
     return new Promise((resolve, reject) => {
       const client = new ApolloClient({
         uri: `/v1/api/graphql/${projectId}`,
@@ -276,7 +276,8 @@ class Service {
         .query({
           query: gql`
      ${graphqlQuery}
-    `
+    `,
+          variables: variables
         })
         .then(result => resolve(result)).catch(ex => reject(ex.toString()));
     })
