@@ -28,11 +28,12 @@ const generateAdminToken = secret => {
   return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
 };
 
-function graphQLFetcher(graphQLParams, projectId) {
+function graphQLFetcher(graphQLParams, projectId, token) {
   return service.execGraphQLQuery(
     projectId,
     graphQLParams.query,
-    graphQLParams.variables
+    graphQLParams.variables,
+    token
   );
 }
 
@@ -141,7 +142,7 @@ const Explorer = props => {
               <div className='graphql' style={{ marginTop: 10 }}>
                 <GraphiQL
                   fetcher={graphQLParams =>
-                    graphQLFetcher(graphQLParams, props.projectId)
+                    graphQLFetcher(graphQLParams, props.projectId, props.graphqlToken)
                   }
                   schema={null}
                 />
@@ -294,8 +295,8 @@ const mapDispatchToProps = dispatch => {
       query === 'graphql'
         ? dispatch(set('uiState.explorer.graphql.useAdminToken', useAdminToken))
         : dispatch(
-            set('uiState.explorer.spaceApi.useAdminToken', useAdminToken)
-          );
+          set('uiState.explorer.spaceApi.useAdminToken', useAdminToken)
+        );
     },
     setToken: (token, query) => {
       query === 'graphql'

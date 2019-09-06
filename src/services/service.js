@@ -1,8 +1,11 @@
 import Client from "./client";
 import SpaceAPI from 'space-api';
 import { SPACE_API_PROJECT, SPACE_API_URL } from "../constants";
-import ApolloClient, { gql } from 'apollo-boost';
 
+import gql from 'graphql-tag';
+import { ApolloClient } from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -267,19 +270,29 @@ class Service {
 
   }
 
-  execGraphQLQuery(projectId, graphqlQuery, variables) {
+  execGraphQLQuery(projectId, graphqlQuery, variables, token) {
     return new Promise((resolve, reject) => {
+      let uri = `/v1/api/graphql/${projectId}`
+      if (process.env.NODE_ENV !== "production") {
+        uri = "http://localhost:4122" + uri;
+      }
+      const cache = new InMemoryCache({ addTypename: false });
+      const link = new HttpLink({ uri: uri, headers: { "Authorization": `Bearer ${token}` } });
       const client = new ApolloClient({
-        uri: `/v1/api/graphql/${projectId}`,
+        cache: cache,
+        link: link
       });
-      client
-        .query({
-          query: gql`
-     ${graphqlQuery}
-    `,
+      if (graphqlQuery.includes("mutation")) {
+        client.mutate({
+          mutation: gql`${graphqlQuery}`,
           variables: variables
-        })
-        .then(result => resolve(result)).catch(ex => reject(ex.toString()));
+        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+      } else {
+        client.query({
+          query: gql`${graphqlQuery}`,
+          variables: variables
+        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+      }
     })
 
   }
