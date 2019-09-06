@@ -1,6 +1,8 @@
 import Client from "./client";
 import SpaceAPI from 'space-api';
 import { SPACE_API_PROJECT, SPACE_API_URL } from "../constants";
+import ApolloClient, { gql } from 'apollo-boost';
+
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -261,6 +263,23 @@ class Service {
       } catch (error) {
         reject(error.toString())
       }
+    })
+
+  }
+
+  execGraphQLQuery(projectId, graphqlQuery, variables) {
+    return new Promise((resolve, reject) => {
+      const client = new ApolloClient({
+        uri: `/v1/api/graphql/${projectId}`,
+      });
+      client
+        .query({
+          query: gql`
+     ${graphqlQuery}
+    `,
+          variables: variables
+        })
+        .then(result => resolve(result)).catch(ex => reject(ex.toString()));
     })
 
   }

@@ -14,3 +14,12 @@
 .explorer .help {
   color: #BDBDBD;
 }
+
+.graphql {
+
+  height: 500px;
+}
+
+.variable-editor {
+  height: 250px;
+}
