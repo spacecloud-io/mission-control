@@ -24,7 +24,18 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
 // antd
-import { Button, Icon, Col, Row } from 'antd';
+import { Button, Icon, Col, Row, notification } from 'antd';
+
+const openNotificationWithIcon = (type, task) => {
+  notification[type]({
+    message: type.charAt(0).toUpperCase() + type.slice(1),
+    description: type === 'success' ?
+      task === 'inspect' ?
+        'Table has been inspected and schema is updated successfully'
+        : 'Schema is successfully modified' : 'Oops! There is some error.',
+  })
+}
+
 
 const Schema = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
@@ -41,15 +52,25 @@ const Schema = props => {
 
   const handleInspect = () => {
 
-    props.handleSchemaChange(
-      props.selectedCollection,
-      service.handleInspect(props.projectId, props.selectedDb, props.selectedCollection).then(res => res)
-      );
+    service.handleInspect(props.projectId, props.selectedDb, props.selectedCollection)
+      .then(res => {
+        props.handleSchemaChange(props.selectedCollection, res.schema);
+        openNotificationWithIcon('success', 'inspect');
+      })
+      .catch(err => {
+        openNotificationWithIcon('error', 'inspect')
+        console.log(err);
+      })
   }
 
   const handleModify = () => {
 
-    service.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema);
+    service.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema)
+      .then(() => openNotificationWithIcon('success', 'modify'))
+      .catch(err => {
+        openNotificationWithIcon('error', 'modify');
+        console.log(err);
+      })
 
   }
 
@@ -120,7 +141,7 @@ const Schema = props => {
                         shift + tab
                       </div>
                       <Row>
-                        <Col span={16}>
+                        <Col span={props.selectedDb === 'mongo' ? 24 : props.selectedCollection === 'default' ? 24 : 16}>
                           <div className='code-mirror'>
                             <CodeMirror
                               value={
@@ -144,7 +165,7 @@ const Schema = props => {
                             />
                           </div>
                         </Col>
-                        <Col span={8}>
+                        <Col span={props.selectedDb === 'mongo' ? 0 : props.selectedCollection === 'default' ? 0 : 8}>
                           <div className='right-panel'>
                             <Button type="primary" style={{ marginTop: 25 }} onClick={handleInspect}>Inspect</Button>
                             <br />
