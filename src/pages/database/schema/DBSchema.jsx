@@ -23,19 +23,10 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
+import { notify } from '../../../utils';
+
 // antd
 import { Button, Icon, Col, Row, notification } from 'antd';
-
-const openNotificationWithIcon = (type, task) => {
-  notification[type]({
-    message: type.charAt(0).toUpperCase() + type.slice(1),
-    description: type === 'success' ?
-      task === 'inspect' ?
-        'Table has been inspected and schema is updated successfully'
-        : 'Schema is successfully modified' : 'Oops! There is some error.',
-  })
-}
-
 
 const Schema = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
@@ -54,11 +45,11 @@ const Schema = props => {
 
     service.handleInspect(props.projectId, props.selectedDb, props.selectedCollection)
       .then(res => {
-        props.handleSchemaChange(props.selectedCollection, res.schema);
-        openNotificationWithIcon('success', 'inspect');
+        props.handleSchemaChange(props.selectedCollection, res);
+        notify('success', "Success", "Table has been inspected and schema is updated successfully");
       })
       .catch(err => {
-        openNotificationWithIcon('error', 'inspect')
+        notify('error', "Error", "Oops! There was some error");
         console.log(err);
       })
   }
@@ -66,9 +57,9 @@ const Schema = props => {
   const handleModify = () => {
 
     service.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema)
-      .then(() => openNotificationWithIcon('success', 'modify'))
+      .then(() => notify('success', "Success", "Schema is successfully modified"))
       .catch(err => {
-        openNotificationWithIcon('error', 'modify');
+        notify('error', "Error", "Oops! There was some error");
         console.log(err);
       })
 
@@ -167,9 +158,9 @@ const Schema = props => {
                         </Col>
                         <Col span={props.selectedDb === 'mongo' ? 0 : props.selectedCollection === 'default' ? 0 : 8}>
                           <div className='right-panel'>
-                            <Button type="primary" style={{ marginTop: 25 }} onClick={handleInspect}>Inspect</Button>
+                            <Button style={{ marginTop: 25 }} onClick={handleInspect}>Inspect</Button>
                             <br />
-                            <Button type="primary" style={{ marginTop: 20 }} onClick={handleModify}>Modify</Button>
+                            <Button style={{ marginTop: 20 }} onClick={handleModify}>Modify</Button>
                           </div>
                         </Col>
                       </Row>

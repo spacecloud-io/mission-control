@@ -302,10 +302,10 @@ class Service {
       this.client.getJSON(`/v1/api/config/inspect/${projectId}/${dbType}/${col}`)
       .then(({status, data}) => {
         if(status !== 200){
-          reject("Internal server error")
+          reject(data.error)
           return
         }
-        resolve(data)
+        resolve(data.schema)
       }).catch(ex => reject(ex.toString()))
     })
   }
