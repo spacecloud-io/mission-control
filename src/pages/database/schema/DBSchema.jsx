@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import '../database.css';
 
 import { get, set } from 'automate-redux';
-
+import service from '../../../index';
 import { connect } from 'react-redux';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -23,8 +23,10 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
+import { notify } from '../../../utils';
+
 // antd
-import { Button, Icon, Col, Row } from 'antd';
+import { Button, Icon, Col, Row, notification } from 'antd';
 
 const Schema = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
@@ -32,11 +34,35 @@ const Schema = props => {
   const collections = Object.keys(props.allCollections);
   let selectedSchema;
   const noOfCollections = collections.length;
-  if(noOfCollections < 1){
+  if (noOfCollections < 1) {
     selectedSchema = '';
   }
-  else{
-   selectedSchema = props.allCollections[props.selectedCollection].schema;
+  else {
+    selectedSchema = props.allCollections[props.selectedCollection].schema;
+  }
+
+  const handleInspect = () => {
+
+    service.handleInspect(props.projectId, props.selectedDb, props.selectedCollection)
+      .then(res => {
+        props.handleSchemaChange(props.selectedCollection, res);
+        notify('success', "Success", "Table has been inspected and schema is updated successfully");
+      })
+      .catch(err => {
+        notify('error', "Error", "Oops! There was some error");
+        console.log(err);
+      })
+  }
+
+  const handleModify = () => {
+
+    service.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema)
+      .then(() => notify('success', "Success", "Schema is successfully modified"))
+      .catch(err => {
+        notify('error', "Error", "Oops! There was some error");
+        console.log(err);
+      })
+
   }
 
   return (
@@ -105,28 +131,39 @@ const Schema = props => {
                         Hint : To indent press ctrl + A in the editor and then
                         shift + tab
                       </div>
-                      <div className='code-mirror'>
-                        <CodeMirror
-                          value={
-                            selectedSchema
-                          }
-                          options={{
-                            mode: { name: 'javascript', json: true },
-                            lineNumbers: true,
-                            styleActiveLine: true,
-                            matchBrackets: true,
-                            autoCloseBrackets: true,
-                            tabSize: 2,
-                            autofocus: true
-                          }}
-                          onBeforeChange={(editor, data, value) => {
-                            props.handleSchemaChange(
-                              props.selectedCollection,
-                              value
-                            );
-                          }}
-                        />
-                      </div>
+                      <Row>
+                        <Col span={props.selectedDb === 'mongo' ? 24 : props.selectedCollection === 'default' ? 24 : 16}>
+                          <div className='code-mirror'>
+                            <CodeMirror
+                              value={
+                                selectedSchema
+                              }
+                              options={{
+                                mode: { name: 'javascript', json: true },
+                                lineNumbers: true,
+                                styleActiveLine: true,
+                                matchBrackets: true,
+                                autoCloseBrackets: true,
+                                tabSize: 2,
+                                autofocus: true
+                              }}
+                              onBeforeChange={(editor, data, value) => {
+                                props.handleSchemaChange(
+                                  props.selectedCollection,
+                                  value
+                                );
+                              }}
+                            />
+                          </div>
+                        </Col>
+                        <Col span={props.selectedDb === 'mongo' ? 0 : props.selectedCollection === 'default' ? 0 : 8}>
+                          <div className='right-panel'>
+                            <Button style={{ marginTop: 25 }} onClick={handleInspect}>Inspect</Button>
+                            <br />
+                            <Button style={{ marginTop: 20 }} onClick={handleModify}>Modify</Button>
+                          </div>
+                        </Col>
+                      </Row>
                     </div>
                   </Col>
                 </Row>
@@ -160,6 +197,7 @@ const mapStateToProps = (state, ownProps) => {
   const selectedDb = ownProps.match.params.database;
   return {
     selectedDb: ownProps.match.params.database,
+    projectId: ownProps.match.params.projectId,
 
     selectedCollection: get(
       state,
@@ -168,8 +206,8 @@ const mapStateToProps = (state, ownProps) => {
     ),
 
     allCollections: get(
-      state, 
-      `config.modules.crud.${selectedDb}.collections`, 
+      state,
+      `config.modules.crud.${selectedDb}.collections`,
       {})
   };
 };
