@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import '../database.css';
 
 import { get, set } from 'automate-redux';
-import service from '../../../index';
+import client from '../../../client';
 import { connect } from 'react-redux';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -43,7 +43,7 @@ const Schema = props => {
 
   const handleInspect = () => {
 
-    service.handleInspect(props.projectId, props.selectedDb, props.selectedCollection)
+    client.handleInspect(props.projectId, props.selectedDb, props.selectedCollection)
       .then(res => {
         props.handleSchemaChange(props.selectedCollection, res);
         notify('success', "Success", "Table has been inspected and schema is updated successfully");
@@ -56,7 +56,7 @@ const Schema = props => {
 
   const handleModify = () => {
 
-    service.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema)
+    client.handleModify(props.projectId, props.selectedDb, props.selectedCollection, selectedSchema)
       .then(() => notify('success', "Success", "Schema is successfully modified"))
       .catch(err => {
         notify('error', "Error", "Oops! There was some error");

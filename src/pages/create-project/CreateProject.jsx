@@ -3,7 +3,7 @@ import ReactGA from 'react-ga';
 import { connect } from 'react-redux'
 import { set, get } from "automate-redux"
 import { cloneDeep } from "lodash"
-import service from '../../index';
+import client from '../../client';
 import store from "../../store"
 import history from "../../history"
 import { generateProjectConfig, notify, adjustConfig } from '../../utils';
@@ -104,7 +104,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     handleNext: (name, dbType) => {
       const projectConfig = generateProjectConfig(name, dbType)
-      service.saveProjectConfig(projectConfig).then(() => {
+      client.saveProjectConfig(projectConfig).then(() => {
         const updatedProjects = [...get(store.getState(), "projects", []), projectConfig]
         dispatch(set("projects", updatedProjects))
         history.push(`/mission-control/projects/${projectConfig.id}`)

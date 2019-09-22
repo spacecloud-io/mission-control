@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { get, set, reset } from 'automate-redux';
-import service from "../../index";
+import client from "../../client";
 import store from "../../store"
 import history from "../../history";
 import { openProject, notify, openPlansPage } from "../../utils"
@@ -99,7 +99,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       history.push("/mission-control/create-project")
     },
     handleDelete: (projectId) => {
-      service.deleteProject(projectId).then(() => {
+      client.deleteProject(projectId).then(() => {
         notify("success", "Success", "Project deleted successfully")
         const updatedProjects = get(store.getState(), "projects", []).filter(project => project.id !== projectId)
         dispatch(set("projects", updatedProjects))

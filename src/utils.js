@@ -1,7 +1,7 @@
 import { increment, decrement, set, get } from "automate-redux"
 import { cloneDeep } from "lodash"
 import { notification } from "antd"
-import service from "./index"
+import client from "./client"
 import history from "./history"
 import store from "./store"
 import { defaultDbConnectionStrings } from "./constants"
@@ -196,11 +196,11 @@ export const generateProjectConfig = (name, dbType) => ({
 */
 export const handleClusterLoginSuccess = (token, lastProjectId) => {
   if (token) {
-    service.setToken(token)
+    client.setToken(token)
   }
 
   store.dispatch(increment("pendingRequests"))
-  Promise.all([service.fetchProjects(), service.fetchDeployCofig(), service.fetchOperationCofig(), service.fetchStaticConfig()])
+  Promise.all([client.fetchProjects(), client.fetchDeployCofig(), client.fetchOperationCofig(), client.fetchStaticConfig()])
     .then(([projects, deployConfig, operationConfig, staticConfig]) => {
       // Save deploy config
       const adjustedDeployConfig = adjustConfig(deployConfig)
@@ -241,8 +241,8 @@ export const handleClusterLoginSuccess = (token, lastProjectId) => {
 
 export const handleSpaceUpLoginSuccess = (token) => {
   store.dispatch(increment("pendingRequests"))
-  service.setSpaceApiToken(token)
-  service.fetchSpaceProfile().then(user => {
+  client.setSpaceApiToken(token)
+  client.fetchSpaceProfile().then(user => {
     const date = new Date()
     const month = date.getMonth()
     const year = date.getFullYear()
@@ -264,7 +264,7 @@ export const handleSpaceUpLoginSuccess = (token) => {
       deployConfig = defaultDeployConfig
     }
 
-    Promise.all([service.fetchCredits(user.id), service.fetchBilling(user.id, month, year), service.saveDeployConfig(deployConfig)]).then(([credits, billing]) => {
+    Promise.all([client.fetchCredits(user.id), client.fetchBilling(user.id, month, year), client.saveDeployConfig(deployConfig)]).then(([credits, billing]) => {
       store.dispatch(set("credits", credits))
       store.dispatch(set("billing", billing))
       store.dispatch(set("deployConfig", deployConfig))
@@ -300,7 +300,7 @@ export const openPlansPage = () => {
 }
 
 export const onAppLoad = () => {
-  service.fetchEnv().then(isProd => {
+  client.fetchEnv().then(isProd => {
     const token = localStorage.getItem("token")
     const spaceUpToken = localStorage.getItem("space-up-token")
     if (isProd && !token) {
@@ -319,5 +319,28 @@ export const onAppLoad = () => {
     if (spaceUpToken) {
       handleSpaceUpLoginSuccess(spaceUpToken)
     }
+  })
+}
+
+export const sortRulesByPrefix = (rules) => {
+  return rules.sort((a, b) => {
+    if (!a.prefix) return 1
+    const keysA = a.prefix.split("/").slice(1)
+    const keysB = b.prefix.split("/").slice(1)
+    const totalKeysA = keysA.length
+    const totalKeysB = keysB.length
+    for (var i = 0; i < totalKeysA; i++) {
+      const keyA = keysA[i]
+      const keyB = keysB[i]
+      if (!keyB) return -1
+      if (keyA === keyB) continue
+      if (keyA.charAt(0) === "{") {
+        if (keyB.charAt(0) === "{") continue
+        else return 1
+      }
+      if (keyB.charAt(0) === "{") return -1
+      return keyA < keyB ? -1 : 1
+    }
+    return (totalKeysA < totalKeysB) ? 1 : -1
   })
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ReactGA from "react-ga"
 import { connect } from "react-redux";
 import { get, set } from 'automate-redux';
-import service from '../../index';
+import client from '../../client';
 import store from "../../store"
 import { notify, handleSpaceUpLoginSuccess } from "../../utils"
 
@@ -54,20 +54,20 @@ const mapDispatchToProps = (dispatch) => {
   return {
     handleCancel: () => dispatch(set("uiState.isSigninModalVisible", false)),
     handleLogin: (email, pass) => {
-      service.spaceUpLogin(email, pass).then(({ token, user }) => {
+      client.spaceUpLogin(email, pass).then(({ token, user }) => {
         localStorage.setItem("space-up-token", token)
         const newOperationConfig = Object.assign({}, get(store.getState(), "operationConfig", {}), { userId: user.id, key: user.key })
-        service.saveOperationConfig(newOperationConfig).then(() => dispatch(set("operationConfig", newOperationConfig)))
+        client.saveOperationConfig(newOperationConfig).then(() => dispatch(set("operationConfig", newOperationConfig)))
         handleSpaceUpLoginSuccess(token)
         notify("success", "Success", "Login successful")
         dispatch(set("uiState.isSigninModalVisible", false))
       }).catch(error => notify("error", "Login failed", error))
     },
     handleRegister: (name, email, pass) => {
-      service.spaceUpRegister(name, email, pass).then(({ token, user }) => {
+      client.spaceUpRegister(name, email, pass).then(({ token, user }) => {
         localStorage.setItem("space-up-token", token)
         const newOperationConfig = Object.assign({}, get(store.getState(), "operationConfig", {}), { userId: user.id, key: user.key })
-        service.saveOperationConfig(newOperationConfig).then(() => dispatch(set("operationConfig", newOperationConfig)))
+        client.saveOperationConfig(newOperationConfig).then(() => dispatch(set("operationConfig", newOperationConfig)))
         handleSpaceUpLoginSuccess(token)
         notify("success", "Success", "Signup successful")
         dispatch(set("uiState.isSigninModalVisible", false))

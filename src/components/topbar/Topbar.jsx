@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import { set, get } from 'automate-redux';
 import { isEqual } from "lodash"
-import service from "../../index"
+import client from "../../client"
 import history from "../../history";
 import store from "../../store";
 import { unAdjustConfig, notify, openPlansPage } from "../../utils"
@@ -96,8 +96,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
       dispatch(set("pendingRequests", true))
       const promises = mode > 0 ?
-        [service.saveProjectConfig(result.config), service.saveStaticConfig(result.staticConfig), service.saveDeployConfig(deployConfig)]
-        : [service.saveProjectConfig(result.config), service.saveStaticConfig(result.staticConfig)]
+        [client.saveProjectConfig(result.config), client.saveStaticConfig(result.staticConfig), client.saveDeployConfig(deployConfig)]
+        : [client.saveProjectConfig(result.config), client.saveStaticConfig(result.staticConfig)]
       Promise.all(promises)
         .then(() => {
           notify("success", 'Success', 'Config saved successfully')

@@ -5,7 +5,7 @@ import logo from '../../assets/logo-black.svg'
 import { connect } from 'react-redux'
 import { set } from "automate-redux"
 import loginBg from '../../assets/login.svg'
-import service from '../../index';
+import client from '../../client';
 import { notify, handleClusterLoginSuccess } from "../../utils"
 import LoginForm from './LoginForm';
 import ReactGA from 'react-ga';
@@ -52,7 +52,7 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(set("uiState.login.formState", fields))
     },
     handleSubmit: (user, pass) => {
-      service.login(user, pass).then(token => {
+      client.login(user, pass).then(token => {
         localStorage.setItem("token", token)
         handleClusterLoginSuccess(token)
       }).catch(error => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
 import jwt from 'jsonwebtoken';
-import service from '../../index';
+import client from '../../client';
 import * as templates from './templates.js';
 import { SPACE_CLOUD_USER_ID } from '../../constants';
 
@@ -29,7 +29,7 @@ const generateAdminToken = secret => {
 };
 
 function graphQLFetcher(graphQLParams, projectId, token) {
-  return service.execGraphQLQuery(
+  return client.execGraphQLQuery(
     projectId,
     graphQLParams.query,
     graphQLParams.variables,
@@ -74,7 +74,7 @@ const Explorer = props => {
     }
 
     setLoading(true);
-    service
+    client
       .execSpaceAPI(props.projectId, code, props.spaceApiToken)
       .then(res => {
         setResponse(res);

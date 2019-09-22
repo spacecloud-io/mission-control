@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux';
 import { get, set, increment, decrement } from 'automate-redux';
-import service from "../../index"
+import client from "../../client"
 import store from "../../store";
 import { notify, isUserSignedIn } from "../../utils"
 
@@ -75,7 +75,7 @@ const mapDispatchToProps = (dispatch) => {
 			}
 			dispatch(increment("pendingRequests"))
 			const newOperationConfig = Object.assign({}, get(store.getState(), "operationConfig", {}), { mode: mode })
-			service.saveOperationConfig(newOperationConfig).then(() => {
+			client.saveOperationConfig(newOperationConfig).then(() => {
 				dispatch(set("operationConfig", newOperationConfig))
 				notify("success", "Success", "Plan changed successfully")
 				if (mode > 0) {
