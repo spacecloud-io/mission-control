@@ -7,7 +7,11 @@ import store from "./store"
 import { defaultDbConnectionStrings } from "./constants"
 
 export const openProject = (projectId) => {
-  history.push(`/mission-control/projects/${projectId}`)
+  const currentURL = window.location.pathname
+  const projectURL = `/mission-control/projects/${projectId}`
+  if (!currentURL.includes(projectURL)) {
+    history.push(projectURL)
+  }
   const projects = get(store.getState(), "projects", [])
   const config = projects.find(project => project.id === projectId)
   if (!config) {

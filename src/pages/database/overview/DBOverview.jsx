@@ -133,7 +133,7 @@ const Overview = props => {
                 handleClick={() => handleModalVisiblity(true)}
               />
             )}
-            <CreateNewCollectionForm
+            {modalVisible && <CreateNewCollectionForm
               selectedDb={props.selectedDb}
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}
@@ -141,7 +141,7 @@ const Overview = props => {
                 props.handleSelection(item);
                 props.handleCreateCollection(item, rules, schema, realtime);
               }}
-            />
+            />}
           </div>
         </div>
       </div>
