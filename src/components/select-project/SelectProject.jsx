@@ -54,6 +54,7 @@ function SelectProject(props) {
         </div>}
         visible={props.visible}
         onCancel={props.handleCancel}
+        width={700}
       >
         <Table
           pagination={false}

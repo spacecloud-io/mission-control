@@ -4,10 +4,6 @@
   padding: 16px 8px;
 }
 
-.ant-modal {
-  width: 700px !important;
-}
-
 .select-project .checked {
   color: #FF6700;
 }

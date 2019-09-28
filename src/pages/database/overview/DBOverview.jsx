@@ -1,33 +1,85 @@
 import React, { useState, useEffect } from 'react';
-
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { get, set } from 'automate-redux';
+import { get, set, increment, decrement } from 'automate-redux';
 import store from '../../../store';
-
-import { Link } from 'react-router-dom';
+import client from "../../../client"
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
-
-import Documentation from '../../../components/documentation/Documentation';
 import DbConfigure from '../../../components/database/overview/configure/DbConfigure';
 import CreateNewCollectionForm from '../../../components/database/overview/collection-form/CreateNewCollectionForm';
-import rulesImg from '../../../assets/rules.svg';
-import EmptyState from '../../../components/rules/EmptyState';
-import DBTabs from '../../../components/database/Tabs';
+import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
+import DBTabs from '../../../components/database/db-tabs/DbTabs';
 
 import '../database.css';
 
 // antd
-import { Col, Row, Button, Icon, Divider, Switch } from 'antd';
+import { Col, Row, Button, Icon, Table, Switch } from 'antd';
+import { createTable, notify } from '../../../utils';
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
 
-  const allCollections = Object.keys(props.allCollections);
+  const label = props.selectedDb === 'mongo' ? 'Collection' : 'Table'
 
-  const noOfCollections = Object.keys(props.allCollections).length;
+  const trackedTableColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: 'Realtime',
+      dataIndex: 'realtime',
+      key: 'realtime',
+      render: (_, record) => (
+        <Switch
+          defaultChecked={record.realtime}
+          onChange={checked =>
+            props.onChangeRealtimeEnabled(record.name, checked)
+          }
+        />
+      )
+
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      className: 'column-actions',
+      render: (_, record) => (
+        <span>
+          <Link to={`/mission-control/projects/${props.projectId}/database/rules/${props.selectedDb}`}
+            onClick={() => props.handleSelection(record.name)}>
+            Edit Rules
+          </Link>
+          <Link to={`/mission-control/projects/${props.projectId}/database/schema/${props.selectedDb}`}
+            onClick={() => props.handleSelection(record.name)}>
+            Edit Schema
+          </Link>
+        </span>
+      ),
+    },
+  ];
+
+  const untrackedTableColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: 'Action',
+      key: 'actions',
+      className: 'column-actions',
+      render: (_, record) => (
+        <span>
+          <a onClick={() => props.handleTrackTables([record.name])}>Track</a>
+        </span>
+      ),
+    },
+  ];
 
   return (
     <React.Fragment>
@@ -44,102 +96,59 @@ const Overview = props => {
             activeKey='overview'
             projectId={props.match.params.projectId}
           />
-          <div style={{ padding: '48px 120px 0 56px' }}>
-            <div style={{ marginBottom: 100 }}>
-              <div style={{ float: 'right' }}>
-                <Documentation url='https://spaceuptech.com/docs/database' />
-              </div>
+          <div className="db-tab-content">
+            <div>
               <DbConfigure
                 updateFormState={props.updateFormState}
                 formState={props.formState}
               />
             </div>
-            {noOfCollections > 0 && (
+            {props.trackedTables.length > 0 && (
               <div>
-                <Row style={{ marginBottom: 30 }}>
-                  <Col span={16}>
-                    <span className='collections'>
-                      {props.selectedDb === 'mongo' ? 'Collections' : 'Tables'}
+                <div style={{ marginTop: '32px' }}>
+                  <span className='collections'>
+                    {label}s
                     </span>
-                    <Button
-                      type='primary'
-                      style={{
-                        float: 'right',
-                        backgroundColor: '#1890FF',
-                        borderColor: '#1890FF'
-                      }}
-                      onClick={() => handleModalVisiblity(true)}
-                    >
-                      <Icon type='plus' /> Add a{' '}
-                      {props.selectedDb === 'mongo' ? 'Collection' : 'Table'}
-                    </Button>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={6}>
-                    <div className='tablehead'>Name</div>
-                    {allCollections.map((value, index) => (
-                      <li className='tabledata' key={value}>
-                        {value}
-                      </li>
-                    ))}
-                  </Col>
-                  <Col span={6}>
-                    <div className='tablehead'>Actions</div>
-                    {allCollections.map((value, index) => (
-                      <li
-                        className='tabledata'
-                        key={value}
-                        onClick={() => props.handleSelection(value)}
-                      >
-                        <Link
-                          to={`/mission-control/projects/${props.projectId}/database/schema/${props.selectedDb}`}
-                        >
-                          Edit Schema
-                        </Link>
-                        <Divider type='vertical' />
-                        <Link
-                          to={`/mission-control/projects/${props.projectId}/database/rules/${props.selectedDb}`}
-                        >
-                          Edit Rules
-                        </Link>
-                      </li>
-                    ))}
-                  </Col>
-                  <Col span={4}>
-                    <div className='tablehead'>Realtime</div>
-                    {allCollections.map(value => (
-                      <li className='tabledata' key={value}>
-                        <Switch
-                          defaultChecked={
-                            props.allCollections[value].isRealtimeEnabled
-                          }
-                          onChange={checked =>
-                            props.onChangeRealtimeEnabled(value, checked)
-                          }
-                        />
-                      </li>
-                    ))}
-                  </Col>
-                </Row>
+                  <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                    onClick={() => handleModalVisiblity(true)}>
+                    <Icon type='plus' /> Add {label}
+                  </Button>
+                </div>
+                <div style={{ marginTop: '32px' }}>
+                  <Table columns={trackedTableColumns} dataSource={props.trackedTables} />
+                </div>
               </div>
             )}
 
-            {!noOfCollections && (
-              <EmptyState
-                graphics={rulesImg}
-                desc='Guard your data with rules that define who has access to it and how it is structured.'
-                buttonText='Add a table'
-                handleClick={() => handleModalVisiblity(true)}
-              />
+            {props.trackedTables.length === 0 && (
+              <TablesEmptyState dbType={props.selectedDb} projectId={props.projectId} handleAdd={() => handleModalVisiblity(true)} />
+            )}
+
+            {props.untrackedTables.length > 0 && (
+              <Row>
+                <Col span={12}>
+                  <div style={{ marginTop: '32px' }}>
+                    <span className='collections'>
+                      Untracked {label}s
+                    </span>
+                    <Button
+                     style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                     onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
+                      <Icon type='plus' /> Track All
+                    </Button>
+                  </div>
+                  <div style={{ marginTop: '32px' }}>
+                    <Table columns={untrackedTableColumns} dataSource={props.untrackedTables} pagination={false} />
+                  </div>
+                </Col>
+              </Row>
             )}
             {modalVisible && <CreateNewCollectionForm
               selectedDb={props.selectedDb}
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={(item, rules, schema, realtime) => {
-                props.handleSelection(item);
-                props.handleCreateCollection(item, rules, schema, realtime);
+              handleSubmit={(collectionName, rules, schema, realtimeEnabled) => {
+                createTable(props.projectId, props.selectedDb, collectionName, rules, schema, realtimeEnabled)
               }}
             />}
           </div>
@@ -150,10 +159,13 @@ const Overview = props => {
 };
 
 const mapStateToProps = (state, ownProps) => {
+  const projectId = ownProps.match.params.projectId;
   const selectedDb = ownProps.match.params.database;
+  const trackedTables = get(state, `config.modules.crud.${selectedDb}.collections`, {})
+  const tables = get(state, `tables.${projectId}.${selectedDb}`, [])
   return {
     selectedDb: ownProps.match.params.database,
-    projectId: ownProps.match.params.projectId,
+    projectId: projectId,
     formState: {
       enabled: get(
         state,
@@ -175,29 +187,22 @@ const mapStateToProps = (state, ownProps) => {
       `uiState.database.${selectedDb}.selectedCollection`,
       'default'
     ),
-
-    allCollections: get(
-      state,
-      `config.modules.crud.${selectedDb}.collections`,
-      {}
-    )
+    trackedTables: Object.entries(trackedTables).map(([name, val]) => Object.assign({}, {
+      name: name,
+      realtime: val.isRealtimeEnabled,
+    })).filter(obj => obj.name !== "default"),
+    untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
+    createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
   };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
+  const projectId = ownProps.match.params.projectId;
   const selectedDb = ownProps.match.params.database;
+  const collections = get(store.getState(), `config.modules.crud.${selectedDb}.collections`, {})
+  const defaultCollection = collections.default
+  const defaultRule = defaultCollection ? defaultCollection.rules : ''
   return {
-    handleCreateCollection: (name, rules, schema, realtime) => {
-      let collection = {
-        isRealtimeEnabled: realtime,
-        rules: rules,
-        schema: schema
-      };
-
-      dispatch(
-        set(`config.modules.crud.${selectedDb}.collections.${name}`, collection)
-      );
-    },
     onChangeRealtimeEnabled: (name, checked) => {
       dispatch(
         set(
@@ -221,6 +226,27 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     },
     handleSelection: collectionName => {
       dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
+    },
+    handleTrackTables: (tables) => {
+      dispatch(increment("pendingRequests"))
+      Promise.all(tables.map(table => client.handleInspect(projectId, selectedDb, table)))
+        .then((schemas) => {
+          let newCollections = Object.assign({}, collections)
+          tables.forEach((table, index) => {
+            newCollections[table] = {
+              isRealtimeEnabled: true,
+              rules: defaultRule,
+              schema: schemas[index]
+            }
+          })
+
+          dispatch(set(`config.modules.crud.${selectedDb}.collections`, newCollections))
+        })
+        .catch(error => {
+          console.log("Error", error)
+          notify("error", "Error", 'Could not track table')
+        })
+        .finally(() => dispatch(decrement("pendingRequests")))
     }
   };
 };

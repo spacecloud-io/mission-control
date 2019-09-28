@@ -70,6 +70,7 @@ function NewCollectionForm(props) {
         className='form-modal'
         footer={null}
         visible={true}
+        width={900}
         title={
           props.selectedDb === 'mongo' ? 'Add a Collection' : 'Add a Table'
         }
@@ -95,7 +96,7 @@ function NewCollectionForm(props) {
                 )}
                 {getFieldDecorator('realtime')(
                   <span className='realtime'>
-                    Realtime <Switch defaultChecked onChange={onSwitchChange}/>
+                    Realtime <Switch defaultChecked onChange={onSwitchChange} />
                   </span>
                 )}
               </Form.Item>
@@ -155,7 +156,7 @@ function NewCollectionForm(props) {
                     htmlType='submit'
                     className='save-btn'
                   >
-                    Save
+                    Add
                   </Button>
                 </div>
               </Form.Item>

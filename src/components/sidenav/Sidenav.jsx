@@ -28,17 +28,16 @@ const Sidenav = (props) => {
     <Link to={`/mission-control/projects/${props.projectId}/functions`}>
       <SidenavItem name="Functions" icon="code" active={props.selectedItem === 'functions'} />
     </Link>
-    <Link to={`/mission-control/projects/${props.projectId}/configure`}>
-      <SidenavItem name="Configure" icon="settings" active={props.selectedItem === 'configure'} />
+    <Link to={`/mission-control/projects/${props.projectId}/gateway`}>
+      <SidenavItem name="Gateway" icon="cloud" active={props.selectedItem === 'gateway'} />
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/explorer`}>
       <SidenavItem name="Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
     </Link>
-    <Divider />
-    <Link to={`/mission-control/projects/${props.projectId}/gateway`}>
-      <SidenavItem name="Gateway" icon="cloud" active={props.selectedItem === 'gateway'} />
+    <Link to={`/mission-control/projects/${props.projectId}/configure`}>
+      <SidenavItem name="Configure" icon="settings" active={props.selectedItem === 'configure'} />
     </Link>
-    <Link to={`/mission-control/projects/${props.projectId}/deploy`}>
+    {/* <Link to={`/mission-control/projects/${props.projectId}/deploy`}>
       <SidenavItem name="Deploy" icon="local_airport" active={props.selectedItem === 'deploy'} />
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/plans`}>
@@ -46,7 +45,7 @@ const Sidenav = (props) => {
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/billing`}>
       <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-    </Link>
+    </Link> */}
   </div>
   )
 }

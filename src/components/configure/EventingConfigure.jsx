@@ -4,20 +4,22 @@ import { Form, Input, Select, Switch } from 'antd';
 import { createFormField } from 'rc-form';
 const { Option } = Select;
 
-function RealtimeConfigure(props) {
+function EventingConfigure(props) {
 	const { getFieldDecorator } = props.form;
 	return (
 		<div className="configure">
-			<div className="conn-string">Real-Time :</div>
+			<div className="conn-string">Eventing : </div>
 
 			<Form className="conn-form" layout="inline">
 				<div className="conn-form-options">
 					<Form.Item>
-						{getFieldDecorator('broker', {
+						{getFieldDecorator('dbType', {
 							rules: [ { required: true, message: '' } ]
 						})(
-							<Select placeholder="Broker" className="select">
-								<Option value="nats">NATS</Option>
+							<Select placeholder="Database" className="select">
+								<Option value="mongo">MongoDB</Option>
+								<Option value="sql-postgres">PostgreSQL</Option>
+								<Option value="sql-mysql">MySQL</Option>
 							</Select>
 						)}
 					</Form.Item>
@@ -27,9 +29,9 @@ function RealtimeConfigure(props) {
 				</div>
 				<div className="conn-form-cert">
 					<Form.Item className="conn-form-cert-input">
-						{getFieldDecorator('conn', {
+						{getFieldDecorator('col', {
 							rules: [ { required: true, message: '' } ]
-						})(<Input style={{ width: 600 }} placeholder="Enter Connection String" />)}
+						})(<Input style={{ width: 600 }} placeholder="Enter collection name where event logs should be stored" />)}
 					</Form.Item>
 				</div>
 			</Form>
@@ -37,17 +39,17 @@ function RealtimeConfigure(props) {
 	);
 }
 
-const WrappedRealtimeConfigureForm = Form.create({
+const WrappedEventingConfigureForm = Form.create({
 	mapPropsToFields(props) {
 		return {
-			broker: createFormField({ value: props.formState.broker }),
 			enabled: createFormField({ value: props.formState.enabled }),
-			conn: createFormField({ value: props.formState.conn })
+			dbType: createFormField({ value: props.formState.dbType }),
+			col: createFormField({ value: props.formState.col })
 		};
 	},
 	onValuesChange(props, changedValues) {
 		props.handleChange(changedValues);
 	}
-})(RealtimeConfigure);
+})(EventingConfigure);
 
-export default WrappedRealtimeConfigureForm;
+export default WrappedEventingConfigureForm;

@@ -132,7 +132,7 @@ export default () => {
         path="/mission-control/projects/:projectId/explorer"
         component={Explorer}
       />
-      <Route
+      {/* <Route
         exact
         path="/mission-control/projects/:projectId/deploy"
         component={Deploy}
@@ -146,7 +146,7 @@ export default () => {
         exact
         path="/mission-control/projects/:projectId/billing"
         component={Billing}
-      />
+      /> */}
       <SigninModal />
     </Router>
   );

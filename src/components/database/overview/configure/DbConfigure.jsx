@@ -7,9 +7,9 @@ function DbConfigure(props) {
   const { getFieldDecorator } = props.form;
   return (
     <div className="configuration">
-      <div className="conn-string">Connection String:</div>
       <Form className="conn-form" layout="inline">
         <Form.Item>
+        <div className="conn-string">Connection String:</div>
           {getFieldDecorator('conn', {
             rules: [{ required: true, message: 'Please input a connection string!' }],
           })(
@@ -17,18 +17,16 @@ function DbConfigure(props) {
               placeholder="Enter connection string"
             />,
           )}
+          <Tooltip placement="bottomLeft" title="This is the connection string of your database so that Space Cloud can connect to it.">
+            <span style={{ height: 20, marginLeft: '16px' }}><i className="material-icons help">help_outline</i></span>
+          </Tooltip>
         </Form.Item>
-        <Tooltip placement="bottomLeft" title="This is the connection string of your database so that Space Cloud can connect to it.">
-          <span style={{ height: 20 }}><i className="material-icons help">help_outline</i></span>
-        </Tooltip>
-        <Form.Item label="Enabled" className="switch">
+        <Form.Item label="Enabled" >
           {getFieldDecorator('enabled', { valuePropName: 'checked' })(
             <Switch size="small" />
           )}
         </Form.Item>
       </Form>
-      <div>
-      </div>
     </div>
   )
 }

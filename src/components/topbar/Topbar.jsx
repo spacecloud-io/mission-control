@@ -40,7 +40,7 @@ class Topbar extends Component {
           }
           {
             !this.props.hideActions && <div className="right-list">
-              {this.props.mode < 1 && <Button type="primary" className="action-button upgrade-button" onClick={openPlansPage}>UPGRADE</Button>}
+              {/* {this.props.mode < 1 && <Button type="primary" className="action-button upgrade-button" onClick={openPlansPage}>UPGRADE</Button>} */}
               <Button type="primary" className="action-button save-button" onClick={this.props.handleSave} disabled={!this.props.unsavedChanges}>SAVE</Button>
             </div>
           }

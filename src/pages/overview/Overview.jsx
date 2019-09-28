@@ -12,10 +12,6 @@ import python from '../../assets/python.svg'
 import js from '../../assets/js.svg'
 import java from '../../assets/java.svg'
 import go from '../../assets/go.svg'
-import UserManagement from '../../components/card-modules/UserManagement'
-import Database from '../../components/card-modules/Database'
-import Functions from '../../components/card-modules/Functions'
-import Configure from '../../components/card-modules/Configure'
 import { Row, Col, Button } from 'antd'
 import { get } from 'automate-redux';
 
@@ -31,11 +27,11 @@ function Overview(props) {
         <div className="page-content ">
           <Row>
             <Col span={9}>
-              <Header name="Get started by adding Space Cloud to your app" color="#000" fontSize="22px" />
+              <Header name="Get started with Space Cloud" color="#000" fontSize="22px" />
             </Col>
           </Row>
-          <div className="overview-padding">
-            <div className="desc">Start with one of the language specific getting started guides below or watch a getting started video to help you get started.</div>
+          <div>
+            <div className="desc">Start with one of the client specific getting started guides below or watch a getting started video to help you get started.</div>
             <div className="lang">
               <a href="https://www.spaceuptech.com/docs/setting-up-project/python" target="_blank" rel="noopener noreferrer">
                 <span class="circle"><img src={python} alt="python" heg /></span>
@@ -55,21 +51,7 @@ function Overview(props) {
               </a>
             </div>
           </div>
-          <Header name="Explore Modules" color="#000" fontSize="22px" />
-          <Row className="overview-padding">
-            <Link to={`/mission-control/projects/${props.projectId}/user-management`}>
-              <Col span={11}><UserManagement modules={props.modules.userManagement} /></Col>
-            </Link>
-            <Link to={`/mission-control/projects/${props.projectId}/database`}>
-              <Col span={11} offset={1}><Database modules={props.modules.database} /></Col>
-            </Link>
-            <Link to={`/mission-control/projects/${props.projectId}/functions`}>
-              <Col span={11}><Functions modules={props.modules.functions} /></Col>
-            </Link>
-            <Link to={`/mission-control/projects/${props.projectId}/configure`}>
-              <Col span={11} offset={1}><Configure modules={props.modules.configure} /></Col>
-            </Link>
-          </Row>
+
         </div>
       </div>
     </div>

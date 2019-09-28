@@ -155,11 +155,13 @@ export const generateProjectConfig = (name, dbType) => ({
         }
       }
     },
+    eventing: {
+      enabled: true,
+      dbType: dbType,
+      col: "events_log"
+    },
     auth: {},
     functions: {
-      enabled: true,
-      broker: "nats",
-      conn: "nats://localhost:4222",
       services: {
         default: {
           functions: {
@@ -171,11 +173,6 @@ export const generateProjectConfig = (name, dbType) => ({
           }
         }
       }
-    },
-    realtime: {
-      enabled: true,
-      broker: "nats",
-      conn: "nats://localhost:4222"
     },
     fileStore: {
       enabled: false,
@@ -348,3 +345,26 @@ export const sortRulesByPrefix = (rules) => {
     return (totalKeysA < totalKeysB) ? 1 : -1
   })
 }
+
+export const createTable = (projectId, db, collectionName, rules, schema, realtimeEnabled) => {
+  let collection = {
+    isRealtimeEnabled: realtimeEnabled,
+    rules: rules,
+    schema: schema
+  }
+  if (db === 'mongo') {
+    store.dispatch(set(`config.modules.crud.${db}.collections.${collectionName}`, collection))
+    return
+  }
+
+  store.dispatch(increment("pendingRequests"))
+  client.handleModify(projectId, db, collectionName, schema)
+    .then(() => {
+      store.dispatch(set(`config.modules.crud.${db}.collections.${collectionName}`, collection))
+    })
+    .catch(error => {
+      console.log("Error", error)
+      notify("error", "Error", "Could not create table")
+    })
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+} 
