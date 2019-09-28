@@ -13,7 +13,7 @@ function NewCollectionForm(props) {
   const { getFieldDecorator } = props.form;
 
   const initialSchema = `type {
-  ${props.selectedDb === 'mongo' ? '_id' : 'id'} ID! @id
+  ${props.selectedDb === 'mongo' ? '_id' : 'id'}: ID! @id
 }`
 
   const initalRule = {
@@ -57,7 +57,7 @@ function NewCollectionForm(props) {
   const handleNameChange = e => {
     const name = e.target.value
     const schema = `type ${name} {
-  ${props.selectedDb === 'mongo' ? '_id' : 'id'} ID! @id
+  ${props.selectedDb === 'mongo' ? '_id' : 'id'}: ID! @id
 }`
 
     setSchema(schema)

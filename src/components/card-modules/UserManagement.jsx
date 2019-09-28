@@ -32,7 +32,7 @@ function UserManagement(props) {
       <div className="underline"></div>
       <span className="desc">Let your users signin to your app seamlessly through email and Oauth via the user management module of Space Cloud.  </span><br />
       <div className="footer">
-        <a href="https://spaceuptech.com/docs/user-management/overview" target="blank" >
+        <a href="https://docs.spaceuptech.com/user-management/overview" target="blank" >
           <span className="docs">Documentation</span>
           <i className="material-icons book">import_contacts</i>
         </a>

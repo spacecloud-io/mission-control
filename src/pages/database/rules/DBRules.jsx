@@ -45,7 +45,7 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
             {collections.length > 0 && (
               <div className='rules-schema-table'>
                 <div style={{ textAlign: "right" }}>
-                  <Documentation url="https://docs.spaceuptech.com/essentials/schema" />
+                  <Documentation url="https://docs.spaceuptech.com" />
                 </div>
                 <div className='rules-main-wrapper'>
                   <div className="rules-header">

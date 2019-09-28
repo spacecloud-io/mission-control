@@ -34,7 +34,7 @@ function Database(props) {
         <div className="page-content">
           <div className="header-flex">
             <Header name="Add a database" color="#000" fontSize="22px" />
-            <Documentation url="https://spaceuptech.com/docs/database" />
+            <Documentation url="https://docs.spaceuptech.com" />
           </div>
           <p className="db-desc">Start using crud by enabling one of the following databases.</p>
           <DatabaseCardList cards={cards} handleEnable={props.handleEnable} />

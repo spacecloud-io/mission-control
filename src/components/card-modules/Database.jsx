@@ -24,7 +24,7 @@ function Database(props) {
       <div className="underline"></div>
       <span className="desc">Perform CRUD operations over any database in a realtime fashion without writing any backend code! Let make any database realtime!</span>
       <div className="footer">
-        <a href="https://spaceuptech.com/docs/database/overview" target="blank" >
+        <a href="https://docs.spaceuptech.com/queries/overview" target="blank" >
           <span className="docs">Documentation</span>
           <i className="material-icons book">import_contacts</i>
         </a>

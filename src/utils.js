@@ -151,6 +151,14 @@ export const generateProjectConfig = (name, dbType) => ({
                 rule: 'allow'
               }
             }
+          },
+          event_logs: {
+            isRealtimeEnabled: false,
+            rules: {
+              default: {
+                rule: "deny"
+              }
+            }
           }
         }
       }

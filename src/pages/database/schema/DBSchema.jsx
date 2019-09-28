@@ -55,7 +55,7 @@ const Schema = ({
                     Reload Schema
                  </Button>
                   <span style={{ float: "right" }}>
-                    <Documentation url="https://docs.spaceuptech.com/essentials/schema" />
+                    <Documentation url="https://docs.spaceuptech.com" />
                   </span>
                 </div>
                 <div className='rules-main-wrapper'>

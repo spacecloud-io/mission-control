@@ -8,9 +8,7 @@ import '../../components/card-modules/cards.css'
 import Sidenav from '../../components/sidenav/Sidenav'
 import Topbar from '../../components/topbar/Topbar'
 import Header from '../../components/header/Header'
-import python from '../../assets/python.svg'
 import js from '../../assets/js.svg'
-import java from '../../assets/java.svg'
 import go from '../../assets/go.svg'
 import { Row, Col, Button } from 'antd'
 import { get } from 'automate-redux';
@@ -31,27 +29,20 @@ function Overview(props) {
             </Col>
           </Row>
           <div>
-            <div className="desc">Start with one of the client specific getting started guides below or watch a getting started video to help you get started.</div>
+            <p>Start with one of the client specific getting started guides below or explore the powers of Space Cloud via in-built Explorer.</p>
             <div className="lang">
-              <a href="https://www.spaceuptech.com/docs/setting-up-project/python" target="_blank" rel="noopener noreferrer">
-                <span class="circle"><img src={python} alt="python" heg /></span>
-              </a>
-              <a href="https://www.spaceuptech.com/docs/setting-up-project/javascript" target="_blank" rel="noopener noreferrer">
+              <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/javascript" target="_blank" rel="noopener noreferrer">
                 <span class="circle"><img src={js} alt="js" /></span>
               </a>
-              <a href="https://www.spaceuptech.com/docs/setting-up-project/java" target="_blank" rel="noopener noreferrer">
-                <span class="circle"><img src={java} alt="java" /></span>
-              </a>
-              <a href="https://www.spaceuptech.com/docs/setting-up-project/golang" target="_blank" rel="noopener noreferrer">
+              <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/golang" target="_blank" rel="noopener noreferrer">
                 <span class="circle" id="go"><img src={go} alt="go" /></span>
               </a>
               <div className="sepration"></div>
-              <a href="https://spaceuptech.com/docs/deployment/" target="_blank" rel="noopener noreferrer">
-                <Button type="primary" shape="round" icon="play-circle" size="large" className="get-started">Getting Started</Button>
+              <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql" target="_blank" rel="noopener noreferrer">
+                <Button type="primary" shape="round" icon="read" size="large" className="get-started">Explore GraphQL APIs</Button>
               </a>
             </div>
           </div>
-
         </div>
       </div>
     </div>

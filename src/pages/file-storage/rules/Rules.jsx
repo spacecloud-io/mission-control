@@ -25,7 +25,7 @@ const Rules = (props) => {
 				<div className="page-content">
 					<div className="header-flex">
 						<Header name="Rules" color="#000" fontSize="22px" />
-						<Documentation url="https://spaceuptech.com/docs/file-storage" />
+						<Documentation url="https://docs.spaceuptech.com/file-storage" />
 					</div>
 					{noOfRules > 0 && <RulesComponent
 						array={true}

@@ -8,7 +8,7 @@ function Configure(props) {
       <div className="underline"></div>
       <span className="desc">Configure all the modules of Space Cloud and how they plug into the system. Take complete control over your backend.</span>
       <div className="footer">
-        <a href="https://spaceuptech.com/docs/" target="blank" >
+        <a href="https://docs.spaceuptech.com" target="blank" >
           <span className="docs">Documentation</span>
           <i className="material-icons book">import_contacts</i>
         </a>

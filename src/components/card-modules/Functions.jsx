@@ -8,7 +8,7 @@ function Functions(props) {
       <div className="underline"></div>
       <span className="desc">Architect your microservices in the form of functions! Invoke these functions from fronted or backend directly.</span>
       <div className="footer">
-        <a href="https://spaceuptech.com/docs/functions/overview" target="blank" >
+        <a href="https://docs.spaceuptech.com/functions/overview" target="blank" >
           <span className="docs">Documentation</span>
           <i className="material-icons book">import_contacts</i>
         </a>

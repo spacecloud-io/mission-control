@@ -21,6 +21,9 @@ import { createTable, notify } from '../../../utils';
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
+  useEffect(() => {
+    props.fetchCollections()
+  }, [props.projectId, props.selectedDb])
 
   const label = props.selectedDb === 'mongo' ? 'Collection' : 'Table'
 
@@ -199,9 +202,6 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch, ownProps) => {
   const projectId = ownProps.match.params.projectId;
   const selectedDb = ownProps.match.params.database;
-  const collections = get(store.getState(), `config.modules.crud.${selectedDb}.collections`, {})
-  const defaultCollection = collections.default
-  const defaultRule = defaultCollection ? defaultCollection.rules : ''
   return {
     onChangeRealtimeEnabled: (name, checked) => {
       dispatch(
@@ -227,7 +227,34 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     handleSelection: collectionName => {
       dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
     },
+    fetchCollections: () => {
+      dispatch(increment("pendingRequests"))
+      client.fetchCollectionsList(projectId, selectedDb)
+      .then(tables => {
+        dispatch(set(`tables.${projectId}.${selectedDb}`, tables))
+      })
+      .catch(error => {
+        console.log("Error", error)
+      })
+      .finally(() => dispatch(decrement("pendingRequests")))
+    },
     handleTrackTables: (tables) => {
+      const collections = get(store.getState(), `config.modules.crud.${selectedDb}.collections`, {})
+      const defaultCollection = collections.default
+      const defaultRule = defaultCollection ? defaultCollection.rules : ''
+      if (selectedDb === "mongo") {
+        let newCollections = Object.assign({}, collections)
+        tables.forEach((table) => {
+          const schema = `type ${table} {\n  _id: ID! @id \n}`
+          newCollections[table] = {
+            isRealtimeEnabled: true,
+            rules: defaultRule,
+            schema: schema
+          }
+        })
+        dispatch(set(`config.modules.crud.${selectedDb}.collections`, newCollections))
+        return
+      }
       dispatch(increment("pendingRequests"))
       Promise.all(tables.map(table => client.handleInspect(projectId, selectedDb, table)))
         .then((schemas) => {

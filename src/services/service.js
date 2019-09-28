@@ -297,16 +297,15 @@ class Service {
 
   }
 
-  handleInspect(projectId, dbType, col) {
+  fetchCollectionsList(projectId, dbType) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/api/config/inspect/${projectId}/${dbType}/${col}`)
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            reject(data.error)
-            return
-          }
-          resolve(data.schema)
-        }).catch(ex => reject(ex))
+      this.client.getJSON(`/v1/api/config/list-collections/${projectId}/${dbType}`).then(({ status, data }) => {
+        if (status !== 200) {
+          reject(data.error)
+          return
+        }
+        resolve(data.collections)
+      }).catch(ex => reject(ex))
     })
   }
 
@@ -317,6 +316,7 @@ class Service {
           reject(data.error)
           return
         }
+        console.log("Here")
         resolve()
       }).catch(ex => reject(ex))
     })
