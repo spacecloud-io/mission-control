@@ -51,9 +51,12 @@ const Schema = ({
             {collections.length > 0 && (
               <div className='rules-schema-table'>
                 <div>
-                  <Button onClick={handleReloadSchema} type="primary" className="secondary-action" ghost>
-                    Reload Schema
-                 </Button>
+                  {
+                    selectedDb !== "mongo" &&
+                    <Button onClick={handleReloadSchema} type="primary" className="secondary-action" ghost>
+                      Reload Schema
+                    </Button>
+                  }
                   <span style={{ float: "right" }}>
                     <Documentation url="https://docs.spaceuptech.com" />
                   </span>

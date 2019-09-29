@@ -17,12 +17,12 @@ import '../database.css';
 
 // antd
 import { Col, Row, Button, Icon, Table, Switch } from 'antd';
-import { createTable, notify } from '../../../utils';
+import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../utils';
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
   useEffect(() => {
-    props.fetchCollections()
+    fetchCollections(props.projectId)
   }, [props.projectId, props.selectedDb])
 
   const label = props.selectedDb === 'mongo' ? 'Collection' : 'Table'
@@ -104,6 +104,9 @@ const Overview = props => {
               <DbConfigure
                 updateFormState={props.updateFormState}
                 formState={props.formState}
+                setUpDb={props.setUpDb}
+                dbType={props.selectedDb}
+                handleSetUpDb={() => handleSetUpDb(props.projectId)}
               />
             </div>
             {props.trackedTables.length > 0 && (
@@ -194,6 +197,7 @@ const mapStateToProps = (state, ownProps) => {
       name: name,
       realtime: val.isRealtimeEnabled,
     })).filter(obj => obj.name !== "default" && obj.name !== "events_log"),
+    setUpDb: tables.includes("events_log") ? true: false, 
     untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
     createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
   };
@@ -226,17 +230,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     },
     handleSelection: collectionName => {
       dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
-    },
-    fetchCollections: () => {
-      dispatch(increment("pendingRequests"))
-      client.fetchCollectionsList(projectId, selectedDb)
-      .then(tables => {
-        dispatch(set(`tables.${projectId}.${selectedDb}`, tables))
-      })
-      .catch(error => {
-        console.log("Error", error)
-      })
-      .finally(() => dispatch(decrement("pendingRequests")))
     },
     handleTrackTables: (tables) => {
       const collections = get(store.getState(), `config.modules.crud.${selectedDb}.collections`, {})

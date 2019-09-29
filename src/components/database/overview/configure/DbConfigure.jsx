@@ -1,6 +1,6 @@
 import React from 'react'
 import './db-configure.css'
-import { Form, Input, Tooltip, Switch } from 'antd';
+import { Form, Input, Tooltip, Switch, Button } from 'antd';
 import { createFormField } from 'rc-form';
 
 function DbConfigure(props) {
@@ -9,7 +9,7 @@ function DbConfigure(props) {
     <div className="configuration">
       <Form className="conn-form" layout="inline">
         <Form.Item>
-        <div className="conn-string">Connection String:</div>
+          <div className="conn-string">Connection String:</div>
           {getFieldDecorator('conn', {
             rules: [{ required: true, message: 'Please input a connection string!' }],
           })(
@@ -21,6 +21,9 @@ function DbConfigure(props) {
             <span style={{ height: 20, marginLeft: '16px' }}><i className="material-icons help">help_outline</i></span>
           </Tooltip>
         </Form.Item>
+        {(props.dbType !== 'mongo') &&
+          <Button disabled={!props.setUpDb} onClick={props.handleSetUpDb} type="primary">Set Up Database</Button>
+        }
         <Form.Item label="Enabled" >
           {getFieldDecorator('enabled', { valuePropName: 'checked' })(
             <Switch size="small" />

@@ -297,26 +297,37 @@ class Service {
 
   }
 
-  fetchCollectionsList(projectId, dbType) {
+  fetchCollectionsList(projectId) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/api/config/list-collections/${projectId}/${dbType}`).then(({ status, data }) => {
+      this.client.getJSON(`/v1/api/config/list-collections/${projectId}`).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return
         }
-        resolve(data.collections)
+        resolve(data)
       }).catch(ex => reject(ex))
     })
   }
 
-  handleModify(projectId, dbType, col, schema) {
+  handleModifyTable(projectId, dbType, col, schema) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/api/config/modify/${projectId}/${dbType}/${col}`, { schema: schema }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return
         }
-        console.log("Here")
+        resolve()
+      }).catch(ex => reject(ex))
+    })
+  }
+
+  handleModify(projectId, crudConfig) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/api/config/modify/${projectId}`, crudConfig).then(({ status, data }) => {
+        if (status !== 200) {
+          reject(data.error)
+          return
+        }
         resolve()
       }).catch(ex => reject(ex))
     })

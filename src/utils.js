@@ -117,12 +117,27 @@ export const notify = (type, title, msg, duration) => {
 }
 
 const generateProjectId = (projectName) => {
-  return projectName.toLowerCase().split(" ").join("-")
+  return projectName.toLowerCase().replace(/\s+|-/g, '_');
 }
 
 const getConnString = (dbType) => {
   const connString = defaultDbConnectionStrings[dbType]
   return connString ? connString : "localhost"
+}
+
+const defaultRules = {
+  create: {
+    rule: 'allow'
+  },
+  read: {
+    rule: 'allow'
+  },
+  update: {
+    rule: 'allow'
+  },
+  delete: {
+    rule: 'allow'
+  }
 }
 
 export const generateProjectConfig = (name, dbType) => ({
@@ -137,20 +152,7 @@ export const generateProjectConfig = (name, dbType) => ({
         collections: {
           default: {
             isRealtimeEnabled: true,
-            rules: {
-              create: {
-                rule: 'allow'
-              },
-              read: {
-                rule: 'allow'
-              },
-              update: {
-                rule: 'allow'
-              },
-              delete: {
-                rule: 'allow'
-              }
-            }
+            rules: defaultRules
           },
           events_log: {
             isRealtimeEnabled: false,
@@ -167,11 +169,7 @@ export const generateProjectConfig = (name, dbType) => ({
   service: String
   function: String              
 }`,
-            rules: {
-              default: {
-                rule: "deny"
-              }
-            }
+            rules: defaultRules
           }
         }
       }
@@ -379,7 +377,7 @@ export const createTable = (projectId, db, collectionName, rules, schema, realti
   }
 
   store.dispatch(increment("pendingRequests"))
-  client.handleModify(projectId, db, collectionName, schema)
+  client.handleModifyTable(projectId, db, collectionName, schema)
     .then(() => {
       store.dispatch(set(`config.modules.crud.${db}.collections.${collectionName}`, collection))
     })
@@ -388,4 +386,43 @@ export const createTable = (projectId, db, collectionName, rules, schema, realti
       notify("error", "Error", "Could not create table")
     })
     .finally(() => store.dispatch(decrement("pendingRequests")))
-} 
+}
+
+export const fetchCollections = (projectId) => {
+  store.dispatch(increment("pendingRequests"))
+  client.fetchCollectionsList(projectId)
+    .then(tables => {
+      store.dispatch(set(`tables.${projectId}`, tables))
+    })
+    .catch(error => {
+      console.log("Error", error)
+    })
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+}
+
+export const handleSetUpDb = (projectId) => {
+  store.dispatch(increment("pendingRequests"))
+  const crudConfig = store.getState().config.modules.crud
+  const config = {}
+  Object.entries(crudConfig).forEach(([dbType, dbConfig]) => {
+    let collections = {}
+    Object.entries(dbConfig.collections).forEach(([colName, colConfig]) => {
+      collections[colName] = {schema: colConfig.schema}
+    })
+    config[dbType] = {
+      enabled: dbConfig.enabled,
+      collections: collections
+    }
+  })
+
+  client.handleModify(projectId, config)
+    .then(() => {
+      fetchCollections(projectId)
+      notify("success", "Success", 'Successfully set up db')
+    })
+    .catch(error => {
+      console.log("Error", error)
+      notify("error", "Error", 'Could not set up db')
+    })
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+}

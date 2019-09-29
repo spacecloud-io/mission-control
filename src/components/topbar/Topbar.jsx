@@ -5,7 +5,7 @@ import { isEqual } from "lodash"
 import client from "../../client"
 import history from "../../history";
 import store from "../../store";
-import { unAdjustConfig, notify, openPlansPage } from "../../utils"
+import { unAdjustConfig, notify, openPlansPage, handleSetUpDb } from "../../utils"
 
 import { Button, Icon } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
@@ -61,7 +61,7 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 
-const mapDispatchToProps = (dispatch, ownProps) => {
+const mapDispatchToProps = (dispatch) => {
   return {
     handleSave: () => {
       const config = get(store.getState(), "config")
@@ -94,6 +94,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         return
       }
 
+      const projectId = result.config.id
       dispatch(set("pendingRequests", true))
       const promises = mode > 0 ?
         [client.saveProjectConfig(result.config), client.saveStaticConfig(result.staticConfig), client.saveDeployConfig(deployConfig)]
@@ -106,6 +107,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
           if (mode > 0) {
             dispatch(set("savedDeployConfig", deployConfig))
           }
+          handleSetUpDb(projectId)
         })
         .catch(error => {
           console.log("Error", error)
