@@ -197,7 +197,7 @@ const mapStateToProps = (state, ownProps) => {
       name: name,
       realtime: val.isRealtimeEnabled,
     })).filter(obj => obj.name !== "default" && obj.name !== "events_log"),
-    setUpDb: tables.includes("events_log") ? true: false, 
+    setUpDb: !tables.includes("events_log") ? true: false, 
     untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
     createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
   };
