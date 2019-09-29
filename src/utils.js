@@ -418,7 +418,7 @@ export const handleSetUpDb = (projectId) => {
   client.handleModify(projectId, config)
     .then(() => {
       fetchCollections(projectId)
-      notify("success", "Success", 'Successfully set up db')
+      // notify("success", "Success", 'Successfully set up db')
     })
     .catch(error => {
       console.log("Error", error)
