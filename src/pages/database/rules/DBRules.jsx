@@ -126,7 +126,7 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
 const mapStateToProps = (state, ownProps) => {
   const selectedDb = ownProps.match.params.database;
   const collections = get(state, `config.modules.crud.${selectedDb}.collections`, {})
-  const collectionNames = Object.keys(collections)
+  const collectionNames = Object.keys(collections).filter(obj => obj.name !== "events_log")
   let selectedCollection = get(state, `uiState.database.${selectedDb}.selectedCollection`, '')
   if (selectedCollection === '' && collectionNames.length > 0) {
     selectedCollection = collectionNames[0]

@@ -152,8 +152,21 @@ export const generateProjectConfig = (name, dbType) => ({
               }
             }
           },
-          event_logs: {
+          events_log: {
             isRealtimeEnabled: false,
+            schema: `type events_log {
+  _id: ID! @id
+  batchid: String
+  type: String
+  token: Integer
+  timestamp: Integer
+  event_timestamp: Integer
+  payload: String
+  status: String
+  retries: Integer
+  service: String
+  function: String              
+}`,
             rules: {
               default: {
                 rule: "deny"

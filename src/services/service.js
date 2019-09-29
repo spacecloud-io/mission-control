@@ -272,7 +272,7 @@ class Service {
 
   execGraphQLQuery(projectId, graphqlQuery, variables, token) {
     return new Promise((resolve, reject) => {
-      let uri = `/v1/api/graphql/${projectId}`
+      let uri = `/v1/api/${projectId}/graphql`
       if (process.env.NODE_ENV !== "production") {
         uri = "http://localhost:4122" + uri;
       }
@@ -336,7 +336,7 @@ class Service {
 
   handleReloadSchema(projectId, dbType) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/api/config/reload-schema/${projectId}/${dbType}`).then(({ status, data }) => {
+      this.client.getJSON(`/v1/api/config/inspect/${projectId}/${dbType}`).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return
