@@ -167,7 +167,7 @@ export const generateProjectConfig = (name, dbType) => ({
   status: String
   retries: Integer
   service: String
-  function: String              
+  func: String              
 }`,
             rules: defaultRules
           }
