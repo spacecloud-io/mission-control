@@ -7,7 +7,7 @@ export const dbTypes = {
 export const defaultDbConnectionStrings = {
   [dbTypes.MONGO]: "mongodb://localhost:27017",
   [dbTypes.POSTGRESQL]: "postgres://postgres:mysecretpassword@localhost/postgres?sslmode=disable",
-  [dbTypes.MYSQL]: "user:my-secret-pwd@/project"
+  [dbTypes.MYSQL]: "user:my-secret-pwd@/"
 }
 
 export const SPACE_API_PROJECT = "space-cloud"
