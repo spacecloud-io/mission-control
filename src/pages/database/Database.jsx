@@ -13,6 +13,8 @@ import Documentation from '../../components/documentation/Documentation'
 import DatabaseCardList from '../../components/database-card/DatabaseCardList'
 import { Redirect } from "react-router-dom";
 import { get, set } from "automate-redux";
+import store from '../../store';
+import { defaultDbConnectionStrings } from '../../constants';
 
 function Database(props) {
   const cards = [{ graphics: mysql, name: "MySQL", desc: "The world's most popular open source database.", key: "sql-mysql" },
@@ -58,7 +60,55 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     handleEnable(key) {
-      dispatch(set(`config.modules.crud.${key}.enabled`, true))
+      const defaultRules = JSON.stringify({
+        create: {
+          rule: 'allow'
+        },
+        read: {
+          rule: 'allow'
+        },
+        update: {
+          rule: 'allow'
+        },
+        delete: {
+          rule: 'allow'
+        }
+      }, null, 2)
+      
+      let dbConfig = Object.assign({}, get(store.getState(), `config.modules.crud.${key}`, {}))
+      if (!dbConfig.collections) {
+        dbConfig.collections = {}
+      }
+      if (!dbConfig.collections.events_log) {
+        dbConfig.collections.events_log = {
+          isRealtimeEnabled: false,
+          schema: `type events_log {
+_id: ID! @id
+batchid: String
+type: String
+token: Integer
+timestamp: Integer
+event_timestamp: Integer
+payload: String
+status: String
+retries: Integer
+service: String
+function: String              
+}`,
+          rules: defaultRules
+        }
+      }
+      if (!dbConfig.collections.default) {
+        dbConfig.collections.default = {
+          isRealtimeEnabled: true,
+          rules: defaultRules
+        }
+      }
+      if (!dbConfig.conn) {
+        dbConfig.conn = defaultDbConnectionStrings[key]
+      }
+      dbConfig.enabled = true
+      dispatch(set(`config.modules.crud.${key}`, dbConfig))
     }
   }
 }
