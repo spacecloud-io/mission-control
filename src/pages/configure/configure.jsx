@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux';
 import { Divider } from 'antd';
@@ -15,7 +15,7 @@ import './configure.css'
 import '../../index.css'
 
 function Rules(props) {
-	useState(() => {
+	useEffect(() => {
 		ReactGA.pageview("/projects/configure");
 	}, [])
 	return (

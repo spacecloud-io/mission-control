@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux';
 import '../../../index.css';
@@ -17,7 +17,7 @@ import "../functions.css"
 
 const Rules = (props) => {
 	const [modalVisible, setModalVisibility] = useState(false)
-	useState(() => {
+	useEffect(() => {
 		ReactGA.pageview("/projects/functions/rules");
 	}, [])
 	const noOfRules = Object.keys(props.rules).length

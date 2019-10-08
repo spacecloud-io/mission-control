@@ -21,6 +21,7 @@ import Explorer from "./pages/explorer/Explorer";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBOverview from "./pages/database/overview/DBOverview";
+import EventTriggers from "./pages/event-triggers/EventTriggers";
 
 export default () => {
   return (
@@ -40,7 +41,7 @@ export default () => {
           <Redirect
             to={`/mission-control/projects/${
               props.match.params.projectId
-            }/overview`}
+              }/overview`}
           />
         )}
       />
@@ -81,7 +82,7 @@ export default () => {
           <Redirect
             to={`/mission-control/projects/${
               props.match.params.projectId
-            }/functions/rules`}
+              }/functions/rules`}
           />
         )}
       />
@@ -97,7 +98,7 @@ export default () => {
           <Redirect
             to={`/mission-control/projects/${
               props.match.params.projectId
-            }/file-storage/rules`}
+              }/file-storage/rules`}
           />
         )}
       />
@@ -108,12 +109,17 @@ export default () => {
       />
       <Route
         exact
+        path="/mission-control/projects/:projectId/event-triggers"
+        component={EventTriggers}
+      />
+      <Route
+        exact
         path="/mission-control/projects/:projectId/gateway"
         component={props => (
           <Redirect
             to={`/mission-control/projects/${
               props.match.params.projectId
-            }/gateway/rules`}
+              }/gateway/rules`}
           />
         )}
       />

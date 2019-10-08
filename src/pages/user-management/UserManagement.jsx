@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux'
 import { Collapse, Icon } from 'antd';
@@ -20,7 +20,7 @@ import store from "../../store";
 
 const Panel = Collapse.Panel;
 function UserManagement(props) {
-  useState(() => {
+  useEffect(() => {
     ReactGA.pageview("/projects/user-management");
   }, [])
   return (

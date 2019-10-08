@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import ReactGA from 'react-ga';
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
@@ -14,7 +14,7 @@ import { Row, Col, Button } from 'antd'
 import { get } from 'automate-redux';
 
 function Overview(props) {
-  useState(() => {
+  useEffect(() => {
     ReactGA.pageview("/projects/overview");
   }, [])
   return (

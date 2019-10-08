@@ -356,6 +356,18 @@ class Service {
       }).catch(ex => reject(ex))
     })
   }
+
+  triggerEvent(projectId, body) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/api/${projectId}/eventing/queue`, body).then(({ status, data }) => {
+        if (status !== 200) {
+          reject(data.error)
+          return
+        }
+        resolve()
+      }).catch(ex => reject(ex.toString()))
+    })
+  }
 }
 
 export default Service

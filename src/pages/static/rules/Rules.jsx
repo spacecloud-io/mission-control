@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux';
 import store from '../../../store'
@@ -13,7 +13,7 @@ import RulesComponent from '../../../components/rules/Rules';
 import { get, set, push } from "automate-redux";
 
 const Rules = (props) => {
-	useState(() => {
+	useEffect(() => {
 		ReactGA.pageview("/projects/static/rules");
 	}, [])
 	const noOfRules = props.rules.length

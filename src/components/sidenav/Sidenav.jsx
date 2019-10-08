@@ -28,6 +28,9 @@ const Sidenav = (props) => {
     <Link to={`/mission-control/projects/${props.projectId}/functions`}>
       <SidenavItem name="Functions" icon="code" active={props.selectedItem === 'functions'} />
     </Link>
+    <Link to={`/mission-control/projects/${props.projectId}/event-triggers`}>
+      <SidenavItem name="Event triggers" icon="code" active={props.selectedItem === 'event-triggers'} />
+    </Link>
     <Link to={`/mission-control/projects/${props.projectId}/gateway`}>
       <SidenavItem name="Gateway" icon="cloud" active={props.selectedItem === 'gateway'} />
     </Link>

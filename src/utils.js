@@ -407,7 +407,7 @@ export const handleSetUpDb = (projectId) => {
   Object.entries(crudConfig).forEach(([dbType, dbConfig]) => {
     let collections = {}
     Object.entries(dbConfig.collections).forEach(([colName, colConfig]) => {
-      collections[colName] = {schema: colConfig.schema}
+      collections[colName] = { schema: colConfig.schema }
     })
     config[dbType] = {
       enabled: dbConfig.enabled,
@@ -425,4 +425,20 @@ export const handleSetUpDb = (projectId) => {
       notify("error", "Error", 'Could not set up db')
     })
     .finally(() => store.dispatch(decrement("pendingRequests")))
+}
+
+export const getEventSourceFromType = (type, defaultValue) => {
+  let source = defaultValue
+  if (type) {
+    switch (type) {
+      case "create-crud":
+      case "update-crud":
+      case "delete-crud":
+        source = "database"
+        break;
+      default:
+        source = "custom"
+    }
+  }
+  return source
 }

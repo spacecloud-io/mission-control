@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import ReactGA from 'react-ga';
 import { connect } from 'react-redux'
 import './database.css'
@@ -21,7 +21,7 @@ function Database(props) {
   { graphics: postgresql, name: "PostgreSQL", desc: "The world's most advanced open source database.", key: "sql-postgres" },
   { graphics: mongodb, name: "MongoDB", desc: "A open-source cross-platform document- oriented database.", key: "mongo" }]
 
-  useState(() => {
+  useEffect(() => {
     ReactGA.pageview("/projects/database");
   }, [])
 

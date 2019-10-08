@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import ReactGA from 'react-ga';
 import { Link } from "react-router-dom"
 import './welcome.css'
 import { Button } from 'antd'
 
 function Welcome(props) {
-  useState(() => {
+  useEffect(() => {
     ReactGA.pageview("/welcome");
   }, [])
   return (

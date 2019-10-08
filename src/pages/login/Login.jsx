@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './login.css'
 import { Row, Col } from 'antd'
 import logo from '../../assets/logo-black.svg'
@@ -11,7 +11,7 @@ import LoginForm from './LoginForm';
 import ReactGA from 'react-ga';
 
 function Login(props) {
-  useState(() => {
+  useEffect(() => {
     ReactGA.pageview("/");
   }, [])
   return (
