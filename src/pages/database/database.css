@@ -204,3 +204,183 @@
 .db-tab-content {
   padding: 32px 48px;
 }
+.cdprops{
+ 
+width: 268.51px;
+height: 50px;
+text-align: center;
+}
+.constatus{
+  width:537.02px;
+  height:50px;
+}
+.hiddenfrnow{
+  visibility:hidden;}
+.disconnectview{
+  position: absolute;
+width: 1071px;
+height: 420px;
+left: 33px;
+top: 250px;
+text-align: center;
+
+background: #ffffff;
+border: 1px solid #E8E8E8;
+box-sizing: border-box;
+
+}
+.oops{
+  position: absolute;
+width: 333px;
+height: 20px;
+left: 410px;
+top: 202px;
+
+/* @font-size-sm: 12px */
+
+font-family: Inter;
+font-style: normal;
+font-weight: normal;
+font-size: 13px;
+line-height: 22px;
+/* or 183% */
+
+display: flex;
+align-items: center;
+text-align: center;
+
+/* @text-color */
+
+color: rgba(0, 0, 0, 0.65);
+}
+.correctcd{
+  position: absolute;
+width: 535px;
+height: 36px;
+left: 350px;
+top: 242px;
+
+/* H6 - Header 6 */
+text-align:center;
+font-family: Inter;
+font-style: normal;
+font-weight: normal;
+font-size: 18px;
+line-height: 28px;
+/* or 156% */
+
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.65);
+
+
+}
+
+.oops_1{
+  position: absolute;
+width: 333px;
+height: 20px;
+left: 390px;
+top: 202px;
+
+/* @font-size-sm: 12px */
+
+font-family: Inter;
+font-style: normal;
+font-weight: normal;
+font-size: 13px;
+line-height: 22px;
+/* or 183% */
+
+display: flex;
+align-items: center;
+text-align: center;
+
+/* @text-color */
+
+color: rgba(0, 0, 0, 0.65);
+}
+.correctcd_1{
+  position: absolute;
+width: 535px;
+height: 36px;
+left: 350px;
+top: 242px;
+
+/* H6 - Header 6 */
+text-align:center;
+font-family: Inter;
+font-style: normal;
+font-weight: normal;
+font-size: 18px;
+line-height: 28px;
+/* or 156% */
+
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.65);
+
+
+}
+
+
+.reconnect{
+  position: absolute;
+left: 412px;
+
+top: 314px;
+
+
+/* Orange */
+
+border: 1px solid #FF6700;
+box-sizing: border-box;
+border-radius: 4px;
+}
+.edconn{
+  position: absolute;
+left: 550px;
+top: 314px;
+
+
+/* Orange */
+
+background: #FF6700;
+border-radius: 4px;
+}
+.addtable{
+  position: absolute;
+left: 490px;
+top: 314px;
+
+
+/* Orange */
+
+background: #FF6700;
+border-radius: 4px;
+}
+.default{
+  color:#87ceeb;
+}
+
+.disconnectimg{
+ margin-top: 50px;
+}
+.edit{
+  position:absolute;
+  left:200px;
+}
+.connectimg{
+  
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: 470px;
+  top: 54px;
+  
+
+}

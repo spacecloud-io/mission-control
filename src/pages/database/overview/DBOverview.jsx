@@ -12,12 +12,41 @@ import DbConfigure from '../../../components/database/overview/configure/DbConfi
 import CreateNewCollectionForm from '../../../components/database/overview/collection-form/CreateNewCollectionForm';
 import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-
+import disconnect from '../../../assets/disconnect.jpg';
+import edit from '../../../assets/icon/editor/edit.png';
+import connect1 from '../../../assets/connect1.png'
 import '../database.css';
 
 // antd
 import { Col, Row, Button, Icon, Table, Switch } from 'antd';
+import { Descriptions, Badge } from 'antd';
 import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../utils';
+
+
+
+
+//tp
+/*<div className='disconnectview' >
+              <div className='hiddenfrnow'><img src={disconnect} class="disconnectimg" />
+                <div className='oops'>Oops.. Space Cloud could not connect to your database</div>
+                <div className='correctcd'>Enter the correct connection details of your database</div>
+                <Button className='reconnect'>Reconnect</Button>
+                <Button className="edconn">Edit Connection</Button>
+              </div>
+              <div >
+                <img src={connect1} class="connectimg" />
+                <div className='oops'>Your database is set up. <Link className='default'>Default rules</Link>are applied.</div>
+                <div className='correctcd'>Add a table for easy schema and access management </div>
+
+                <Button className="addtable">Add Table</Button>
+              </div>
+            </div>*/
+//..bichme chhod diya
+/*<div className="constatus"><Descriptions bordered>
+                <Descriptions.Item label="STATUS" span={3} className='cdprops'>
+                  <Badge color="red" status="processing" text="disconnected" />
+                </Descriptions.Item>
+              </Descriptions></div>*/
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
@@ -83,6 +112,36 @@ const Overview = props => {
       ),
     },
   ];
+  function connectedornot(props) {
+    if (props.connected == false) {
+      return (<div><div className="constatus"><Descriptions bordered>
+        <Descriptions.Item label="STATUS" span={3} className='cdprops'>
+          <Badge color="red" status="processing" text="disconnected" />
+        </Descriptions.Item>
+      </Descriptions></div>
+        <div className='disconnectview' >
+          <div ><img src={disconnect} class="disconnectimg" />
+            <div className='oops_1'>Oops.. Space Cloud could not connect to your database</div>
+            <div className='correctcd_1'>Enter the correct connection details of your database</div>
+            <Button className='reconnect'>Reconnect</Button>
+            <Button className="edconn">Edit Connection</Button>
+          </div></div></div>
+      );
+    }
+    else{return(<div><div className="constatus"><Descriptions bordered>
+    <Descriptions.Item label="STATUS" span={3} className='cdprops'>
+      <Badge color="green" status="processing" text="connected" />
+    </Descriptions.Item>
+  </Descriptions></div>
+    <div className='disconnectview' ><div >
+                <img src={connect1} class="connectimg" />
+                <div className='oops'>Your database is set up. <Link className='default'>Default rules</Link>are applied.</div>
+                <div className='correctcd'>Add a table for easy schema and access management </div>
+
+                <Button className="addtable">Add Table</Button>
+              </div>
+    </div></div>);}
+  }
 
   return (
     <React.Fragment>
@@ -100,15 +159,19 @@ const Overview = props => {
             projectId={props.match.params.projectId}
           />
           <div className="db-tab-content">
-            <div>
-              <DbConfigure
-                updateFormState={props.updateFormState}
-                formState={props.formState}
-                setUpDb={props.setUpDb}
-                dbType={props.selectedDb}
-                handleSetUpDb={() => handleSetUpDb(props.projectId)}
-              />
+
+            <div className='Connection-Detais'>
+              <span className="edit"><img src={edit} /></span>
+              <Descriptions title="Connection Details" bordered>
+
+                <Descriptions.Item label="HOST" className='cdprops'>localhost</Descriptions.Item>
+                <Descriptions.Item label="PORT" className='cdprops'>3306</Descriptions.Item>
+
+              </Descriptions>
+              
             </div>
+{connectedornot(props)}
+            
             {props.trackedTables.length > 0 && (
               <div>
                 <div style={{ marginTop: '32px' }}>
@@ -126,9 +189,7 @@ const Overview = props => {
               </div>
             )}
 
-            {props.trackedTables.length === 0 && (
-              <TablesEmptyState dbType={props.selectedDb} projectId={props.projectId} handleAdd={() => handleModalVisiblity(true)} />
-            )}
+
 
             {props.untrackedTables.length > 0 && (
               <Row>
@@ -138,8 +199,8 @@ const Overview = props => {
                       Untracked {label}s
                     </span>
                     <Button
-                     style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                     onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
+                      style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                      onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
                       <Icon type='plus' /> Track All
                     </Button>
                   </div>
@@ -170,6 +231,7 @@ const mapStateToProps = (state, ownProps) => {
   const trackedTables = get(state, `config.modules.crud.${selectedDb}.collections`, {})
   const tables = get(state, `tables.${projectId}.${selectedDb}`, [])
   return {
+    connected: true,
     selectedDb: ownProps.match.params.database,
     projectId: projectId,
     formState: {
@@ -197,7 +259,7 @@ const mapStateToProps = (state, ownProps) => {
       name: name,
       realtime: val.isRealtimeEnabled,
     })).filter(obj => obj.name !== "default" && obj.name !== "events_log"),
-    setUpDb: !tables.includes("events_log") ? true: false, 
+    setUpDb: !tables.includes("events_log") ? true : false,
     untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
     createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
   };
