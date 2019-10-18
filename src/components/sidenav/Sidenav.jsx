@@ -10,14 +10,8 @@ import { get } from 'automate-redux';
 const Sidenav = (props) => {
   return(
     <div className="sidenav">
-    <div className="flex-container">
-      <Header name={props.projectId} color="#000" fontSize="18px" />
-    </div>
     <Link to={`/mission-control/projects/${props.projectId}/overview`}>
       <SidenavItem name="Project Overview" icon="home" active={props.selectedItem === 'overview'} />
-    </Link>
-    <Link to={`/mission-control/projects/${props.projectId}/user-management`}>
-      <SidenavItem name="User Management" icon="people" active={props.selectedItem === 'user-management'} />
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/database`}>
       <SidenavItem name="Database" icon="dns" active={props.selectedItem === 'database'} />
@@ -33,6 +27,9 @@ const Sidenav = (props) => {
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/gateway`}>
       <SidenavItem name="Gateway" icon="cloud" active={props.selectedItem === 'gateway'} />
+    </Link>
+    <Link to={`/mission-control/projects/${props.projectId}/user-management`}>
+      <SidenavItem name="User Management" icon="people" active={props.selectedItem === 'user-management'} />
     </Link>
     <Link to={`/mission-control/projects/${props.projectId}/explorer`}>
       <SidenavItem name="Explorer" icon="explore" active={props.selectedItem === 'explorer'} />

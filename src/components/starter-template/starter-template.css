@@ -41,11 +41,6 @@
   float: right;
 }
 
-.active {
-  box-shadow: 0px 1px 8px #00B6E9;
-  /* box-shadow: 0px 4px 4px #00B6E9; */
-  background: #FFF
-}
 
 .template .selected {
   color: #00B6E9;

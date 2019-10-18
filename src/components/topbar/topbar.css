@@ -45,7 +45,8 @@
 
 .topbar .btn {
   height: 32px;
-  border-radius: 20px;
+  font-weight: normal;
+  border-radius: 10px;
 }
 
 .topbar .btn-position {
