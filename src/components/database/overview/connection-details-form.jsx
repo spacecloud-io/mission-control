@@ -1,23 +1,14 @@
 import React,{useState} from "react"
 import { Modal, Form, Input, Radio, Select, InputNumber } from 'antd';
-//import { getEventSourceFromType } from "../../utils";
 const Connection_String_form = (props) => {
     const [connection_string,setconnection_string]=useState(props.initialValue);
     const handleSubmit = e => {
-     // e.preventDefault();
-     // props.form.validateFields((err, connection_string) => {//check from where getting it
-    //    if (!err) {
+    
           props.handleSubmit(connection_string);
           props.handleCancel();
-     //     props.form.resetFields();
-     //   }
-    //  });
+     
     }
-    //const { getFieldDecorator, getFieldValue } = props.form;
-    
-   // let defaultEventSource = getEventSourceFromType(type, "database")
- // const temp = getFieldValue("source")
- // const eventSource = temp ? temp : defaultEventSource;
+   
   return (
     <Modal
       className="edit-item-modal"
