@@ -1,8 +1,8 @@
 .topbar {
   background: #ffffff;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
-  height: 50px;
-  line-height: 50px;
+  height: 64px;
+  line-height: 64px;
   position: fixed;
   left: 0;
   right: 0;
@@ -13,8 +13,9 @@
 }
 
 .topbar .logo-black {
-  height: 28px;
-  padding-left: 24px;
+  width: 194px;
+  height: 40px;
+  padding-left: 31px;
   margin-top: 12px;
 }
 
@@ -40,13 +41,21 @@
   padding-right: 10px;
   font-size: 14px;
   font-weight: 600;
-  line-height: 50px;
+  line-height: 64px;
 }
 
 .topbar .btn {
-  height: 32px;
+  width:139px;
+  height: 41px;
+  position: relative;
+  left:20px;
+  top:6px;
+  font-size: 14px;
+  line-height: 19px;
   font-weight: normal;
-  border-radius: 10px;
+  color:rgba(0, 0, 0, 0.87);
+  border:1px solid #B9B9B9;
+  border-radius: 20px;
 }
 
 .topbar .btn-position {

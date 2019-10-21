@@ -1,48 +1,53 @@
 .sidenav {
   position: fixed;
-  top: 51px;
+  top: 65px;
   left: 0;
   bottom: 0;
   z-index: 100;
-  width: 250px;
+  width: 300px;
   background: #FFFFFF;
   box-shadow: 10px 0 5px -5px #EEE;
 }
 
 .item {
-  height: 48px;
+  height:64px;
   display: flex;
   flex-basis: 100%;
   align-items: center;
-  color: #000;
+  color:rgba(0, 0, 0, 0.6);
   font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
   cursor: pointer;
   width: 85%;
 }
 
 .item>i {
-  font-size: 16px;
+  font-size: 20px;
+  position: relative;
+  left:10px;
   padding: 12px 16px 12px 24px;
+  
 }
 
 .item:hover {
   font-weight: 600;
   width: 100%;
-  color:#000;
+  color:rgba(0, 0, 0, 0.6);
   background: #eee;
 }
 
-.active {
+.sidenav .active {
   width:100%;
   align-items: center;
-  font-weight: 600;
+  font-weight: 500;
   color:#FF6700 !important;
   background: rgba(255, 103, 0, 0.2) !important;
   
 }
 
 .active>i {
-  font-size: 16px;
+  font-size: 20px;
   padding: 12px 16px 12px 24px;
 }
 
@@ -66,4 +71,9 @@
 
 .sidenav .edit:hover {
   background: rgba(255, 103, 0, 0.2);
+}
+
+.sidenav #itemName{
+  position: relative;
+  left:20px;
 }
