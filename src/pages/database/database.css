@@ -72,6 +72,8 @@
   font-weight: 600;
 }
 
+
+
 .rules-main-wrapper .add-a-rule {
   display: flex;
   align-items: center;
@@ -204,24 +206,23 @@
 .db-tab-content {
   padding: 32px 48px;
 }
-.cdprops{
+.connection-requirements{
  
-width: 268.51px;
+width: 268px;
 height: 50px;
 text-align: center;
 }
-.constatus{
+.connection-status{
   width:537.02px;
   height:50px;
 }
-.hiddenfrnow{
-  visibility:hidden;}
-.disconnectview{
+
+.status-view{
   position: absolute;
-width: 1071px;
-height: 420px;
-left: 33px;
-top: 250px;
+width: 1012px;
+height: 370px;
+left: 48px;
+top: 260px;
 text-align: center;
 
 background: #ffffff;
@@ -229,19 +230,19 @@ border: 1px solid #E8E8E8;
 box-sizing: border-box;
 
 }
-.oops{
+.cstatus-statement-1{
   position: absolute;
 width: 333px;
 height: 20px;
-left: 410px;
-top: 202px;
+left: 380px;
+top: 225px;
 
 /* @font-size-sm: 12px */
 
 font-family: Inter;
 font-style: normal;
 font-weight: normal;
-font-size: 13px;
+font-size: 15px;
 line-height: 22px;
 /* or 183% */
 
@@ -253,19 +254,19 @@ text-align: center;
 
 color: rgba(0, 0, 0, 0.65);
 }
-.correctcd{
+.cstatus-statement-2{
   position: absolute;
 width: 535px;
 height: 36px;
-left: 350px;
-top: 242px;
+left: 320px;
+top: 245px;
 
 /* H6 - Header 6 */
 text-align:center;
 font-family: Inter;
 font-style: normal;
 font-weight: normal;
-font-size: 18px;
+font-size: 20px;
 line-height: 28px;
 /* or 156% */
 
@@ -278,19 +279,19 @@ color: rgba(0, 0, 0, 0.65);
 
 }
 
-.oops_1{
+.dstatus-statement-1{
   position: absolute;
 width: 333px;
 height: 20px;
-left: 390px;
-top: 202px;
+left: 345px;
+top: 250px;
 
 /* @font-size-sm: 12px */
 
 font-family: Inter;
 font-style: normal;
 font-weight: normal;
-font-size: 13px;
+font-size: 15px;
 line-height: 22px;
 /* or 183% */
 
@@ -302,19 +303,19 @@ text-align: center;
 
 color: rgba(0, 0, 0, 0.65);
 }
-.correctcd_1{
+.dstatus-statement-2{
   position: absolute;
 width: 535px;
 height: 36px;
-left: 350px;
-top: 242px;
+left: 320px;
+top: 270px;
 
 /* H6 - Header 6 */
 text-align:center;
 font-family: Inter;
 font-style: normal;
 font-weight: normal;
-font-size: 18px;
+font-size: 20px;
 line-height: 28px;
 /* or 156% */
 
@@ -330,10 +331,10 @@ color: rgba(0, 0, 0, 0.65);
 
 .reconnect{
   position: absolute;
-left: 412px;
+left: 378px;
 
-top: 314px;
-
+top: 334px;
+width:130px;
 
 /* Orange */
 
@@ -343,25 +344,44 @@ border-radius: 4px;
 }
 .edconn{
   position: absolute;
-left: 550px;
-top: 314px;
+left: 530px;
+top: 334px;
+width:130px;
 
 
 /* Orange */
-
+color:white;
 background: #FF6700;
 border-radius: 4px;
 }
+.edconn:hover{
+  color:white;
+background: rgb(255, 136, 0);
+}
+.edconn:focus{
+  color:white;
+background: #FF6700;
+}
+
 .addtable{
   position: absolute;
-left: 490px;
-top: 314px;
+left: 450px;
+top: 309px;
+width:130px;
 
 
 /* Orange */
-
+color:white;
 background: #FF6700;
 border-radius: 4px;
+}
+.addtable:hover{
+  color:white;
+background: rgb(255, 136, 0);
+}
+.addtable:focus{
+  color:white;
+background: #FF6700;
 }
 .default{
   color:#87ceeb;
@@ -379,8 +399,8 @@ border-radius: 4px;
   position: absolute;
   width: 120px;
   height: 120px;
-  left: 470px;
-  top: 54px;
+  left: 450px;
+  top: 65px;
   
 
 }

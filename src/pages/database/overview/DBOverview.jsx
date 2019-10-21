@@ -25,28 +25,7 @@ import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../u
 
 
 
-//tp
-/*<div className='disconnectview' >
-              <div className='hiddenfrnow'><img src={disconnect} class="disconnectimg" />
-                <div className='oops'>Oops.. Space Cloud could not connect to your database</div>
-                <div className='correctcd'>Enter the correct connection details of your database</div>
-                <Button className='reconnect'>Reconnect</Button>
-                <Button className="edconn">Edit Connection</Button>
-              </div>
-              <div >
-                <img src={connect1} class="connectimg" />
-                <div className='oops'>Your database is set up. <Link className='default'>Default rules</Link>are applied.</div>
-                <div className='correctcd'>Add a table for easy schema and access management </div>
 
-                <Button className="addtable">Add Table</Button>
-              </div>
-            </div>*/
-//..bichme chhod diya
-/*<div className="constatus"><Descriptions bordered>
-                <Descriptions.Item label="STATUS" span={3} className='cdprops'>
-                  <Badge color="red" status="processing" text="disconnected" />
-                </Descriptions.Item>
-              </Descriptions></div>*/
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
@@ -55,7 +34,8 @@ const Overview = props => {
   }, [props.projectId, props.selectedDb])
 
   const label = props.selectedDb === 'mongo' ? 'Collection' : 'Table'
-
+  const status_text = props.connected === true ? 'connected' : 'disconnected'//for changing badge and status text
+  const badge_colour = props.connected === true ? 'green' : 'red'
   const trackedTableColumns = [
     {
       title: 'Name',
@@ -112,36 +92,7 @@ const Overview = props => {
       ),
     },
   ];
-  function connectedornot(props) {
-    if (props.connected == false) {
-      return (<div><div className="constatus"><Descriptions bordered>
-        <Descriptions.Item label="STATUS" span={3} className='cdprops'>
-          <Badge color="red" status="processing" text="disconnected" />
-        </Descriptions.Item>
-      </Descriptions></div>
-        <div className='disconnectview' >
-          <div ><img src={disconnect} class="disconnectimg" />
-            <div className='oops_1'>Oops.. Space Cloud could not connect to your database</div>
-            <div className='correctcd_1'>Enter the correct connection details of your database</div>
-            <Button className='reconnect'>Reconnect</Button>
-            <Button className="edconn">Edit Connection</Button>
-          </div></div></div>
-      );
-    }
-    else{return(<div><div className="constatus"><Descriptions bordered>
-    <Descriptions.Item label="STATUS" span={3} className='cdprops'>
-      <Badge color="green" status="processing" text="connected" />
-    </Descriptions.Item>
-  </Descriptions></div>
-    <div className='disconnectview' ><div >
-                <img src={connect1} class="connectimg" />
-                <div className='oops'>Your database is set up. <Link className='default'>Default rules</Link>are applied.</div>
-                <div className='correctcd'>Add a table for easy schema and access management </div>
 
-                <Button className="addtable">Add Table</Button>
-              </div>
-    </div></div>);}
-  }
 
   return (
     <React.Fragment>
@@ -163,15 +114,40 @@ const Overview = props => {
             <div className='Connection-Detais'>
               <span className="edit"><img src={edit} /></span>
               <Descriptions title="Connection Details" bordered>
-
-                <Descriptions.Item label="HOST" className='cdprops'>localhost</Descriptions.Item>
-                <Descriptions.Item label="PORT" className='cdprops'>3306</Descriptions.Item>
-
+                <Descriptions.Item label="HOST" className='connection-requirements'>{props.host}</Descriptions.Item>
+                <Descriptions.Item label="PORT" className='connection-requirements'>{props.port}</Descriptions.Item>
               </Descriptions>
-              
+              <div className="connection-status"><Descriptions bordered>
+                <Descriptions.Item label="STATUS" span={3} className='connection-requirements'>
+                  <Badge color={badge_colour} status="processing" text={status_text} />
+                </Descriptions.Item>
+              </Descriptions></div>
             </div>
-{connectedornot(props)}
+            {props.connected == true && (
+              <div>
+                <div className='status-view' ><div >
+                  <img src={connect1} class="connectimg" />
+                  <div className='cstatus-statement-1'>Your database is set up.
+                  <Link className='default'>Default rules</Link>are applied.</div>
+                  <div className='cstatus-statement-2'>Add a table for easy schema
+                  and access management </div>
+
+                  <Button className="addtable">Add Table</Button>
+                </div>
+                </div></div>
+            )}
+            {props.connected == false && (
+              <div>
+                <div className='status-view' >
+                  <div ><img src={disconnect} class="disconnectimg" />
+                    <div className='dstatus-statement-1'>Oops.. Space Cloud could not connect to your database</div>
+                    <div className='dstatus-statement-2'>Enter the correct connection details of your database</div>
+                   <Button className='reconnect'>Reconnect</Button>
+                    <Button className="edconn">Edit Connection</Button></div>
+                  </div></div>
             
+            )}
+
             {props.trackedTables.length > 0 && (
               <div>
                 <div style={{ marginTop: '32px' }}>
@@ -231,7 +207,10 @@ const mapStateToProps = (state, ownProps) => {
   const trackedTables = get(state, `config.modules.crud.${selectedDb}.collections`, {})
   const tables = get(state, `tables.${projectId}.${selectedDb}`, [])
   return {
-    connected: true,
+    connected: false,
+   host:'localhost',
+   port:'3306',
+
     selectedDb: ownProps.match.params.database,
     projectId: projectId,
     formState: {
