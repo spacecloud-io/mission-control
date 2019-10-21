@@ -16,6 +16,7 @@ import disconnect from '../../../assets/disconnect.jpg';
 import edit from '../../../assets/icon/editor/edit.png';
 import connect1 from '../../../assets/connect1.png'
 import '../database.css';
+import Connection_String_form from '../../../components/database/overview/connection-details-form.jsx';
 
 // antd
 import { Col, Row, Button, Icon, Table, Switch } from 'antd';
@@ -29,6 +30,7 @@ import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../u
 
 const Overview = props => {
   const [modalVisible, handleModalVisiblity] = useState(false);
+  const [form_modalVisible, setform_modalVisible] = useState(false);
   useEffect(() => {
     fetchCollections(props.projectId)
   }, [props.projectId, props.selectedDb])
@@ -93,6 +95,12 @@ const Overview = props => {
     },
   ];
 
+  const handleformModalCancel = () => {
+    setform_modalVisible(false)
+		
+	}
+
+
 
   return (
     <React.Fragment>
@@ -143,10 +151,14 @@ const Overview = props => {
                     <div className='dstatus-statement-1'>Oops.. Space Cloud could not connect to your database</div>
                     <div className='dstatus-statement-2'>Enter the correct connection details of your database</div>
                    <Button className='reconnect'>Reconnect</Button>
-                    <Button className="edconn">Edit Connection</Button></div>
+                    <Button className="edconn" onClick={()=>setform_modalVisible(true)}>Edit Connection</Button></div>
                   </div></div>
             
             )}
+            {form_modalVisible == true &&(<Connection_String_form
+						handleCancel={handleformModalCancel} 
+						handleSubmit={props.print_connection_string}
+						initialValue={props.connection_string} />)}
 
             {props.trackedTables.length > 0 && (
               <div>
@@ -208,6 +220,7 @@ const mapStateToProps = (state, ownProps) => {
   const tables = get(state, `tables.${projectId}.${selectedDb}`, [])
   return {
     connected: false,
+    connection_string:'xyz',
    host:'localhost',
    port:'3306',
 
@@ -248,6 +261,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   const projectId = ownProps.match.params.projectId;
   const selectedDb = ownProps.match.params.database;
   return {
+    print_connection_string: (cs_string) =>{
+      console.log({cs_string});
+    },
     onChangeRealtimeEnabled: (name, checked) => {
       dispatch(
         set(
