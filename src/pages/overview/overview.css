@@ -70,3 +70,57 @@
   margin-bottom: 72px;
 }
 
+.overview .cardContainer{
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.overview .card {
+  width: 300px;
+  height: 80px;
+  position: relative;
+  right:210px;
+  bottom:18px;
+  line-height: 80px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600px;
+  color: #000;
+  border: 1px solid #DADADA;
+  border-radius: 10px;
+  box-sizing: border-box;
+  margin-top: 10px;
+
+}
+
+.overview .material-icons.copy{
+  position: relative;
+  left:30px;
+  top:8px;
+}
+
+.overview #card{
+  position: relative;
+  right:12px;
+  top:5px;
+  
+}
+
+.overview .card:hover{
+  box-sizing: border-box;
+  border: 1.5px solid #4285F4;
+  box-shadow: 0px 4px 4px rgba(66, 133, 244, 0.25);
+  
+}
+
+.overview .cardContainer #setup{
+  position: relative;
+  right:500px;
+    
+}
+
+.overview h2{
+  color:#000;
+  opacity:0.85;
+}
