@@ -47,15 +47,15 @@ function Overview(props) {
             </div>
           </div>*/}
           <h2>Client Details</h2>
-          <Descriptions bordered >
+          <Descriptions bordered column={{ xxl: 4, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
             <Descriptions.Item label="Project ID">{props.projectId}<i className="material-icons copy">content_copy</i></Descriptions.Item>
             <Descriptions.Item label="SC URL">{props.URL}<i className="material-icons copy">content_copy</i></Descriptions.Item>
           </Descriptions><br/><br/>
          <h2>Guides</h2>
           <div className="cardContainer">
-            <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql/" target="_blank"><div className="card"><i className="material-icons" id="card">view_carousel</i>Make first DB query</div></a>
-            <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/" target="_blank"><div className="card" id="setup"><i className="material-icons"id="card">star_border</i>Setting up client</div></a>
-            {/*<div className="card">Troubleshooting</div>*/}
+              <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql/" target="_blank"><div className="card"><i className="material-icons" id="card">view_carousel</i>Make first DB query</div></a>
+              <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/" target="_blank"><div className="card" id="setup"><i className="material-icons"id="card">star_border</i>Setting up client</div></a>
+             {/*<div className="card">Troubleshooting</div>*/}
           </div>
         </div>
       </div>

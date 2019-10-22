@@ -71,7 +71,6 @@
 }
 
 .overview .cardContainer{
-  display: flex;
   justify-content: space-around;
   padding: 10px;
 }
@@ -80,8 +79,8 @@
   width: 300px;
   height: 80px;
   position: relative;
-  right:210px;
-  bottom:18px;
+  right:10px;
+  bottom: 18px;
   line-height: 80px;
   text-align: center;
   font-size: 16px;
@@ -114,13 +113,16 @@
   
 }
 
-.overview .cardContainer #setup{
-  position: relative;
-  right:500px;
-    
-}
-
 .overview h2{
   color:#000;
   opacity:0.85;
 }
+
+@media screen and (min-width: 1023px) {
+  #setup{
+    position: relative;
+    bottom:106px;
+    left:330px;
+  }
+}
+
