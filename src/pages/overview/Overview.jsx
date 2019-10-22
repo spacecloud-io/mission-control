@@ -12,18 +12,21 @@ import js from '../../assets/js.svg'
 import go from '../../assets/go.svg'
 import { Row, Col, Button } from 'antd'
 import { get } from 'automate-redux';
+import { Descriptions } from 'antd';
+
 
 function Overview(props) {
   useEffect(() => {
     ReactGA.pageview("/projects/overview");
   }, [])
+  
   return (
     <div className="overview">
       <Topbar showProjectSelector />
       <div className="flex-box">
         <Sidenav selectedItem="overview" />
         <div className="page-content ">
-          <Row>
+          {/*<Row>
             <Col span={9}>
               <Header name="Get started with Space Cloud" color="#000" fontSize="22px" />
             </Col>
@@ -42,6 +45,17 @@ function Overview(props) {
                 <Button type="primary" shape="round" icon="read" size="large" className="get-started">Explore GraphQL APIs</Button>
               </a>
             </div>
+          </div>*/}
+          <h2>Client Details</h2>
+          <Descriptions bordered column={{ xxl: 4, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
+            <Descriptions.Item label="Project ID">{props.projectId}<i className="material-icons copy">content_copy</i></Descriptions.Item>
+            <Descriptions.Item label="SC URL">{props.URL}<i className="material-icons copy">content_copy</i></Descriptions.Item>
+          </Descriptions><br/><br/>
+         <h2>Guides</h2>
+          <div className="cardContainer">
+              <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql/" target="_blank"><div className="card"><i className="material-icons" id="card">view_carousel</i>Make first DB query</div></a>
+              <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/" target="_blank"><div className="card" id="setup"><i className="material-icons"id="card">star_border</i>Setting up client</div></a>
+             {/*<div className="card">Troubleshooting</div>*/}
           </div>
         </div>
       </div>
@@ -52,6 +66,7 @@ function Overview(props) {
 const mapStateToProps = (state, ownProps) => {
   return {
     projectId: ownProps.match.params.projectId,
+    URL:"https://localhost:4122",
     modules: {
       userManagement: {
         enabled: get(state, "config.modules.auth.enabled", false),
