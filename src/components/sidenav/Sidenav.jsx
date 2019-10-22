@@ -10,7 +10,6 @@ import { get } from 'automate-redux';
 const Sidenav = (props) => {
   return(
     <div className="sidenav">
-      <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet"></link>
     <Link to={`/mission-control/projects/${props.projectId}/overview`}>
       <SidenavItem name="Project Overview" icon="home" active={props.selectedItem === 'overview'} />
     </Link>
