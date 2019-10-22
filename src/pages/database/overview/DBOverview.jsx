@@ -120,7 +120,7 @@ const Overview = props => {
           <div className="db-tab-content">
 
             <div className='Connection-Detais'>
-              <span className="edit"><img src={edit} /></span>
+              <span className="edit"><Button className="pencil-edit-connection-string" onClick={() => setform_modalVisible(true)}><img src={edit} /></Button></span>
               <Descriptions title="Connection Details" bordered>
                 <Descriptions.Item label="HOST" className='connection-requirements'>{props.host}</Descriptions.Item>
                 <Descriptions.Item label="PORT" className='connection-requirements'>{props.port}</Descriptions.Item>

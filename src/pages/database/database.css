@@ -404,3 +404,13 @@ background: #FF6700;
   
 
 }
+.pencil-edit-connection-string{position:absolute;
+ height:1px;border-color:white;}
+.pencil-edit-connection-string:hover{
+  border-color:white;
+  background-color: white;
+  }
+  .pencil-edit-connection-string:focus{
+    border-color:white;
+    background-color: white;
+    }
