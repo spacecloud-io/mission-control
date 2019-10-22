@@ -1,0 +1,45 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  
+  
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    font-weight: 500;
+    font-size: 14px;
+    width: 320px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: 8px;
+    left: 170%;
+    
+     transition: opacity 0.3s;
+  }
+  
+  .tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 38%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #555 transparent transparent;
+  }
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+
+  .ProjId{
+    font-weight: 600;
+    font-size: 16px;
+    color:#ACACAC;
+    position: relative;
+    top:-10px;
+  }

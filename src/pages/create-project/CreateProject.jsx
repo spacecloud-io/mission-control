@@ -11,6 +11,7 @@ import { generateProjectConfig, notify, adjustConfig } from '../../utils';
 import { Row, Col, Button, Form, Input, Icon } from 'antd'
 import StarterTemplate from '../../components/starter-template/StarterTemplate'
 import Topbar from '../../components/topbar/Topbar'
+import ProjectID from '../../components/ProjectID/ProjectID'
 import './create-project.css'
 
 import create from '../../assets/create.svg'
@@ -27,16 +28,18 @@ class CreateProject extends Component {
       selected: "mongo"
     };
   }
+  ID="";
   
+  getID=(e)=>{
+    CreateProject.ID=e.target.value;
+    
+    return (CreateProject.ID);
+  }
   
   componentDidMount() {
 		ReactGA.pageview("/create-project");
 	}
-  getID=(rule,value,callback)=>{
-    const ID=value.toLower();
-    if(value!==""){callback('Project Id:');}
-    else callback();
-  }
+
   handleSelect(value) {
     return this.setState({ selected: value });
   }
@@ -46,7 +49,6 @@ class CreateProject extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         this.props.handleNext(values.projectName, this.state.selected)
-        console.log(values.projectName);
       }
     });
   };
@@ -62,16 +64,19 @@ class CreateProject extends Component {
             <Form>
               <Form.Item>
                 {getFieldDecorator('projectName', {
-                  rules: [{ required: true, message: 'Please input a project name' },{validator:this.getID,}],
+                  rules: [{ required: true, message: 'Please input a project name' }],
                 })(
                   <Input
                     prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                    placeholder="Project name" style={{ width: 600 }} />,
+                    placeholder="Project name" style={{ width: 600 }} onChange={this.getID}/>,
                 )}
               </Form.Item>
             </Form>
+            
+            <ProjectID name={CreateProject.ID} key={CreateProject.ID}/>
+          
           </div>
-          <br/><br/>
+          <br/>
           <p>Select a Primary Database <i className="material-icons help">help_outline</i></p>
           <div className="underline"></div>
           <div className="cards">
