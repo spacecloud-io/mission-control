@@ -22,6 +22,7 @@ import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBOverview from "./pages/database/overview/DBOverview";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
+import DBConfig from "./pages/database/config/DBConfig";
 
 export default () => {
   return (
@@ -74,6 +75,11 @@ export default () => {
         exact
         path="/mission-control/projects/:projectId/database/schema/:database"
         component={DBSchema}
+      />
+      <Route
+        exact
+        path="/mission-control/projects/:projectId/database/config/:database"
+        component={DBConfig}
       />
       <Route
         exact

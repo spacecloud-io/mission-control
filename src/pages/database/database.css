@@ -204,3 +204,47 @@
 .db-tab-content {
   padding: 32px 48px;
 }
+
+.config-list{
+ list-style-type:none ;
+}
+.config-list-title{
+  margin-top:10px;
+  font-size:18px;
+  color: rgba(0,0,0,0.87);
+}
+.config-list-button-grey{
+  color: #cfcece;
+  background-color: #ebe8e8;
+  border-color: #dcdcdc;
+  border-style:solid;
+  border-width: 1px;
+  width:90px;
+  margin-bottom: 25px;
+  border-radius: 5px;
+}
+
+.config-list-button-grey:hover{background-color: #f7f7f7;
+  color:#d3d3d3;
+  border-color:#dcdcdc}
+.config-list-button-grey:focus{background-color: #ebe8e8;
+  color:#d3d3d3;
+  border-color:#dcdcdc}
+
+.config-list-button-red{
+  color:white;
+  background-color: #f14545;
+  border-color: white;
+  border-style:solid;
+  border-width: 1px;
+  width:90px;
+  border-radius: 5px;
+  margin-bottom: 25px;
+}
+
+.config-list-button-red:hover{background-color: #fa2a2a;
+  color:white;
+  border-color:white}
+.config-list-button-red:focus{background-color: #f14545;
+  color:white;
+  border-color:white}
