@@ -18,18 +18,25 @@ import postgresIcon from '../../assets/postgresIcon.svg'
 import mysqlIcon from '../../assets/mysqlIcon.svg'
 import mongoIcon from '../../assets/mongoIcon.svg'
 
+
 class CreateProject extends Component {
+  
   constructor(props) {
     super(props)
     this.state = {
       selected: "mongo"
     };
   }
-
+  
+  
   componentDidMount() {
 		ReactGA.pageview("/create-project");
 	}
-
+  getID=(rule,value,callback)=>{
+    const ID=value.toLower();
+    if(value!==""){callback('Project Id:');}
+    else callback();
+  }
   handleSelect(value) {
     return this.setState({ selected: value });
   }
@@ -39,12 +46,13 @@ class CreateProject extends Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         this.props.handleNext(values.projectName, this.state.selected)
+        console.log(values.projectName);
       }
     });
   };
-
+  
   render() {
-    const { getFieldDecorator } = this.props.form;
+     const { getFieldDecorator } = this.props.form;
     return (
       <div className="create-project">
         <Topbar hideActions />
@@ -52,9 +60,9 @@ class CreateProject extends Component {
           <div>
             <span>PROJECT NAME</span>
             <Form>
-              <Form.Item >
+              <Form.Item>
                 {getFieldDecorator('projectName', {
-                  rules: [{ required: true, message: 'Please input a project name' }],
+                  rules: [{ required: true, message: 'Please input a project name' },{validator:this.getID,}],
                 })(
                   <Input
                     prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -63,8 +71,8 @@ class CreateProject extends Component {
               </Form.Item>
             </Form>
           </div>
-
-          <p>SELF-HOSTED</p>
+          <br/><br/>
+          <p>Select a Primary Database <i className="material-icons help">help_outline</i></p>
           <div className="underline"></div>
           <div className="cards">
             <Row>
