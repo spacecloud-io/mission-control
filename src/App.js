@@ -6,7 +6,7 @@ function App() {
   return (
     <div>
       <Routes />
-      <a href="https://discordapp.com/invite/ypXEEBr" target="_blank" class="discord valign-wrapper">
+      <a href="https://discordapp.com/invite/ypXEEBr" target="_blank" className="discord valign-wrapper">
         <span>Have a Question?</span>
         <img src={discord} alt="" />
       </a>
