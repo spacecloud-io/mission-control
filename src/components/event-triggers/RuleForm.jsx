@@ -1,21 +1,22 @@
 import React from "react"
 
-import { Modal, Form, Input, Radio, Select, InputNumber } from 'antd';
+import { Modal, Form, Input, Radio, Select, Collapse } from 'antd';
 import { getEventSourceFromType } from "../../utils";
+import RadioCard from "../radio-card/RadioCard"
 
 const RuleForm = (props) => {
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.name, values.type, values.service, values.func, values.retries, values.options);
+        props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, values.options);
         props.handleCancel();
         props.form.resetFields();
       }
     });
   }
   const { getFieldDecorator, getFieldValue } = props.form;
-  const { name, type, service, func, retries, options } = props.initialValues ? props.initialValues : {}
+  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
   let defaultEventSource = getEventSourceFromType(type, "database")
   const temp = getFieldValue("source")
   const eventSource = temp ? temp : defaultEventSource
@@ -45,26 +46,13 @@ const RuleForm = (props) => {
             initialValue: defaultEventSource
           })(
             <Radio.Group>
-              <Radio.Button value="database">Database</Radio.Button>
-              <Radio.Button value="custom">Custom</Radio.Button>
+              <RadioCard value="database">Database</RadioCard>
+              <RadioCard value="custom">Custom</RadioCard>
             </Radio.Group>
           )}
         </Form.Item>
         {(!eventSource || eventSource === "database") && <React.Fragment>
-          <p><b>Type</b></p>
-          <Form.Item>
-            {getFieldDecorator('type', {
-              rules: [{ required: true, message: 'Please select a type!' }],
-              initialValue: type
-            })(
-              <Radio.Group>
-                <Radio.Button value="create-crud">Insert</Radio.Button>
-                <Radio.Button value="update-crud">Update</Radio.Button>
-                <Radio.Button value="delete-crud">Delete</Radio.Button>
-              </Radio.Group>
-            )}
-          </Form.Item>
-          <p><b>Database</b></p>
+          <p><b>Table/collection</b></p>
           <div style={{ display: "flex" }}>
             <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
               {getFieldDecorator('options.db', {
@@ -87,6 +75,19 @@ const RuleForm = (props) => {
               )}
             </Form.Item>
           </div>
+          <p><b>Trigger operation</b></p>
+          <Form.Item>
+            {getFieldDecorator('type', {
+              rules: [{ required: true, message: 'Please select a type!' }],
+              initialValue: type ? type : (eventSource === "database" && "DB_INSERT")
+            })(
+              <Radio.Group>
+                <RadioCard value="DB_INSERT">Insert</RadioCard>
+                <RadioCard value="DB_UPDATE">Update</RadioCard>
+                <RadioCard value="DB_DELETE">Delete</RadioCard>
+              </Radio.Group>
+            )}
+          </Form.Item>
         </React.Fragment>}
         {eventSource === "custom" && <React.Fragment>
           <p><b>Type</b></p>
@@ -99,29 +100,27 @@ const RuleForm = (props) => {
             )}
           </Form.Item>
         </React.Fragment>}
-        <p><b>Target</b></p>
-        <div style={{ display: "flex" }}>
-          <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-            {getFieldDecorator('service', {
-              rules: [{ required: true, message: 'Please provide a service name!' }],
-              initialValue: service
-            })(
-              <Input placeholder="Service name" />
-            )}
-          </Form.Item>
-          <Form.Item style={{ flexGrow: 1, width: 200 }}>
-            {getFieldDecorator('func', {
-              rules: [{ required: true, message: 'Please provide a function name!' }],
-              initialValue: func
-            })(
-              <Input placeholder="Function name" />
-            )}
-          </Form.Item>
-        </div>
-        <p><b>Retries</b></p>
-        <Form.Item>
-          {getFieldDecorator('retries', { initialValue: retries === undefined ? 3 : retries })(<InputNumber min={0} />)}
+        <p><b>Webhook URL</b></p>
+        <Form.Item >
+          {getFieldDecorator('url', {
+            rules: [{ required: true, message: 'Please provide a webhook url!' }],
+            initialValue: url
+          })(
+            <Input placeholder="eg: https://myapp.com/endpoint1" />
+          )}
         </Form.Item>
+        <Collapse bordered={false} >
+          <Collapse.Panel header="Advanced settings" key="advanced">
+            <p><b>Retries</b> <span style={{color: "rgba(0,0,0,0.38)"}}>(default: 3)</span></p>
+            <Form.Item>
+              {getFieldDecorator('retries', { initialValue: retries })(<Input placeholder="Number of retries" />)}
+            </Form.Item>
+            <p><b>Timeout</b> <span style={{color: "rgba(0,0,0,0.38)"}}>(default: 5000)</span></p>
+            <Form.Item>
+              {getFieldDecorator('timeout', { initialValue: timeout })(<Input placeholder="Timeout in milliseconds" />)}
+            </Form.Item>
+          </Collapse.Panel>
+        </Collapse>
       </Form>
     </Modal>
   );

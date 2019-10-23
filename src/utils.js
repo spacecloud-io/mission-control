@@ -431,9 +431,9 @@ export const getEventSourceFromType = (type, defaultValue) => {
   let source = defaultValue
   if (type) {
     switch (type) {
-      case "create-crud":
-      case "update-crud":
-      case "delete-crud":
+      case "DB_INSERT":
+      case "DB_UPDATE":
+      case "DB_DELETE":
         source = "database"
         break;
       default:

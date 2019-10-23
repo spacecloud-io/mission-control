@@ -129,9 +129,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 	return {
 		handleSubmitEventTriggerRule: (name, type, service, func, retries, options = {}) => {
 			const rules = get(store.getState(), "config.modules.eventing.rules", {})
-			if (options.col === "all") {
-				options.col = undefined
-			}
 			const newRule = {
 				type, service, func, retries, options
 			}

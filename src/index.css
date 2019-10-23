@@ -32,3 +32,19 @@ body {
   cursor: pointer;
   color: #002c39;
 }
+
+.ant-form .ant-collapse-item {
+  border-bottom: none !important;
+}
+
+.ant-form .ant-collapse-header {
+  padding-left: 24px !important;
+}
+
+.ant-form .ant-collapse-header > i {
+  left: 0 !important
+}
+
+.ant-form .ant-collapse-content-box {
+  padding: 4px 0 !important;
+}
