@@ -13,7 +13,7 @@ class FileStorage {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setEventingConfig(projectId, config) {
@@ -26,7 +26,7 @@ class FileStorage {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setTriggerRule(projectId, ruleName, rule) {
@@ -39,7 +39,7 @@ class FileStorage {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   deleteTriggerRule(projectId, ruleName) {
@@ -52,7 +52,7 @@ class FileStorage {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 }
 

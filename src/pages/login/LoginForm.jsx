@@ -1,6 +1,5 @@
 import React from 'react'
 import { Form, Input, Button } from 'antd';
-import { createFormField } from 'rc-form';
 import './login.css'
 
 function LoginForm(props) {
@@ -41,16 +40,6 @@ function LoginForm(props) {
   )
 }
 
-const WrappedNormalLoginForm = Form.create({
-  mapPropsToFields(props) {
-    return {
-      userName: createFormField(props.formState.userName),
-      password: createFormField(props.formState.password),
-    };
-  },
-  onFieldsChange(props, _, allFields) {
-    props.updateFormState(allFields)
-  },
-})(LoginForm);
+const WrappedLoginForm = Form.create({})(LoginForm);
 
-export default WrappedNormalLoginForm
+export default WrappedLoginForm

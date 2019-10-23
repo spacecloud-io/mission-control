@@ -1,6 +1,13 @@
 import Client from "./client";
 import SpaceAPI from 'space-api';
 
+import Database from "./database"
+import FileStorage from "./fileStorage"
+import EventTriggers from "./eventTriggers"
+import RemoteServices from "./remoteServices"
+import UserManagement from "./userManagement"
+import Projects from "./projects"
+
 import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
@@ -13,6 +20,12 @@ const and = SpaceAPI.and
 class Service {
   constructor() {
     this.client = new Client()
+    this.database = new Database(this.client)
+    this.fileStorage = new FileStorage(this.client)
+    this.eventTriggers = new EventTriggers(this.client)
+    this.remoteServices = new RemoteServices(this.client)
+    this.userManagement = new UserManagement(this.client)
+    this.projects = new Projects(this.client)
   }
 
   setToken(token) {
@@ -40,7 +53,7 @@ class Service {
         }
 
         resolve(data.token)
-      }).catch(ex => reject(ex))
+      }).catch(ex => reject(ex.toString()))
     })
   }
 
@@ -60,8 +73,8 @@ class Service {
           reject("Not a valid Space Cloud API call")
         }
         promise.then(res => resolve(res)).catch(ex => reject(ex.toString()))
-      } catch (error) {
-        reject(error.toString())
+      } catch (ex) {
+        reject(ex.toString())
       }
     })
   }
@@ -82,12 +95,12 @@ class Service {
         client.mutate({
           mutation: gql`${graphqlQuery}`,
           variables: variables
-        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+        }).then(result => resolve(result.data)).catch(ex => reject(ex.toString()))
       } else {
         client.query({
           query: gql`${graphqlQuery}`,
           variables: variables
-        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+        }).then(result => resolve(result.data)).catch(ex => reject(ex.toString()))
       }
     })
   }

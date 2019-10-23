@@ -12,7 +12,7 @@ class UserManagement {
             return
           }
           resolve()
-        })
+        }).catch(ex => reject(ex.toString()))
     })
   }
 }

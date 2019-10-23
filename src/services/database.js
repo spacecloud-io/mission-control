@@ -13,7 +13,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setDbConfig(projectId, dbName, config) {
@@ -26,7 +26,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   listCollections(projectId, dbName) {
@@ -39,7 +39,7 @@ class Database {
           }
           resolve(data.collections)
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   modifySchema(projectId, dbName, collections) {
@@ -52,7 +52,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   reloadSchema(projectId, dbName) {
@@ -65,7 +65,7 @@ class Database {
           }
           resolve(data.collections)
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   modifyColSchema(projectId, dbName, colName, schema) {
@@ -78,7 +78,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   inspectColSchema(projectId, dbName, colName) {
@@ -91,7 +91,7 @@ class Database {
           }
           resolve(data.schema)
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   deleteCol(projectId, dbName, colName) {
@@ -104,7 +104,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setColRule(projectId, dbName, colName, rule) {
@@ -117,7 +117,7 @@ class Database {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 }
 

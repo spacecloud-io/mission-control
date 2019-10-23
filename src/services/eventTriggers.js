@@ -13,7 +13,7 @@ class EventTriggers {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   queueEvent(projectId, event) {
@@ -26,7 +26,7 @@ class EventTriggers {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setTriggerRule(projectId, triggerName, triggerRule) {
@@ -39,7 +39,7 @@ class EventTriggers {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   deleteTriggerRule(projectId, triggerName) {
@@ -52,7 +52,7 @@ class EventTriggers {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 }
 

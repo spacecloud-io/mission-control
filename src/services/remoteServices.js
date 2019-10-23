@@ -12,7 +12,7 @@ class RemoteServices {
             return
           }
           resolve()
-        })
+        }).catch(ex => reject(ex.toString()))
     })
   }
 
@@ -26,7 +26,7 @@ class RemoteServices {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 }
 

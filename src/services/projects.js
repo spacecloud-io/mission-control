@@ -13,7 +13,7 @@ class Projects {
           }
           resolve(data.projects)
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   addProject(projectId, config) {
@@ -26,7 +26,7 @@ class Projects {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   deleteProject(projectId) {
@@ -39,7 +39,7 @@ class Projects {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 
   setProjectGlobalConfig(projectId, config) {
@@ -52,7 +52,7 @@ class Projects {
           }
           resolve()
         })
-    })
+    }).catch(ex => reject(ex.toString()))
   }
 }
 
