@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Modal, Form, } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -10,25 +10,53 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 
-const TriggerForm = (props) => {
-  const [data, setData] = useState("{}")
+const defaultRule = JSON.stringify({
+  prefix: "/",
+  rule: {
+    create: {
+      rule: "allow"
+    },
+    read: {
+      rule: "allow"
+    },
+    delete: {
+      rule: "allow"
+    }
+  }
+}, null, 2)
+const AddRuleForm = (props) => {
+  const [data, setData] = useState(defaultRule)
   const handleSubmit = e => {
     e.preventDefault();
-    props.handleSubmit(data);
-    props.handleCancel();
+    props.form.validateFields((err, values) => {
+      if (!err) {
+        props.handleSubmit(values.name, data);
+        props.handleCancel();
+        props.form.resetFields();
+      }
+    });
   }
+  const { getFieldDecorator } = props.form;
 
   return (
     <Modal
       className="edit-item-modal"
-      title="Trigger Event"
+      title="Add rule"
       visible={true}
-      okText="Trigger"
+      okText="Add"
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-        <FormItemLabel name="Event data" description="JSON object" />
+        <FormItemLabel name="Name" />
+        <Form.Item>
+          {getFieldDecorator('name', {
+            rules: [{ required: true, message: 'Please provide a name to your rule!' }]
+          })(
+            <Input placeholder="Example: profile-files" />
+          )}
+        </Form.Item>
+        <FormItemLabel name="Rule" />
         <CodeMirror
           value={data}
           options={{
@@ -49,6 +77,6 @@ const TriggerForm = (props) => {
   );
 }
 
+const WrappedAddRuleForm = Form.create({})(AddRuleForm);
 
-export default TriggerForm
-
+export default WrappedAddRuleForm

@@ -11,10 +11,12 @@ import EmptyState from '../../../components/rules/EmptyState';
 import rulesImg from '../../../assets/rules.svg';
 import RulesComponent from '../../../components/rules/Rules';
 import ConfigurationForm from "../../../components/file-storage/ConfigurationForm"
+import AddRuleForm from "../../../components/file-storage/AddRuleForm"
 import { get, set, push } from "automate-redux";
 
 const Rules = (props) => {
-	const [modalVisible, setModalVisibility] = useState(false)
+	const [configurationModalVisible, setConfigurationModalVisibility] = useState(false)
+	const [addRuleModalVisible, setAddRuleModalVisibility] = useState(true)
 	useEffect(() => {
 		ReactGA.pageview("/projects/file-storage/rules");
 	}, [])
@@ -29,9 +31,12 @@ const Rules = (props) => {
 						<Header name="Rules" color="#000" fontSize="22px" />
 						<Documentation url="https://docs.spaceuptech.com/file-storage" />
 					</div>
-					{modalVisible && <ConfigurationForm
-					  handleSubmit={props.saveConfig}
-						handleCancel={() => setModalVisibility(false)} />}
+					{configurationModalVisible && <ConfigurationForm
+						handleSubmit={props.saveConfig}
+						handleCancel={() => setConfigurationModalVisibility(false)} />}
+					{addRuleModalVisible && <AddRuleForm
+						handleSubmit={props.saveConfig}
+						handleCancel={() => setAddRuleModalVisibility(false)} />}
 					{noOfRules > 0 && <RulesComponent
 						array={true}
 						rules={props.rules}
