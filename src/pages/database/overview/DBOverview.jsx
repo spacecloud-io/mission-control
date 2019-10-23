@@ -9,7 +9,7 @@ import client from "../../../client"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DbConfigure from '../../../components/database/overview/configure/DbConfigure';
-import CreateNewCollectionForm from '../../../components/database/overview/collection-form/CreateNewCollectionForm';
+import AddTableForm from '../../../components/database/add-table-form/AddTableForm';
 import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 
@@ -20,7 +20,7 @@ import { Col, Row, Button, Icon, Table, Switch } from 'antd';
 import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../utils';
 
 const Overview = props => {
-  const [modalVisible, handleModalVisiblity] = useState(false);
+  const [modalVisible, handleModalVisiblity] = useState(true);
   useEffect(() => {
     fetchCollections(props.projectId)
   }, [props.projectId, props.selectedDb])
@@ -149,7 +149,7 @@ const Overview = props => {
                 </Col>
               </Row>
             )}
-            {modalVisible && <CreateNewCollectionForm
+            {modalVisible && <AddTableForm
               selectedDb={props.selectedDb}
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}

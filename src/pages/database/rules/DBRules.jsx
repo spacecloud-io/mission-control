@@ -7,7 +7,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import Documentation from "../../../components/documentation/Documentation"
 import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
-import CreateNewCollectionForm from '../../../components/database/overview/collection-form/CreateNewCollectionForm';
+import AddTableForm from '../../../components/database/add-table-form/AddTableForm';
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
@@ -108,7 +108,7 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
             {!collections.length && (
               <TablesEmptyState dbType={selectedDb} projectId={projectId} handleAdd={() => handleModalVisiblity(true)} />
             )}
-            {modalVisible && <CreateNewCollectionForm
+            {modalVisible && <AddTableForm
               selectedDb={selectedDb}
               visible={modalVisible}
               handleCancel={() => handleModalVisiblity(false)}
