@@ -7,8 +7,6 @@ import Topbar from '../../components/topbar/Topbar';
 import Header from '../../components/header/Header';
 import SecretConfigure from '../../components/configure/SecretConfigure';
 import EventingConfigure from '../../components/configure/EventingConfigure';
-import FileStorage from '../../components/configure/FileStorageConfigure';
-import StaticConfigure from '../../components/configure/StaticConfigure';
 import { get, set } from 'automate-redux';
 import store from ".././../store";
 import './configure.css'
@@ -27,11 +25,7 @@ function Rules(props) {
 					<Header name="Project Configurations" color="#000" fontSize="22px" />
 					<SecretConfigure formState={props.secret} handleChange={props.handleSecretChange} />
 					<Divider />
-					<FileStorage formState={props.fileStorage} handleChange={props.handleFileStorageChange} />
-					<Divider />
 					<EventingConfigure formState={props.eventing} handleChange={props.handleEventingChange} />
-					<Divider />
-					<StaticConfigure formState={props.static} handleChange={props.handleStaticChange} />
 				</div>
 			</div>
 		</div>

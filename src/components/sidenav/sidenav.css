@@ -1,79 +1,42 @@
 .sidenav {
   position: fixed;
-  top: 65px;
+  top: 64px;
   left: 0;
   bottom: 0;
-  z-index:99;
+  z-index: 99;
   width: 300px;
-  background: #FFFFFF;
-  box-shadow: 10px 0 5px -5px #EEE;
+  background: #ffffff;
+  box-shadow: 10px 0 5px -5px #eee;
 }
 
-.item {
-  height:64px;
+.sidenav-item {
+  height: 64px;
   display: flex;
-  flex-basis: 100%;
   align-items: center;
-  color:rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   font-size: 14px;
-  font-weight: 500 ;
+  font-weight: 500;
   line-height: 16px;
   cursor: pointer;
-  width: 85%;
 }
 
-.item>i {
-  font-size: 20px;
-  position: relative;
-  left:10px;
-  padding: 12px 16px 12px 24px;
-  
+.sidenav-item--active {
+  color: #ff6700 !important;
+  background: rgba(255, 103, 0, 0.2) !important;
 }
 
-.item:hover {
+.sidenav-item:hover {
   font-weight: 600;
   width: 100%;
-  color:rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   background: #eee;
 }
 
-.sidenav .active {
-  width:100%;
-  align-items: center;
-  font-weight: 500;
-  color:#FF6700 !important;
-  background: rgba(255, 103, 0, 0.2) !important;
-  
-}
-
-.active>i {
+.sidenav-item__icon {
   font-size: 20px;
-  padding: 12px 16px 12px 24px;
+  margin-left: 32px;
 }
 
-.sidenav .line {
-  margin-bottom: 0;
-}
-
-.sidenav .flex-container {
-  padding: 24px;
-}
-
-.sidenav .edit {
-  height: 22px;
-  width: 48px;
-  font-size: 12px;
-  color:#FF6700;
-  background: rgba(255, 103, 0, 0.2);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sidenav .edit:hover {
-  background: rgba(255, 103, 0, 0.2);
-}
-
-.sidenav #itemName{
-  position: relative;
-  left:20px;
+.sidenav-item__name {
+  margin-left: 32px;
 }
