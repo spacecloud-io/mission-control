@@ -41,7 +41,7 @@ const Schema = ({
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />
-        <div className='db-page-content'>
+        <div className='page-content page-content--has-tabs'>
           <DBTabs
             selectedDatabase={selectedDb}
             activeKey='schema'

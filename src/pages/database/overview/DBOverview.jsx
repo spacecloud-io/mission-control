@@ -8,8 +8,8 @@ import client from "../../../client"
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
-import DbConfigure from '../../../components/database/overview/configure/DbConfigure';
 import AddTableForm from '../../../components/database/add-table-form/AddTableForm';
+import EditConnectionForm from '../../../components/database/edit-connection-form/EditConnectionForm';
 import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 
@@ -20,7 +20,8 @@ import { Col, Row, Button, Icon, Table, Switch } from 'antd';
 import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../utils';
 
 const Overview = props => {
-  const [modalVisible, handleModalVisiblity] = useState(true);
+  const [addTableModalVisible, handleAddTableModalVisiblity] = useState(false);
+  const [editConnModalVisible, handleEditConnModalVisiblity] = useState(false);
   useEffect(() => {
     fetchCollections(props.projectId)
   }, [props.projectId, props.selectedDb])
@@ -93,22 +94,13 @@ const Overview = props => {
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />
-        <div className='db-page-content'>
+        <div className='page-content page-content--has-tabs'>
           <DBTabs
             selectedDatabase={props.match.params.database}
             activeKey='overview'
             projectId={props.match.params.projectId}
           />
           <div className="db-tab-content">
-            <div>
-              <DbConfigure
-                updateFormState={props.updateFormState}
-                formState={props.formState}
-                setUpDb={props.setUpDb}
-                dbType={props.selectedDb}
-                handleSetUpDb={() => handleSetUpDb(props.projectId)}
-              />
-            </div>
             {props.trackedTables.length > 0 && (
               <div>
                 <div style={{ marginTop: '32px' }}>
@@ -116,7 +108,7 @@ const Overview = props => {
                     {label}s
                     </span>
                   <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                    onClick={() => handleModalVisiblity(true)}>
+                    onClick={() => handleAddTableModalVisiblity(true)}>
                     <Icon type='plus' /> Add {label}
                   </Button>
                 </div>
@@ -127,7 +119,7 @@ const Overview = props => {
             )}
 
             {props.trackedTables.length === 0 && (
-              <TablesEmptyState dbType={props.selectedDb} projectId={props.projectId} handleAdd={() => handleModalVisiblity(true)} />
+              <TablesEmptyState dbType={props.selectedDb} projectId={props.projectId} handleAdd={() => handleAddTableModalVisiblity(true)} />
             )}
 
             {props.untrackedTables.length > 0 && (
@@ -138,8 +130,8 @@ const Overview = props => {
                       Untracked {label}s
                     </span>
                     <Button
-                     style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                     onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
+                      style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                      onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
                       <Icon type='plus' /> Track All
                     </Button>
                   </div>
@@ -149,14 +141,18 @@ const Overview = props => {
                 </Col>
               </Row>
             )}
-            {modalVisible && <AddTableForm
+            {addTableModalVisible && <AddTableForm
               selectedDb={props.selectedDb}
-              visible={modalVisible}
-              handleCancel={() => handleModalVisiblity(false)}
+              handleCancel={() => handleAddTableModalVisiblity(false)}
               handleSubmit={(collectionName, rules, schema, realtimeEnabled) => {
                 createTable(props.projectId, props.selectedDb, collectionName, rules, schema, realtimeEnabled)
               }}
             />}
+            {editConnModalVisible && <EditConnectionForm
+              selectedDb={props.selectedDb}
+              handleCancel={() => handleEditConnModalVisiblity(false)}
+              handleSubmit={(conn) => {
+              }} />}
           </div>
         </div>
       </div>
@@ -197,9 +193,8 @@ const mapStateToProps = (state, ownProps) => {
       name: name,
       realtime: val.isRealtimeEnabled,
     })).filter(obj => obj.name !== "default" && obj.name !== "events_log"),
-    setUpDb: !tables.includes("events_log") ? true: false, 
-    untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
-    createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
+    setUpDb: !tables.includes("events_log") ? true : false,
+    untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name }))
   };
 };
 

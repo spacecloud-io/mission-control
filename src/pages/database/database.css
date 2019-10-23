@@ -154,13 +154,6 @@
   color: black;
 }
 
-.db-page-content {
-  position: absolute;
-  top: 51px;
-  left: 250px;
-  right: 0;
-}
-
 .flex-blox {
   display: flex;
 }
@@ -202,5 +195,5 @@
 }
 
 .db-tab-content {
-  padding: 32px 48px;
+  padding: 48px 48px 0;
 }

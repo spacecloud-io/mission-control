@@ -4,11 +4,15 @@ body {
 }
 
 .page-content {
-  padding: 48px 120px 0 56px;
+  padding: 48px 48px 0;
   position: absolute;
-  top: 51px;
-  left: 250px;
+  top: 64px;
+  left: 300px;
   right: 0;
+}
+
+.page-content--has-tabs {
+  padding: 0;
 }
 
 .flex-blox {

@@ -37,7 +37,7 @@ const RuleForm = (props) => {
             rules: [{ required: true, message: 'Please provide a name to trigger!' }],
             initialValue: name
           })(
-            <Input disabled={props.initialValues} placeholder="Trigger Name" />
+            <Input placeholder="Trigger Name" />
           )}
         </Form.Item>
         <FormItemLabel name="Source" />
