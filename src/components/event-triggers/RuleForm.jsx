@@ -3,6 +3,7 @@ import React from "react"
 import { Modal, Form, Input, Radio, Select, Collapse } from 'antd';
 import { getEventSourceFromType } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
+import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const RuleForm = (props) => {
   const handleSubmit = e => {
@@ -30,7 +31,7 @@ const RuleForm = (props) => {
       onOk={handleSubmit}
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-        <p><b>Trigger Name</b></p>
+        <FormItemLabel name="Trigger name" />
         <Form.Item>
           {getFieldDecorator('name', {
             rules: [{ required: true, message: 'Please provide a name to trigger!' }],
@@ -39,7 +40,7 @@ const RuleForm = (props) => {
             <Input disabled={props.initialValues} placeholder="Trigger Name" />
           )}
         </Form.Item>
-        <p><b>Source</b></p>
+        <FormItemLabel name="Source" />
         <Form.Item>
           {getFieldDecorator('source', {
             rules: [{ required: true, message: 'Please select a source!' }],
@@ -52,7 +53,7 @@ const RuleForm = (props) => {
           )}
         </Form.Item>
         {(!eventSource || eventSource === "database") && <React.Fragment>
-          <p><b>Table/collection</b></p>
+          <FormItemLabel name="Table/collection" />
           <div style={{ display: "flex" }}>
             <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
               {getFieldDecorator('options.db', {
@@ -75,7 +76,7 @@ const RuleForm = (props) => {
               )}
             </Form.Item>
           </div>
-          <p><b>Trigger operation</b></p>
+          <FormItemLabel name="Trigger operation" />
           <Form.Item>
             {getFieldDecorator('type', {
               rules: [{ required: true, message: 'Please select a type!' }],
@@ -90,7 +91,7 @@ const RuleForm = (props) => {
           </Form.Item>
         </React.Fragment>}
         {eventSource === "custom" && <React.Fragment>
-          <p><b>Type</b></p>
+          <FormItemLabel name="Type" />
           <Form.Item>
             {getFieldDecorator('type', {
               rules: [{ required: true, message: 'Please provide a type!' }],
@@ -100,7 +101,7 @@ const RuleForm = (props) => {
             )}
           </Form.Item>
         </React.Fragment>}
-        <p><b>Webhook URL</b></p>
+        <FormItemLabel name="Webhook URL" />
         <Form.Item >
           {getFieldDecorator('url', {
             rules: [{ required: true, message: 'Please provide a webhook url!' }],
@@ -111,11 +112,11 @@ const RuleForm = (props) => {
         </Form.Item>
         <Collapse bordered={false} >
           <Collapse.Panel header="Advanced settings" key="advanced">
-            <p><b>Retries</b> <span style={{color: "rgba(0,0,0,0.38)"}}>(default: 3)</span></p>
+            <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item>
               {getFieldDecorator('retries', { initialValue: retries })(<Input placeholder="Number of retries" />)}
             </Form.Item>
-            <p><b>Timeout</b> <span style={{color: "rgba(0,0,0,0.38)"}}>(default: 5000)</span></p>
+            <FormItemLabel name="Timeout" description="default: 5000" />
             <Form.Item>
               {getFieldDecorator('timeout', { initialValue: timeout })(<Input placeholder="Timeout in milliseconds" />)}
             </Form.Item>
