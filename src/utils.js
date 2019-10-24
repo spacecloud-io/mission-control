@@ -23,10 +23,6 @@ export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: msg, duration: duration });
 }
 
-const generateProjectId = (projectName) => {
-  return projectName.toLowerCase().replace(/\s+|-/g, '_');
-}
-
 const getConnString = (dbType) => {
   const connString = defaultDbConnectionStrings[dbType]
   return connString ? connString : "localhost"
@@ -47,9 +43,9 @@ const defaultRules = {
   }
 }
 
-export const generateProjectConfig = (name, dbType) => ({
+export const generateProjectConfig = (projectId, name, dbType) => ({
   name: name,
-  id: generateProjectId(name),
+  id: projectId,
   secret: generateId(),
   modules: {
     crud: {
@@ -57,14 +53,11 @@ export const generateProjectConfig = (name, dbType) => ({
         enabled: true,
         conn: getConnString(dbType),
         collections: {
-          default: {
-            isRealtimeEnabled: true,
-            rules: defaultRules
-          },
-          events_log: {
+          default: { rules: defaultRules },
+          event_logs: {
             isRealtimeEnabled: false,
-            schema: `type events_log {
-  _id: ID! @id
+            schema: `type event_logs {
+  _id: ID! @primary
   batchid: String
   type: String
   token: Integer
@@ -73,8 +66,7 @@ export const generateProjectConfig = (name, dbType) => ({
   payload: String
   status: String
   retries: Integer
-  service: String
-  func: String              
+  url: String            
 }`,
             rules: defaultRules
           }

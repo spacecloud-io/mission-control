@@ -4,7 +4,7 @@ import { get, set, reset } from 'automate-redux';
 import client from "../../client";
 import store from "../../store"
 import history from "../../history";
-import { openProject, notify, openPlansPage } from "../../utils"
+import { openProject, notify } from "../../utils"
 
 import { Modal, Icon, Button, Table } from 'antd'
 import Header from "../../components/header/Header"
@@ -93,7 +93,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     handleCreateProject: () => {
       const mode = get(store.getState(), "operationConfig.mode", 0)
       if (mode < 1) {
-        openPlansPage()
         notify("info", "Info", "You need to upgrade to create multiple projects on the same cluster")
         return
       }

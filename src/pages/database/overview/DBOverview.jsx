@@ -90,7 +90,6 @@ const Overview = props => {
       <Topbar
         showProjectSelector
         showDbSelector
-        selectedDb={props.selectedDb}
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />

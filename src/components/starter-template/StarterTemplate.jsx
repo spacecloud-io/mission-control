@@ -2,7 +2,7 @@ import React from 'react'
 import './starter-template.css'
 import star from '../../assets/star.svg'
 
-function StarterTemplate(props) {
+const StarterTemplate = (props) => {
   return (
     <div onClick={props.onClick} className={
       props.active ? 'template active' : 'template'

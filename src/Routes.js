@@ -7,15 +7,10 @@ import Database from "./pages/database/Database";
 import UserManagement from "./pages/user-management/UserManagement";
 import FunctionRules from "./pages/functions/rules/Rules";
 import FileStorageRules from "./pages/file-storage/rules/Rules";
-import StaticRules from "./pages/static/rules/Rules";
 import Configure from "./pages/configure/configure";
 import Overview from "./pages/overview/Overview";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
-import Billing from "./pages/billing/Billing";
-import Deploy from "./pages/deploy/Deploy";
-import Plans from "./pages/plans/Plans";
-import SigninModal from "./components/signin-modal/SigninModal";
 import Explorer from "./pages/explorer/Explorer";
 
 import DBRules from "./pages/database/rules/DBRules";
@@ -114,22 +109,6 @@ export default () => {
       />
       <Route
         exact
-        path="/mission-control/projects/:projectId/gateway"
-        component={props => (
-          <Redirect
-            to={`/mission-control/projects/${
-              props.match.params.projectId
-              }/gateway/rules`}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/gateway/rules"
-        component={StaticRules}
-      />
-      <Route
-        exact
         path="/mission-control/projects/:projectId/configure"
         component={Configure}
       />
@@ -138,22 +117,6 @@ export default () => {
         path="/mission-control/projects/:projectId/explorer"
         component={Explorer}
       />
-      {/* <Route
-        exact
-        path="/mission-control/projects/:projectId/deploy"
-        component={Deploy}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/plans"
-        component={Plans}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/billing"
-        component={Billing}
-      /> */}
-      <SigninModal />
     </Router>
   );
 };

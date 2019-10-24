@@ -37,7 +37,6 @@ const Schema = ({
       <Topbar
         showProjectSelector
         showDbSelector
-        selectedDb={selectedDb}
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />

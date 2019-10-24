@@ -37,6 +37,18 @@ body {
   color: #002c39;
 }
 
+.hint {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.primary-text {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.secondary-text {
+  color: rgba(0, 0, 0, 0.54);
+}
+
 .ant-form .ant-collapse-item {
   border-bottom: none !important;
 }
@@ -46,7 +58,7 @@ body {
 }
 
 .ant-form .ant-collapse-header > i {
-  left: 0 !important
+  left: 0 !important;
 }
 
 .ant-form .ant-collapse-content-box {

@@ -31,7 +31,6 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
       <Topbar
         showProjectSelector
         showDbSelector
-        selectedDb={selectedDb}
       />
       <div className='flex-box'>
         <Sidenav selectedItem='database' />
