@@ -1,10 +1,26 @@
 import { increment, decrement, set, get } from "automate-redux"
+import {set as setObjectPath } from "dot-prop-immutable"
 import { notification } from "antd"
 import client from "./client"
 import history from "./history"
 import store from "./store"
 import { defaultDbConnectionStrings } from "./constants"
 
+export const getProjectConfig = (projects, projectId, path, defaultValue) => {
+  const project = projects.find(project => project.id === projectId)
+  if (!project) return defaultValue
+  return get(project, path, defaultValue)
+}
+
+export const setProjectConfig = (projects, projectId, path, value) => {
+  const updatedProjects = projects.map(project => {
+    if (project.id === projectId) {
+      return setObjectPath(project, path, value)
+    }
+    return project
+  })
+  store.dispatch(set("projects", updatedProjects))
+}
 export const openProject = (projectId) => {
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`

@@ -10,6 +10,7 @@
     "codemirror": "^5.47.0",
     "codemirror-graphql": "^0.9.0",
     "customize-cra": "^0.2.13",
+    "dot-prop-immutable": "^1.5.0",
     "graphiql": "^0.14.2",
     "graphql": "^14.5.4",
     "jsonwebtoken": "^8.5.1",
