@@ -1,11 +1,38 @@
+import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
-import {set as setObjectPath } from "dot-prop-immutable"
 import { notification } from "antd"
+import uri from "lil-uri"
+
+import store from "./store"
 import client from "./client"
 import history from "./history"
-import store from "./store"
-import { defaultDbConnectionStrings } from "./constants"
+import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
 
+export const parseDbConnString = conn => {
+  if (!conn) return {}
+  const url = uri(conn)
+  const hostName = url.hostname()
+  let path = url.path();
+  let urlObj = {
+    user: url.user(),
+    password: url.password(),
+    port: url.port(),
+    hostName: hostName,
+    query: url.query()
+  }
+  if (path && path.startsWith("/")){
+    urlObj.dbName = path.substr(1)
+  }
+  if (hostName && hostName.includes("(")) {
+    const temp = hostName.split("(")
+    urlObj.protocol = temp[0]
+    urlObj.hostName = temp[1]
+  }
+  if (conn.includes("://")) {
+    urlObj.scheme = conn.split("://")[0]
+  }
+  return urlObj
+}
 export const getProjectConfig = (projects, projectId, path, defaultValue) => {
   const project = projects.find(project => project.id === projectId)
   if (!project) return defaultValue
@@ -21,42 +48,18 @@ export const setProjectConfig = (projects, projectId, path, value) => {
   })
   store.dispatch(set("projects", updatedProjects))
 }
-export const openProject = (projectId) => {
-  const currentURL = window.location.pathname
-  const projectURL = `/mission-control/projects/${projectId}`
-  if (!currentURL.includes(projectURL)) {
-    history.push(projectURL)
-  }
-  const projects = get(store.getState(), "projects", [])
-  const config = projects.find(project => project.id === projectId)
-  if (!config) {
-    notify("error", "Error", "Project does not exist")
-    return
-  }
-}
 
-export const notify = (type, title, msg, duration) => {
-  notification[type]({ message: title, description: msg, duration: duration });
+const generateId = () => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }
 
 const getConnString = (dbType) => {
   const connString = defaultDbConnectionStrings[dbType]
   return connString ? connString : "localhost"
-}
-
-const defaultRules = {
-  create: {
-    rule: 'allow'
-  },
-  read: {
-    rule: 'allow'
-  },
-  update: {
-    rule: 'allow'
-  },
-  delete: {
-    rule: 'allow'
-  }
 }
 
 export const generateProjectConfig = (projectId, name, dbType) => ({
@@ -69,22 +72,11 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
         enabled: true,
         conn: getConnString(dbType),
         collections: {
-          default: { rules: defaultRules },
+          default: { rules: defaultDBRules },
           event_logs: {
             isRealtimeEnabled: false,
-            schema: `type event_logs {
-  _id: ID! @primary
-  batchid: String
-  type: String
-  token: Integer
-  timestamp: Integer
-  event_timestamp: Integer
-  payload: String
-  status: String
-  retries: Integer
-  url: String            
-}`,
-            rules: defaultRules
+            schema: eventLogsSchema,
+            rules: defaultDBRules
           }
         }
       }
@@ -104,6 +96,41 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
     }
   }
 })
+
+export const notify = (type, title, msg, duration) => {
+  notification[type]({ message: title, description: msg, duration: duration });
+}
+
+export const getEventSourceFromType = (type, defaultValue) => {
+  let source = defaultValue
+  if (type) {
+    switch (type) {
+      case "DB_INSERT":
+      case "DB_UPDATE":
+      case "DB_DELETE":
+        source = "database"
+        break;
+      default:
+        source = "custom"
+    }
+  }
+  return source
+}
+
+export const openProject = (projectId) => {
+  const currentURL = window.location.pathname
+  const projectURL = `/mission-control/projects/${projectId}`
+  if (!currentURL.includes(projectURL)) {
+    history.push(projectURL)
+  }
+  const projects = get(store.getState(), "projects", [])
+  const config = projects.find(project => project.id === projectId)
+  if (!config) {
+    notify("error", "Error", "Project does not exist")
+    return
+  }
+}
+
 
 export const handleConfigLogin = (token, lastProjectId) => {
   if (token) {
@@ -128,15 +155,6 @@ export const handleConfigLogin = (token, lastProjectId) => {
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
-export const generateId = () => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c == "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-
 export const onAppLoad = () => {
   client.fetchEnv().then(isProd => {
     const token = localStorage.getItem("token")
@@ -153,82 +171,4 @@ export const onAppLoad = () => {
 
     handleConfigLogin(token, lastProjectId)
   })
-}
-
-export const createTable = (projectId, db, collectionName, rules, schema, realtimeEnabled) => {
-  let collection = {
-    isRealtimeEnabled: realtimeEnabled,
-    rules: rules,
-    schema: schema
-  }
-  if (db === 'mongo') {
-    store.dispatch(set(`config.modules.crud.${db}.collections.${collectionName}`, collection))
-    return
-  }
-
-  store.dispatch(increment("pendingRequests"))
-  client.handleModifyTable(projectId, db, collectionName, schema)
-    .then(() => {
-      store.dispatch(set(`config.modules.crud.${db}.collections.${collectionName}`, collection))
-    })
-    .catch(error => {
-      console.log("Error", error)
-      notify("error", "Error", "Could not create table")
-    })
-    .finally(() => store.dispatch(decrement("pendingRequests")))
-}
-
-export const fetchCollections = (projectId) => {
-  store.dispatch(increment("pendingRequests"))
-  client.fetchCollectionsList(projectId)
-    .then(tables => {
-      store.dispatch(set(`tables.${projectId}`, tables))
-    })
-    .catch(error => {
-      console.log("Error", error)
-    })
-    .finally(() => store.dispatch(decrement("pendingRequests")))
-}
-
-export const handleSetUpDb = (projectId) => {
-  store.dispatch(increment("pendingRequests"))
-  const crudConfig = store.getState().config.modules.crud
-  const config = {}
-  Object.entries(crudConfig).forEach(([dbType, dbConfig]) => {
-    let collections = {}
-    Object.entries(dbConfig.collections).forEach(([colName, colConfig]) => {
-      collections[colName] = { schema: colConfig.schema }
-    })
-    config[dbType] = {
-      enabled: dbConfig.enabled,
-      collections: collections
-    }
-  })
-
-  client.handleModify(projectId, config)
-    .then(() => {
-      fetchCollections(projectId)
-      // notify("success", "Success", 'Successfully set up db')
-    })
-    .catch(error => {
-      console.log("Error", error)
-      notify("error", "Error", 'Could not set up db')
-    })
-    .finally(() => store.dispatch(decrement("pendingRequests")))
-}
-
-export const getEventSourceFromType = (type, defaultValue) => {
-  let source = defaultValue
-  if (type) {
-    switch (type) {
-      case "DB_INSERT":
-      case "DB_UPDATE":
-      case "DB_DELETE":
-        source = "database"
-        break;
-      default:
-        source = "custom"
-    }
-  }
-  return source
 }

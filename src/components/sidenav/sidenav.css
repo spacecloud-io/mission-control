@@ -23,6 +23,7 @@
 .sidenav-item--active {
   color: #ff6700 !important;
   background: rgba(255, 103, 0, 0.2) !important;
+  border-left: 4px solid #ff6700;
 }
 
 .sidenav-item:hover {

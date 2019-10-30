@@ -60,10 +60,6 @@
   border: 1px solid #e4e4e4;
 }
 
-.rules-main-wrapper .code .code-mirror {
-  height: 300px;
-}
-
 .box-heading {
   padding: 20px;
   color: black;
@@ -195,5 +191,5 @@
 }
 
 .db-tab-content {
-  padding: 48px 48px 0;
+  padding: 32px 32px 0;
 }

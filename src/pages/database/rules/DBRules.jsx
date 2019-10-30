@@ -1,31 +1,50 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { get, set } from 'automate-redux';
+import React from 'react';
+import { useParams } from "react-router-dom"
+import { useSelector, useDispatch } from 'react-redux';
+import { set } from 'automate-redux';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import Documentation from "../../../components/documentation/Documentation"
-import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
-import AddTableForm from '../../../components/database/add-table-form/AddTableForm';
+import RuleEditor from "../../../components/rule-editor/RuleEditor"
+import securitySvg from "../../../assets/security.svg"
 
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
+import { getProjectConfig, notify } from '../../../utils';
+import { setColRule } from '../dbActions';
 
-import '../database.css';
+const Rules = () => {
+  // Router params
+  const { projectID, selectedDB } = useParams()
 
-// antd
-import { Button, Icon, Col, Row } from 'antd';
-import { createTable } from '../../../utils';
+  // Global state
+  const projects = useSelector(state => state.projects)
+  const selectedCol = useSelector(state => state.uiState.selectedCollection)
 
-const Rules = ({ projectId, selectedDb, collections, selectedCollection, selectedRule, defaultRule, handleRuleChange, handleSelection }) => {
-  const [modalVisible, handleModalVisiblity] = useState(false);
+  const dispatch = useDispatch()
 
+  // Derived properties
+  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
+  const rules = Object.entries(collections).reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
+
+  // Handlers
+  const handleRuleClick = (ruleName) => dispatch(set("uiState.selectedCollection", ruleName))
+
+  const handleSubmit = (rules) => {
+    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled)
+      .then(() => notify("success", "Success", "Saved rule successfully"))
+      .catch(ex => notify("error", "Error saving rule", ex))
+  }
+
+  const SidePanel = () => {
+    return <div className="side-panel">
+      <div className="side-panel__graphic">
+        <img src={securitySvg} />
+      </div>
+      <p className="side-panel__description">Secure who can access what</p>
+      <a target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="side-panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
+    </div>
+  }
   return (
     <React.Fragment>
       <Topbar
@@ -36,85 +55,16 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
         <Sidenav selectedItem='database' />
         <div className='page-content page-content--has-tabs'>
           <DBTabs
-            selectedDatabase={selectedDb}
+            selectedDB={selectedDB}
+            projectID={projectID}
             activeKey='rules'
-            projectId={projectId}
           />
           <div className="db-tab-content">
-            {collections.length > 0 && (
-              <div className='rules-schema-table'>
-                <div style={{ textAlign: "right" }}>
-                  <Documentation url="https://docs.spaceuptech.com" />
-                </div>
-                <div className='rules-main-wrapper'>
-                  <div className="rules-header">
-                    <Icon type="bulb" /><span>Hint : To indent press ctrl + A in the editor and then shift + tab</span>
-                  </div>
-                  <Row>
-                    <Col span={6}>
-                      <div className='rulesTable'>
-                        {collections.map((collection, index) => {
-                          return (
-                            <div
-                              className={
-                                selectedCollection === collection
-                                  ? 'tabledata activedata'
-                                  : 'tabledata'
-                              }
-                              id='rule'
-                              value={collection}
-                              key={collection}
-                              onClick={() => {
-                                handleSelection(collection);
-                              }}
-                            >
-                              <div className='add-a-rule'>{collection}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </Col>
-                    <Col span={18}>
-                      <div className='code'>
-                        <div className='code-mirror'>
-                          <CodeMirror
-                            value={
-                              selectedRule
-                            }
-                            options={{
-                              mode: { name: 'javascript', json: true },
-                              lineNumbers: true,
-                              styleActiveLine: true,
-                              matchBrackets: true,
-                              autoCloseBrackets: true,
-                              tabSize: 2,
-                              autofocus: true
-                            }}
-                            onBeforeChange={(editor, data, value) => {
-                              handleRuleChange(
-                                selectedCollection,
-                                value
-                              );
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-              </div>
-            )}
-            {!collections.length && (
-              <TablesEmptyState dbType={selectedDb} projectId={projectId} handleAdd={() => handleModalVisiblity(true)} />
-            )}
-            {modalVisible && <AddTableForm
-              selectedDb={selectedDb}
-              visible={modalVisible}
-              handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={(collectionName, rules, schema, realtimeEnabled) => {
-                createTable(projectId, selectedDb, collectionName, rules, schema, realtimeEnabled)
-              }}
-            />}
+            <RuleEditor rules={rules}
+              selectedRuleName={selectedCol}
+              handleClick={handleRuleClick}
+              handleSubmit={handleSubmit}
+              sidePanel={<SidePanel />} />
           </div>
         </div>
       </div>
@@ -122,42 +72,4 @@ const Rules = ({ projectId, selectedDb, collections, selectedCollection, selecte
   );
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const selectedDb = ownProps.match.params.database;
-  const collections = get(state, `config.modules.crud.${selectedDb}.collections`, {})
-  const collectionNames = Object.keys(collections).filter(col => col !== "events_log")
-  let selectedCollection = get(state, `uiState.database.${selectedDb}.selectedCollection`, '')
-  if (selectedCollection === '' && collectionNames.length > 0) {
-    selectedCollection = collectionNames[0]
-  }
-  const selectedRule = selectedCollection === '' ? '' : collections[selectedCollection].rules
-  return {
-    projectId: ownProps.match.params.projectId,
-    selectedDb: selectedDb,
-    collections: collectionNames,
-    selectedCollection: selectedCollection,
-    selectedRule: selectedRule
-  };
-};
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  const selectedDb = ownProps.match.params.database;
-  return {
-    handleRuleChange: (collectionName, value) => {
-      dispatch(
-        set(
-          `config.modules.crud.${selectedDb}.collections.${collectionName}.rules`,
-          value
-        )
-      );
-    },
-    handleSelection: collectionName => {
-      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
-    }
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Rules);
+export default Rules

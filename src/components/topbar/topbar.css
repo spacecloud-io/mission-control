@@ -9,7 +9,7 @@
   top: 0;
   z-index:100;
   display: flex;
-  position: fixed;
+  align-items: center;;
 }
 
 .topbar .logo-black {
@@ -46,10 +46,6 @@
 
 .topbar .btn {
   width:139px;
-  height: 41px;
-  position: relative;
-  left:20px;
-  top:6px;
   font-size: 14px;
   line-height: 19px;
   font-weight: normal;

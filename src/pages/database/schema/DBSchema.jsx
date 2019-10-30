@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
+import {useParams} from "react-router-dom"
 
 import { get, set, increment, decrement } from 'automate-redux';
 import store from "../../../store"
 import client from '../../../client';
 import { connect } from 'react-redux';
-import { notify, createTable } from '../../../utils';
+import { notify } from '../../../utils';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import Documentation from "../../../components/documentation/Documentation"
 import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
-import AddTableForm from '../../../components/database/add-table-form/AddTableForm';
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
@@ -30,7 +30,8 @@ const Schema = ({
   projectId, selectedDb, collections, selectedCollection, selectedSchema,
   handleSchemaChange, handleSelection, handleReloadSchema
 }) => {
-  const [modalVisible, handleModalVisiblity] = useState(false);
+
+  const { projectID, selectedDB } = useParams()
 
   return (
     <React.Fragment>
@@ -42,9 +43,9 @@ const Schema = ({
         <Sidenav selectedItem='database' />
         <div className='page-content page-content--has-tabs'>
           <DBTabs
-            selectedDatabase={selectedDb}
+            selectedDB={selectedDB}
+            projectID={projectID}
             activeKey='schema'
-            projectId={projectId}
           />
           <div className="db-tab-content">
             {collections.length > 0 && (
@@ -119,17 +120,6 @@ const Schema = ({
                 </div>
               </div>
             )}
-            {!collections.length && (
-              <TablesEmptyState dbType={selectedDb} projectId={projectId} handleAdd={() => handleModalVisiblity(true)} />
-            )}
-            {modalVisible && <AddTableForm
-              selectedDb={selectedDb}
-              visible={modalVisible}
-              handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={(collectionName, rules, schema, realtimeEnabled) => {
-                createTable(projectId, selectedDb, collectionName, rules, schema, realtimeEnabled)
-              }}
-            />}
           </div>
         </div>
       </div>

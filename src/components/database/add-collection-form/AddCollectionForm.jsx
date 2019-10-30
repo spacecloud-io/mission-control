@@ -8,59 +8,49 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import { defaultDBRules } from '../../../constants';
 
-function AddTableForm(props) {
-  const { getFieldDecorator } = props.form;
+const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCancel, initialValues }) => {
+  const { getFieldDecorator, getFieldValue } = form;
 
-  const initialSchema = `type {
-  ${props.selectedDb === 'mongo' ? '_id' : 'id'}: ID! @id
-}`
-
-  const initalRule = {
-    create: {
-      rule: 'allow'
-    },
-    read: {
-      rule: 'allow'
-    },
-    update: {
-      rule: 'allow'
-    },
-    delete: {
-      rule: 'allow'
+  if (!initialValues) {
+    initialValues = {
+      schema: `type {
+        ${selectedDB === 'mongo' ? '_id' : 'id'}: ID! @primary
+      }`,
+      rules: defaultDBRules,
+      isRealtimeEnabled: true
     }
-  };
+  }
 
-  const [schema, setSchema] = useState(initialSchema);
-  const [rule, setRule] = useState(JSON.stringify(initalRule, null, 2));
-  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
+  const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
+  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
+  let [schema, setSchema] = useState(initialValues.schema);
+  if (schema) {
+    const colName = getFieldValue("name")
+    const temp = schema.trim().slice(4).trim()
+    const [_, colSchema] = temp.split(" ")
+    const schema = `type ${colName} ${colSchema}`
+    setSchema(schema)
+  }
 
   const onSwitchChange = checked => {
-    setRealTimeEnabled(checked);
+    setIsRealtimeEnabled(checked);
   };
 
-  const handleSubmit = e => {
+  const handleSubmitClick = e => {
     e.preventDefault();
-    props.form.validateFields((err, values) => {
+    form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(
+        handleSubmit(
           values.name,
           rule,
           schema,
-          realTimeEnabled
+          isRealtimeEnabled
         );
-        props.handleCancel();
+        handleCancel();
       }
     });
-  };
-
-  const handleNameChange = e => {
-    const name = e.target.value
-    const schema = `type ${name} {
-  ${props.selectedDb === 'mongo' ? '_id' : 'id'}: ID! @id
-}`
-
-    setSchema(schema)
   };
 
 
@@ -70,26 +60,21 @@ function AddTableForm(props) {
         className='edit-item-modal'
         visible={true}
         width={720}
-        okText="Add"
-        title={
-          props.selectedDb === 'mongo' ? 'Add a Collection' : 'Add a Table'
-        }
-        onCancel={props.handleCancel}
+        okText={editMode ? "Save" : "Add"}
+        title={`${editMode ? "Edit" : "Add"} ${selectedDB === "mongo" ? "Collection" : "Table"}`}
+        onCancel={handleCancel}
       >
-        <Form layout="vertical" onSubmit={handleSubmit}>
-          <FormItemLabel name={props.selectedDb === 'mongo' ? 'Collection Name' : 'Table Name'} />
+        <Form layout="vertical" onSubmit={handleSubmitClick}>
+          <FormItemLabel name={selectedDB === 'mongo' ? 'Collection Name' : 'Table Name'} />
           <Form.Item>
-            {getFieldDecorator('name', {
-              rules: [{ required: true, message: `${props.selectedDb === 'mongo' ? 'Collection' : 'Table'} name is required` }]
+            {getFieldDecorator("name", {
+              rules: [{ required: true, message: `${selectedDB === 'mongo' ? 'Collection' : 'Table'} name is required` }],
+              initialValue: initialValues.name
             })(
               <Input
-                className='input'
-                placeholder={
-                  props.selectedDb === 'mongo'
-                    ? 'Enter a collection'
-                    : 'Enter a table'
-                }
-                onChange={handleNameChange}
+                className="input"
+                placeholder={`Enter ${selectedDB === "mongo" ? "Collection": "Table"} name`}
+                disabled={editMode}
               />
             )}
           </Form.Item>
@@ -98,7 +83,7 @@ function AddTableForm(props) {
           <Form.Item>
             {getFieldDecorator('realtime')(
               <span className='realtime'>
-                Enabled: <Switch defaultChecked onChange={onSwitchChange} />
+                Enabled: <Switch defaultChecked={initialValues.isRealtimeEnabled} onChange={onSwitchChange} />
               </span>
             )}
           </Form.Item>
@@ -146,6 +131,4 @@ function AddTableForm(props) {
   );
 }
 
-const WrappedAddTableForm = Form.create({})(AddTableForm);
-
-export default WrappedAddTableForm;
+export default Form.create({})(AddCollectionForm);

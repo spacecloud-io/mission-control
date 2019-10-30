@@ -1,0 +1,66 @@
+.rule-editor {
+  border: 1px solid #e4e4e4;
+  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04), 0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625),
+    0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
+}
+
+.rule-editor__rule-list {
+  border-right: 1px solid #e4e4e4;
+  overflow-y: auto;
+}
+
+.rule-editor__rule-item {
+  height: 48px;
+  padding: 16px;
+  border-bottom: 1px solid #e4e4e4;
+  cursor: pointer;
+}
+
+.rule-editor__rule-item--active {
+  border-left: 4px solid #ff6700;
+  background: rgba(255, 103, 0, 0.2);
+}
+
+.rule-editor__footer {
+  border-top: 1px solid #e4e4e4;
+  padding: 8px;
+  text-align: right;
+}
+
+.rule-editor .side-panel {
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #e4e4e4;
+}
+
+.rule-editor .side-panel__description {
+  text-align: center;
+  margin: 16px 0 0 0;
+}
+
+.rule-editor .side-panel__graphic {
+  text-align: center;
+}
+
+.rule-editor .side-panel__graphic img{
+  width: 70%;
+}
+
+.rule-editor .side-panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.rule-editor .side-panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.rule-editor .side-panel__link i {
+  font-size: 12px;
+}

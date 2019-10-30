@@ -24,99 +24,27 @@ export default () => {
       <Route exact path="/mission-control" component={Home} />
       <Route exact path="/mission-control/login" component={Login} />
       <Route exact path="/mission-control/welcome" component={Welcome} />
-      <Route
-        exact
-        path="/mission-control/create-project"
-        component={CreateProject}
+      <Route exact path="/mission-control/create-project" component={CreateProject} />
+      <Route exact path="/mission-control/projects/:projectID"
+        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />)} />
+      <Route exact path="/mission-control/projects/:projectID/overview" component={Overview} />
+      <Route exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
+      <Route exact path="/mission-control/projects/:projectID/database" component={Database} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB"
+        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/database/${props.match.params.selectedDB}/overview`} />)} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
+      <Route exact path="/mission-control/projects/:projectID/functions"
+        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/functions/rules`} />)}
       />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId"
-        component={props => (
-          <Redirect
-            to={`/mission-control/projects/${
-              props.match.params.projectId
-              }/overview`}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/overview"
-        component={Overview}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/user-management"
-        component={UserManagement}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/database"
-        component={Database}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/database/overview/:database"
-        component={DBOverview}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/database/rules/:database"
-        component={DBRules}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/database/schema/:database"
-        component={DBSchema}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/functions"
-        component={props => (
-          <Redirect
-            to={`/mission-control/projects/${
-              props.match.params.projectId
-              }/functions/rules`}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/functions/rules"
-        component={FunctionRules}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/file-storage"
-        component={props => (
-          <Redirect
-            to={`/mission-control/projects/${
-              props.match.params.projectId
-              }/file-storage/rules`}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/file-storage/rules"
-        component={FileStorageRules}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/event-triggers"
-        component={EventTriggers}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/configure"
-        component={Configure}
-      />
-      <Route
-        exact
-        path="/mission-control/projects/:projectId/explorer"
-        component={Explorer}
-      />
+      <Route exact path="/mission-control/projects/:projectID/functions/rules" component={FunctionRules} />
+      <Route exact path="/mission-control/projects/:projectID/file-storage"
+        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/file-storage/rules`} />)} />
+      <Route exact path="/mission-control/projects/:projectID/file-storage/rules" component={FileStorageRules} />
+      <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
+      <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+      <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
     </Router>
   );
 };

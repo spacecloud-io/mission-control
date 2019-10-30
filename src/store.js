@@ -4,7 +4,10 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
   projects: [],
-  pendingRequests: 0
+  pendingRequests: 0,
+  uiState: {
+    selectedCollection: ""
+  }
 };
 
 // Generate reducers with the initial state and pass it to the redux store
