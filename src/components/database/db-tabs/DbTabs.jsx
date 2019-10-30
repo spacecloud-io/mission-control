@@ -29,6 +29,13 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
+        <TabPane tab='Settings' key='settings'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/settings`
+            }}
+          />
+        </TabPane>
       </Tabs>
     </div>
   )

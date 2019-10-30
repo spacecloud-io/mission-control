@@ -136,7 +136,6 @@ export const handleReload = (projectId, dbName) => {
 export const setDBConfig = (projectId, dbName, enabled, conn) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
-    const conn = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.conn`, "")
     client.database.setDbConfig(projectId, dbName, { enabled, conn }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.enabled`, enabled)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.conn`, conn)

@@ -28,7 +28,7 @@ export const defaultDBRules = {
 }
 
 export const eventLogsSchema = `type event_logs {
-  _id: ID! @id
+  _id: ID! @primary
   batchid: String
   type: String
   token: Integer

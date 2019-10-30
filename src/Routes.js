@@ -13,9 +13,10 @@ import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Explorer from "./pages/explorer/Explorer";
 
+import DBOverview from "./pages/database/overview/DBOverview";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
-import DBOverview from "./pages/database/overview/DBOverview";
+import DBSettings from "./pages/database/settings/DBSettings";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 
 export default () => {
@@ -35,6 +36,7 @@ export default () => {
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
       <Route exact path="/mission-control/projects/:projectID/functions"
         component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/functions/rules`} />)}
       />

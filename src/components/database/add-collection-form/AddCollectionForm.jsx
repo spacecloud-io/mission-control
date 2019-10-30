@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Switch, Form, Input, Row, Col } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
@@ -16,8 +16,8 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
   if (!initialValues) {
     initialValues = {
       schema: `type {
-        ${selectedDB === 'mongo' ? '_id' : 'id'}: ID! @primary
-      }`,
+  ${selectedDB === 'mongo' ? '_id' : 'id'}: ID! @primary
+}`,
       rules: defaultDBRules,
       isRealtimeEnabled: true
     }
@@ -25,14 +25,18 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
 
   const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
-  let [schema, setSchema] = useState(initialValues.schema);
-  if (schema) {
-    const colName = getFieldValue("name")
-    const temp = schema.trim().slice(4).trim()
-    const [_, colSchema] = temp.split(" ")
-    const schema = `type ${colName} ${colSchema}`
-    setSchema(schema)
-  }
+  const [schema, setSchema] = useState(initialValues.schema);
+
+  const colName = getFieldValue("name")
+  useEffect(() => {
+    if (schema) {
+      const temp = schema.trim().slice(4).trim()
+      const index = temp.indexOf("{")
+      const newSchema = `type ${colName ? colName: ""} ${temp.slice(index)}`
+      console.log(temp, index, schema)
+      setSchema(newSchema)
+    }
+  }, [schema, colName])
 
   const onSwitchChange = checked => {
     setIsRealtimeEnabled(checked);
@@ -73,7 +77,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
             })(
               <Input
                 className="input"
-                placeholder={`Enter ${selectedDB === "mongo" ? "Collection": "Table"} name`}
+                placeholder={`Enter ${selectedDB === "mongo" ? "Collection" : "Table"} name`}
                 disabled={editMode}
               />
             )}
