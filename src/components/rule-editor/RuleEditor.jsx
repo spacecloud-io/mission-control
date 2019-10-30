@@ -10,7 +10,7 @@ import 'codemirror/addon/edit/closebrackets.js';
 import "./rule-editor.css"
 import { notify } from "../../utils";
 
-const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", stringifyRules = true, handleClick, canDeleteRules = false, handleDelete, handleSubmit }) => {
+const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
   const noOfRules = entries.length
 
@@ -31,7 +31,7 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
 
   useEffect(() => {
     if (!rules[selectedRuleName] && noOfRules) {
-      handleClick(entries[0][0])
+      handleSelect(entries[0][0])
     }
   }, [rules])
 
@@ -52,10 +52,12 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
     }
   }
 
+
+  console.log("NoOfrules", noOfRules, noOfRules)
   return (
-    <div>
-      {!noOfRules === 0 && emptyState}
-      {(!noOfRules.length > 0) && <div className="rule-editor">
+    <div className="rule-editor">
+      {noOfRules === 0 && emptyState}
+      {(noOfRules > 0) && <div>
         <Row type="flex">
           <Col span={6}>
             {sidePanel}
@@ -64,7 +66,7 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
             {entries.map(([ruleName]) => {
               return <div
                 className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
-                onClick={() => handleClick(ruleName)}>
+                onClick={() => handleSelect(ruleName)}>
                 <span>{ruleName}</span>
                 {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
               </div>

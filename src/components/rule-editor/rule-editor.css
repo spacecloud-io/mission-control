@@ -27,40 +27,39 @@
   text-align: right;
 }
 
-.rule-editor .side-panel {
+.rule-editor .panel {
   height: 100%;
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.rule-editor .panel--has-border-right {
   border-right: 1px solid #e4e4e4;
 }
 
-.rule-editor .side-panel__description {
-  text-align: center;
-  margin: 16px 0 0 0;
-}
-
-.rule-editor .side-panel__graphic {
+.rule-editor .panel__description {
   text-align: center;
 }
 
-.rule-editor .side-panel__graphic img{
-  width: 70%;
+.rule-editor .panel__graphic {
+  text-align: center;
 }
 
-.rule-editor .side-panel__link {
+.rule-editor .panel__link {
   text-decoration: underline;
   font-size: 12px;
 }
 
-.rule-editor .side-panel__link {
+.rule-editor .panel__link {
   text-decoration: underline;
   font-size: 12px;
-  margin-top: 4px;
 }
 
-.rule-editor .side-panel__link i {
+.rule-editor .panel__link i {
   font-size: 12px;
+  position: relative;
+  top: 2px;
 }

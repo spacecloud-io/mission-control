@@ -38,6 +38,6 @@ export const eventLogsSchema = `type event_logs {
   status: String
   retries: Integer
   service: String
-  function: String              
+  function: String
 }`
 

@@ -24,10 +24,10 @@ const Rules = () => {
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  const rules = Object.entries(collections).reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
+  const rules = Object.entries(collections).filter(([name]) => name !== "event_logs").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
 
   // Handlers
-  const handleRuleClick = (ruleName) => dispatch(set("uiState.selectedCollection", ruleName))
+  const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (rules) => {
     const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
@@ -37,12 +37,12 @@ const Rules = () => {
   }
 
   const SidePanel = () => {
-    return <div className="side-panel">
-      <div className="side-panel__graphic">
-        <img src={securitySvg} />
+    return <div className="panel panel--has-border-right">
+      <div className="panel__graphic">
+        <img src={securitySvg} width="70%" />
       </div>
-      <p className="side-panel__description">Secure who can access what</p>
-      <a target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="side-panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
+      <p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Secure who can access what</p>
+      <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
     </div>
   }
   return (
@@ -62,7 +62,7 @@ const Rules = () => {
           <div className="db-tab-content">
             <RuleEditor rules={rules}
               selectedRuleName={selectedCol}
-              handleClick={handleRuleClick}
+              handleSelect={handleSelect}
               handleSubmit={handleSubmit}
               sidePanel={<SidePanel />} />
           </div>
