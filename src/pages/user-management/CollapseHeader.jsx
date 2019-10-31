@@ -1,5 +1,4 @@
 import React from 'react'
-import './user-management.css'
 
 function CollapseHeader(props) {
   return (

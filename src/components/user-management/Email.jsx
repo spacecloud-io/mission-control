@@ -1,35 +1,32 @@
 import React from 'react'
-import { Form, Switch } from 'antd';
-import { createFormField } from 'rc-form';
+import { Form, Switch, Button } from 'antd';
 
-function Email(props) {
-  const { getFieldDecorator } = props.form;
+const Email = ({ form, initialValues, handleSubmit }) => {
+  const { getFieldDecorator } = form;
+
+  const handleSubmitClick = e => {
+    e.preventDefault();
+    form.validateFields((err, values) => {
+      if (!err) {
+        handleSubmit({ enabled: values.enabled });
+      }
+    });
+  }
   return (
-    <div className="email">
-      <span>No fields to configure</span>
-      <Form>
-        <div className="switch">
-          <span>Enable:  </span>
-          <Form.Item>
-            {getFieldDecorator('enabled', { valuePropName: 'checked' })(
-              <Switch size="small" className="email-en-switch" />
-            )}
-          </Form.Item>
-        </div>
-      </Form>
-    </div >
+    <Form>
+      <Form.Item>
+        {getFieldDecorator('enabled', { initialValue: initialValues.enabled, valuePropName: "checked" })(
+          <span className='realtime'>
+            Enabled: <Switch />
+          </span>
+        )}
+      </Form.Item>
+      <br />
+      <Form.Item>
+        <Button onClick={handleSubmitClick}>Save</Button>
+      </Form.Item>
+    </Form>
   )
 }
 
-const WrappedEmailForm = Form.create({
-  mapPropsToFields(props) {
-    return {
-      enabled: createFormField({ value: props.formState.enabled }),
-    };
-  },
-  onValuesChange(props, changedValues) {
-    props.handleChange(changedValues)
-  },
-})(Email);
-
-export default WrappedEmailForm
+export default Form.create({})(Email);

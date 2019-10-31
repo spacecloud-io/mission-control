@@ -7,9 +7,6 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import Header from '../../../components/header/Header';
 import Documentation from '../../../components/documentation/Documentation';
-import EmptyState from '../../../components/rules/EmptyState';
-import rulesImg from '../../../assets/rules.svg';
-import RulesComponent from '../../../components/rules/Rules';
 import ConfigurationForm from "../../../components/file-storage/ConfigurationForm"
 import AddRuleForm from "../../../components/file-storage/AddRuleForm"
 import { get, set, push } from "automate-redux";
@@ -37,18 +34,10 @@ const Rules = (props) => {
 					{addRuleModalVisible && <AddRuleForm
 						handleSubmit={props.saveConfig}
 						handleCancel={() => setAddRuleModalVisibility(false)} />}
-					{noOfRules > 0 && <RulesComponent
-						array={true}
-						rules={props.rules}
-						handleRuleChange={props.handleRuleChange}
-						addText={'Add a rule'}
-						handleAddRuleClick={props.handleCreateRule}
-						handleDeleteRule={props.handleDeleteRule}
-					/>}
-					{!noOfRules && <EmptyState
+					{/* {!noOfRules && <EmptyState
 						graphics={rulesImg} desc="Guard your data with rules that define who has access to it and how it is structured."
 						buttonText="Add a rule"
-						handleClick={props.handleCreateRule} />}
+						handleClick={props.handleCreateRule} />} */}
 				</div>
 			</div>
 		</div>

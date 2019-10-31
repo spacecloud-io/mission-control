@@ -68,7 +68,7 @@ const Overview = () => {
   }
 
   const handleTrackCollections = (collections) => {
-    Promise.all(...collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
+    Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
       .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
       .catch(ex => notify("error", "Error", ex))
   }
@@ -166,17 +166,18 @@ const Overview = () => {
                 <Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={() => setEditConnModalVisible(true)}>Edit Connection</Button>
               </div>
             </div>}
-            {connected && <div className="empty-state">
-              <div className="empty-state__graphic">
-                <i className="material-icons-outlined" style={{ fontSize: 120, color: "#52C41A" }}>check_circle</i>
-              </div>
-              <p className="empty-state__description">Your database is set up!</p>
-              <p className="empty-state__action-text">Add a table for easy schema and access management</p>
-              <div className="empty-state__action-bar">
-                <Button className="action-rounded" type="primary" onClick={handleAddClick}>Add table</Button>
-              </div>
-            </div>}
-            {trackedCollectionsToShow.length > 0 && (
+            {connected && <React.Fragment>
+              {trackedCollectionsToShow.length === 0 && <div className="empty-state">
+                <div className="empty-state__graphic">
+                  <i className="material-icons-outlined" style={{ fontSize: 120, color: "#52C41A" }}>check_circle</i>
+                </div>
+                <p className="empty-state__description">Your database is set up!</p>
+                <p className="empty-state__action-text">Add a table for easy schema and access management</p>
+                <div className="empty-state__action-bar">
+                  <Button className="action-rounded" type="primary" onClick={handleAddClick}>Add table</Button>
+                </div>
+              </div>}
+              {trackedCollectionsToShow.length > 0 && (
               <div>
                 <div style={{ marginTop: '32px' }}>
                   <span className='collections'>
@@ -192,7 +193,6 @@ const Overview = () => {
                 </div>
               </div>
             )}
-
             {unTrackedCollectionsToShow.length > 0 && (
               <Row>
                 <Col span={12}>
@@ -212,6 +212,7 @@ const Overview = () => {
                 </Col>
               </Row>
             )}
+            </React.Fragment>}
             {addColModalVisible && <AddCollectionForm
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}

@@ -6,8 +6,6 @@ import { Table, Button, Icon } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import EmptyState from '../../components/rules/EmptyState';
-import rulesImg from '../../assets/rules.svg';
 import RuleForm from "../../components/event-triggers/RuleForm";
 import TriggerForm from "../../components/event-triggers/TriggerForm";
 import { get, set, increment, decrement } from "automate-redux";
@@ -101,10 +99,10 @@ const Rules = (props) => {
 							<Table columns={columns} dataSource={data} rowKey={(record) => record.name} />
 						</div>
 					</div>}
-					{!noOfRules && <EmptyState
+					{/* {!noOfRules && <EmptyState
 						graphics={rulesImg} desc="Add asynchronous triggers in your app"
 						buttonText="Add first trigger"
-						handleClick={() => setRuleModalVisibile(true)} />}
+						handleClick={() => setRuleModalVisibile(true)} />} */}
 					{ruleModalVisible && <RuleForm
 						handleCancel={handleRuleModalCancel}
 						handleSubmit={props.handleSubmitEventTriggerRule}
