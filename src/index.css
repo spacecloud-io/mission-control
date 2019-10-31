@@ -95,3 +95,40 @@ body {
 .CodeMirror {
   height: 360px !important;
 }
+
+.panel {
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel--has-border-right {
+  border-right: 1px solid #e4e4e4;
+}
+
+.panel__description {
+  text-align: center;
+}
+
+.panel__graphic {
+  text-align: center;
+}
+
+.panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.panel__link i {
+  font-size: 12px;
+  position: relative;
+  top: 2px;
+}

@@ -41,7 +41,7 @@ const ConfigurationForm = (props) => {
             </Radio.Group>
           )}
         </Form.Item>
-        {storeTypeValue === "local" && <React.Fragment>
+        {(storeTypeValue === "local" || !storeTypeValue) && <React.Fragment>
           <FormItemLabel name="Directory path" />
           <Form.Item>
             {getFieldDecorator('conn', {

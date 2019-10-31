@@ -1,4 +1,4 @@
-class FileStorage {
+class FileStore {
   constructor(client) {
     this.client = client
   }
@@ -11,13 +11,13 @@ class FileStorage {
             reject(data.error)
             return
           }
-          resolve()
+          resolve(data.status)
         })
         .catch(ex => reject(ex.toString()))
     })
   }
 
-  setEventingConfig(projectId, config) {
+  setConfig(projectId, config) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/${projectId}/file-storage/config`, config)
         .then(({status, data}) => {
@@ -31,7 +31,7 @@ class FileStorage {
     })
   }
 
-  setTriggerRule(projectId, ruleName, rule) {
+  setRule(projectId, ruleName, rule) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/${projectId}/file-storage/rules/${ruleName}`, rule)
         .then(({status, data}) => {
@@ -45,7 +45,7 @@ class FileStorage {
     })
   }
 
-  deleteTriggerRule(projectId, ruleName) {
+  deleteRule(projectId, ruleName) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/${projectId}/file-storage/rules/${ruleName}`)
         .then(({status, data}) => {
@@ -60,4 +60,4 @@ class FileStorage {
   }
 }
 
-export default FileStorage
+export default FileStore

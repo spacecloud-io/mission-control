@@ -9,6 +9,7 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
+import { notify } from '../../../utils';
 
 const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCancel, initialValues }) => {
   const { getFieldDecorator, getFieldValue } = form;
@@ -33,7 +34,6 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
       const newSchema = `type ${colName ? colName: ""} ${temp.slice(index)}`
-      console.log(temp, index, schema)
       setSchema(newSchema)
     }
   }, [schema, colName])
@@ -46,13 +46,17 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(
-          values.name,
-          rule,
-          schema,
-          isRealtimeEnabled
-        );
-        handleCancel();
+        try {
+          handleSubmit(
+            values.name,
+            JSON.parse(rule),
+            schema,
+            isRealtimeEnabled
+          );
+          handleCancel();
+        } catch (ex) {
+          notify("error", "Error", ex.toString())
+        }
       }
     });
   };

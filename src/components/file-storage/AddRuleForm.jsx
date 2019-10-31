@@ -9,6 +9,7 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import { notify } from "../../utils";
 
 const defaultRule = JSON.stringify({
   prefix: "/",
@@ -30,9 +31,13 @@ const AddRuleForm = (props) => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.name, data);
-        props.handleCancel();
-        props.form.resetFields();
+        try {
+          props.handleSubmit(values.name, JSON.parse(data));
+          props.handleCancel();
+          props.form.resetFields();
+        } catch (ex) {
+          notify("error", "Error", ex.toString())
+        }
       }
     });
   }

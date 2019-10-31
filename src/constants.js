@@ -37,7 +37,23 @@ export const eventLogsSchema = `type event_logs {
   payload: String
   status: String
   retries: Integer
-  service: String
-  function: String
+  url: String
+  remarks: String
 }`
 
+export const defaultFileRule = {
+  create: {
+    rule: "allow"
+  },
+  read: {
+    rule: "allow"
+  },
+  delete: {
+    rule: "allow"
+  }
+}
+
+export const defaultFileRootPathRule = {
+  prefix: "/",
+  rule: defaultFileRule
+}

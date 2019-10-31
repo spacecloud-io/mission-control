@@ -10,10 +10,13 @@
 }
 
 .rule-editor__rule-item {
+  justify-content: space-between;
   height: 48px;
-  padding: 16px;
+  padding: 0 16px;
   border-bottom: 1px solid #e4e4e4;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .rule-editor__rule-item--active {
@@ -25,41 +28,4 @@
   border-top: 1px solid #e4e4e4;
   padding: 8px;
   text-align: right;
-}
-
-.rule-editor .panel {
-  height: 100%;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.rule-editor .panel--has-border-right {
-  border-right: 1px solid #e4e4e4;
-}
-
-.rule-editor .panel__description {
-  text-align: center;
-}
-
-.rule-editor .panel__graphic {
-  text-align: center;
-}
-
-.rule-editor .panel__link {
-  text-decoration: underline;
-  font-size: 12px;
-}
-
-.rule-editor .panel__link {
-  text-decoration: underline;
-  font-size: 12px;
-}
-
-.rule-editor .panel__link i {
-  font-size: 12px;
-  position: relative;
-  top: 2px;
 }

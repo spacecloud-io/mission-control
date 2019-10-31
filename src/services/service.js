@@ -2,7 +2,7 @@ import Client from "./client";
 import SpaceAPI from 'space-api';
 
 import Database from "./database"
-import FileStorage from "./fileStorage"
+import FileStore from "./fileStore"
 import EventTriggers from "./eventTriggers"
 import RemoteServices from "./remoteServices"
 import UserManagement from "./userManagement"
@@ -21,7 +21,7 @@ class Service {
   constructor() {
     this.client = new Client()
     this.database = new Database(this.client)
-    this.fileStorage = new FileStorage(this.client)
+    this.fileStore = new FileStore(this.client)
     this.eventTriggers = new EventTriggers(this.client)
     this.remoteServices = new RemoteServices(this.client)
     this.userManagement = new UserManagement(this.client)

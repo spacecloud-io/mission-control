@@ -147,13 +147,13 @@ const Overview = () => {
         <div className='page-content page-content--has-tabs'>
           <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
-            <h3>Connection Details</h3>
+            <h3>Connection Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setEditConnModalVisible(true)}>(Edit)</a></h3>
             <Descriptions bordered>
+              <Descriptions.Item label="Host">{hostName}</Descriptions.Item>
+              <Descriptions.Item label="Port">{port}</Descriptions.Item>
               <Descriptions.Item label="Status" >
                 <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
               </Descriptions.Item>
-              <Descriptions.Item label="Host">{hostName}</Descriptions.Item>
-              <Descriptions.Item label="Port">{port}</Descriptions.Item>
             </Descriptions>
             {!connected && <div className="empty-state">
               <div className="empty-state__graphic">

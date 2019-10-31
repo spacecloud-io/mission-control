@@ -37,7 +37,7 @@ const Schema = () => {
   }
 
   const SidePanel = () => {
-    return <div className="panel">
+    return <div className="panel panel--has-border-right">
       <div className="panel__graphic">
         <img src={dataModellingSvg} width="70%" />
       </div>

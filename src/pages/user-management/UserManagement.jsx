@@ -49,7 +49,7 @@ const UserManagement = () => {
         <Sidenav selectedItem="user-management" />
         <div className="page-content">
           <h2>Auth Providers</h2>
-          <Collapse style={{ marginTop: 24 }} defaultActiveKey="1" accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
+          <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
             <Panel header={(<CollapseHeader icon={mailIcon} desc="Mail" />)} key="1">
               <Email initialValues={emailConfig} handleSubmit={(config) => handleProviderConfig("email", config)} />
             </Panel>

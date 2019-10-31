@@ -86,19 +86,18 @@ export const fetchCollections = (projectId, dbName) => {
   })
 }
 
-export const fetchDBConnState = (projectId, dbName) => {
+export const fetchDBConnState = (projectId, dbName) => { 
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
-    client.database.getConnectionState(projectId, dbName).then(() => {
-      store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, true))
-      fetchCollections(projectId, dbName)
-        .then(() => resolve()).
-        catch(ex => reject(ex))
+    client.database.getConnectionState(projectId, dbName).then(connected => {
+      store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, connected))
+      if (connected) {
+        fetchCollections(projectId, dbName)
+          .then(() => resolve()).
+          catch(ex => reject(ex))
+      }
     })
-      .catch(ex => {
-        store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, false))
-        reject(ex)
-      })
+      .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
   })
 }
@@ -139,6 +138,7 @@ export const setDBConfig = (projectId, dbName, enabled, conn) => {
     client.database.setDbConfig(projectId, dbName, { enabled, conn }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.enabled`, enabled)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.conn`, conn)
+      store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, true))
       if (enabled) {
         fetchCollections().then(() => resolve()).catch(ex => reject(ex))
         return
