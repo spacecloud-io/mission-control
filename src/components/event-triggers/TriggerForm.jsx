@@ -9,13 +9,18 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import { notify } from "../../utils";
 
 const TriggerForm = (props) => {
   const [data, setData] = useState("{}")
   const handleSubmit = e => {
     e.preventDefault();
-    props.handleSubmit(data);
-    props.handleCancel();
+    try {
+      props.handleSubmit(JSON.parse(data));
+      props.handleCancel();
+    } catch (ex) {
+      notify("error", "Error", ex.toString())
+    }
   }
 
   return (

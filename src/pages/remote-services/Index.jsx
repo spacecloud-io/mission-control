@@ -87,7 +87,7 @@ const RemoteServices = () => {
           <a onClick={() => handleViewClick(name)}>View</a>
           <a onClick={() => handleEditClick(name)}>Edit</a>
           <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a>Remove</a>
+            <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
         </span>
       )

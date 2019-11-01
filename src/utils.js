@@ -117,6 +117,11 @@ export const getEventSourceFromType = (type, defaultValue) => {
   return source
 }
 
+export const getEventSourceLabelFromType = (type) => {
+  let source = getEventSourceFromType(type)
+  return source.charAt(0).toUpperCase() + source.slice(1)
+}
+
 export const openProject = (projectId) => {
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`

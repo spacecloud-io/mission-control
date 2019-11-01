@@ -108,7 +108,7 @@ const RemoteService = () => {
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
           <Popconfirm title={`This will remove this endpoint from this service. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a>Remove</a>
+            <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
         </span>
       )

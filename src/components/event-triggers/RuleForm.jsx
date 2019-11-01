@@ -69,8 +69,7 @@ const RuleForm = (props) => {
             </Form.Item>
             <Form.Item style={{ flexGrow: 1, width: 200 }}>
               {getFieldDecorator('options.col', {
-                rules: [{ required: true, message: 'Please provide a collection/table!' }],
-                initialValue: options ? (options.col ? options.col : "all") : undefined
+                initialValue: options ? options.col : undefined
               })(
                 <Input placeholder="Collection / Table name" />
               )}

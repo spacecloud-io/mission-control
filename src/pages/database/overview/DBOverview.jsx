@@ -111,7 +111,7 @@ const Overview = () => {
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a>Delete</a>
+            <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
         </span>
       )

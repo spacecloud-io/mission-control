@@ -132,3 +132,11 @@ body {
   position: relative;
   top: 2px;
 }
+
+.edit-item-modal .ant-modal-header {
+  background: #002C39;
+}
+
+.edit-item-modal .ant-modal-title,.edit-item-modal .ant-modal-close-x  {
+  color: #FFF;
+}
