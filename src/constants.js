@@ -57,3 +57,7 @@ export const defaultFileRootPathRule = {
   prefix: "/",
   rule: defaultFileRule
 }
+
+export const defaultEndpointRule = {
+  rule: "allow"
+}

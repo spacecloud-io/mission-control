@@ -20,7 +20,7 @@ const Topbar = (props) => {
   return (
     <div>
       <div className="topbar">
-        <img className="logo-black" src={logo} alt="logo" />
+        <img src={logo} alt="logo" />
         {props.showProjectSelector && <div className="btn-position">
           <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
             <Icon type="caret-down" />

@@ -51,9 +51,9 @@ const Rules = () => {
         showProjectSelector
         showDbSelector
       />
-      <div className='flex-box'>
+      <div>
         <Sidenav selectedItem='database' />
-        <div className='page-content page-content--has-tabs'>
+        <div className='page-content page-content--no-padding'>
           <DBTabs
             selectedDB={selectedDB}
             projectID={projectID}

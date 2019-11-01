@@ -17,6 +17,8 @@ import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
+import RemoteServices from "./pages/remote-services/Index";
+import RemoteService from "./pages/remote-services/RemoteService";
 
 export default () => {
   return (
@@ -39,6 +41,8 @@ export default () => {
       <Route exact path="/mission-control/projects/:projectID/file-storage"
         component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/file-storage/rules`} />)} />
       <Route exact path="/mission-control/projects/:projectID/file-storage/rules" component={FileStorageRules} />
+      <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
+      <Route exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
       <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
       <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />
       <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />

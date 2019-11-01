@@ -57,7 +57,7 @@ const Configure = () => {
 	return (
 		<div className="configure-page">
 			<Topbar showProjectSelector />
-			<div className="flex-box">
+			<div>
 				<Sidenav selectedItem="configure" />
 				<div className="page-content">
 					<h2>JWT Secret</h2>

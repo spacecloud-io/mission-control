@@ -10,21 +10,9 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify } from "../../utils";
+import { defaultFileRootPathRule } from "../../constants";
 
-const defaultRule = JSON.stringify({
-  prefix: "/",
-  rule: {
-    create: {
-      rule: "allow"
-    },
-    read: {
-      rule: "allow"
-    },
-    delete: {
-      rule: "allow"
-    }
-  }
-}, null, 2)
+const defaultRule = JSON.stringify(defaultFileRootPathRule, null, 2)
 const AddRuleForm = (props) => {
   const [data, setData] = useState(defaultRule)
   const handleSubmit = e => {
@@ -82,6 +70,4 @@ const AddRuleForm = (props) => {
   );
 }
 
-const WrappedAddRuleForm = Form.create({})(AddRuleForm);
-
-export default WrappedAddRuleForm
+export default Form.create({})(AddRuleForm)

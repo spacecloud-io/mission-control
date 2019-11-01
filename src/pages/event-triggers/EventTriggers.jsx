@@ -85,7 +85,7 @@ const Rules = (props) => {
 	return (
 		<div>
 			<Topbar showProjectSelector />
-			<div className="flex-box">
+			<div>
 				<Sidenav selectedItem="event-triggers" />
 				<div className="page-content">
 					{noOfRules > 0 && <div>

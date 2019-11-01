@@ -114,9 +114,9 @@ const Overview = () => {
             <a>Delete</a>
           </Popconfirm>
         </span>
-      ),
-    },
-  ];
+      )
+    }
+  ]
 
   const untrackedTableColumns = [
     {
@@ -132,9 +132,9 @@ const Overview = () => {
         <span>
           <a onClick={() => handleTrackCollections([name])}>Track</a>
         </span>
-      ),
-    },
-  ];
+      )
+    }
+  ]
 
   return (
     <React.Fragment>
@@ -142,9 +142,9 @@ const Overview = () => {
         showProjectSelector
         showDbSelector
       />
-      <div className='flex-box'>
+      <div>
         <Sidenav selectedItem='database' />
-        <div className='page-content page-content--has-tabs'>
+        <div className='page-content page-content--no-padding'>
           <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
             <h3>Connection Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setEditConnModalVisible(true)}>(Edit)</a></h3>
@@ -229,7 +229,7 @@ const Overview = () => {
         </div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
 export default Overview

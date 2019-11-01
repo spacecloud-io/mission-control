@@ -56,7 +56,7 @@ const Rules = (props) => {
 	// Handlers
 	const handleConfig = (config) => {
 		dispatch(increment("pendingRequests"))
-		const newConfig = { enabled, ...config }
+		const newConfig = { enabled: true, ...config }
 		client.fileStore.setConfig(projectID, newConfig).then(() => {
 			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
 			setProjectConfig(projects, projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
@@ -138,12 +138,12 @@ const Rules = (props) => {
 	return (
 		<div>
 			<Topbar showProjectSelector />
-			<div className="flex-box">
+			<div>
 				<Sidenav selectedItem="file-storage" />
 				<div className="page-content">
 					{!enabled && <div className="panel" style={{ margin: 48 }}>
 						<img src={fileStorageSvg} width="240px" />
-						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage code on scalable storage backend via Space Cloud without server side code</p>
+						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
 						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
 							Get started
 						</Button>
@@ -185,7 +185,7 @@ const Rules = (props) => {
 						</React.Fragment>}
 					</React.Fragment>}
 					{configurationModalVisible && <ConfigurationForm
-						handleSubmit={props.saveConfig}
+						handleSubmit={handleConfig}
 						handleCancel={() => setConfigurationModalVisible(false)}
 						initialValues={connConfig} />}
 					{addRuleModalVisible && <AddRuleForm

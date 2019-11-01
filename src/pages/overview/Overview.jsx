@@ -18,7 +18,7 @@ function Overview() {
   return (
     <div className="overview">
       <Topbar showProjectSelector />
-      <div className="flex-box">
+      <div>
         <Sidenav selectedItem="overview" />
         <div className="page-content ">
           <h3>Project Details</h3>

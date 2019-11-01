@@ -45,7 +45,7 @@ const Database = () => {
   return (
     <div className="database">
       <Topbar showProjectSelector />
-      <div className="flex-box">
+      <div>
         <Sidenav selectedItem="database" />
         <div className="page-content">
           <div className="header-flex">

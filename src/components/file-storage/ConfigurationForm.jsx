@@ -9,7 +9,7 @@ const ConfigurationForm = (props) => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, values.options);
+        props.handleSubmit(values);
         props.handleCancel();
         props.form.resetFields();
       }

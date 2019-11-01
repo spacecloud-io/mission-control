@@ -89,7 +89,7 @@ const Explorer = props => {
   return (
     <div className='explorer'>
       <Topbar showProjectSelector />
-      <div className='flex-box'>
+      <div>
         <Sidenav selectedItem='explorer' />
         <div className='page-content'>
           <div className='header-flex'>

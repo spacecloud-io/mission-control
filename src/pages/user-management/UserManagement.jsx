@@ -45,7 +45,7 @@ const UserManagement = () => {
   return (
     <div className="user-management">
       <Topbar showProjectSelector />
-      <div className="flex-box">
+      <div>
         <Sidenav selectedItem="user-management" />
         <div className="page-content">
           <h2>Auth Providers</h2>

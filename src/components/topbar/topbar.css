@@ -9,14 +9,8 @@
   top: 0;
   z-index:100;
   display: flex;
-  align-items: center;;
-}
-
-.topbar .logo-black {
-  width: 194px;
-  height: 40px;
-  padding-left: 31px;
-  margin-top: 12px;
+  align-items: center;
+  padding: 0 32px;
 }
 
 .topbar .action-button {

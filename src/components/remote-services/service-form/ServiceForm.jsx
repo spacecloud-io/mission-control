@@ -39,12 +39,13 @@ const ServiceForm = (props) => {
                   if (value.includes("-") || value.includes(" ")) {
                     cb("Service name cannot contain hiphens or spaces!")
                   }
+                  cb()
                 }
               }
             ],
             initialValue: name
           })(
-            <Input placeholder="Example: payment_service" />
+            <Input placeholder="Example: payment_service" disabled={props.initialValues ? true : false} />
           )}
         </Form.Item>
         <FormItemLabel name="URL" />
@@ -61,7 +62,5 @@ const ServiceForm = (props) => {
   );
 }
 
-const WrappedServiceForm = Form.create({})(ServiceForm);
-
-export default WrappedServiceForm
+export default Form.create({ name: "service-form" })(ServiceForm)
 
