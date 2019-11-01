@@ -10,7 +10,7 @@ import ServiceForm from "../../components/remote-services/service-form/ServiceFo
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 
-import serverSvg from "../../assets/servers.svg"
+import remoteServicesSvg from "../../assets/remote-services.svg"
 
 const RemoteServices = () => {
   // Router params
@@ -101,8 +101,8 @@ const RemoteServices = () => {
       <div className='page-content'>
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
           <div className="panel" style={{ margin: 24 }}>
-            <img src={serverSvg} width="240px" />
-            <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Access custom business logic via the unified REST and GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/essentials/remote-services">View Docs.</a></p>
+            <img src={remoteServicesSvg} width={"60%"} />
+            <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access custom business logic via the unified REST and GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/essentials/remote-services">View Docs.</a></p>
             <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first remote service</Button>
           </div>
         </div>}

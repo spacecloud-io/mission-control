@@ -32,7 +32,6 @@ const EndpointForm = (props) => {
   const { name, path } = props.initialValues ? props.initialValues : {}
   return (
     <Modal
-      className="edit-item-modal"
       title={`${props.initialValues ? "Edit" : "Add"} Endpoint`}
       okText={props.initialValues ? "Save" : "Add"}
       visible={true}

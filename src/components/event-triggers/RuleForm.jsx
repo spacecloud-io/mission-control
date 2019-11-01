@@ -23,7 +23,6 @@ const RuleForm = (props) => {
   const eventSource = temp ? temp : defaultEventSource
   return (
     <Modal
-      className="edit-item-modal"
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
       okText={props.initialValues ? "Save" : "Add"}
       visible={true}

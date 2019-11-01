@@ -18,7 +18,6 @@ const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues}) =
   const { conn } = initialValues ? initialValues : {}
   return (
     <Modal
-      className="edit-item-modal"
       title="Edit connection details"
       okText="Save"
       visible={true}

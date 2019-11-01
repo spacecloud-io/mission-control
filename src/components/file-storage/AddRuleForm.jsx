@@ -33,7 +33,6 @@ const AddRuleForm = (props) => {
 
   return (
     <Modal
-      className="edit-item-modal"
       title="Add rule"
       visible={true}
       okText="Add"

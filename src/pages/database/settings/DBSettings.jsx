@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { Button, Divider, Tooltip } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -20,7 +20,6 @@ const Settings = () => {
   const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbType")
   const canDisableDB = eventingDB !== selectedDB
 
-  const dispatch = useDispatch()
   const history = useHistory()
 
   // Handlers
@@ -29,7 +28,7 @@ const Settings = () => {
     setDBConfig(projectID, selectedDB, false, conn)
       .then(() => {
         notify("success", "Success", "Disabled database successfully")
-        history.push(`/mission-control/projects/${projectID}/database`)
+        history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)
       })
       .catch(ex => notify("error", "Error", ex))
   }
@@ -67,7 +66,7 @@ const Settings = () => {
             <Divider />
             <h3>Setup DB</h3>
             <p>Modifies database as per Space Cloud schema, typically required if you have dropped or modified the underlying database</p>
-            <Button onClick={handleModify}>Setup</Button>
+            <Button onClick={handleModifyDB}>Setup</Button>
             <Divider />
             <h3>Disable database</h3>
             <p>Disables all access to this database</p>

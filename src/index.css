@@ -66,9 +66,9 @@ body {
 }
 
 .empty-state {
-  border: 1px solid #E8E8E8;
+  border: 1px solid #e8e8e8;
   margin-top: 24px;
-  padding:48px;
+  padding: 48px;
   text-align: center;
 }
 
@@ -77,7 +77,7 @@ body {
   color: rgba(0, 0, 0, 0.54);
 }
 
-.empty-state__action-text{
+.empty-state__action-text {
   font-weight: bold;
   font-size: 18px;
   color: rgba(0, 0, 0, 0.54);
@@ -88,7 +88,8 @@ body {
   margin-top: 24px;
 }
 
-.action-rounded, .action-rounded .ant-select-selection {
+.action-rounded,
+.action-rounded .ant-select-selection {
   border-radius: 20px;
 }
 
@@ -133,10 +134,10 @@ body {
   top: 2px;
 }
 
-.edit-item-modal .ant-modal-header {
-  background: #002C39;
+.ant-modal-header {
+  background: #002c39;
 }
 
-.edit-item-modal .ant-modal-title,.edit-item-modal .ant-modal-close-x  {
-  color: #FFF;
+.ant-modal-title, .ant-modal-close-x {
+  color: #fff;
 }

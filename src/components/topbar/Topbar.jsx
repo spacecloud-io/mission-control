@@ -16,7 +16,7 @@ const Topbar = (props) => {
   const projects = useSelector(state => state.projects)
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
-  const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}/overview`)
+  const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
   return (
     <div>
       <div className="topbar">

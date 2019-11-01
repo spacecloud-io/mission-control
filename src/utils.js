@@ -73,11 +73,7 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
         conn: getConnString(dbType),
         collections: {
           default: { rules: defaultDBRules },
-          event_logs: {
-            isRealtimeEnabled: false,
-            schema: eventLogsSchema,
-            rules: defaultDBRules
-          }
+          event_logs: {schema: eventLogsSchema }
         }
       }
     },

@@ -1,6 +1,6 @@
 import store from "../../store"
 import {getProjectConfig, setProjectConfig} from "../../utils"
-import { eventLogsSchema } from "../../constants"
+import { eventLogsSchema, defaultDBRules } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 
@@ -61,7 +61,9 @@ export const inspectColSchema = (projectId, dbName, colName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.inspectColSchema(projectId, dbName, colName).then(schema => {
-      setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.schema`, schema)
+      const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, {isRealtimeEnabled: false, rules: defaultDBRules} )
+      colConfig.schema = schema
+      setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
       resolve()
     })
       .catch(ex => reject(ex))

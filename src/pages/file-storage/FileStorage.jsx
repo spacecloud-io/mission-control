@@ -9,7 +9,7 @@ import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
 import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
-import fileStorageSvg from "../../assets/filestore.svg"
+import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
@@ -142,7 +142,7 @@ const Rules = (props) => {
 				<Sidenav selectedItem="file-storage" />
 				<div className="page-content">
 					{!enabled && <div className="panel" style={{ margin: 48 }}>
-						<img src={fileStorageSvg} width="240px" />
+						<img src={fileStorageSvg} width="60%" />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
 						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
 							Get started

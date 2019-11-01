@@ -18,7 +18,6 @@ const ServiceForm = (props) => {
   const { name, url } = props.initialValues ? props.initialValues : {}
   return (
     <Modal
-      className="edit-item-modal"
       title={`${props.initialValues ? "Edit" : "Add"} Remote Service`}
       okText={props.initialValues ? "Save" : "Add"}
       visible={true}

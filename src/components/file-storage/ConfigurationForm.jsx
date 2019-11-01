@@ -20,7 +20,6 @@ const ConfigurationForm = (props) => {
   const storeTypeValue = getFieldValue("storeType")
   return (
     <Modal
-      className="edit-item-modal"
       title="Configure File Storage"
       okText="Save"
       visible={true}

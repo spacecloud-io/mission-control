@@ -1,63 +1,78 @@
-import React, { useEffect } from 'react'
-import { Redirect, useParams } from "react-router-dom";
-import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
-
-import Header from '../../components/header/Header'
-import Sidenav from '../../components/sidenav/Sidenav'
-import Topbar from '../../components/topbar/Topbar'
-import Documentation from '../../components/documentation/Documentation'
-import DatabaseCardList from '../../components/database-card/DatabaseCardList'
-
+import React from "react"
+import { useParams, Redirect } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
+import { getProjectConfig, notify } from "../../utils"
+import Topbar from "../../components/topbar/Topbar"
+import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
-import './database.css'
-import '../../index.css'
+import { Button } from "antd"
+import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
+import { setDBConfig, setColRule } from "./dbActions"
 
-import { defaultDbConnectionStrings } from '../../constants';
-import { getProjectConfig, notify } from "../../utils"
-import { setDBConfig } from "./dbActions"
 const Database = () => {
-  const { projectID } = useParams()
+  // Router params
+  const { projectID, selectedDB } = useParams()
+
+  const dispatch = useDispatch()
+
+  // Global state
   const projects = useSelector(state => state.projects)
-  const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
-  const activeDB = Object.keys(crudModule).find(db => {
-    return crudModule[db].enabled
-  })
 
-  const handleDBEnable = (dbType) => {
-    let conn = getProjectConfig(projects, projectID, `modules.crud.${dbType}.conn`, defaultDbConnectionStrings[dbType])
-    setDBConfig(projectID, dbType, true, conn).catch(ex => notify("error", "Error", ex))
+  // Dervied properties
+  const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
+
+  // Handlers
+  const handleEnable = () => {
+    const conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`, defaultDbConnectionStrings[selectedDB])
+    setDBConfig(projectID, selectedDB, true, conn).then(() => {
+      notify("success", "Success", "Enabled database successfully")
+      setColRule(projectID, selectedDB, "default", defaultDBRules)
+        .catch(ex => notify("error", "Error configuring default rules", ex))
+    }).catch(ex => notify("error", "Error enabling database", ex))
   }
 
-  useEffect(() => {
-    ReactGA.pageview("/projects/database");
-  }, [])
-
-  const cards = [{ graphics: mysql, name: "MySQL", desc: "The world's most popular open source database.", key: "sql-mysql" },
-  { graphics: postgresql, name: "PostgreSQL", desc: "The world's most advanced open source database.", key: "sql-postgres" },
-  { graphics: mongodb, name: "MongoDB", desc: "A open-source cross-platform document- oriented database.", key: "mongo" }]
-
-  if (activeDB) {
-    return <Redirect to={`/mission-control/projects/${projectID}/database/${activeDB}/overview`} />;
+  if (enabled) {
+    return <Redirect to={`/mission-control/projects/${projectID}/database/${selectedDB}/overview`} />
   }
+
+  let graphic = null
+  let desc = ""
+  let dbName = ""
+
+  switch (selectedDB) {
+    case "sql-mysql":
+      desc = "The world's most popular open source database."
+      dbName = "MySQL"
+      graphic = mysql
+      break
+    case "sql-postgres":
+      desc = "The world's most advanced open source database."
+      dbName = "PostgreSQL"
+      graphic = postgresql
+      break
+    case "mongo":
+      desc = "A open-source cross-platform document- oriented database."
+      dbName = "MongoDB"
+      graphic = mongodb
+      break
+  }
+
   return (
-    <div className="database">
-      <Topbar showProjectSelector />
-      <div>
-        <Sidenav selectedItem="database" />
-        <div className="page-content">
-          <div className="header-flex">
-            <Header name="Add a database" color="#000" fontSize="22px" />
-            <Documentation url="https://docs.spaceuptech.com" />
-          </div>
-          <p className="db-desc">Start using crud by enabling one of the following databases.</p>
-          <DatabaseCardList cards={cards} handleEnable={handleDBEnable} />
+    <div>
+      <Topbar showProjectSelector showDbSelector />
+      <Sidenav selectedItem="database" />
+      <div className="page-content ">
+        <div className="panel" style={{ margin: 24 }}>
+          <img src={graphic} width={120} />
+          <h2 style={{ marginTop: 24 }}>{dbName}</h2>
+          <p className="panel__description" style={{ marginBottom: 0 }}>{desc}</p>
+          <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={handleEnable}>Start using</Button>
         </div>
       </div>
     </div>
   )
 }
 
-export default Database;
+export default Database

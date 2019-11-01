@@ -25,7 +25,6 @@ const TriggerForm = (props) => {
 
   return (
     <Modal
-      className="edit-item-modal"
       title="Trigger Event"
       visible={true}
       okText="Trigger"
