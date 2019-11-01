@@ -5,7 +5,7 @@ import Login from "./pages/login/Login";
 import Home from "./pages/home/Home";
 import Database from "./pages/database/Database";
 import UserManagement from "./pages/user-management/UserManagement";
-import FileStorageRules from "./pages/file-storage/rules/Rules";
+import FileStorage from "./pages/file-storage/FileStorage";
 import Configure from "./pages/configure/configure";
 import Overview from "./pages/overview/Overview";
 import Welcome from "./pages/welcome/Welcome";
@@ -38,9 +38,7 @@ export default () => {
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
-      <Route exact path="/mission-control/projects/:projectID/file-storage"
-        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/file-storage/rules`} />)} />
-      <Route exact path="/mission-control/projects/:projectID/file-storage/rules" component={FileStorageRules} />
+      <Route exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
       <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
       <Route exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
       <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />

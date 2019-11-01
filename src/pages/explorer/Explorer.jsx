@@ -18,7 +18,7 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import './explorer.css';
-import { notify } from '../../utils';
+import { notify, getProjectConfig } from '../../utils';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 
@@ -93,7 +93,7 @@ const Explorer = props => {
         <Sidenav selectedItem='explorer' />
         <div className='page-content'>
           <div className='header-flex'>
-            <Header name='Explorer' color='#000' fontSize='22px' />
+            <h2>Explorer</h2>
             <Button.Group>
               <Button
                 type={props.selectedIDE === 'graphql' ? 'primary' : 'default'}
@@ -254,10 +254,11 @@ const Explorer = props => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
+  const projectId = ownProps.match.params.projectID
   return {
-    secret: get(state, 'config.secret'),
-    projectId: get(state, 'config.id'),
+    secret: getProjectConfig(state.projects, projectId, "secret"),
+    projectId: projectId,
     selectedIDE: get(state, 'uiState.explorer.selectedIDE', 'graphql'),
     selectedTemplate: get(state, 'uiState.explorer.spaceApi.selectedTemplate'),
     spaceApiQuery: get(

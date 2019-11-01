@@ -20,7 +20,7 @@ export const parseDbConnString = conn => {
     hostName: hostName,
     query: url.query()
   }
-  if (path && path.startsWith("/")){
+  if (path && path.startsWith("/")) {
     urlObj.dbName = path.substr(1)
   }
   if (hostName && hostName.includes("(")) {
@@ -120,6 +120,19 @@ export const getEventSourceFromType = (type, defaultValue) => {
 export const getEventSourceLabelFromType = (type) => {
   let source = getEventSourceFromType(type)
   return source.charAt(0).toUpperCase() + source.slice(1)
+}
+
+export const getFileStorageProviderLabelFromStoreType = (storeType) => {
+  switch (storeType) {
+    case "local":
+      return "Local Storage"
+    case "amazon-s3":
+      return "Amazon S3"
+    case "gcp-storage":
+      return "GCP Storage"
+    default:
+      return ""
+  }
 }
 
 export const openProject = (projectId) => {

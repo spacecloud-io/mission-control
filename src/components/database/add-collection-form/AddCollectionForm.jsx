@@ -33,10 +33,10 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
     if (schema) {
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
-      const newSchema = `type ${colName ? colName: ""} ${temp.slice(index)}`
+      const newSchema = colName ? `type ${colName} ${temp.slice(index)}`:  `type ${temp.slice(index)}`
       setSchema(newSchema)
     }
-  }, [schema, colName])
+  }, [colName])
 
   const onSwitchChange = checked => {
     setIsRealtimeEnabled(checked);
@@ -101,7 +101,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
               <CodeMirror
                 value={schema}
                 options={{
-                  mode: { name: "graphql" },
+                  mode: { name: "javascript", json: true },
                   lineNumbers: true,
                   styleActiveLine: true,
                   matchBrackets: true,
@@ -125,7 +125,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
                   matchBrackets: true,
                   autoCloseBrackets: true,
                   tabSize: 2,
-                  autofocus: true
+                  autofocus: false
                 }}
                 onBeforeChange={(editor, data, value) => {
                   setRule(value)

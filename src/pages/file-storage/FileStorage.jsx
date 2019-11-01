@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
-import Sidenav from '../../../components/sidenav/Sidenav';
-import Topbar from '../../../components/topbar/Topbar';
-import ConfigurationForm from "../../../components/file-storage/ConfigurationForm"
-import AddRuleForm from "../../../components/file-storage/AddRuleForm"
-import RuleEditor from "../../../components/rule-editor/RuleEditor"
+import Sidenav from '../../components/sidenav/Sidenav';
+import Topbar from '../../components/topbar/Topbar';
+import ConfigurationForm from "../../components/file-storage/ConfigurationForm"
+import AddRuleForm from "../../components/file-storage/AddRuleForm"
+import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig } from '../../../utils';
-import fileStorageSvg from "../../../assets/filestore.svg"
+import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
+import fileStorageSvg from "../../assets/filestore.svg"
 import { Button, Descriptions, Badge } from "antd"
-import client from "../../../client"
-import disconnectedImg from "../../../assets/disconnected.jpg"
-import securitySvg from "../../../assets/security.svg"
+import client from "../../client"
+import disconnectedImg from "../../assets/disconnected.jpg"
+import securitySvg from "../../assets/security.svg"
 
 const Rules = (props) => {
 	// Router params
@@ -151,7 +151,7 @@ const Rules = (props) => {
 					{enabled && <React.Fragment>
 						<h3>Provider Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setConfigurationModalVisible(true)}>(Edit)</a></h3>
 						<Descriptions bordered>
-							<Descriptions.Item label="Provider">{connConfig.storeType}</Descriptions.Item>
+							<Descriptions.Item label="Provider">{getFileStorageProviderLabelFromStoreType(connConfig.storeType)}</Descriptions.Item>
 							<Descriptions.Item label="Status" >
 								<Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
 							</Descriptions.Item>

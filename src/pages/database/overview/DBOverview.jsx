@@ -148,10 +148,10 @@ const Overview = () => {
           <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
             <h3>Connection Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setEditConnModalVisible(true)}>(Edit)</a></h3>
-            <Descriptions bordered>
+            <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="Host">{hostName}</Descriptions.Item>
               <Descriptions.Item label="Port">{port}</Descriptions.Item>
-              <Descriptions.Item label="Status" >
+              <Descriptions.Item label="Status" span={2}>
                 <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
               </Descriptions.Item>
             </Descriptions>
@@ -178,40 +178,40 @@ const Overview = () => {
                 </div>
               </div>}
               {trackedCollectionsToShow.length > 0 && (
-              <div>
-                <div style={{ marginTop: '32px' }}>
-                  <span className='collections'>
-                    {label}s
-                    </span>
-                  <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                    onClick={handleAddClick}>
-                    <Icon type='plus' /> Add {label}
-                  </Button>
-                </div>
-                <div style={{ marginTop: '32px' }}>
-                  <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} />
-                </div>
-              </div>
-            )}
-            {unTrackedCollectionsToShow.length > 0 && (
-              <Row>
-                <Col span={12}>
+                <div>
                   <div style={{ marginTop: '32px' }}>
                     <span className='collections'>
-                      Untracked {label}s
+                      {label}s
                     </span>
-                    <Button
-                      style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                      onClick={() => handleTrackCollections(unTrackedCollections)}>
-                      <Icon type='plus' /> Track All
+                    <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                      onClick={handleAddClick}>
+                      <Icon type='plus' /> Add {label}
                     </Button>
                   </div>
                   <div style={{ marginTop: '32px' }}>
-                    <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} />
+                    <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} />
                   </div>
-                </Col>
-              </Row>
-            )}
+                </div>
+              )}
+              {unTrackedCollectionsToShow.length > 0 && (
+                <Row>
+                  <Col span={12}>
+                    <div style={{ marginTop: '32px' }}>
+                      <span className='collections'>
+                        Untracked {label}s
+                    </span>
+                      <Button
+                        style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                        onClick={() => handleTrackCollections(unTrackedCollections)}>
+                        <Icon type='plus' /> Track All
+                    </Button>
+                    </div>
+                    <div style={{ marginTop: '32px' }}>
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} />
+                    </div>
+                  </Col>
+                </Row>
+              )}
             </React.Fragment>}
             {addColModalVisible && <AddCollectionForm
               editMode={addColFormInEditMode}
