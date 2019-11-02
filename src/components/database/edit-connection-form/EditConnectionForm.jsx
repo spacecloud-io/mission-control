@@ -22,7 +22,7 @@ const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues}) =
       okText="Save"
       visible={true}
       onCancel={handleCancel}
-      onOk={handleSubmit}
+      onOk={handleSubmitClick}
     >
       <Form layout="vertical" onSubmit={handleSubmitClick}>
         <FormItemLabel name="Connection string" />

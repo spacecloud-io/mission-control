@@ -5,7 +5,7 @@ class Projects {
 
   getProjects() {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config`)
+      this.client.getJSON(`/v1/config/projects`)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -17,9 +17,9 @@ class Projects {
     })
   }
 
-  addProject(projectId, config) {
+  addProject(config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}`, config)
+      this.client.postJSON("/v1/config/projects", config)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -33,7 +33,7 @@ class Projects {
 
   deleteProject(projectId) {
     return new Promise((resolve, reject) => {
-      this.client.delete(`/v1/config/${projectId}`)
+      this.client.delete(`/v1/config/projects/${projectId}`)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -47,7 +47,7 @@ class Projects {
 
   setProjectGlobalConfig(projectId, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/config`, config)
+      this.client.postJSON(`/v1/config/projects/${projectId}/config`, config)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)

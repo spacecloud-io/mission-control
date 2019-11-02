@@ -65,6 +65,9 @@ const Overview = () => {
 
   const handleDelete = (colName) => {
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
+    if (clickedCol === colName) {
+      setClickedCol("")
+    }
   }
 
   const handleTrackCollections = (collections) => {
@@ -96,7 +99,7 @@ const Overview = () => {
       key: 'realtime',
       render: (_, { name, realtime }) => (
         <Switch
-          defaultChecked={realtime}
+          checked={realtime}
           onChange={checked =>
             handleRealtimeEnabled(name, checked)
           }

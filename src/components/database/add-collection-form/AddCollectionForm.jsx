@@ -70,6 +70,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
         width={720}
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${selectedDB === "mongo" ? "Collection" : "Table"}`}
+        onOk={handleSubmitClick}
         onCancel={handleCancel}
       >
         <Form layout="vertical" onSubmit={handleSubmitClick}>

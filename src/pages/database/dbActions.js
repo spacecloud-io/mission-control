@@ -64,7 +64,7 @@ export const inspectColSchema = (projectId, dbName, colName) => {
       const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, {isRealtimeEnabled: false, rules: defaultDBRules} )
       colConfig.schema = schema
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
-      resolve()
+      setColRule(projectId, dbName, colName, defaultDBRules, false).then(() => resolve()).catch(ex => reject(ex))
     })
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
@@ -124,7 +124,7 @@ export const handleReload = (projectId, dbName) => {
     client.database.reloadSchema(projectId, dbName).then(collections => {
       const cols = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
       Object.keys(collections).forEach(col => {
-        cols[col].schema = collections[col].schema
+        cols[col].schema = collections[col]
       })
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, cols)
       resolve()
@@ -142,7 +142,7 @@ export const setDBConfig = (projectId, dbName, enabled, conn) => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.conn`, conn)
       store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, true))
       if (enabled) {
-        fetchCollections().then(() => resolve()).catch(ex => reject(ex))
+        fetchCollections(projectId, dbName).then(() => resolve()).catch(ex => reject(ex))
         return
       }
       resolve()

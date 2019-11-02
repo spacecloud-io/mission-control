@@ -38,7 +38,7 @@ export const eventLogsSchema = `type event_logs {
   status: String
   retries: Integer
   url: String
-  remarks: String
+  remark: String
 }`
 
 export const defaultFileRule = {

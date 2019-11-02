@@ -35,8 +35,8 @@ const CreateProject = (props) => {
     e.preventDefault();
     validateFields((err, values) => {
       if (!err) {
-        const projectConfig = generateProjectConfig(projectID, values.name, selectedDB)
-        client.projects.addProject(projectID, projectConfig).then(() => {
+        const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+        client.projects.addProject(projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
           history.push(`/mission-control/projects/${projectID}`)

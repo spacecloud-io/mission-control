@@ -30,7 +30,7 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
   }, [selectedRuleName, rules])
 
   useEffect(() => {
-    if (!rules[selectedRuleName] && noOfRules) {
+    if (!rules.hasOwnProperty(selectedRuleName) && noOfRules) {
       handleSelect(entries[0][0])
     }
   }, [rules])

@@ -5,7 +5,7 @@ class FileStore {
 
   getConnectionState(projectId) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/${projectId}/file-storage/connection-state`)
+      this.client.getJSON(`/v1/config/projects/${projectId}/file-storage/connection-state`)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -19,7 +19,7 @@ class FileStore {
 
   setConfig(projectId, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/file-storage/config`, config)
+      this.client.postJSON(`/v1/config/projects/${projectId}/file-storage/config`, config)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -33,7 +33,7 @@ class FileStore {
 
   setRule(projectId, ruleName, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/file-storage/rules/${ruleName}`, rule)
+      this.client.postJSON(`/v1/config/projects/${projectId}/file-storage/rules/${ruleName}`, rule)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)
@@ -47,7 +47,7 @@ class FileStore {
 
   deleteRule(projectId, ruleName) {
     return new Promise((resolve, reject) => {
-      this.client.delete(`/v1/config/${projectId}/file-storage/rules/${ruleName}`)
+      this.client.delete(`/v1/config/projects/${projectId}/file-storage/rules/${ruleName}`)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)

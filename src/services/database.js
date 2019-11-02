@@ -5,8 +5,9 @@ class Database {
 
   getConnectionState(projectId, dbName) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/${projectId}/database/${dbName}/connection-state`)
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/${dbName}/connection-state`)
         .then(({ status, data }) => {
+          console.log("get conn state", status, data)
           if (status !== 200) {
             reject(data.error)
             return
@@ -19,7 +20,7 @@ class Database {
 
   setDbConfig(projectId, dbName, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/database/${dbName}/config`, config)
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/config`, config)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -33,7 +34,7 @@ class Database {
 
   listCollections(projectId, dbName) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/${projectId}/database/${dbName}/list-collections`)
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/${dbName}/list-collections`)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -47,7 +48,7 @@ class Database {
 
   modifySchema(projectId, dbName, collections) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/database/${dbName}/modify-schema`, { collections })
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/modify-schema`, { collections })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -61,7 +62,7 @@ class Database {
 
   reloadSchema(projectId, dbName) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/database/${dbName}/reload-schema`, {})
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/reload-schema`, {})
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -75,7 +76,7 @@ class Database {
 
   modifyColSchema(projectId, dbName, colName, schema) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/database/${dbName}/collections/${colName}/modify-schema`, { schema })
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/modify-schema`, { schema })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -89,7 +90,7 @@ class Database {
 
   inspectColSchema(projectId, dbName, colName) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/${projectId}/database/${dbName}/collections/${colName}/inspect-schema`)
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/inspect-schema`)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -103,7 +104,7 @@ class Database {
 
   deleteCol(projectId, dbName, colName) {
     return new Promise((resolve, reject) => {
-      this.client.delete(`/v1/config/${projectId}/database/${dbName}/collections/${colName}`)
+      this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}`)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -117,7 +118,7 @@ class Database {
 
   setColRule(projectId, dbName, colName, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/${projectId}/database/${dbName}/collections/${colName}/rules`, rule)
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/rules`, rule)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
