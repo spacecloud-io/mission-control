@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { useParams, Redirect } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 import { getProjectConfig, notify } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -8,6 +8,7 @@ import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
 import { Button } from "antd"
+import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
 import { setDBConfig, setColRule } from "./dbActions"
 
@@ -15,20 +16,20 @@ const Database = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
-  const dispatch = useDispatch()
-
   // Global state
   const projects = useSelector(state => state.projects)
+
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false)
 
   // Dervied properties
   const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
 
   // Handlers
-  const handleEnable = () => {
-    const conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`, defaultDbConnectionStrings[selectedDB])
+  const handleEnable = (conn, rules) => {
     setDBConfig(projectID, selectedDB, true, conn).then(() => {
       notify("success", "Success", "Enabled database successfully")
-      setColRule(projectID, selectedDB, "default", defaultDBRules)
+      setColRule(projectID, selectedDB, "default", rules)
         .catch(ex => notify("error", "Error configuring default rules", ex))
     }).catch(ex => notify("error", "Error enabling database", ex))
   }
@@ -68,9 +69,13 @@ const Database = () => {
           <img src={graphic} width={120} />
           <h2 style={{ marginTop: 24 }}>{dbName}</h2>
           <p className="panel__description" style={{ marginBottom: 0 }}>{desc}</p>
-          <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={handleEnable}>Start using</Button>
+          <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Start using</Button>
         </div>
       </div>
+      {modalVisible && <EnableDBForm
+        initialValues={{ conn: defaultDbConnectionStrings[selectedDB], rules: defaultDBRules }}
+        handleSubmit={handleEnable}
+        handleCancel={() => setModalVisible(false)} />}
     </div>
   )
 }

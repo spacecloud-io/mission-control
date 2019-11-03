@@ -63,8 +63,15 @@ const Overview = () => {
     setAddColModalVisible(true)
   }
 
+  const handleCancelAddColModal = () => {
+    setAddColModalVisible(false)
+    setAddColFormInEditMode(false)
+    setClickedCol("")
+  }
+
   const handleDelete = (colName) => {
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
+    .catch(ex => notify("error", "Error", ex))
     if (clickedCol === colName) {
       setClickedCol("")
     }
@@ -220,7 +227,7 @@ const Overview = () => {
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
               selectedDB={selectedDB}
-              handleCancel={() => setAddColModalVisible(false)}
+              handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}
             {editConnModalVisible && <EditConnectionForm
