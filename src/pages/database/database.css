@@ -60,10 +60,6 @@
   border: 1px solid #e4e4e4;
 }
 
-.rules-main-wrapper .code .code-mirror {
-  height: 300px;
-}
-
 .box-heading {
   padding: 20px;
   color: black;
@@ -154,13 +150,6 @@
   color: black;
 }
 
-.db-page-content {
-  position: absolute;
-  top: 51px;
-  left: 250px;
-  right: 0;
-}
-
 .flex-blox {
   display: flex;
 }
@@ -202,5 +191,5 @@
 }
 
 .db-tab-content {
-  padding: 32px 48px;
+  padding: 32px 32px 0;
 }

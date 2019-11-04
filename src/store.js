@@ -3,17 +3,11 @@ import { generateReducers } from "automate-redux";
 
 // Initial state of redux
 const initialState = {
+  projects: [],
+  pendingRequests: 0,
   uiState: {
-    login: {
-      formState: {
-        userName: { value: "" },
-        password: { value: "" }
-      },
-      isLoading: false
-    }
-  },
-  config: {},
-  savedConfig: {}
+    selectedCollection: ""
+  }
 };
 
 // Generate reducers with the initial state and pass it to the redux store

@@ -7,10 +7,6 @@
   margin-bottom: 16px;
 }
 
-.explorer .CodeMirror {
-  height: auto;
-}
-
 .explorer .help {
   color: #BDBDBD;
 }

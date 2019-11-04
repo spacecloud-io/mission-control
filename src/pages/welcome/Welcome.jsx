@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import './welcome.css'
 import { Button } from 'antd'
 
-function Welcome(props) {
+const Welcome = () => {
   useEffect(() => {
     ReactGA.pageview("/welcome");
   }, [])

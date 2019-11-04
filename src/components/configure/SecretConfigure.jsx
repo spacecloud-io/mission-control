@@ -1,37 +1,37 @@
 import React from 'react'
-import './configure.css'
-import { Form, Input } from 'antd';
-import { createFormField } from 'rc-form';
+import { Form, Input, Button } from 'antd';
 
-function SecretConfigure(props) {
-  const { getFieldDecorator } = props.form;
+const SecretConfigure = ({ form, secret, handleSubmit }) => {
+  const { getFieldDecorator } = form;
+
+  const handleSubmitClick = e => {
+    e.preventDefault();
+    form.validateFields((err, values) => {
+      if (!err) {
+        handleSubmit(values.secret);
+      }
+    });
+  }
   return (
-    <div className="configure">
-      <div className="conn-string">App secret : </div>
-      <Form className="conn-form" layout="inline">
+    <div>
+      <p>This secret is used by the authorization module in Space Cloud to verify the JWT token for all API requests</p>
+      <Form>
         <Form.Item>
           {getFieldDecorator('secret', {
-            rules: [{ required: true, message: 'Please input a secret !' }],
+            rules: [{ required: true, message: 'Please input a secret!' }],
+            initialValue: secret
           })(
-            <Input.Password style={{ width: 600 }}
-              placeholder="Enter App Secret"
-            />,
+            <Input.Password placeholder="Enter JWT Secret" />
           )}
+        </Form.Item>
+        <Form.Item>
+          <Button onClick={handleSubmitClick} >
+            Save
+          </Button>
         </Form.Item>
       </Form>
     </div>
   )
 }
 
-const WrappedSecretConfigureForm = Form.create({
-  mapPropsToFields(props) {
-    return {
-      secret: createFormField({ value: props.formState }),
-    };
-  },
-  onValuesChange(props, changedValues) {
-    props.handleChange(changedValues.secret)
-  },
-})(SecretConfigure);
-
-export default WrappedSecretConfigureForm
+export default Form.create({})(SecretConfigure);

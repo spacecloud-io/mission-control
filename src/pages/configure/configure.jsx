@@ -1,70 +1,75 @@
 import React, { useEffect } from 'react';
+import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { connect } from 'react-redux';
-import { Divider } from 'antd';
+import { useSelector, useDispatch } from 'react-redux';
+import { get, set, increment, decrement } from 'automate-redux';
+
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import Header from '../../components/header/Header';
-import SecretConfigure from '../../components/configure/SecretConfigure';
-import EventingConfigure from '../../components/configure/EventingConfigure';
-import FileStorage from '../../components/configure/FileStorageConfigure';
-import StaticConfigure from '../../components/configure/StaticConfigure';
-import { get, set } from 'automate-redux';
-import store from ".././../store";
+import SecretConfigure from "../../components/configure/SecretConfigure"
+import EventingConfigure from "../../components/configure/EventingConfigure"
 import './configure.css'
-import '../../index.css'
+import { getProjectConfig, notify, setProjectConfig } from '../../utils';
+import client from "../../client"
 
-function Rules(props) {
+const Configure = () => {
+	// Router params
+	const { projectID } = useParams()
+
 	useEffect(() => {
 		ReactGA.pageview("/projects/configure");
 	}, [])
+
+	const dispatch = useDispatch()
+
+	// Global state
+	const projects = useSelector(state => state.projects)
+
+	// Derived properties
+	const projectName = getProjectConfig(projects, projectID, "name")
+	const secret = getProjectConfig(projects, projectID, "secret")
+	const eventing = getProjectConfig(projects, projectID, "modules.eventing", {})
+
+	// Handlers
+	const handleSecret = (secret) => {
+		dispatch(increment("pendingRequests"))
+		client.projects.setProjectGlobalConfig(projectID, { secret, id: projectID, name: projectName })
+			.then(() => {
+				setProjectConfig(projects, projectID, "secret", secret)
+				notify("success", "Success", "Changed JWT secret successfully")
+			})
+			.catch(ex => notify("error", "Error", ex))
+			.finally(() => dispatch(decrement("pendingRequests")))
+	}
+
+	const handleEventingConfig = (dbType, col) => {
+		dispatch(increment("pendingRequests"))
+		client.eventTriggers.setEventingConfig(projectID, { enabled: true, dbType, col })
+			.then(() => {
+				setProjectConfig(projects, projectID, "modules.eventing.dbType", dbType)
+				setProjectConfig(projects, projectID, "modules.eventing.col", col)
+				notify("success", "Success", "Changed eventing config successfully")
+			})
+			.catch(ex => notify("error", "Error", ex))
+			.finally(() => dispatch(decrement("pendingRequests")))
+	}
+
 	return (
-		<div className="configurations">
+		<div className="configure-page">
 			<Topbar showProjectSelector />
-			<div className="flex-box">
+			<div>
 				<Sidenav selectedItem="configure" />
 				<div className="page-content">
-					<Header name="Project Configurations" color="#000" fontSize="22px" />
-					<SecretConfigure formState={props.secret} handleChange={props.handleSecretChange} />
-					<Divider />
-					<FileStorage formState={props.fileStorage} handleChange={props.handleFileStorageChange} />
-					<Divider />
-					<EventingConfigure formState={props.eventing} handleChange={props.handleEventingChange} />
-					<Divider />
-					<StaticConfigure formState={props.static} handleChange={props.handleStaticChange} />
+					<h2>JWT Secret</h2>
+					<div className="divider" />
+					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
+					<h2>Eventing Config</h2>
+					<div className="divider" />
+					<EventingConfigure dbType={eventing.dbType} col={eventing.col} handleSubmit={handleEventingConfig} />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-const mapStateToProps = (state, ownProps) => {
-	return {
-		secret: get(state, "config.secret"),
-		fileStorage: get(state, "config.modules.fileStore", {}),
-		eventing: get(state, "config.modules.eventing", {}),
-		static: get(state, "config.modules.static", {})
-	};
-};
-
-const mapDispatchToProps = (dispatch) => {
-	return {
-		handleSecretChange: (value) => {
-			dispatch(set("config.secret", value))
-		},
-		handleFileStorageChange: (value) => {
-			const config = get(store.getState(), "config.modules.fileStore", {})
-			dispatch(set("config.modules.fileStore", Object.assign({}, config, value)))
-		},
-		handleEventingChange: (value) => {
-			const config = get(store.getState(), "config.modules.eventing", {})
-			dispatch(set("config.modules.eventing", Object.assign({}, config, value)))
-		},
-		handleStaticChange: (value) => {
-			const config = get(store.getState(), "config.modules.static", {})
-			dispatch(set("config.modules.static", Object.assign({}, config, value)))
-		}
-	};
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Rules);
+export default Configure;

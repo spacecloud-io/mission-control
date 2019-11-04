@@ -1,116 +1,83 @@
-import React, { useEffect } from 'react'
-import ReactGA from 'react-ga';
-import { connect } from 'react-redux'
-import './database.css'
-import '../../index.css'
-import Header from '../../components/header/Header'
+import React, { useState } from "react"
+import { useParams, Redirect } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { getProjectConfig, notify } from "../../utils"
+import Topbar from "../../components/topbar/Topbar"
+import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
-import Sidenav from '../../components/sidenav/Sidenav'
-import Topbar from '../../components/topbar/Topbar'
-import Documentation from '../../components/documentation/Documentation'
-import DatabaseCardList from '../../components/database-card/DatabaseCardList'
-import { Redirect } from "react-router-dom";
-import { get, set } from "automate-redux";
-import store from '../../store';
-import { defaultDbConnectionStrings } from '../../constants';
+import { Button } from "antd"
+import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
+import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
+import { setDBConfig, setColRule } from "./dbActions"
 
-function Database(props) {
-  const cards = [{ graphics: mysql, name: "MySQL", desc: "The world's most popular open source database.", key: "sql-mysql" },
-  { graphics: postgresql, name: "PostgreSQL", desc: "The world's most advanced open source database.", key: "sql-postgres" },
-  { graphics: mongodb, name: "MongoDB", desc: "A open-source cross-platform document- oriented database.", key: "mongo" }]
+const Database = () => {
+  // Router params
+  const { projectID, selectedDB } = useParams()
 
-  useEffect(() => {
-    ReactGA.pageview("/projects/database");
-  }, [])
+  // Global state
+  const projects = useSelector(state => state.projects)
 
-  if (props.selectedDb) {
-    return <Redirect to={`/mission-control/projects/${props.projectId}/database/overview/${props.selectedDb}`} />;
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false)
+
+  // Dervied properties
+  const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
+
+  // Handlers
+  const handleEnable = (conn, rules) => {
+    setDBConfig(projectID, selectedDB, true, conn).then(() => {
+      notify("success", "Success", "Enabled database successfully")
+      setColRule(projectID, selectedDB, "default", rules)
+        .catch(ex => notify("error", "Error configuring default rules", ex))
+    }).catch(ex => notify("error", "Error enabling database", ex))
   }
+
+  if (enabled) {
+    return <Redirect to={`/mission-control/projects/${projectID}/database/${selectedDB}/overview`} />
+  }
+
+  let graphic = null
+  let desc = ""
+  let dbName = ""
+
+  switch (selectedDB) {
+    case "sql-mysql":
+      desc = "The world's most popular open source database."
+      dbName = "MySQL"
+      graphic = mysql
+      break
+    case "sql-postgres":
+      desc = "The world's most advanced open source database."
+      dbName = "PostgreSQL"
+      graphic = postgresql
+      break
+    case "mongo":
+      desc = "A open-source cross-platform document- oriented database."
+      dbName = "MongoDB"
+      graphic = mongodb
+      break
+  }
+
   return (
-    <div className="database">
-      <Topbar showProjectSelector />
-      <div className="flex-box">
-        <Sidenav selectedItem="database" />
-        <div className="page-content">
-          <div className="header-flex">
-            <Header name="Add a database" color="#000" fontSize="22px" />
-            <Documentation url="https://docs.spaceuptech.com" />
-          </div>
-          <p className="db-desc">Start using crud by enabling one of the following databases.</p>
-          <DatabaseCardList cards={cards} handleEnable={props.handleEnable} />
+    <div>
+      <Topbar showProjectSelector showDbSelector />
+      <Sidenav selectedItem="database" />
+      <div className="page-content ">
+        <div className="panel" style={{ margin: 24 }}>
+          <img src={graphic} width={120} />
+          <h2 style={{ marginTop: 24 }}>{dbName}</h2>
+          <p className="panel__description" style={{ marginBottom: 0 }}>{desc}</p>
+          <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Start using</Button>
         </div>
       </div>
+      {modalVisible && <EnableDBForm
+        initialValues={{ conn: defaultDbConnectionStrings[selectedDB], rules: defaultDBRules }}
+        handleSubmit={handleEnable}
+        handleCancel={() => setModalVisible(false)} />}
     </div>
   )
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const crudModule = get(state, "config.modules.crud", {})
-  const selectedDb = Object.keys(crudModule).find(db => {
-    return crudModule[db].enabled
-  })
-  return {
-    projectId: ownProps.match.params.projectId,
-    selectedDb: selectedDb,
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    handleEnable(key) {
-      const defaultRules = JSON.stringify({
-        create: {
-          rule: 'allow'
-        },
-        read: {
-          rule: 'allow'
-        },
-        update: {
-          rule: 'allow'
-        },
-        delete: {
-          rule: 'allow'
-        }
-      }, null, 2)
-      
-      let dbConfig = Object.assign({}, get(store.getState(), `config.modules.crud.${key}`, {}))
-      if (!dbConfig.collections) {
-        dbConfig.collections = {}
-      }
-      if (!dbConfig.collections.events_log) {
-        dbConfig.collections.events_log = {
-          isRealtimeEnabled: false,
-          schema: `type events_log {
-_id: ID! @id
-batchid: String
-type: String
-token: Integer
-timestamp: Integer
-event_timestamp: Integer
-payload: String
-status: String
-retries: Integer
-service: String
-function: String              
-}`,
-          rules: defaultRules
-        }
-      }
-      if (!dbConfig.collections.default) {
-        dbConfig.collections.default = {
-          isRealtimeEnabled: true,
-          rules: defaultRules
-        }
-      }
-      if (!dbConfig.conn) {
-        dbConfig.conn = defaultDbConnectionStrings[key]
-      }
-      dbConfig.enabled = true
-      dispatch(set(`config.modules.crud.${key}`, dbConfig))
-    }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Database);
+export default Database

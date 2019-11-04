@@ -4,7 +4,7 @@ import { get, set, reset } from 'automate-redux';
 import client from "../../client";
 import store from "../../store"
 import history from "../../history";
-import { openProject, notify, openPlansPage } from "../../utils"
+import { openProject, notify } from "../../utils"
 
 import { Modal, Icon, Button, Table } from 'antd'
 import Header from "../../components/header/Header"
@@ -31,17 +31,7 @@ function SelectProject(props) {
       }
     },
     { title: 'Project Name', dataIndex: 'name', key: 'projectName' },
-    { title: 'ID', dataIndex: 'projectId', key: 'projectId' },
-    {
-      title: '',
-      dataIndex: '',
-      key: 'x',
-      render: (_, record) => <a onClick={(e) => {
-        e.stopPropagation()
-        props.handleDelete(record.projectId)
-      }
-      } href="javascript:;">Delete</a>,
-    },
+    { title: 'ID', dataIndex: 'projectId', key: 'projectId' }
   ];
 
   const projects = props.projects.map(project => Object.assign({}, project, { selected: project.projectId === props.projectId }))
@@ -93,31 +83,10 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     handleCreateProject: () => {
       const mode = get(store.getState(), "operationConfig.mode", 0)
       if (mode < 1) {
-        openPlansPage()
         notify("info", "Info", "You need to upgrade to create multiple projects on the same cluster")
         return
       }
       history.push("/mission-control/create-project")
-    },
-    handleDelete: (projectId) => {
-      client.deleteProject(projectId).then(() => {
-        notify("success", "Success", "Project deleted successfully")
-        const updatedProjects = get(store.getState(), "projects", []).filter(project => project.id !== projectId)
-        dispatch(set("projects", updatedProjects))
-        const selectedProject = get(store.getState(), "config.id")
-        if (selectedProject === projectId) {
-          dispatch(reset("config"))
-          dispatch(reset("savedConfig"))
-          if (updatedProjects.length) {
-            openProject(updatedProjects[0].id)
-            return
-          }
-          history.push("/mission-control/welcome")
-        }
-      }).catch(ex => {
-        console.log("Error", ex)
-        notify("error", "Error", ex)
-      })
     },
     handleProjectChange: openProject,
     handleCancel: ownProps.handleCancel

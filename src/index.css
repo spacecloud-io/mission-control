@@ -4,11 +4,15 @@ body {
 }
 
 .page-content {
-  padding: 48px 120px 0 56px;
+  padding: 32px 32px 0;
   position: absolute;
-  top: 51px;
-  left: 250px;
+  top: 64px;
+  left: 300px;
   right: 0;
+}
+
+.page-content--no-padding {
+  padding: 0;
 }
 
 .flex-blox {
@@ -31,4 +35,122 @@ body {
   bottom: 30px;
   cursor: pointer;
   color: #002c39;
+}
+
+.hint {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.primary-text {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.secondary-text {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.ant-form .ant-collapse-item {
+  border-bottom: none !important;
+}
+
+.ant-form .ant-collapse-header {
+  padding-left: 24px !important;
+}
+
+.ant-form .ant-collapse-header > i {
+  left: 0 !important;
+}
+
+.ant-form .ant-collapse-content-box {
+  padding: 4px 0 !important;
+}
+
+.empty-state {
+  border: 1px solid #e8e8e8;
+  margin-top: 24px;
+  padding: 48px;
+  text-align: center;
+}
+
+.empty-state__description {
+  margin: 24px 0 0 0;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.empty-state__action-text {
+  font-weight: bold;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.54);
+  margin-top: 4px;
+}
+
+.empty-state__action-bar {
+  margin-top: 24px;
+}
+
+.action-rounded,
+.action-rounded .ant-select-selection {
+  border-radius: 20px;
+}
+
+.CodeMirror {
+  height: 360px !important;
+}
+
+.panel {
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel--has-border-right {
+  border-right: 1px solid #e4e4e4;
+}
+
+.panel__description {
+  text-align: center;
+}
+
+.panel__graphic {
+  text-align: center;
+}
+
+.panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.panel__link {
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.panel__link i {
+  font-size: 12px;
+  position: relative;
+  top: 2px;
+}
+
+.ant-modal-header {
+  background: #002c39;
+}
+
+.ant-modal-title, .ant-modal-close-x {
+  color: #fff;
+}
+
+.ant-spin {
+  position: fixed;
+  display: flex;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
 }

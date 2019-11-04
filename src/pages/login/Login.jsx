@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import './login.css'
-import { Row, Col } from 'antd'
-import logo from '../../assets/logo-black.svg'
-import { connect } from 'react-redux'
-import { set } from "automate-redux"
-import loginBg from '../../assets/login.svg'
-import client from '../../client';
-import { notify, handleClusterLoginSuccess } from "../../utils"
-import LoginForm from './LoginForm';
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import ReactGA from 'react-ga';
+import { Row, Col } from 'antd'
 
-function Login(props) {
+import LoginForm from './LoginForm';
+import client from '../../client';
+import { notify, handleConfigLogin } from "../../utils"
+
+import './login.css'
+import logo from '../../assets/logo-black.svg'
+import loginBg from '../../assets/login.svg'
+
+const Login = () => {
+  const isLoading = useSelector(state => state.pendingRequests > 0)
+  const handleSubmit = (user, pass) => {
+    client.login(user, pass).then(token => {
+      localStorage.setItem("token", token)
+      handleConfigLogin(token)
+    }).catch(ex => notify("error", "Error logging in", ex))
+  }
   useEffect(() => {
     ReactGA.pageview("/");
   }, [])
@@ -29,8 +37,7 @@ function Login(props) {
 
           <Col span={12} className="right-wrapper">
             <div className="right-content">
-              <LoginForm formState={props.formState} isLoading={props.isLoading}
-                updateFormState={props.updateFormState} handleSubmit={props.handleSubmit} />
+              <LoginForm isLoading={isLoading} handleSubmit={handleSubmit} />
             </div>
           </Col>
         </Row>
@@ -39,28 +46,4 @@ function Login(props) {
   )
 }
 
-const mapStateToProps = (state) => {
-  return {
-    formState: state.uiState.login.formState,
-    isLoading: state.uiState.login.isLoading,
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    updateFormState: (fields) => {
-      dispatch(set("uiState.login.formState", fields))
-    },
-    handleSubmit: (user, pass) => {
-      client.login(user, pass).then(token => {
-        localStorage.setItem("token", token)
-        handleClusterLoginSuccess(token)
-      }).catch(error => {
-        console.log("Error", error)
-        notify("error", "Error", "Could not login")
-      })
-    }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default Login

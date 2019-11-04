@@ -1,18 +1,20 @@
 .create-project {
-  color: #000;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .create-project .content {
-  position: relative;
-  top: 7vw;
-  font-weight: 800;
-  margin-left: 80px;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 48px 16px;
 }
 
 .create-project .underline {
   width: 750px;
   height: 1px;
-  background: #BDBDBD;
+  background: #bdbdbd;
   margin-bottom: 24px;
 }
 
@@ -36,6 +38,6 @@
   padding-right: 100px;
 }
 
-.create-project  .ant-input-affix-wrapper .ant-input:not(:first-child)  {
+.create-project .ant-input-affix-wrapper .ant-input:not(:first-child) {
   padding-left: 40px;
 }

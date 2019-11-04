@@ -1,32 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { get } from 'automate-redux';
 
-import { get, set, increment, decrement } from 'automate-redux';
-import store from '../../../store';
-import client from "../../../client"
-
+import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
-import DbConfigure from '../../../components/database/overview/configure/DbConfigure';
-import CreateNewCollectionForm from '../../../components/database/overview/collection-form/CreateNewCollectionForm';
-import TablesEmptyState from "../../../components/database/tables-empty-state/TablesEmptyState"
+import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
+import EditConnectionForm from '../../../components/database/edit-connection-form/EditConnectionForm';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-
 import '../database.css';
+import disconnectedImg from '../../../assets/disconnected.jpg';
 
-// antd
-import { Col, Row, Button, Icon, Table, Switch } from 'antd';
-import { createTable, notify, fetchCollections, handleSetUpDb } from '../../../utils';
+import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
 
-const Overview = props => {
-  const [modalVisible, handleModalVisiblity] = useState(false);
+
+const Overview = () => {
+  // Router params
+  const { projectID, selectedDB } = useParams()
+
+  // Global state
+  const projects = useSelector(state => state.projects)
+  const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.collections`, []))
+  const connected = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.connected`))
+
+  // Component state
+  const [addColModalVisible, setAddColModalVisible] = useState(false);
+  const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
+  const [editConnModalVisible, setEditConnModalVisible] = useState(false);
+  const [clickedCol, setClickedCol] = useState("");
+
+  // Derived properties
+  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
+  const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
+  const { hostName, port } = parseDbConnString(connString);
+  const unTrackedCollections = allCollections.filter(col => !collections[col])
+  const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
+  const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
+  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
+  const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
+
+
   useEffect(() => {
-    fetchCollections(props.projectId)
-  }, [props.projectId, props.selectedDb])
+    fetchDBConnState(projectID, selectedDB)
+  }, [projectID, selectedDB])
 
-  const label = props.selectedDb === 'mongo' ? 'Collection' : 'Table'
+  // Handlers
+  const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
+    const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
+    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled)
+  }
 
+  const handleAddClick = () => {
+    setAddColFormInEditMode(false)
+    setAddColModalVisible(true)
+  }
+
+  const handleEditClick = (colName) => {
+    setClickedCol(colName)
+    setAddColFormInEditMode(true)
+    setAddColModalVisible(true)
+  }
+
+  const handleCancelAddColModal = () => {
+    setAddColModalVisible(false)
+    setAddColFormInEditMode(false)
+    setClickedCol("")
+  }
+
+  const handleDelete = (colName) => {
+    deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
+    .catch(ex => notify("error", "Error", ex))
+    if (clickedCol === colName) {
+      setClickedCol("")
+    }
+  }
+
+  const handleTrackCollections = (collections) => {
+    Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
+      .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
+      .catch(ex => notify("error", "Error", ex))
+  }
+
+  const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
+    setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
+      notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
+    }).catch(ex => notify("error", "Error", ex))
+  }
+
+  const handleEditConnString = (conn) => {
+    setDBConfig(projectID, selectedDB, true, conn).catch(ex => notify("error", "Error", ex))
+  }
+
+  const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [
     {
       title: 'Name',
@@ -37,34 +104,29 @@ const Overview = props => {
       title: 'Realtime',
       dataIndex: 'realtime',
       key: 'realtime',
-      render: (_, record) => (
+      render: (_, { name, realtime }) => (
         <Switch
-          defaultChecked={record.realtime}
+          checked={realtime}
           onChange={checked =>
-            props.onChangeRealtimeEnabled(record.name, checked)
+            handleRealtimeEnabled(name, checked)
           }
         />
       )
-
     },
     {
       title: 'Actions',
       key: 'actions',
       className: 'column-actions',
-      render: (_, record) => (
+      render: (_, { name }) => (
         <span>
-          <Link to={`/mission-control/projects/${props.projectId}/database/rules/${props.selectedDb}`}
-            onClick={() => props.handleSelection(record.name)}>
-            Edit Rules
-          </Link>
-          <Link to={`/mission-control/projects/${props.projectId}/database/schema/${props.selectedDb}`}
-            onClick={() => props.handleSelection(record.name)}>
-            Edit Schema
-          </Link>
+          <a onClick={() => handleEditClick(name)}>Edit</a>
+          <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
+            <a style={{ color: "red" }}>Delete</a>
+          </Popconfirm>
         </span>
-      ),
-    },
-  ];
+      )
+    }
+  ]
 
   const untrackedTableColumns = [
     {
@@ -76,202 +138,108 @@ const Overview = props => {
       title: 'Action',
       key: 'actions',
       className: 'column-actions',
-      render: (_, record) => (
+      render: (_, { name }) => (
         <span>
-          <a onClick={() => props.handleTrackTables([record.name])}>Track</a>
+          <a onClick={() => handleTrackCollections([name])}>Track</a>
         </span>
-      ),
-    },
-  ];
+      )
+    }
+  ]
 
   return (
     <React.Fragment>
       <Topbar
         showProjectSelector
         showDbSelector
-        selectedDb={props.selectedDb}
       />
-      <div className='flex-box'>
+      <div>
         <Sidenav selectedItem='database' />
-        <div className='db-page-content'>
-          <DBTabs
-            selectedDatabase={props.match.params.database}
-            activeKey='overview'
-            projectId={props.match.params.projectId}
-          />
+        <div className='page-content page-content--no-padding'>
+          <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
-            <div>
-              <DbConfigure
-                updateFormState={props.updateFormState}
-                formState={props.formState}
-                setUpDb={props.setUpDb}
-                dbType={props.selectedDb}
-                handleSetUpDb={() => handleSetUpDb(props.projectId)}
-              />
-            </div>
-            {props.trackedTables.length > 0 && (
-              <div>
-                <div style={{ marginTop: '32px' }}>
-                  <span className='collections'>
-                    {label}s
-                    </span>
-                  <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                    onClick={() => handleModalVisiblity(true)}>
-                    <Icon type='plus' /> Add {label}
-                  </Button>
-                </div>
-                <div style={{ marginTop: '32px' }}>
-                  <Table columns={trackedTableColumns} dataSource={props.trackedTables} />
-                </div>
+            <h3>Connection Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setEditConnModalVisible(true)}>(Edit)</a></h3>
+            <Descriptions bordered column={2} size="small">
+              <Descriptions.Item label="Host">{hostName}</Descriptions.Item>
+              <Descriptions.Item label="Port">{port}</Descriptions.Item>
+              <Descriptions.Item label="Status" span={2}>
+                <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
+              </Descriptions.Item>
+            </Descriptions>
+            {!connected && <div className="empty-state">
+              <div className="empty-state__graphic">
+                <img src={disconnectedImg} alt="" />
               </div>
-            )}
-
-            {props.trackedTables.length === 0 && (
-              <TablesEmptyState dbType={props.selectedDb} projectId={props.projectId} handleAdd={() => handleModalVisiblity(true)} />
-            )}
-
-            {props.untrackedTables.length > 0 && (
-              <Row>
-                <Col span={12}>
+              <p className="empty-state__description">Oops... Space Cloud could not connect to your database</p>
+              <p className="empty-state__action-text">Enter the correct connection details of your database</p>
+              <div className="empty-state__action-bar">
+                <Button className="action-rounded" type="default" onClick={() => handleEditConnString(connString)}>Reconnect</Button>
+                <Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={() => setEditConnModalVisible(true)}>Edit Connection</Button>
+              </div>
+            </div>}
+            {connected && <React.Fragment>
+              {trackedCollectionsToShow.length === 0 && <div className="empty-state">
+                <div className="empty-state__graphic">
+                  <i className="material-icons-outlined" style={{ fontSize: 120, color: "#52C41A" }}>check_circle</i>
+                </div>
+                <p className="empty-state__description">Your database is set up!</p>
+                <p className="empty-state__action-text">Add a table for easy schema and access management</p>
+                <div className="empty-state__action-bar">
+                  <Button className="action-rounded" type="primary" onClick={handleAddClick}>Add table</Button>
+                </div>
+              </div>}
+              {trackedCollectionsToShow.length > 0 && (
+                <div>
                   <div style={{ marginTop: '32px' }}>
                     <span className='collections'>
-                      Untracked {label}s
+                      {label}s
                     </span>
-                    <Button
-                     style={{ float: "right" }} type="primary" className="secondary-action" ghost
-                     onClick={() => props.handleTrackTables(props.untrackedTables.map(o => o.name))}>
-                      <Icon type='plus' /> Track All
+                    <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                      onClick={handleAddClick}>
+                      <Icon type='plus' /> Add {label}
                     </Button>
                   </div>
                   <div style={{ marginTop: '32px' }}>
-                    <Table columns={untrackedTableColumns} dataSource={props.untrackedTables} pagination={false} />
+                    <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} />
                   </div>
-                </Col>
-              </Row>
-            )}
-            {modalVisible && <CreateNewCollectionForm
-              selectedDb={props.selectedDb}
-              visible={modalVisible}
-              handleCancel={() => handleModalVisiblity(false)}
-              handleSubmit={(collectionName, rules, schema, realtimeEnabled) => {
-                createTable(props.projectId, props.selectedDb, collectionName, rules, schema, realtimeEnabled)
-              }}
+                </div>
+              )}
+              {unTrackedCollectionsToShow.length > 0 && (
+                <Row>
+                  <Col span={12}>
+                    <div style={{ marginTop: '32px' }}>
+                      <span className='collections'>
+                        Untracked {label}s
+                    </span>
+                      <Button
+                        style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                        onClick={() => handleTrackCollections(unTrackedCollections)}>
+                        <Icon type='plus' /> Track All
+                    </Button>
+                    </div>
+                    <div style={{ marginTop: '32px' }}>
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} />
+                    </div>
+                  </Col>
+                </Row>
+              )}
+            </React.Fragment>}
+            {addColModalVisible && <AddCollectionForm
+              editMode={addColFormInEditMode}
+              initialValues={clickedColDetails}
+              selectedDB={selectedDB}
+              handleCancel={() => handleCancelAddColModal(false)}
+              handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}
+            {editConnModalVisible && <EditConnectionForm
+              initialValues={{ conn: connString }}
+              selectedDB={selectedDB}
+              handleCancel={() => setEditConnModalVisible(false)}
+              handleSubmit={handleEditConnString} />}
           </div>
         </div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-const mapStateToProps = (state, ownProps) => {
-  const projectId = ownProps.match.params.projectId;
-  const selectedDb = ownProps.match.params.database;
-  const trackedTables = get(state, `config.modules.crud.${selectedDb}.collections`, {})
-  const tables = get(state, `tables.${projectId}.${selectedDb}`, [])
-  return {
-    selectedDb: ownProps.match.params.database,
-    projectId: projectId,
-    formState: {
-      enabled: get(
-        state,
-        `config.modules.crud.${ownProps.match.params.database}.enabled`,
-        false
-      ),
-      conn: get(
-        state,
-        `config.modules.crud.${ownProps.match.params.database}.conn`
-      )
-    },
-    rules: get(
-      state,
-      `config.modules.crud.${ownProps.match.params.database}.collections`,
-      {}
-    ),
-    selectedCollection: get(
-      state,
-      `uiState.database.${selectedDb}.selectedCollection`,
-      'default'
-    ),
-    trackedTables: Object.entries(trackedTables).map(([name, val]) => Object.assign({}, {
-      name: name,
-      realtime: val.isRealtimeEnabled,
-    })).filter(obj => obj.name !== "default" && obj.name !== "events_log"),
-    setUpDb: !tables.includes("events_log") ? true: false, 
-    untrackedTables: tables.filter(table => !trackedTables[table]).map(name => ({ name: name })),
-    createTableModalVisible: get(state, 'uiState.database.createTableModalVisible', false)
-  };
-};
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  const projectId = ownProps.match.params.projectId;
-  const selectedDb = ownProps.match.params.database;
-  return {
-    onChangeRealtimeEnabled: (name, checked) => {
-      dispatch(
-        set(
-          `config.modules.crud.${selectedDb}.collections.${name}.isRealtimeEnabled`,
-          checked
-        )
-      );
-    },
-    updateFormState: fields => {
-      const dbConfig = get(
-        store.getState(),
-        `config.modules.crud.${selectedDb}`,
-        {}
-      );
-      dispatch(
-        set(
-          `config.modules.crud.${selectedDb}`,
-          Object.assign({}, dbConfig, fields)
-        )
-      );
-    },
-    handleSelection: collectionName => {
-      dispatch(set(`uiState.database.${selectedDb}.selectedCollection`, collectionName));
-    },
-    handleTrackTables: (tables) => {
-      const collections = get(store.getState(), `config.modules.crud.${selectedDb}.collections`, {})
-      const defaultCollection = collections.default
-      const defaultRule = defaultCollection ? defaultCollection.rules : ''
-      if (selectedDb === "mongo") {
-        let newCollections = Object.assign({}, collections)
-        tables.forEach((table) => {
-          const schema = `type ${table} {\n  _id: ID! @id \n}`
-          newCollections[table] = {
-            isRealtimeEnabled: true,
-            rules: defaultRule,
-            schema: schema
-          }
-        })
-        dispatch(set(`config.modules.crud.${selectedDb}.collections`, newCollections))
-        return
-      }
-      dispatch(increment("pendingRequests"))
-      Promise.all(tables.map(table => client.handleInspect(projectId, selectedDb, table)))
-        .then((schemas) => {
-          let newCollections = Object.assign({}, collections)
-          tables.forEach((table, index) => {
-            newCollections[table] = {
-              isRealtimeEnabled: true,
-              rules: defaultRule,
-              schema: schemas[index]
-            }
-          })
-
-          dispatch(set(`config.modules.crud.${selectedDb}.collections`, newCollections))
-        })
-        .catch(error => {
-          console.log("Error", error)
-          notify("error", "Error", 'Could not track table')
-        })
-        .finally(() => dispatch(decrement("pendingRequests")))
-    }
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Overview);
+export default Overview
