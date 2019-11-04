@@ -24,15 +24,17 @@ import Configure from "./pages/configure/configure";
 export default () => {
   return (
     <Router history={history}>
+      <Route exact path="/"
+        component={() => <Redirect to={"/mission-control"} />} />
       <Route exact path="/mission-control" component={Home} />
       <Route exact path="/mission-control/login" component={Login} />
       <Route exact path="/mission-control/welcome" component={Welcome} />
       <Route exact path="/mission-control/create-project" component={CreateProject} />
       <Route exact path="/mission-control/projects/:projectID"
-        component={props => (<Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />)} />
+        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
       <Route exact path="/mission-control/projects/:projectID/overview" component={Overview} />
       <Route exact path="/mission-control/projects/:projectID/database" component={DatabaseModulePage} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />)} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
