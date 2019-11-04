@@ -32,6 +32,7 @@ const UserManagement = () => {
 
   // Handlers
   const handleProviderConfig = (provider, config) => {
+    console.log("Provedr:", provider, config)
     dispatch(increment("pendingRequests"))
     client.userManagement.setUserManConfig(projectID, provider, config)
       .then(() => {

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Form, Switch, Button } from 'antd';
+import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const Email = ({ form, initialValues, handleSubmit }) => {
   const { getFieldDecorator } = form;
@@ -15,10 +16,9 @@ const Email = ({ form, initialValues, handleSubmit }) => {
   return (
     <Form>
       <Form.Item>
-        {getFieldDecorator('enabled', { initialValue: initialValues.enabled, valuePropName: "checked" })(
-          <span className='realtime'>
-            Enabled: <Switch />
-          </span>
+        <FormItemLabel name={"Enabled"} />
+        {getFieldDecorator('enabled', { initialValue: initialValues.enabled })(
+          <Switch />
         )}
       </Form.Item>
       <br />
