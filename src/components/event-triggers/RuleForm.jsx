@@ -10,7 +10,12 @@ const RuleForm = (props) => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, values.options);
+        let options = values.options 
+        if (options && !options.col) {
+          delete options["col"]
+        }
+
+        props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options);
         props.handleCancel();
         props.form.resetFields();
       }

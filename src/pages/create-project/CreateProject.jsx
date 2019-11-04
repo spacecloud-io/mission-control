@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch } from "react-redux";
 import ReactGA from 'react-ga';
-import { set } from "automate-redux"
+import { set, increment, decrement } from "automate-redux"
 import client from '../../client';
 import store from "../../store"
 import history from "../../history"
@@ -36,12 +36,14 @@ const CreateProject = (props) => {
     validateFields((err, values) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+        dispatch(increment("pendingRequests"))
         client.projects.addProject(projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
           history.push(`/mission-control/projects/${projectID}`)
           notify("success", "Success", "Project created successfully with suitable defaults")
         }).catch(ex => notify("error", "Error creating project", ex))
+        .finally(() => dispatch(decrement("pendingRequests")))
       }
     });
   };
