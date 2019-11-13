@@ -17,6 +17,7 @@ import FileStorage from "./pages/file-storage/FileStorage";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
+import Deployment from './pages/deployment/Deployment'
 import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
@@ -43,6 +44,7 @@ export default () => {
       <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
       <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
       <Route exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
+      <Route exact path="/mission-control/projects/:projectID/deployment" component={Deployment} />
       <Route exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
       <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
       <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />

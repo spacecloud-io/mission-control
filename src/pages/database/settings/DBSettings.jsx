@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 
-import { Button, Divider, Tooltip } from "antd"
+import { Button, Divider, Tooltip, Input } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -12,6 +12,8 @@ import { setDBConfig, handleReload, handleModify } from '../dbActions';
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+
+  const {DBAlias, setText} = useState('');
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -45,6 +47,10 @@ const Settings = () => {
       .catch(ex => notify("error", "Error", ex))
   }
 
+  const handleDBAlias = () => {
+    console.log(DBAlias)
+  } 
+
   return (
     <React.Fragment>
       <Topbar
@@ -60,6 +66,11 @@ const Settings = () => {
             activeKey='settings'
           />
           <div className="db-tab-content">
+            <h3>DB Alias</h3>
+            <p>The name to identify the database from frontend</p>
+            <Input onChange={(e) => setText(e.target.value)} style={{width: '25%'}}></Input><br /><br />
+            <Button onClick={handleDBAlias}>Save</Button>
+            <Divider />
             <h3>Reload schema</h3>
             <p>Refresh Space Cloud schema, typically required if you have changed the underlying database</p>
             <Button onClick={handleReloadDB}>Reload</Button>
