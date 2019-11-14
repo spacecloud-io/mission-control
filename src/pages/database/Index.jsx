@@ -2,10 +2,10 @@ import React, { useEffect } from 'react'
 import { Redirect, useParams } from "react-router-dom";
 import { useSelector } from 'react-redux'
 import ReactGA from 'react-ga';
+import {Button} from 'antd';
 
 import Sidenav from '../../components/sidenav/Sidenav'
 import Topbar from '../../components/topbar/Topbar'
-import DatabaseCardList from '../../components/database-card/DatabaseCardList'
 
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
@@ -49,7 +49,13 @@ const Database = () => {
           <h2>Database Module</h2>
           <p>Enable one of the following databases to start using CRUD operations in your app.</p>
           <div style={{ marginTop: 24 }}>
-            <DatabaseCardList cards={cards} handleEnable={handleDBEnable} />
+            <div style={{ marginTop: 24 }}>
+              <div className="panel" style={{ margin: 24 }}>
+                {/* <img src={eventTriggersSvg} width="60%" /> */}
+                <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>No database added.</p>
+                <Button style={{ marginTop: 16 }} type="primary" className="action-rounded">Add Database</Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

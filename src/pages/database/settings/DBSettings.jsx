@@ -13,7 +13,7 @@ const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
-  const {DBAlias, setText} = useState('');
+  const [DBAlias, setDBAlias] = useState('');
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -49,7 +49,7 @@ const Settings = () => {
 
   const handleDBAlias = () => {
     console.log(DBAlias)
-  } 
+  }
 
   return (
     <React.Fragment>
@@ -68,7 +68,7 @@ const Settings = () => {
           <div className="db-tab-content">
             <h3>DB Alias</h3>
             <p>The name to identify the database from frontend</p>
-            <Input onChange={(e) => setText(e.target.value)} style={{width: '25%'}}></Input><br /><br />
+            <Input onChange={(e) => setDBAlias(e.target.value)} style={{ width: '25%' }}></Input><br /><br />
             <Button onClick={handleDBAlias}>Save</Button>
             <Divider />
             <h3>Reload schema</h3>
