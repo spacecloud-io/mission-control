@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import {useSelector, useDispatch} from 'react-redux';
+import {set} from 'automate-redux';
 import { Select } from 'antd';
 import mysqlSmall from '../../assets/mysqlSmall.svg'
 import postgresqlSmall from '../../assets/postgresSmall.svg'
@@ -9,36 +11,31 @@ import { Modal, Icon, Button, Table } from 'antd'
 import Header from "../../components/header/Header"
 import AddDBForm from '../database/add-db-form/AddDBForm';
 
-const dataSource = [
-  {
-    key: '1',
-    db: 'Postgres',
-    alias: 'postgres'
-  }
-];
-
-const columns = [
-  {
-    title: 'DBType',
-    dataIndex: 'db',
-    key: 'db',
-  },
-  {
-    title: 'Alias',
-    dataIndex: 'alias',
-    key: 'alias',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: () => (
-      <Button type="primary">Remove</Button>
-    )
-  },
-];
-
 function DbSelector(props) {
   const [modalVisibility, setModalVisibility] = useState(false);
+  const databases = useSelector(state => state.databases);
+  const dispatch = useDispatch();
+
+  const columns = [
+    {
+      title: 'DBType',
+      dataIndex: 'type',
+      key: 'type',
+    },
+    {
+      title: 'Alias',
+      dataIndex: 'alias',
+      key: 'alias',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_,record) => (
+        <a style={{ color: "red" }} onClick={() => dispatch(set('databases', databases.filter(val => val.type !== record.type)))}>Remove</a>
+      )
+    },
+  ];
+
   return (
     <>
       <Modal className="select-project" footer={null} closable={false} bodyStyle={{ widtht: "800" }}
@@ -50,24 +47,11 @@ function DbSelector(props) {
         onCancel={props.handleCancel}
         width={700}
       >
-        <Table pagination={false} size="middle" dataSource={dataSource} columns={columns} />;
+        <Table pagination={false} size="middle" dataSource={databases} columns={columns} />;
       </Modal>
       {modalVisibility && (
       <AddDBForm visible={modalVisibility} handleCancel={() => setModalVisibility(false)}/>
       )}
-      {/* <div className="db-dropdown">
-      <Select
-        style={{ width: 200 }}
-        placeholder="Select a database"
-        onChange={props.handleSelect}
-        value={props.selectedDb}
-        className="action-rounded"
-      >
-        <Option value="sql-mysql"><img src={mysqlSmall} alt="mySQL" className="drop-icon"/>  MySQL</Option>
-        <Option value="sql-postgres"><img src={postgresqlSmall} alt="postgresSQl" className="drop-icon"/> PostgreSQL</Option>
-        <Option value="mongo"><img src={mongodbSmall} alt="mongoDB" className="drop-icon"/> MongoDB</Option>
-      </Select>
-    </div> */}
     </>
   )
 }

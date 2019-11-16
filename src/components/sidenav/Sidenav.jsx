@@ -23,7 +23,7 @@ const Sidenav = (props) => {
         <SidenavItem name="Remote Services" icon="code" active={props.selectedItem === 'services'} />
       </Link>
       <Link to={`/mission-control/projects/${projectID}/deployment`}>
-        <SidenavItem name="Deployment" icon="code" active={props.selectedItem === 'deployment'} />
+        <SidenavItem name="Deployments" icon="code" active={props.selectedItem === 'deployment'} />
       </Link>
       <Link to={`/mission-control/projects/${projectID}/user-management`}>
         <SidenavItem name="User Management" icon="people" active={props.selectedItem === 'user-management'} />

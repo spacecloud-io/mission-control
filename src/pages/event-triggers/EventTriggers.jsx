@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './event-triggers.css';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
@@ -104,9 +105,9 @@ const EventTriggers = () => {
 				const source = getEventSourceFromType(record.type)
 				return (
 					<span>
-						<a onClick={() => handleEditRuleClick(record.name)}>Edit</a>
-						{source === "custom" && <a onClick={() => handleTriggerRuleClick(record.name)}>Trigger</a>}
-						<a style={{ color: "red" }} onClick={() => handleDeleteRule(record.name)}>Delete</a>
+						<a onClick={(e) => {e.stopPropagation();handleEditRuleClick(record.name)}}>Edit</a>
+						{source === "custom" && <a onClick={(e) => {e.stopPropagation(); handleTriggerRuleClick(record.name)}}>Trigger</a>}
+						<a style={{ color: "red" }} onClick={(e) => {e.stopPropagation(); handleDeleteRule(record.name)}}>Delete</a>
 					</span>
 				)
 			}
@@ -128,7 +129,17 @@ const EventTriggers = () => {
 				{noOfRules > 0 && (
 					<React.Fragment>
 						<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
-						<Table columns={columns} dataSource={rulesTableData} />
+						<Table
+							columns={columns}
+							dataSource={rulesTableData}
+							onRow={(record, rowIndex) => {
+								return {
+									onClick: event => {
+										handleEditRuleClick(record.name)
+									}
+								};
+							}}
+						/>
 					</React.Fragment>
 				)}
 				{ruleModalVisible && <RuleForm

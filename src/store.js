@@ -8,13 +8,20 @@ const initialState = {
   uiState: {
     selectedCollection: ""
   },
+  databases: [
+    {
+      type: 'Postgres',
+      alias: 'postgres'  
+    }
+  ],
   deployments: [
     {
       id: '123',
       name: 'Service 1',
       status: 'running',
       url: 'http:service1.galaxy.com',
-      remarks: 'hello world'
+      remarks: 'hello world',
+      ports: ['1000', '2000']
     },
     {
       id: '456',

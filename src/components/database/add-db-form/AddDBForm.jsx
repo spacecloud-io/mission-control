@@ -18,10 +18,12 @@ import { notify } from '../../../utils';
 const { Text } = Typography;
 const { Option } = Select;
 
+const defaultRule = '{ "rule": "allow" }';
+
 const EnableDBForm = ({ form, handleSubmit, handleCancel, visible }) => {
   const [selectedDb, setSelectedDb] = useState('postgres');
   const { getFieldDecorator } = form;
-  const [rule, setRule] = useState('');
+  const [rule, setRule] = useState(defaultRule);
 
   const handleSubmitClick = e => {
     e.preventDefault();
@@ -84,7 +86,7 @@ const EnableDBForm = ({ form, handleSubmit, handleCancel, visible }) => {
         <FormItemLabel name="Default rules" />
         <CodeMirror
           value={rule}
-          style={{width: '100%'}}
+          className= "code-mirror"
           options={{
             mode: { name: "javascript", json: true },
             lineNumbers: true,

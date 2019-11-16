@@ -106,9 +106,9 @@ const RemoteService = () => {
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={(e) => {e.preventDefault(); handleEditClick(name)}}>Edit</a>
           <Popconfirm title={`This will remove this endpoint from this service. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a style={{ color: "red" }}>Remove</a>
+            <a style={{ color: "red" }} onClick={(e) => e.preventDefault()}>Remove</a>
           </Popconfirm>
         </span>
       )
@@ -132,7 +132,17 @@ const RemoteService = () => {
           {noOfEndpoints > 0 && (
             <React.Fragment>
               <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-              <Table columns={tableColumns} dataSource={endpointsTableData} />
+              <Table
+                columns={tableColumns}
+                dataSource={endpointsTableData}
+                onRow={(record, rowIndex) => {
+                  return {
+                    onClick: event => {
+                      handleEditClick(record.name)
+                    }
+                  };
+                }}
+              />
             </React.Fragment>
           )}
           {modalVisible && <EndpointForm

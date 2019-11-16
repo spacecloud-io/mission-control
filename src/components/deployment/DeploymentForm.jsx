@@ -7,7 +7,7 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 
 
 let id = 1;
-const RuleForm = (props) => {
+const DeploymentForm = (props) => {
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
@@ -17,17 +17,14 @@ const RuleForm = (props) => {
           delete options["col"]
         }
 
-        props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options);
+        console.log(values)
         props.handleCancel();
         props.form.resetFields();
       }
     });
   }
   const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
-  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-  let defaultEventSource = getEventSourceFromType(type, "database")
-  const temp = getFieldValue("source")
-  const eventSource = temp ? temp : defaultEventSource
+  const { name, url, username, password, ports, vCPU, ram, min, max } = props.initialValues ? props.initialValues : {}
 
   const remove = k => {
     const keys = getFieldValue('keys');
@@ -50,11 +47,11 @@ const RuleForm = (props) => {
   };
 
   const initialKeys = [0];
-  /*   if (targets) {
-      for (let i = 0; i < targets.length; i++) {
-        initialKeys.push(i);
+    if (ports) {
+      for (let i = 0; i < ports.length; i++) {
+        initialKeys.push(i+1);
       }
-    } */
+    }
 
   getFieldDecorator('keys', { initialValue: initialKeys });
   const keys = getFieldValue('keys');
@@ -64,7 +61,8 @@ const RuleForm = (props) => {
         <Form.Item
           style={{ display: 'inline-block', marginRight: 30 }}
         >
-          {getFieldDecorator(`targets[${k}].target`, {
+          {getFieldDecorator(`ports[${k}]`, {
+            initialValue: ports ? ports[k] : null
           })(
             <Input placeholder="eg: 8080" />
           )}
@@ -107,26 +105,42 @@ const RuleForm = (props) => {
         <Form.Item>
           {getFieldDecorator('url', {
             rules: [{ required: true, message: 'Please provide an url!' }],
-
+            initialValue: url
           })(
             <Input placeholder="eg: tom/hello-world:latest" />
           )}
         </Form.Item>
+        <FormItemLabel name="Image type" />
+        <Form.Item>
+          {getFieldDecorator('type', {
+            rules: [{ required: true, message: 'Please select a type!' }],
+            initialValue: "private"
+          })(
+            <Radio.Group>
+              <RadioCard value="private">Private</RadioCard>
+              <RadioCard value="public">Public</RadioCard>
+            </Radio.Group>
+          )}
+        </Form.Item>
+        {getFieldValue('type') === 'private' && (
+          <>
         <FormItemLabel name="Repository credentials" description="for private images" />
         <div style={{ display: "flex" }}>
           <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-            {getFieldDecorator('username', {})
+            {getFieldDecorator('username', {initialValue: username})
               (
                 <Input placeholder="Username" />
               )}
           </Form.Item>
           <Form.Item style={{ flexGrow: 1, width: 200 }}>
-            {getFieldDecorator('password', {})
+            {getFieldDecorator('password', {initialValue: password})
               (
                 <Input.Password placeholder="Password" />
               )}
           </Form.Item>
         </div>
+        </>
+        )}
         <React.Fragment>
           <FormItemLabel name="Expose Ports" />
           {formItems}
@@ -136,13 +150,13 @@ const RuleForm = (props) => {
             <FormItemLabel name="Resources" />
             <div style={{ display: "flex" }}>
               <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-                {getFieldDecorator('vcpu', {})
+                {getFieldDecorator('vcpu', {initialValue: vCPU})
                   (
                     <Input addonAfter="vCPU" />
                   )}
               </Form.Item>
               <Form.Item style={{ flexGrow: 1, width: 200 }}>
-                {getFieldDecorator('ram', {})
+                {getFieldDecorator('ram', {initialValue: ram})
                   (
                     <Input addonAfter="RAM (MBs)" />
                   )}
@@ -151,13 +165,13 @@ const RuleForm = (props) => {
             <FormItemLabel name="Auto Scaling" />
             <div style={{ display: "flex" }}>
               <Form.Item style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-                {getFieldDecorator('min', { initialValue: 0 })
+                {getFieldDecorator('min', { initialValue: min ? min : 0 })
                   (
                     <Input addonBefore="MIN" />
                   )}
               </Form.Item>
               <Form.Item style={{ flexGrow: 1, width: 200 }}>
-                {getFieldDecorator('max', { initialValue: 1000 })
+                {getFieldDecorator('max', { initialValue: max ? max : 0 })
                   (
                     <Input addonBefore="MAX" />
                   )}
@@ -171,7 +185,7 @@ const RuleForm = (props) => {
   );
 }
 
-const WrappedRuleForm = Form.create({})(RuleForm);
+const WrappedDeploymentForm = Form.create({})(DeploymentForm);
 
-export default WrappedRuleForm
+export default WrappedDeploymentForm
 

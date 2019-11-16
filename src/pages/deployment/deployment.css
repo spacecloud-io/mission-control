@@ -1,3 +1,7 @@
 .copy:hover{
   cursor: pointer;
 }
+
+td {
+  cursor: pointer;
+}

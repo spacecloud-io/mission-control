@@ -1,3 +1,4 @@
-.CodeMirror-scroll{
-  width: 100%
+.code-mirror{
+  height: 150px;
+  overflow: scroll;
 }
