@@ -50,7 +50,7 @@ const RemoteService = () => {
   // Derived state
   const serviceURL = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.url`)
   const endpoints = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.endpoints`, {})
-  const endpointsTableData = Object.entries(endpoints).map(([name, { path }]) => ({ name, path }))
+  const endpointsTableData = Object.entries(endpoints).map(([name, { path, method }]) => ({ name, method, path }))
   const noOfEndpoints = endpointsTableData.length
   const endpointClickedInfo = endpointClicked ? { name: endpointClicked, ...endpoints[endpointClicked] } : undefined
 
@@ -65,10 +65,10 @@ const RemoteService = () => {
     setEdnpointClicked("")
   }
 
-  const handleSubmit = (name, path, rule) => {
+  const handleSubmit = (name, method, path, rule) => {
     const serviceConfig = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`)
     const isEndpointPresent = endpoints[name] ? true : false
-    const newEndpoints = Object.assign({}, endpoints, { [name]: { path, rule } })
+    const newEndpoints = Object.assign({}, endpoints, { [name]: { path, method, rule } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
@@ -94,6 +94,11 @@ const RemoteService = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name'
+    },
+    {
+      title: 'Method',
+      dataIndex: 'method',
+      key: 'method'
     },
     {
       title: 'Path',

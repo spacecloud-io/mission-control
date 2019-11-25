@@ -93,10 +93,6 @@ body {
   border-radius: 20px;
 }
 
-.CodeMirror {
-  height: 360px !important;
-}
-
 .panel {
   height: 100%;
   padding: 16px;

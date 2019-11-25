@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Modal, Form, Input } from 'antd';
+import { Modal, Form, Input, Select } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
@@ -11,6 +11,8 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { notify } from "../../../utils";
 import { defaultEndpointRule } from "../../../constants"
 
+const { Option } = Select;
+
 const defaultRule = JSON.stringify(defaultEndpointRule, null, 2)
 const EndpointForm = (props) => {
   const [data, setData] = useState(defaultRule)
@@ -19,7 +21,7 @@ const EndpointForm = (props) => {
     props.form.validateFields((err, values) => {
       if (!err) {
         try {
-          props.handleSubmit(values.name, values.path, JSON.parse(data));
+          props.handleSubmit(values.name, values.method, values.path, JSON.parse(data));
           props.handleCancel();
           props.form.resetFields();
         } catch (ex) {
@@ -29,7 +31,7 @@ const EndpointForm = (props) => {
     })
   }
   const { getFieldDecorator } = props.form;
-  const { name, path } = props.initialValues ? props.initialValues : {}
+  const { name, path, method } = props.initialValues ? props.initialValues : {}
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Endpoint`}
@@ -59,6 +61,20 @@ const EndpointForm = (props) => {
             initialValue: name
           })(
             <Input placeholder="Example: allPayments" disabled={props.initialValues ? true : false} />
+          )}
+        </Form.Item>
+        <FormItemLabel name="Method" />
+        <Form.Item>
+          {getFieldDecorator('method', {
+            rules: [{ required: true, message: 'Please select a method!' }],
+            initialValue: method ? method : "POST"
+          })(
+            <Select placeholder="Please select a method">
+              <Option value="POST">POST</Option>
+              <Option value="PUT">PUT</Option>
+              <Option value="GET">GET</Option>
+              <Option value="DELETE">DELETE</Option>
+            </Select>
           )}
         </Form.Item>
         <FormItemLabel name="Path" />
