@@ -1,6 +1,6 @@
 .template {
-  height: 190px;
-  width: 260px;
+  height: 150px;
+  width: 226px;
   border: 1px solid #BDBDBD;
   border-radius: 30px;
   margin-bottom: 32px;
@@ -32,7 +32,7 @@
 
 .template .recommend {
   font-weight: 400;
-  color: #00B6E9;
+  color: #FF6700;
   font-size: 14px;
   margin-right: 4px;
 }
@@ -43,6 +43,6 @@
 
 
 .template .selected {
-  color: #00B6E9;
+  color: #FF6700;
   float: right;
 }
