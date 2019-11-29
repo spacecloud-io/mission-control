@@ -23,18 +23,23 @@ const CreateProject = (props) => {
   const [current,setCurrent] = useState(0);
   const [dbValue, setDbValue] = useState("mongodb://localhost:27017");
   const [alias, setAlias] = useState("mongo");
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/create-project");
   }, [])
 
 
-  const { getFieldDecorator, validateFields, getFieldValue } = props.form;
+  const { getFieldDecorator, validateFields, getFieldValue, getFieldError } = props.form;
   const { Step } = Steps; 
+
+  function hasErrors(fieldsError) {
+    return Object.keys(fieldsError).some(field => fieldsError[field]);
+  }
 
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
+  const [projectId, setProjectId] = useState(projectID);
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -54,6 +59,7 @@ const CreateProject = (props) => {
   };
 
   const stepchange = () => {
+        setProjectId(projectID);
         const newCurrent = current + 1;
         setCurrent(newCurrent);
     }
@@ -74,6 +80,10 @@ const CreateProject = (props) => {
         setSelectedDB("sql-mysql");
         setDbValue("root:my-secret-pw@tcp(localhost:3306)/");
         setAlias("mysql");
+    }
+
+    const handleDatabaseSubmit = () => {
+        history.push(`/mission-control/projects/${projectId}/overview`)
     }
 
   const steps = [{
@@ -99,7 +109,7 @@ const CreateProject = (props) => {
                                 </Form.Item>
                             </Form>
                             </div>
-                            <Button type="primary" onClick={stepchange} className="project-btn">Create Project</Button>
+                            <Button type="primary" onClick={stepchange} disabled={hasErrors(getFieldError)} className="project-btn">Create Project</Button>
                         </Card><br />
                     </Col>
                 </Row>
@@ -146,7 +156,7 @@ const CreateProject = (props) => {
                                     rules: [{ required: true, message: 'Please input a connection string' }],
                                     initialValue: dbValue
                                     })(
-                                    <Input placeholder="eg: mongodb://localhost:27017" />,
+                                    <Input.Password placeholder="eg: mongodb://localhost:27017" />,
                                     )}
                                 </Form.Item>
                             </Form>
@@ -162,11 +172,11 @@ const CreateProject = (props) => {
                                     )}
                                 </Form.Item>
                             </Form>
-                            <Link to={"/mission-control/projects/" + projectID + "/overview"} ><Button type="primary" className="db-btn">Add database</Button></Link>
+                            <Button type="primary" className="db-btn" onClick={handleDatabaseSubmit}>Add database</Button>
                         </Card>
                     </Col>
                 </Row>
-                <center><Link to={"/mission-control/projects/" + projectID + "/overview"} >Skip for now</Link></center>
+                <center className="skip-link"><Link to={"/mission-control/projects/" + projectId + "/overview"} >Skip for now</Link></center>
             </div>
 }];
 

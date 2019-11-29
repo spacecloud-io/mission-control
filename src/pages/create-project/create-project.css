@@ -4,6 +4,7 @@
 
 .create-project .content {
   position: fixed;
+  overflow: auto;
   top: 35px;
   left: 0;
   right: 0;
@@ -53,7 +54,7 @@
 
 .db-display{
   display: inline-block;
-  margin-right: 3%;
+  margin-right: 2.5%;
   margin-bottom: 0%;
 }
 
@@ -65,4 +66,8 @@
 .db-btn{
   width: 100%;
   margin-top: 4%;
+}
+
+.skip-link{
+  margin-left: 4%;
 }
