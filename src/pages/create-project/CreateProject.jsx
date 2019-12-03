@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import client from '../../client';
 import store from "../../store"
 import history from "../../history"
+import { defaultDbConnectionStrings, dbTypes } from "../../constants.js"
 import { generateProjectConfig, notify } from '../../utils';
 
 import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
@@ -30,12 +31,8 @@ const CreateProject = (props) => {
   }, [])
 
 
-  const { getFieldDecorator, validateFields, getFieldValue, getFieldError } = props.form;
+  const { getFieldDecorator, validateFields, getFieldValue, setFieldsValue } = props.form;
   const { Step } = Steps; 
-
-  function hasErrors(fieldsError) {
-    return Object.keys(fieldsError).some(field => fieldsError[field]);
-  }
 
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
@@ -65,23 +62,20 @@ const CreateProject = (props) => {
     }
 
     const handleMongo = () => {
-        setSelectedDB("mongo");
-        setDbValue("mongodb://localhost:27017");
-        setAlias("mongo");
+        setSelectedDB(dbTypes.MONGO);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.MONGO], alias: "mongo"});
     }
 
     const handlePostgres = () => {
-        setSelectedDB("sql-postgres");
-        setDbValue("postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable");
-        setAlias("postgres");
+        setSelectedDB(dbTypes.POSTGRESQL);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.POSTGRESQL], 
+            alias: "postgres"});
     }
 
     const handleMysql = () => {
-        setSelectedDB("sql-mysql");
-        setDbValue("root:my-secret-pw@tcp(localhost:3306)/");
-        setAlias("mysql");
+        setSelectedDB(dbTypes.MYSQL);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.MYSQL], alias: "mysql"});
     }
-
     const handleDatabaseSubmit = () => {
         history.push(`/mission-control/projects/${projectId}/overview`)
     }
@@ -109,7 +103,7 @@ const CreateProject = (props) => {
                                 </Form.Item>
                             </Form>
                             </div>
-                            <Button type="primary" onClick={stepchange} disabled={hasErrors(getFieldError)} className="project-btn">Create Project</Button>
+                            <Button type="primary" onClick={stepchange} className="project-btn">Create Project</Button>
                         </Card><br />
                     </Col>
                 </Row>
@@ -134,7 +128,7 @@ const CreateProject = (props) => {
                             </Row>
                             <Row className="db-display">
                             <Col span={3}>
-                            <StarterTemplate icon={postgresIcon} onClick={handlePostgres}
+                            <StarterTemplate icon={postgresIcon} onClick={handlePostgres} 
                                 heading="POSTGRESQL" desc="The world's most advanced open source database."
                                 recommended={false}
                                 active={selectedDB === "sql-postgres"} />
@@ -154,7 +148,7 @@ const CreateProject = (props) => {
                                 <Form.Item >
                                     {getFieldDecorator('connectionString', {
                                     rules: [{ required: true, message: 'Please input a connection string' }],
-                                    initialValue: dbValue
+                                    initialValue: "mongodb://localhost:27017"
                                     })(
                                     <Input.Password placeholder="eg: mongodb://localhost:27017" />,
                                     )}
@@ -166,7 +160,7 @@ const CreateProject = (props) => {
                                 <Form.Item>
                                     {getFieldDecorator('alias', {
                                     rules: [{ required: true, message: 'Please input an alias for your database' }],
-                                    initialValue: alias
+                                    initialValue: "mongo"
                                     })(
                                     <Input placeholder="eg: mongo" />,
                                     )}
