@@ -148,7 +148,7 @@ const CreateProject = (props) => {
                                 <Form.Item >
                                     {getFieldDecorator('connectionString', {
                                     rules: [{ required: true, message: 'Please input a connection string' }],
-                                    initialValue: "mongodb://localhost:27017"
+                                    initialValue: defaultDbConnectionStrings[dbTypes.MONGO]
                                     })(
                                     <Input.Password placeholder="eg: mongodb://localhost:27017" />,
                                     )}
