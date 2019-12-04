@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch } from "react-redux";
 import ReactGA from 'react-ga';
 import { set, increment, decrement } from "automate-redux"
+import { Link } from 'react-router-dom';
 import client from '../../client';
 import store from "../../store"
 import history from "../../history"
+import { defaultDbConnectionStrings, dbTypes } from "../../constants.js"
 import { generateProjectConfig, notify } from '../../utils';
 
-import { Row, Col, Button, Form, Input, Icon } from 'antd'
+import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
 import StarterTemplate from '../../components/starter-template/StarterTemplate'
 import Topbar from '../../components/topbar/Topbar'
 import './create-project.css'
@@ -18,18 +20,23 @@ import mysqlIcon from '../../assets/mysqlIcon.svg'
 import mongoIcon from '../../assets/mongoIcon.svg'
 
 const CreateProject = (props) => {
-  const [selectedDB, setSelectedDB] = useState("mongo")
-  const dispatch = useDispatch()
+  const [selectedDB, setSelectedDB] = useState("mongo");
+  const [current,setCurrent] = useState(0);
+  const [dbValue, setDbValue] = useState("mongodb://localhost:27017");
+  const [alias, setAlias] = useState("mongo");
+  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/create-project");
   }, [])
 
 
-  const { getFieldDecorator, validateFields, getFieldValue } = props.form;
+  const { getFieldDecorator, validateFields, getFieldValue, setFieldsValue } = props.form;
+  const { Step } = Steps; 
 
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
+  const [projectId, setProjectId] = useState(projectID);
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -48,57 +55,139 @@ const CreateProject = (props) => {
     });
   };
 
+  const stepchange = () => {
+        setProjectId(projectID);
+        const newCurrent = current + 1;
+        setCurrent(newCurrent);
+    }
+
+    const handleMongo = () => {
+        setSelectedDB(dbTypes.MONGO);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.MONGO], alias: "mongo"});
+    }
+
+    const handlePostgres = () => {
+        setSelectedDB(dbTypes.POSTGRESQL);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.POSTGRESQL], 
+            alias: "postgres"});
+    }
+
+    const handleMysql = () => {
+        setSelectedDB(dbTypes.MYSQL);
+        setFieldsValue({connectionString: defaultDbConnectionStrings[dbTypes.MYSQL], alias: "mysql"});
+    }
+    const handleDatabaseSubmit = () => {
+        history.push(`/mission-control/projects/${projectId}/overview`)
+    }
+
+  const steps = [{
+    title: 'Create Project',
+    content: <div>
+                <Row>
+                    <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} >
+                        <Card>
+                            <center>Create Project</center>
+                            <div className="label-spacing">
+                            <p>Project name</p>
+                            <Form>
+                                <Form.Item >
+                                    {getFieldDecorator('projectName', {
+                                    rules: [{ required: true, message: 'Please input a project name' }],
+                                    })(
+                                    <Input
+                                        prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                        placeholder="Project name" />,
+                                    )}
+                                    <br/>
+                                    {projectID && <span className="hint">ProjectID: {projectID}</span>}
+                                </Form.Item>
+                            </Form>
+                            </div>
+                            <Button type="primary" onClick={stepchange} className="project-btn">Create Project</Button>
+                        </Card><br />
+                    </Col>
+                </Row>
+                <center><Link to="/mission-control/welcome">Cancel</Link></center>
+            </div>
+},
+{
+    title: 'Add Database',
+    content: <div>
+                <Row>
+                    <Col lg={{ span: 13, offset: 6 }} sm={{ span: 24 }} >
+                        <Card>
+                            <center>Add a database to your project</center>
+                            <p className="db-left">Select a database</p>
+                            <Row className="db-display db-left">
+                            <Col span={3}>
+                            <StarterTemplate icon={mongoIcon} onClick={handleMongo}
+                                heading="MONGODB" desc="A open-source cross-platform document- oriented database."
+                                recommended={false}
+                                active={selectedDB === "mongo"} />
+                            </Col>
+                            </Row>
+                            <Row className="db-display">
+                            <Col span={3}>
+                            <StarterTemplate icon={postgresIcon} onClick={handlePostgres} 
+                                heading="POSTGRESQL" desc="The world's most advanced open source database."
+                                recommended={false}
+                                active={selectedDB === "sql-postgres"} />
+                            </Col>
+                            </Row>
+                            <Row className="db-display">
+                            <Col span={3}>
+                            <StarterTemplate icon={mysqlIcon} onClick={handleMysql}
+                                heading="MYSQL" desc="The world's most popular open source database."
+                                recommended={false}
+                                active={selectedDB === "sql-mysql"} />
+                            </Col>
+                            </Row>
+                            <p style={{marginBottom:0, marginTop:0}}>Provide a connection String</p>
+                            <label style={{fontSize: 12}}>Space Cloud requires a connection string to connect to your database</label>
+                            <Form>
+                                <Form.Item >
+                                    {getFieldDecorator('connectionString', {
+                                    rules: [{ required: true, message: 'Please input a connection string' }],
+                                    initialValue: defaultDbConnectionStrings[dbTypes.MONGO]
+                                    })(
+                                    <Input.Password placeholder="eg: mongodb://localhost:27017" />,
+                                    )}
+                                </Form.Item>
+                            </Form>
+                            <p style={{marginBottom:0, marginTop:0}}>Give your database an alias</p>
+                            <label style={{fontSize: 12}}>Alias is the name that you would use in your frontend to identify your database</label>
+                            <Form>
+                                <Form.Item>
+                                    {getFieldDecorator('alias', {
+                                    rules: [{ required: true, message: 'Please input an alias for your database' }],
+                                    initialValue: "mongo"
+                                    })(
+                                    <Input placeholder="eg: mongo" />,
+                                    )}
+                                </Form.Item>
+                            </Form>
+                            <Button type="primary" className="db-btn" onClick={handleDatabaseSubmit}>Add database</Button>
+                        </Card>
+                    </Col>
+                </Row>
+                <center className="skip-link"><Link to={"/mission-control/projects/" + projectId + "/overview"} >Skip for now</Link></center>
+            </div>
+}];
+
   return (
     <div className="create-project">
       <Topbar hideActions />
       <div className="content">
         <Row>
-          <Col lg={{ span: 20, offset: 2 }} sm={{ span: 24 }}>
-            <p>Project name</p>
-            <Form>
-              <Form.Item >
-                {getFieldDecorator('projectName', {
-                  rules: [{ required: true, message: 'Please input a project name' }],
-                })(
-                  <Input
-                    prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                    placeholder="Project name" style={{ width: 600 }} />,
-                )}
-                <br/>
-                {projectID && <span className="hint">ProjectID: {projectID}</span>}
-              </Form.Item>
-            </Form>
-            <p>Choose a primary database</p>
-            <div className="underline"></div>
-            <div className="cards">
-              <Row>
-                <Col span={6}>
-                  <StarterTemplate icon={mongoIcon} onClick={() => setSelectedDB("mongo")}
-                    heading="MONGODB" desc="A open-source cross-platform document- oriented database."
-                    recommended={false}
-                    active={selectedDB === "mongo"} />
-                </Col>
-
-                <Col span={6}>
-                  <StarterTemplate icon={postgresIcon} onClick={() => setSelectedDB("sql-postgres")}
-                    heading="POSTGRESQL" desc="The world's most advanced open source database."
-                    recommended={false}
-                    active={selectedDB === "sql-postgres"} />
-                </Col>
-
-                <Col span={6}>
-                  <StarterTemplate icon={mysqlIcon} onClick={() => setSelectedDB("sql-mysql")}
-                    heading="MYSQL" desc="The world's most popular open source database."
-                    recommended={false}
-                    active={selectedDB === "sql-mysql"} />
-                </Col>
-              </Row>
-
-            </div>
-            <img className="image" src={create} alt="graphic" height="380" width="360" />
-            <Button type="primary" htmlType="submit" className="next-btn" onClick={handleSubmit}>NEXT</Button>
-          </Col>
+            <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
+                <Steps current={current} className="step-display" size="small">
+                    {steps.map(item => (
+                        <Step key={item.title} title={item.title} /> 
+                    ))}
+                </Steps><br />
+            </Col>
         </Row>
+        <div>{steps[current].content}</div>     
       </div>
     </div>
   )
