@@ -62,7 +62,7 @@ function DbSelector(props) {
         className="select-database"
         title={<div className="modal-header">
           <h2 className="modal-title">Select a database</h2>
-          <Button onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/add-db`)}>Add Database</Button>
+          <Button onClick={() => history.push(`/mission-control/projects/${projectID}/database/add-db`)}>Add Database</Button>
         </div>} 
         footer={null}
         closable={false}  
