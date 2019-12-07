@@ -13,6 +13,7 @@ const Topbar = (props) => {
   const history = useHistory()
   const { projectID, selectedDB } = useParams()
   const [modalVisible, setModalVisible] = useState(false)
+  const [visible, setVisible] = useState(false)
   const projects = useSelector(state => state.projects)
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
@@ -26,9 +27,15 @@ const Topbar = (props) => {
             <Icon type="caret-down" />
           </Button>
         </div>}
-        {(props.showDbSelector) &&
-          <DbSelector handleSelect={handleDBSelect} selectedDb={selectedDB} />
-        }
+        {props.showDbSelector && <div className="db-btn-position">
+          <Button className="action-rounded" onClick={() => setVisible(true)}>
+            <img src={require(`../../assets/${selectedDB}Small.svg`)} style={{marginRight: 10}} />
+            {selectedDB}
+            <Icon type="caret-down" />
+          </Button>
+        </div>}
+          <DbSelector visible={visible} handleSelect={handleDBSelect} selectedDb={selectedDB} handleCancel={() => setVisible(false)} />
+  
         <SelectProject visible={modalVisible} handleCancel={() => setModalVisible(false)} />
       </div>
     </div>
