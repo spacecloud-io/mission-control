@@ -40,7 +40,7 @@ export default () => {
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
-      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/add-db" component={AddDb} />
+      <Route exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
       <Route exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
       <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
       <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />

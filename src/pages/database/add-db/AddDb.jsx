@@ -9,7 +9,7 @@ import { Icon, Row, Col, Button } from 'antd';
 import '../database.css';
 
 const AddDb = () => {
-    const { projectID, selectedDB } = useParams()
+    const { projectID } = useParams()
     const history = useHistory()
 
     useEffect(() => {
@@ -34,7 +34,7 @@ const AddDb = () => {
                                 alignItems: "center",
                                 padding: "0 16px"
                             }}>
-                            <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/overview`)}>
+                            <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/database`)}>
                             <Icon type="left" />
                             Go back
                             </Button>
