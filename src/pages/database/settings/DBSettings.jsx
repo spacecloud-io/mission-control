@@ -76,7 +76,7 @@ const Settings = () => {
             <Divider />
             <h3>Remove Config</h3>
             <p>Removes the config (schema, rules, etc.) of this database without dropping any tables or database</p>
-            <Button>Remove</Button>
+            <Button type="danger">Remove</Button>
           </div>
         </div>
       </div>

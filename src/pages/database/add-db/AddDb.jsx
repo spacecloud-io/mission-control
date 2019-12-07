@@ -38,8 +38,8 @@ const AddDb = () => {
                             <Icon type="left" />
                             Go back
                             </Button>
-                            <span style={{ marginLeft: 90, fontSize: 20}}>
-                                <b>Add Database</b>
+                            <span style={{ marginLeft: 16 }}>
+                                Add Database
                             </span>
                     </div><br />
                     <div>
