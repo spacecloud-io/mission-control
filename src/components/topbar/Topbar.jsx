@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-
+import {getProjectConfig} from '../../utils'
 import { Button, Icon, Select } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
@@ -18,6 +18,7 @@ const Topbar = (props) => {
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
   const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
+
   return (
     <div>
       <div className="topbar">

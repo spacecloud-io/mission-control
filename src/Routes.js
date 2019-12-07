@@ -35,12 +35,12 @@ export default () => {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
       <Route exact path="/mission-control/projects/:projectID/overview" component={Overview} />
       <Route exact path="/mission-control/projects/:projectID/database" component={DatabaseModulePage} />
+      <Route exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
-      <Route exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
       <Route exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
       <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
       <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />

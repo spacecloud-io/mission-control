@@ -11,14 +11,12 @@ function DbSelector(props) {
   const history = useHistory();
   const projects = useSelector(state => state.projects)
   const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
-  const dbList = Object.keys(crudModule)
 
   const array = Object.entries(crudModule).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
     return {alias: alias, dbtype: obj.type}
   })
-
-  console.log(array)
+  
   const dbcolumns = [
     {
       title: '',
@@ -83,7 +81,7 @@ function DbSelector(props) {
             return {
               onClick: () => {
                 {
-                    props.handleSelect(record.dbtype)
+                    props.handleSelect(record.alias)
                     props.handleCancel()
                 }
               }

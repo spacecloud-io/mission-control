@@ -12,10 +12,6 @@ const AddDb = () => {
     const { projectID } = useParams()
     const history = useHistory()
 
-    useEffect(() => {
-        fetchDBConnState(projectID, selectedDB)
-      }, [projectID, selectedDB])
-
     return(
         <React.Fragment>
             <Topbar
