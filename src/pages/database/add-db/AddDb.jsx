@@ -16,7 +16,6 @@ const AddDb = () => {
         <React.Fragment>
             <Topbar
                 showProjectSelector
-                showDbSelector
                 />
             <div>
                 <Sidenav selectedItem='database' />
