@@ -5,7 +5,7 @@ import 'codemirror/theme/3024-day.css';
 import 'codemirror/lib/codemirror.css';
 import "./query.css"
 
-const CodeBlock1 = ({ }) => {
+const QueryDark = ({ }) => {
 
     const [selectedRule, setselectedRule] = useState("")
 
@@ -30,4 +30,4 @@ const CodeBlock1 = ({ }) => {
     )
 }
 
-export default CodeBlock1
+export default QueryDark
