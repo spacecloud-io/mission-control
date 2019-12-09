@@ -35,7 +35,7 @@ export default () => {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
       <Route exact path="/mission-control/projects/:projectID/overview" component={Overview} />
       <Route exact path="/mission-control/projects/:projectID/database" component={DatabaseModulePage} />
-      <Route exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
+      <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/add-db" component={AddDb} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
       <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />

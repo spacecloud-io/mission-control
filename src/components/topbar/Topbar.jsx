@@ -10,10 +10,6 @@ import './topbar.css'
 import logo from '../../assets/logo-black.svg';
 import { dbTypes } from '../../constants';
 
-const mysqlSvg = require(`../../assets/mysqlSmall.svg`)
-const postgresSvg = require(`../../assets/postgresSmall.svg`)
-const mongoSvg = require(`../../assets/mongoSmall.svg`)
-
 const Topbar = (props) => {
   const history = useHistory()
   const { projectID, selectedDB } = useParams()
@@ -26,6 +22,10 @@ const Topbar = (props) => {
   const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
   let checkDB = ''
   if (crudModule[selectedDB]) checkDB = crudModule[selectedDB].type
+
+  const mysqlSvg = require(`../../assets/mysqlSmall.svg`)
+const postgresSvg = require(`../../assets/postgresSmall.svg`)
+const mongoSvg = require(`../../assets/mongoSmall.svg`)
 
   var svg = mongoSvg
   switch (checkDB) {
@@ -41,6 +41,7 @@ const Topbar = (props) => {
     default:
       svg = postgresSvg
   }
+  
   return (
     <div>
       <div className="topbar">

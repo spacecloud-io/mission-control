@@ -5,17 +5,41 @@ import { useHistory } from 'react-router-dom';
 import {useParams} from 'react-router-dom';
 import {useSelector} from 'react-redux';
 import {getProjectConfig} from '../../utils';
+import {dbTypes} from '../../constants';
 
 function DbSelector(props) {
   const {projectID, selectedDB} = useParams();
   const history = useHistory();
   const projects = useSelector(state => state.projects)
   const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+  const mysqlSvg = require(`../../assets/mysqlSmall.svg`)
+  const postgresSvg = require(`../../assets/postgresSmall.svg`)
+  const mongoSvg = require(`../../assets/mongoSmall.svg`)
 
   const array = Object.entries(crudModule).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
     return {alias: alias, dbtype: obj.type}
   })
+
+  let checkDB = ''
+  if (crudModule[selectedDB]) checkDB = crudModule[selectedDB].type
+
+  var svg = mongoSvg
+  switch (checkDB) {
+    case dbTypes.MONGO:
+      svg = mongoSvg
+      break;
+    case dbTypes.MYSQL:
+      svg = mysqlSvg
+      break;
+    case dbTypes.POSTGRESQL:
+      svg = postgresSvg
+      break;
+    default:
+      svg = postgresSvg
+  }
+
+  console.log(svg)
   
   const dbcolumns = [
     {
@@ -48,7 +72,7 @@ function DbSelector(props) {
       render: (text, record) =>{
         return(
           <div>
-            <img src={require(`../../assets/${record.dbtype}Small.svg`)} alt="mongodb" style={{marginRight: 10}} />
+            <img src={svg} alt={checkDB} style={{marginRight: 10}} />
             {text}
           </div>
         );
@@ -62,7 +86,7 @@ function DbSelector(props) {
         className="select-database"
         title={<div className="modal-header">
           <h2 className="modal-title">Select a database</h2>
-          <Button onClick={() => history.push(`/mission-control/projects/${projectID}/database/add-db`)}>Add Database</Button>
+          <Button onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/add-db`)}>Add Database</Button>
         </div>} 
         footer={null}
         closable={false}  

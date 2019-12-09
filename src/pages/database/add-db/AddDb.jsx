@@ -17,7 +17,7 @@ const AddDb = () => {
             <Topbar
                 showProjectSelector
                 showDbSelector
-            />
+                />
             <div>
                 <Sidenav selectedItem='database' />
                 <div className='page-content page-content--no-padding'>
