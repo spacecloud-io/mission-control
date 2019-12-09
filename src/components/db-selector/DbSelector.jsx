@@ -38,8 +38,6 @@ function DbSelector(props) {
     default:
       svg = postgresSvg
   }
-
-  console.log(svg)
   
   const dbcolumns = [
     {
