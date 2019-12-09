@@ -5,7 +5,7 @@ import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
 import "./query.css"
 
-const CodeBlock1 = ({ }) => {
+const QueryWhite = ({ }) => {
 
     const [selectedRule, setselectedRule] = useState("")
 
@@ -29,4 +29,4 @@ const CodeBlock1 = ({ }) => {
     )
 }
 
-export default CodeBlock1
+export default QueryWhite
