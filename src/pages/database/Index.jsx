@@ -46,10 +46,8 @@ const Database = () => {
       <div>
         <Sidenav selectedItem="database" />
         <div className="page-content">
-          <h2>Database Module</h2>
-          <p>Enable one of the following databases to start using CRUD operations in your app.</p>
           <div style={{ marginTop: 24 }}>
-            <DatabaseCardList cards={cards} handleEnable={handleDBEnable} />
+            <DatabaseCardList />
           </div>
         </div>
       </div>

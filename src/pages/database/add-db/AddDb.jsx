@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory  } from 'react-router-dom';
-import { fetchDBConnState } from '../dbActions';
+import { dbEnable } from '../dbActions';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { Icon, Row, Col, Button } from 'antd';
 
@@ -39,8 +39,8 @@ const AddDb = () => {
                     </div><br />
                     <div>
                     <Row>
-                        <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
-                            <CreateDatabase />
+                        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
+                            <CreateDatabase projectId={projectID} />
                         </Col>
                     </Row>
                     </div>

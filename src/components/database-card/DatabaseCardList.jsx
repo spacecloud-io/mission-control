@@ -1,14 +1,26 @@
 import React from 'react'
-import DatabaseCard from './DatabaseCard'
-import { Row } from "antd"
+import { Row, Button, Col } from "antd"
+import './database-card.css'
+import addDb from '../../assets/addDb.svg'
+import history from '../../history'
+import {useParams} from 'react-router-dom'
 
-function DatabaseCardList(props) {
-
+function DatabaseCardList() {
+  const {projectID} = useParams()
   return (
-    <Row gutter={32}>
-      {props.cards.map((card) =>
-        <DatabaseCard key={card.key} name={card.name} desc={card.desc} graphics={card.graphics} handleEnable={() => props.handleEnable(card.key)} />)}
-    </Row>
+    <div>
+      <Row>
+        <Col lg={{offset:5 }}>
+          <img src={addDb} alt="add database" />
+          <p>Space Cloud exposes realtime GraphQL and REST APIs on top of new or existing databases. Add a database to get started.</p>
+        </Col>
+      </Row>
+      <Row gutter={32}>
+        <Col lg={{span: 8, offset: 10}}>
+          <Button type="primary" className="add-db" onClick={() => history.push(`/mission-control/projects/${projectID}/database/add-db`)}>Add Database</Button>
+        </Col>
+      </Row>
+    </div>
   )
 }
 

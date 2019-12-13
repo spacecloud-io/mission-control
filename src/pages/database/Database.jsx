@@ -10,7 +10,7 @@ import mongodb from '../../assets/mongodb.svg'
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
-import { setDBConfig, setColRule } from "./dbActions"
+import { setDBConfig, setColRule, dbEnable } from "./dbActions"
 
 const Database = () => {
   // Router params
@@ -26,12 +26,8 @@ const Database = () => {
   const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
 
   // Handlers
-  const handleEnable = (conn, rules) => {
-    setDBConfig(projectID, selectedDB, true, conn).then(() => {
-      notify("success", "Success", "Enabled database successfully")
-      setColRule(projectID, selectedDB, "default", rules)
-        .catch(ex => notify("error", "Error configuring default rules", ex))
-    }).catch(ex => notify("error", "Error enabling database", ex))
+  const handleEnable = (conn, rules, type) => {
+    dbEnable(projectID, selectedDB, conn, rules, type)
   }
 
   if (enabled) {

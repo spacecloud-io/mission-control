@@ -2,8 +2,6 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import {useSelector} from 'react-redux';
-import {useParams} from 'react-router-dom';
 import {dbTypes} from './constants';
 
 import store from "./store"
@@ -74,16 +72,7 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: {
-      [dbType]: {
-        enabled: true,
-        conn: getConnString(dbType),
-        collections: {
-          default: { rules: defaultDBRules },
-          event_logs: {schema: eventLogsSchema }
-        }
-      }
-    },
+    crud: { },
     eventing: {
       enabled: true,
       dbType: dbType,
