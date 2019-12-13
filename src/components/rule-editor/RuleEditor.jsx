@@ -59,7 +59,7 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
       {noOfRules === 0 && emptyState}
       {(noOfRules > 0) && <div>
         <Row type="flex">
-          <Col span={6}>
+          <Col span={{ xs:24, sm:6 , md: 6, lg: 6 }}>
             {sidePanel}
           </Col>
           <Col span={6} className="rule-editor__rule-list">
