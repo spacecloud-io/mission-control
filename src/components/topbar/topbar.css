@@ -1,55 +1,83 @@
 .topbar {
-  background: #ffffff;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
-  height: 64px;
-  line-height: 64px;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index:100;
-  display: flex;
-  align-items: center;
-  padding: 0 32px;
+    background: #ffffff;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+    height: 64px;
+    line-height: 64px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
 }
 
 .topbar .action-button {
-  height: 28px;
-  margin: 11px 8px;
+    height: 28px;
+    margin: 11px 8px;
 }
 
 .topbar .upgrade-button {
-  background: #5DA8DC;
-  border-color: #5DA8DC;
+    background: #5DA8DC;
+    border-color: #5DA8DC;
 }
 
 .topbar .right-list {
-  float: right;
-  position: absolute;
-  right: 4vw;
+    float: right;
+    position: absolute;
+    right: 4vw;
 }
 
-.topbar > span {
-  color: #000;
-  padding-left: 120px;
-  padding-right: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 64px;
+.topbar>span {
+    color: #000;
+    padding-left: 120px;
+    padding-right: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 64px;
 }
 
 .topbar .btn {
-  width:139px;
-  font-size: 14px;
-  line-height: 19px;
-  font-weight: normal;
-  color:rgba(0, 0, 0, 0.87);
-  border:1px solid #B9B9B9;
-  border-radius: 20px;
+    width: 139px;
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: normal;
+    color: rgba(0, 0, 0, 0.87);
+    border: 1px solid #B9B9B9;
+    border-radius: 20px;
 }
 
 .topbar .btn-position {
-  line-height: 50px;
-  margin-left: 120px;
-  margin-right: 10px;
+    line-height: 50px;
+    margin-left: 120px;
+    margin-right: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .topbar .btn-position {
+        margin-left: 0;
+        position: absolute;
+        right: 10px;
+    }
+    .topbar .hamburger {
+        margin-right: 16px;
+    }
+}
+
+@media screen and (max-width: 425px) {
+    .topbar .logo {
+        display: none;
+    }
+    .topbar .upLogo {
+        width: 10%;
+        margin-right: 16px;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .topbar .upLogo,
+    .hamburger {
+        display: none;
+    }
 }

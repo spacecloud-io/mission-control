@@ -71,7 +71,7 @@ const Settings = () => {
             <h3>Disable database</h3>
             <p>Disables all access to this database</p>
             {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
-              <Button type="danger" disabled >Disable</Button>
+              <Button type="danger" disabled>Disable</Button>
             </Tooltip>}
             {canDisableDB && <Button type="danger" onClick={handleDisable} >Disable</Button>}
           </div>

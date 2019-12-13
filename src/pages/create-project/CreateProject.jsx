@@ -62,7 +62,7 @@ const CreateProject = (props) => {
                 })(
                   <Input
                     prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                    placeholder="Project name" style={{ width: 600 }} />,
+                    placeholder="Project name" className="project-name" />,
                 )}
                 <br/>
                 {projectID && <span className="hint">ProjectID: {projectID}</span>}
@@ -72,21 +72,21 @@ const CreateProject = (props) => {
             <div className="underline"></div>
             <div className="cards">
               <Row>
-                <Col span={6}>
+                <Col span={{ xs: 24, sm: 24, md: 6, lg: 6 }} >
                   <StarterTemplate icon={mongoIcon} onClick={() => setSelectedDB("mongo")}
                     heading="MONGODB" desc="A open-source cross-platform document- oriented database."
                     recommended={false}
                     active={selectedDB === "mongo"} />
                 </Col>
 
-                <Col span={6}>
+                <Col span={{ xs: 24, sm: 24, md: 6, lg: 6 }}>
                   <StarterTemplate icon={postgresIcon} onClick={() => setSelectedDB("sql-postgres")}
                     heading="POSTGRESQL" desc="The world's most advanced open source database."
                     recommended={false}
                     active={selectedDB === "sql-postgres"} />
                 </Col>
 
-                <Col span={6}>
+                <Col span={{ xs: 24, sm: 24, md: 6, lg: 6 }}>
                   <StarterTemplate icon={mysqlIcon} onClick={() => setSelectedDB("sql-mysql")}
                     heading="MYSQL" desc="The world's most popular open source database."
                     recommended={false}

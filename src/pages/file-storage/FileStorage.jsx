@@ -128,7 +128,7 @@ const Rules = (props) => {
 
 	const EmptyState = () => {
 		return <div style={{ marginTop: 24 }}>
-			<div className="panel" style={{ margin: 24 }}>
+			<div className="panel">
 				<img src={securitySvg} width="240px" />
 				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
 				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
@@ -136,13 +136,13 @@ const Rules = (props) => {
 		</div>
 	}
 	return (
-		<div>
+		<div className="file-storage">
 			<Topbar showProjectSelector />
 			<div>
 				<Sidenav selectedItem="file-storage" />
 				<div className="page-content">
-					{!enabled && <div className="panel" style={{ margin: 48 }}>
-						<img src={fileStorageSvg} width="60%" />
+					{!enabled && <div className="panel">
+						<img src={fileStorageSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
 						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
 							Get started

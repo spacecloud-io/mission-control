@@ -6,8 +6,11 @@ import { Button, Icon, Select } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
+import store from "../../store"
+import { set, get } from "automate-redux"
 
 import logo from '../../assets/logo-black.svg';
+import upLogo from '../../logo.png'
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -20,7 +23,9 @@ const Topbar = (props) => {
   return (
     <div>
       <div className="topbar">
-        <img src={logo} alt="logo" />
+        <Icon type="menu" className="hamburger" onClick={()=>store.dispatch(set("uiState.showSidenav", true))}/>
+        <img className="logo" src={logo} alt="logo" />
+        <img className="upLogo" src={upLogo} alt="logo" />
         {props.showProjectSelector && <div className="btn-position">
           <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
             <Icon type="caret-down" />
@@ -33,6 +38,7 @@ const Topbar = (props) => {
       </div>
     </div>
   )
+  
 }
 
 export default Topbar;
