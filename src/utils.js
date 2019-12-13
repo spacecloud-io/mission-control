@@ -2,11 +2,18 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
+import {useSelector} from 'react-redux';
+import {useParams} from 'react-router-dom';
+import {dbTypes} from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
+
+const mysqlSvg = require(`./assets/mysqlSmall.svg`)
+const postgresSvg = require(`./assets/postgresSmall.svg`)
+const mongoSvg = require(`./assets/mongoSmall.svg`)
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -185,4 +192,29 @@ export const onAppLoad = () => {
 
     handleConfigLogin(token, lastProjectId)
   })
+}
+
+
+export const dbIcons = (project, projectId, selectedDb) => {
+  
+ const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+
+  let checkDB = ''
+  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
+
+  var svg = mongoSvg
+  switch (checkDB) {
+    case dbTypes.MONGO:
+      svg = mongoSvg
+      break;
+    case dbTypes.MYSQL:
+      svg = mysqlSvg
+      break;
+    case dbTypes.POSTGRESQL:
+      svg = postgresSvg
+      break;
+    default:
+      svg = postgresSvg
+  }
+  return svg;
 }

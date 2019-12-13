@@ -198,3 +198,22 @@
 .db-tab-content .ant-btn-danger {
     margin-bottom: 32px;
 }
+
+.add-db-tab {
+    margin-left: 10%;
+    font-size: 150%;
+}
+
+.border-box {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (max-width:768px) {
+    .db-tab-content .reconnect {
+        margin-bottom: 24px;
+    }
+    .overview-img {
+        overflow: hidden;
+        margin-bottom: 64px;
+    }
+}
