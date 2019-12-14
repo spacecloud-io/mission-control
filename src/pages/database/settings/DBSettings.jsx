@@ -1,13 +1,12 @@
 import React from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-
-import { Button, Divider, Tooltip } from "antd"
+import { Button, Divider, Tooltip, Input } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { getProjectConfig, notify } from '../../../utils';
-import { setDBConfig, handleReload, handleModify } from '../dbActions';
+import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../dbActions';
 
 const Settings = () => {
   // Router params
@@ -45,6 +44,10 @@ const Settings = () => {
       .catch(ex => notify("error", "Error", ex))
   }
 
+  const handleRemoveDb = () => {
+    removeDBConfig(projectID, selectedDB)
+  }
+
   return (
     <React.Fragment>
       <Topbar
@@ -74,6 +77,10 @@ const Settings = () => {
               <Button type="danger" disabled >Disable</Button>
             </Tooltip>}
             {canDisableDB && <Button type="danger" onClick={handleDisable} >Disable</Button>}
+            <Divider />
+            <h3>Remove Config</h3>
+            <p>Removes the config (schema, rules, etc.) of this database without dropping any tables or database</p>
+            <Button type="danger" onClick={handleRemoveDb}>Remove</Button>
           </div>
         </div>
       </div>
