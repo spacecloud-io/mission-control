@@ -5,7 +5,7 @@ import ReactGA from 'react-ga';
 
 import Sidenav from '../../components/sidenav/Sidenav'
 import Topbar from '../../components/topbar/Topbar'
-import DatabaseCardList from '../../components/database-card/DatabaseCardList'
+import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
 
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
@@ -47,7 +47,7 @@ const Database = () => {
         <Sidenav selectedItem="database" />
         <div className="page-content">
           <div style={{ marginTop: 24 }}>
-            <DatabaseCardList />
+            <DatabaseEmptyState />
           </div>
         </div>
       </div>

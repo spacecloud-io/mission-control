@@ -40,7 +40,7 @@ const AddDb = () => {
                     <div>
                     <Row>
                         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                            <CreateDatabase projectId={projectID} handleRedirect={() => history.push(`/mission-control/projects/${projectID}/database`)} />
+                            <CreateDatabase projectId={projectID} handleSubmit={() => history.push(`/mission-control/projects/${projectID}/database`)} />
                         </Col>
                     </Row>
                     </div>

@@ -11,7 +11,7 @@ import { useHistory } from 'react-router-dom';
 
 const CreateDatabase = (props) => {
   const history = useHistory();
-  const [selectedDB, setSelectedDB] = useState("mongo")
+  const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO)
   const [dbConn, setDbConn] = useState(defaultDbConnectionStrings[dbTypes.MONGO]);
   const [alias, setAlias] = useState("mongo");
 
@@ -46,7 +46,7 @@ const CreateDatabase = (props) => {
 
   const handleDbSubmit = () => {
     dbEnable(props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
-      if (!err) props.handleRedirect()
+      if (!err) props.handleSubmit()
     })
   }
 

@@ -159,14 +159,17 @@ export const removeDBConfig = (projectId, aliasName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.removeDbConfig(projectId, aliasName).then(() => {
+      notify("success", "Success", "Removed database config successfully")
       const dbconfig = getProjectConfig(store.getState().projects, projectId, `modules.crud`)
-      console.log(dbconfig)
       const dbList = delete dbconfig[aliasName]
       store.dispatch(set(`extraConfig.${projectId}.crud`, dbList))
       history.push(`/mission-control/projects/${projectId}/database`)
       resolve()
     })
-      .catch(ex => reject(ex))
+      .catch(ex => {
+        reject(ex)
+        notify("error", "Error removing database config", ex)
+      })
       .finally(() => store.dispatch(decrement("pendingRequests")))
   })
 }
