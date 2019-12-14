@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory  } from 'react-router-dom';
-import { fetchDBConnState } from '../dbActions';
+import { dbEnable } from '../dbActions';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { Icon, Row, Col, Button } from 'antd';
 
 import '../database.css';
 
 const AddDb = () => {
-    const { projectID } = useParams()
+    const { projectID, selectedDB } = useParams()
     const history = useHistory()
 
     return(
@@ -39,8 +39,8 @@ const AddDb = () => {
                     </div><br />
                     <div>
                     <Row>
-                        <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
-                            <CreateDatabase />
+                        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
+                            <CreateDatabase projectId={projectID} handleSubmit={() => history.push(`/mission-control/projects/${projectID}/database`)} />
                         </Col>
                     </Row>
                     </div>
