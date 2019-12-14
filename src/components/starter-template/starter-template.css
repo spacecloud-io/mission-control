@@ -1,11 +1,11 @@
 .template {
   height: 75px;
-  width: 192px;
+  width: 190px;
   border: 1px solid #BDBDBD;
   border-radius: 30px;
   margin-bottom: 32px;
   padding-top: 18px;
-  padding-left: 12px;
+  padding-left: 10px;
   cursor: pointer;
 }
 
@@ -46,5 +46,5 @@
 .template .selected {
   color: #FF6700;
   float: right;
-  margin-right: 10px;
+  margin-right: 5px;
 }

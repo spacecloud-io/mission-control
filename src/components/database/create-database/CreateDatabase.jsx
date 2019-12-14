@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
-import { Row, Col, Card, Form, Input, Button } from 'antd';
+import { Row, Col, Card, Form, Input, Button} from 'antd';
 import StarterTemplate from '../../starter-template/StarterTemplate';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
