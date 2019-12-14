@@ -5,16 +5,13 @@ import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
 import "./query.css"
 
-const QueryWhite = ({ }) => {
-
-    const [selectedRule, setselectedRule] = useState("")
-
+const QueryWhite = ({ value }) => {
 
     return (
         <Col span={12}>
             <div className="query-block">
                 <CodeMirror
-                    value={selectedRule}
+                    value={value}
                     options={{
                         mode: { name: 'javascript', json: true },
                         lineNumbers: true,

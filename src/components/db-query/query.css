@@ -5,9 +5,6 @@
 
 .query-font {
     margin-top: 15px;
-    font-family: Inter;
-    font-style: normal;
-    font-weight: normal;
     font-size: 18px;
     line-height: 22px;
     color: rgba(0, 0, 0, 0.87);
@@ -15,9 +12,16 @@
 
 .query-font-small {
     margin-top: -13px;
-    font-family: Inter;
-    font-style: normal;
-    font-weight: normal;
     font-size: 14px;
     line-height: 22px;
+}
+
+.darkTheme .cm-s-default.CodeMirror {
+    background-color: #F6F7F8;
+}
+
+.darkTheme .cm-s-default .CodeMirror-gutters {
+    background: #EEEEEE;
+    color: rgb(83, 127, 126);
+    border: none;
 }

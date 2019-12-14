@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Redirect } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { get } from 'automate-redux';
 
@@ -9,6 +9,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
 import EditConnectionForm from '../../../components/database/edit-connection-form/EditConnectionForm';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
+import history from '../../../history';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
@@ -69,9 +70,13 @@ const Overview = () => {
     setClickedCol("")
   }
 
+  const handleViewQueries = () => {
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
+  }
+
   const handleDelete = (colName) => {
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
-    .catch(ex => notify("error", "Error", ex))
+      .catch(ex => notify("error", "Error", ex))
     if (clickedCol === colName) {
       setClickedCol("")
     }
@@ -120,6 +125,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={handleViewQueries}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
