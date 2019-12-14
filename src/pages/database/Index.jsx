@@ -5,7 +5,7 @@ import ReactGA from 'react-ga';
 
 import Sidenav from '../../components/sidenav/Sidenav'
 import Topbar from '../../components/topbar/Topbar'
-import DatabaseCardList from '../../components/database-card/DatabaseCardList'
+import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
 
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
@@ -46,10 +46,8 @@ const Database = () => {
       <div>
         <Sidenav selectedItem="database" />
         <div className="page-content">
-          <h2>Database Module</h2>
-          <p>Enable one of the following databases to start using CRUD operations in your app.</p>
           <div style={{ marginTop: 24 }}>
-            <DatabaseCardList cards={cards} handleEnable={handleDBEnable} />
+            <DatabaseEmptyState />
           </div>
         </div>
       </div>
