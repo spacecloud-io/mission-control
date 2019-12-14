@@ -45,9 +45,8 @@ const CreateDatabase = (props) => {
   }
 
   const handleDbSubmit = () => {
-    console.log("alias:", getFieldValue("alias"), selectedDB)
     dbEnable(props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
-      if (!err) history.push(`/mission-control/projects/${props.projectId}`)
+      if (!err) props.handleRedirect()
     })
   }
 
@@ -56,7 +55,7 @@ const CreateDatabase = (props) => {
     <div>
       <Card>
         <center>Add a database to your project</center>
-        <p className="db-left">Select a database</p>
+        <p>Select a database</p>
         <Row className="db-display db-left">
           <Col span={2}>
             <StarterTemplate icon={mongoIcon} onClick={handleMongo}

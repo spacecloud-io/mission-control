@@ -9,7 +9,7 @@ import { Icon, Row, Col, Button } from 'antd';
 import '../database.css';
 
 const AddDb = () => {
-    const { projectID } = useParams()
+    const { projectID, selectedDB } = useParams()
     const history = useHistory()
 
     return(
@@ -40,7 +40,7 @@ const AddDb = () => {
                     <div>
                     <Row>
                         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                            <CreateDatabase projectId={projectID} />
+                            <CreateDatabase projectId={projectID} handleRedirect={() => history.push(`/mission-control/projects/${projectID}/database`)} />
                         </Col>
                     </Row>
                     </div>
