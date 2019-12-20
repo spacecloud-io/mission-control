@@ -117,7 +117,7 @@ body {
 @media screen and (max-width: 768px) {
     .panel {
         padding: 0;
-        margin: 48px 0 0 0;
+        margin: 24px 0 0 0;
     }
     .panel>img {
         width: 90%;
@@ -178,8 +178,11 @@ body {
     width: 40% !important;
 }
 
-@media screen and (max-width:768px) {
+@media screen and (max-width:450px) {
     .remote-img {
         width: 80% !important;
+    }
+    .radio-card{
+        margin: 8px 16px 8px 0;
     }
 }

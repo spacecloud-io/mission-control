@@ -74,11 +74,6 @@ const RemoteServices = () => {
       key: 'name'
     },
     {
-      title: 'URL',
-      dataIndex: 'url',
-      key: 'url'
-    },
-    {
       title: 'Actions',
       key: 'actions',
       className: 'column-actions',

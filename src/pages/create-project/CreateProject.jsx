@@ -13,12 +13,9 @@ import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
 import Topbar from '../../components/topbar/Topbar'
 import './create-project.css'
 
-
 const CreateProject = (props) => {
   const [selectedDB, setSelectedDB] = useState("mongo");
   const [current,setCurrent] = useState(0);
-  const [dbValue, setDbValue] = useState("mongodb://localhost:27017");
-  const [alias, setAlias] = useState("mongo");
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -34,7 +31,8 @@ const CreateProject = (props) => {
   const [projectId, setProjectId] = useState(projectID);
 
   const handleSubmit = e => {
-    e.preventDefault();
+    //e.preventDefault();
+   setProjectId(projectID);
     validateFields((err, values) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
@@ -42,7 +40,7 @@ const CreateProject = (props) => {
         client.projects.addProject(projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
-          history.push(`/mission-control/projects/${projectID}`)
+          setCurrent(current + 1);
           notify("success", "Success", "Project created successfully with suitable defaults")
         }).catch(ex => notify("error", "Error creating project", ex))
         .finally(() => dispatch(decrement("pendingRequests")))
@@ -50,15 +48,6 @@ const CreateProject = (props) => {
     });
   };
 
-  const stepchange = () => {
-        setProjectId(projectID);
-        const newCurrent = current + 1;
-        setCurrent(newCurrent);
-    }
-
-    const handleDatabaseSubmit = () => {
-        history.push(`/mission-control/projects/${projectId}/overview`)
-    }
 
   const steps = [{
     title: 'Create Project',
@@ -83,7 +72,7 @@ const CreateProject = (props) => {
                                 </Form.Item>
                             </Form>
                             </div>
-                            <Button type="primary" onClick={stepchange} className="project-btn">Create Project</Button>
+                            <Button type="primary" onClick={handleSubmit} className="project-btn">Create Project</Button>
                         </Card><br />
                     </Col>
                 </Row>
@@ -94,8 +83,8 @@ const CreateProject = (props) => {
     title: 'Add Database',
     content: <div>
                 <Row>
-                    <Col lg={{ span: 13, offset: 6 }} sm={{ span: 24 }} >
-                        <CreateDatabase />
+                    <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
+                        <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
                     </Col>
                 </Row>
                 <center className="skip-link"><Link to={"/mission-control/projects/" + projectId + "/overview"} >Skip for now</Link></center>

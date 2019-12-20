@@ -29,7 +29,7 @@ function Overview() {
       <Sidenav selectedItem="overview" />
       <div className="page-content ">
         <h3>GraphQL endpoints</h3>
-        <div id="hide-on-large">
+        <div id="hide-on-med-and-up">
           <Descriptions bordered size="small" layout="vertical">
             <Descriptions.Item label="GraphQL URL" >{graphqlURL}<CopyButton value={graphqlURL} /></Descriptions.Item>
             <Descriptions.Item label="GraphQL Websockets URL">{graphqlWebsocketURL}<CopyButton value={graphqlWebsocketURL} /></Descriptions.Item>
@@ -40,7 +40,7 @@ function Overview() {
             <Descriptions.Item label="Space Cloud URL" span={2} >{spaceCloudURL}<CopyButton value={spaceCloudURL} /></Descriptions.Item>
           </Descriptions>
         </div>
-        <div id="hide-on-med-and-down">
+        <div id="hide-on-small">
           <Descriptions bordered column={1} size="small">
             <Descriptions.Item label="GraphQL URL" >{graphqlURL}<CopyButton value={graphqlURL} /></Descriptions.Item>
             <Descriptions.Item label="GraphQL Websockets URL">{graphqlWebsocketURL}<CopyButton value={graphqlWebsocketURL} /></Descriptions.Item>

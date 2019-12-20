@@ -121,15 +121,21 @@
         bottom: 106px;
         left: 330px;
     }
-    #hide-on-large {
+
+}
+@media screen and (min-width: 575px){
+    #hide-on-med-and-up {
         display: none;
     }
 }
 
-@media screen and (max-width: 768px) {
-    #hide-on-med-and-down {
+@media screen and (max-width: 575px){
+    #hide-on-small {
         display: none;
     }
+}
+
+@media screen and (max-width: 800px) {
     .ant-descriptions-bordered .ant-descriptions-view>table {
         table-layout: fixed;
     }

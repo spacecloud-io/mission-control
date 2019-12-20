@@ -13,6 +13,12 @@
     padding: 0 32px;
 }
 
+@media screen and (max-width: 600px){
+    .topbar {
+        padding: 0 24px;
+    }
+}
+
 .topbar .action-button {
     height: 28px;
     margin: 11px 8px;
@@ -54,7 +60,7 @@
     margin-right: 10px;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
     .topbar .btn-position {
         margin-left: 0;
         position: absolute;
@@ -65,19 +71,18 @@
     }
 }
 
-@media screen and (max-width: 425px) {
+@media screen and (min-width: 800px) {
+    .topbar .upLogo,
+    .hamburger {
+        display: none;
+    }
+}
+@media screen and (max-width: 800px){
     .topbar .logo {
         display: none;
     }
     .topbar .upLogo {
-        width: 10%;
-        margin-right: 16px;
-    }
-}
-
-@media screen and (min-width: 768px) {
-    .topbar .upLogo,
-    .hamburger {
-        display: none;
+        margin-left: 16px;
+        width: 40px;
     }
 }

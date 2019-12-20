@@ -32,7 +32,6 @@
         overflow: hidden !important;
     }
     .explorer .apply-container {
-        display: none;
         margin-bottom: 80px;
     }
 }
