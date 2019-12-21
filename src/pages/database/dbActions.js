@@ -33,12 +33,10 @@ export const setColRule = (projectId, dbName, colName, rules, isRealtimeEnabled)
 
 export const setColConfig = (projectId, dbName, colName, rules, schema, isRealtimeEnabled) => {
   return new Promise((resolve, reject) => {
-    store.dispatch(increment("pendingRequests"))
     modifyColSchema(projectId, dbName, colName, schema).then(() => {
       setColRule(projectId, dbName, colName, rules, isRealtimeEnabled).then(() => resolve())
         .catch(ex => reject(ex))
     }).catch(ex => reject(ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
   })
 }
 
@@ -138,7 +136,6 @@ export const handleReload = (projectId, dbName) => {
 
 export const setDBConfig = (projectId, aliasName, enabled, conn, type) => {
   return new Promise((resolve, reject) => {
-    store.dispatch(increment("pendingRequests"))
     client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.enabled`, enabled)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.conn`, conn)
@@ -151,7 +148,6 @@ export const setDBConfig = (projectId, aliasName, enabled, conn, type) => {
       resolve()
     })
       .catch(ex => reject(ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
   })
 }
 

@@ -33,7 +33,7 @@ const Overview = () => {
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
   // making changes for loading button
-  const [conformloading,setconformloading]=useState(false);
+  const [conformLoading,setConformLoading]=useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
@@ -89,23 +89,29 @@ const Overview = () => {
   }
 
   const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
+    setConformLoading(true);
+    dispatch(decrement("pendingRequests"))
     setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
       setAddColModalVisible(false);
        setAddColFormInEditMode(false);
-    }).catch(ex =>notify("error", "Error", ex))
+       setConformLoading(false);
+    }).catch(ex =>{notify("error", "Error", ex)
+      setConformLoading(false);
+    })
+    .finally(() => dispatch(increment("pendingRequests")))
   }
 
   const handleEditConnString = (conn) => {
-    setconformloading(true);
+    setConformLoading(true);
     dispatch(decrement("pendingRequests"))
     setDBConfig(projectID, selectedDB, true, conn)
     .then(()=>{notify("success","Connected successfully",`${selectedDB} Connected`)
       setEditConnModalVisible(false);
-      setconformloading(false);
+      setConformLoading(false);
     })
     .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct`)
-      setconformloading(false);
+      setConformLoading(false);
     })
     .finally(() => dispatch(increment("pendingRequests")))
   }
@@ -243,13 +249,14 @@ const Overview = () => {
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
               selectedDB={selectedDB}
+              conformLoading={conformLoading}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
               selectedDB={selectedDB}
-              ConformLoading={conformloading}
+              conformLoading={conformLoading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}
           </div>
