@@ -103,11 +103,11 @@ const Overview = () => {
   const handleEditConnString = (conn) => {
     setConformLoading(true);
     setDBConfig(projectID, selectedDB, true, conn,false)
-    .then(()=>{notify("success","Connected successfully",`${selectedDB} Connected`)
+    .then(()=>{notify("success","Connection successful",`Connected to ${selectedDB} successfully`)
       setEditConnModalVisible(false);
       setConformLoading(false);
     })
-    .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct`)
+    .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct.`)
       setConformLoading(false);
     })
   }

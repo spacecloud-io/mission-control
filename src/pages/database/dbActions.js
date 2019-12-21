@@ -138,7 +138,7 @@ export const handleReload = (projectId, dbName) => {
 export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoading) => {
   if(setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
-    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type,setLoading }).then(() => {
+    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.enabled`, enabled)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.conn`, conn)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.type`, type)
@@ -174,6 +174,7 @@ export const removeDBConfig = (projectId, aliasName) => {
 }
 
 export const dbEnable = (projectId, aliasName, conn, rules, type, cb) => {
+  store.dispatch(increment("pendingRequests"))
   setDBConfig(projectId, aliasName, true, conn,type,false).then(() => {
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
@@ -183,4 +184,5 @@ export const dbEnable = (projectId, aliasName, conn, rules, type, cb) => {
     notify("error", "Error enabling database", ex)
     if (cb) cb(ex)
   })
+  .finally(() => store.dispatch(decrement("pendingRequests")))
 }
