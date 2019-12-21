@@ -107,8 +107,8 @@ const Overview = () => {
     .catch(ex => {notify("error", "Error", ex)
       setconformloading(false);
     })
+    .finally(() => dispatch(increment("pendingRequests")))
   }
-
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [
     {
