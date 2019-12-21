@@ -54,7 +54,7 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
-    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled)
+    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled,true)
   }
 
   const handleAddClick = () => {
@@ -90,7 +90,6 @@ const Overview = () => {
 
   const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
     setConformLoading(true);
-    dispatch(decrement("pendingRequests"))
     setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
       setAddColModalVisible(false);
@@ -99,13 +98,11 @@ const Overview = () => {
     }).catch(ex =>{notify("error", "Error", ex)
       setConformLoading(false);
     })
-    .finally(() => dispatch(increment("pendingRequests")))
   }
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    dispatch(decrement("pendingRequests"))
-    setDBConfig(projectID, selectedDB, true, conn)
+    setDBConfig(projectID, selectedDB, true, conn,false)
     .then(()=>{notify("success","Connected successfully",`${selectedDB} Connected`)
       setEditConnModalVisible(false);
       setConformLoading(false);
@@ -113,7 +110,6 @@ const Overview = () => {
     .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct`)
       setConformLoading(false);
     })
-    .finally(() => dispatch(increment("pendingRequests")))
   }
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [

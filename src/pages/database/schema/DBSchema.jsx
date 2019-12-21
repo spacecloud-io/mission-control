@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 
+
 import { Alert } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -31,7 +32,7 @@ const Schema = () => {
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (schema) => {
-    modifyColSchema(projectID, selectedDB, selectedCol, schema)
+    modifyColSchema(projectID, selectedDB, selectedCol, schema,true)
       .then(() => notify("success", "Success", "Saved schema successfully"))
       .catch(ex => notify("error", "Error saving schema", ex))
   }
