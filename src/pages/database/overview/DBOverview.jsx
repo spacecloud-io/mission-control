@@ -100,11 +100,11 @@ const Overview = () => {
     setconformloading(true);
     dispatch(decrement("pendingRequests"))
     setDBConfig(projectID, selectedDB, true, conn)
-    .then(msg=>{notify("success","connected successfully",msg)
+    .then(()=>{notify("success","Connected successfully",`${selectedDB} Connected`)
       setEditConnModalVisible(false);
       setconformloading(false);
     })
-    .catch(ex => {notify("error", "Error", ex)
+    .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct`)
       setconformloading(false);
     })
     .finally(() => dispatch(increment("pendingRequests")))
