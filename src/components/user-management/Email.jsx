@@ -13,12 +13,20 @@ const Email = ({ form, initialValues, handleSubmit }) => {
       }
     });
   }
+  const switchToggle = () => {
+    if(initialValues.enabled){
+      return <Switch defaultChecked />;
+    }else{
+      return <Switch />
+    }
+  } 
+  
   return (
     <Form>
       <Form.Item>
         <FormItemLabel name={"Enabled"} />
         {getFieldDecorator('enabled', { initialValue: initialValues.enabled })(
-          <Switch />
+          switchToggle()
         )}
       </Form.Item>
       <br />
