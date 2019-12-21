@@ -102,6 +102,10 @@ export const getEventSourceFromType = (type, defaultValue) => {
       case "DB_DELETE":
         source = "database"
         break;
+      case "FILE_CREATE":
+      case "FILE_DELETE":
+        source = "file storage"
+        break;
       default:
         source = "custom"
     }
