@@ -11,10 +11,14 @@ import EventingConfigure from "../../components/configure/EventingConfigure"
 import './configure.css'
 import { getProjectConfig, notify, setProjectConfig } from '../../utils';
 import client from "../../client"
+import { Button } from 'antd';
+import store from "../../store";
+import history from "../../history"
+import Projects from '../../services/projects';
 
 const Configure = () => {
 	// Router params
-	const { projectID } = useParams()
+	const { projectID, selectedDB } = useParams()
 
 	useEffect(() => {
 		ReactGA.pageview("/projects/configure");
@@ -54,6 +58,30 @@ const Configure = () => {
 			.finally(() => dispatch(decrement("pendingRequests")))
 	}
 
+	const removeProjectConfig = () => {
+		return new Promise((resolve, reject) => {
+			store.dispatch(increment("pendingRequests"))
+			client.projects.deleteProject(projectID).then(() => {
+				notify("success", "Success", "Removed project config successfully")
+				const dbConfig = store.getState().extraConfig
+				const dbList = delete dbConfig[projectID]
+				store.dispatch(set(`extraConfig`, dbList))
+				const projectConfig = store.getState().projects;
+				const projectList = projectConfig.filter(project => {
+					if(project.id !== projectID) return project
+				})
+				store.dispatch(set(`projects`, projectList))
+				history.push(`/mission-control/welcome`)
+				resolve()
+			})
+				.catch(ex => {
+					reject(ex)
+					notify("error", "Error removing project config", ex)
+				})
+				.finally(() => store.dispatch(decrement("pendingRequests")))
+		})
+	}
+	
 	return (
 		<div className="configure-page">
 			<Topbar showProjectSelector />
@@ -66,6 +94,10 @@ const Configure = () => {
 					<h2>Eventing Config</h2>
 					<div className="divider" />
 					<EventingConfigure dbType={eventing.dbType} col={eventing.col} handleSubmit={handleEventingConfig} />
+					<h2>Delete Project</h2>
+					<div className="divider" />
+					<p>Removes project config</p>
+					<Button type="danger" onClick={removeProjectConfig}>Remove</Button>
 				</div>
 			</div>
 		</div>
