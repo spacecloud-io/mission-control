@@ -1,3 +1,6 @@
+import store from "../store"
+import { increment, decrement } from "automate-redux"
+
 class Database {
   constructor(client) {
     this.client = client

@@ -2,7 +2,7 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import {dbTypes} from './constants';
+import { dbTypes } from './constants';
 
 import store from "./store"
 import client from "./client"
@@ -72,7 +72,7 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: { },
+    crud: {},
     eventing: {
       enabled: true,
       dbType: dbType,
@@ -185,8 +185,8 @@ export const onAppLoad = () => {
 
 
 export const dbIcons = (project, projectId, selectedDb) => {
-  
- const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+
+  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
 
   let checkDB = ''
   if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
