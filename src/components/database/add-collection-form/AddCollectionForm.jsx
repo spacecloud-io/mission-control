@@ -53,7 +53,6 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
             schema,
             isRealtimeEnabled
           );
-          handleCancel();
         } catch (ex) {
           notify("error", "Error", ex.toString())
         }

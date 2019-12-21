@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { get } from 'automate-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { get, increment,decrement } from 'automate-redux';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -20,6 +20,9 @@ const Overview = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
+  // changes
+  const dispatch = useDispatch();
+
   // Global state
   const projects = useSelector(state => state.projects)
   const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.collections`, []))
@@ -29,6 +32,8 @@ const Overview = () => {
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
+  // making changes for loading button
+  const [conformloading,setconformloading]=useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
@@ -86,11 +91,22 @@ const Overview = () => {
   const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
     setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
-    }).catch(ex => notify("error", "Error", ex))
+      setAddColModalVisible(false);
+       setAddColFormInEditMode(false);
+    }).catch(ex =>notify("error", "Error", ex))
   }
 
   const handleEditConnString = (conn) => {
-    setDBConfig(projectID, selectedDB, true, conn).catch(ex => notify("error", "Error", ex))
+    setconformloading(true);
+    dispatch(decrement("pendingRequests"))
+    setDBConfig(projectID, selectedDB, true, conn)
+    .then(msg=>{notify("success","connected successfully",msg)
+      setEditConnModalVisible(false);
+      setconformloading(false);
+    })
+    .catch(ex => {notify("error", "Error", ex)
+      setconformloading(false);
+    })
   }
 
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
@@ -233,6 +249,7 @@ const Overview = () => {
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
               selectedDB={selectedDB}
+              ConformLoading={conformloading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}
           </div>
