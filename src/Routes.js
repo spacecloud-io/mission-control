@@ -4,6 +4,7 @@ import history from "./history";
 
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
+import SignUp from "./pages/sign-up/SignUp"
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
@@ -29,7 +30,8 @@ export default () => {
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
         <Route exact path="/mission-control" component={Home} />
-        <Route exact path="/mission-control/login" component={Login} />
+        <Route exact path="/mission-control/sign-in" component={Login} />
+        <Route exact path="/mission-control/sign-up" component={SignUp} />
         <Route exact path="/mission-control/welcome" component={Welcome} />
         <Route exact path="/mission-control/create-project" component={CreateProject} />
         <Route exact path="/mission-control/projects/:projectID"

@@ -1,8 +1,8 @@
-.login {
+.sign-up {
   color: #000;
 }
 
-.login .main-wrapper {
+.sign-up .main-wrapper {
   position: absolute;
   top: 3vw;
   bottom: 3vw;
@@ -13,27 +13,27 @@
   box-shadow: 0 0 15px #BDBDBD;
 }
 
-.login .left-wrapper {
+.sign-up .left-wrapper {
   border-radius: 0 70px 70px 0;
   text-align: center;
 }
 
-.login .left-content {
+.sign-up .left-content {
   position: relative;
   top: 7vw;
 }
 
-.login .logo {
+.sign-up .logo {
   margin-bottom: 30px;
 }
 
-.login .welcome {
+.sign-up .welcome {
   font-weight: 600;
   font-size: 28px;
   margin-bottom: 2px;
 }
 
-.login .text {
+.sign-up .text {
   font-size: 14px;
   font-weight: 600;
   color: #BDBDBD;
@@ -42,105 +42,106 @@
   padding: 0 140px;
 }
 
-.login .right-wrapper {
+.sign-up .right-wrapper {
   border-radius: 0 70px 70px 0;
   background: #002C39;
   text-align: center;
-  padding: 64px 40px;
+  padding: 16px 40px;
 }
 
-.login-form .sign-in {
+.sign-up-form .sign-in {
   color: #ff6700;
   font-weight: 600;
   font-size: 32px;
 }
 
-.login-form input {
+.sign-up-form input {
   width: 75%;
   background: #053D4E;
   border: 1px solid #053D4E;
   color: #BDBDBD;
 }
-
-.login-form .input {
+.sign-up-form .input {
   width: 75%;
 }
 
-.login .ant-input-suffix>i {
+.sign-up .ant-input-suffix>i {
   color: #BDBDBD;
 }
 
-.login-form .input input {
+.sign-up-form .input input {
   width: 100%;
 }
 
-.login-form .btn {
-  margin-bottom: 50px;
+.sign-up-form .btn {
+  margin-bottom: 40px;
   margin-top: 16px;
 }
 
-.login .row {
+.sign-up .row {
   display: flex;
   height: 100%;
 }
 
-.login .signin-with {
+.sign-up .signin-with {
   cursor: pointer;
 }
-.login .divider{
+.sign-up .divider{
   display: flex;
 }
 hr{
   width: 40%;
 }
-.login .or{
+.sign-up .or{
   color: #FFF;
 }
-.login .sign-up{
+.sign-up .sign-up{
   color: white;
   font-size: 14px;
   position: absolute;
   right: 10%;
-  top: 10%;
+  top: 5%;
 }
-.login .login-form{
+.sign-up .sign-up-form{
   margin-top: 56px;
 }
-.login .ant-form-item{
+.sign-up .ant-form-item{
   margin-bottom: 16px;
 }
 
 @media screen and (min-width:768px){
-  .login-mobile-view{
+  .sign-up-mobile-view{
     display: none;
   }
 }
 
 @media screen and (max-width:768px){
-  .login .main-wrapper{
+  .sign-up .main-wrapper{
     display: none;
   }
-  .login .login-mobile-view{
+  .sign-up .sign-up-mobile-view{
     padding: 2rem 3rem;
   }
-  .login .login-form{
+  .sign-up .sign-up-form{
     margin-top: 0 !important;
   }
-  .login .login-form .sign-in {
+  .sign-up .sign-up-form .sign-in {
     color: #002C39;
     font-size: 24px;
   }
-  .login .login-form .input {
+  .sign-up .sign-up-form .input {
     width: 100%;
   }
-  .login-form input{
+  .sign-up-form input{
     background-color: #FFF !important;
-border: 1px solid #bdbdbd;
+    border: 1px solid #bdbdbd;
+    width: 100%;
   }
-  .login .or{
+  .sign-up .or{
     color: black;
   }
-  .login-with{
+  .sign-up-with{
     margin-top: 8px;
+    margin-bottom: 32px;
   }
 }
