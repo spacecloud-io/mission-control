@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, increment,decrement } from 'automate-redux';
+import { get, increment, decrement } from 'automate-redux';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -33,7 +33,7 @@ const Overview = () => {
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
   // making changes for loading button
-  const [conformLoading,setConformLoading]=useState(false);
+  const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
@@ -54,7 +54,7 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
-    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled,true)
+    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
   }
 
   const handleAddClick = () => {
@@ -76,7 +76,7 @@ const Overview = () => {
 
   const handleDelete = (colName) => {
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
-    .catch(ex => notify("error", "Error", ex))
+      .catch(ex => notify("error", "Error", ex))
     if (clickedCol === colName) {
       setClickedCol("")
     }
@@ -93,23 +93,26 @@ const Overview = () => {
     setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
       setAddColModalVisible(false);
-       setAddColFormInEditMode(false);
-       setConformLoading(false);
-    }).catch(ex =>{notify("error", "Error", ex)
+      setAddColFormInEditMode(false);
+      setConformLoading(false);
+    }).catch(ex => {
+      notify("error", "Error", ex)
       setConformLoading(false);
     })
   }
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    setDBConfig(projectID, selectedDB, true, conn,false)
-    .then(()=>{notify("success","Connection successful",`Connected to ${selectedDB} successfully`)
-      setEditConnModalVisible(false);
-      setConformLoading(false);
-    })
-    .catch(() => {notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct.`)
-      setConformLoading(false);
-    })
+    setDBConfig(projectID, selectedDB, true, conn, false)
+      .then(() => {
+        notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)
+        setEditConnModalVisible(false);
+        setConformLoading(false);
+      })
+      .catch(() => {
+        notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct.`)
+        setConformLoading(false);
+      })
   }
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [

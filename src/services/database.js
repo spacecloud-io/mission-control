@@ -91,9 +91,8 @@ class Database {
     })
   }
 
-  modifyColSchema(projectId, dbName, colName, schema,setLoading) {
+  modifyColSchema(projectId, dbName, colName, schema) {
     return new Promise((resolve, reject) => {
-      if(setLoading===true) store.dispatch(increment("pendingRequests"))
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/modify-schema`, { schema })
         .then(({ status, data }) => {
           if (status !== 200) {
@@ -103,7 +102,6 @@ class Database {
           resolve()
         })
         .catch(ex => reject(ex.toString()))
-        .finally(() => {if(setLoading===true) store.dispatch(decrement("pendingRequests"))})
     })
   }
 
@@ -135,9 +133,8 @@ class Database {
     })
   }
 
-  setColRule(projectId, dbName, colName, rule,setLoading) {
+  setColRule(projectId, dbName, colName, rule) {
     return new Promise((resolve, reject) => {
-      if(setLoading) store.dispatch(increment("pendingRequests"))
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/rules`, rule)
         .then(({ status, data }) => {
           if (status !== 200) {
@@ -147,7 +144,6 @@ class Database {
           resolve()
         })
         .catch(ex => reject(ex.toString()))
-        .finally(() => {if(setLoading) store.dispatch(decrement("pendingRequests"))})
     })
   }
 }

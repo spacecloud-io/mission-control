@@ -1,41 +1,41 @@
 import store from "../../store"
-import {getProjectConfig, setProjectConfig} from "../../utils"
+import { getProjectConfig, setProjectConfig } from "../../utils"
 import { eventLogsSchema, defaultDBRules } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
 import history from '../../history';
 
-export const modifyColSchema = (projectId, dbName, colName, schema,setLoading) => {
+export const modifyColSchema = (projectId, dbName, colName, schema, setLoading) => {
   return new Promise((resolve, reject) => {
-    if(setLoading) store.dispatch(increment("pendingRequests"))
+    if (setLoading) store.dispatch(increment("pendingRequests"))
     client.database.modifyColSchema(projectId, dbName, colName, schema).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.schema`, schema)
       resolve()
     })
       .catch(ex => reject(ex))
-      .finally(() => {if(setLoading) store.dispatch(decrement("pendingRequests"))})
+      .finally(() => { if (setLoading) store.dispatch(decrement("pendingRequests")) })
   })
 }
 
-export const setColRule = (projectId, dbName, colName, rules, isRealtimeEnabled,setLoading) => {
+export const setColRule = (projectId, dbName, colName, rules, isRealtimeEnabled, setLoading) => {
   return new Promise((resolve, reject) => {
-    if(setLoading) store.dispatch(increment("pendingRequests"))
-  
+    if (setLoading) store.dispatch(increment("pendingRequests"))
+
     client.database.setColRule(projectId, dbName, colName, { rules, isRealtimeEnabled }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.rules`, rules)
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.isRealtimeEnabled`, isRealtimeEnabled)
       resolve()
     })
       .catch(ex => reject(ex))
-      .finally(() => {if(setLoading) store.dispatch(decrement("pendingRequests"))})
+      .finally(() => { if (setLoading) store.dispatch(decrement("pendingRequests")) })
   })
 }
 
 export const setColConfig = (projectId, dbName, colName, rules, schema, isRealtimeEnabled) => {
   return new Promise((resolve, reject) => {
-    modifyColSchema(projectId, dbName, colName, schema,false).then(() => {
-      setColRule(projectId, dbName, colName, rules, isRealtimeEnabled,false).then(() => resolve())
+    modifyColSchema(projectId, dbName, colName, schema, false).then(() => {
+      setColRule(projectId, dbName, colName, rules, isRealtimeEnabled, false).then(() => resolve())
         .catch(ex => reject(ex))
     }).catch(ex => reject(ex))
   })
@@ -62,19 +62,19 @@ export const inspectColSchema = (projectId, dbName, colName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.inspectColSchema(projectId, dbName, colName).then(schema => {
-      const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, {isRealtimeEnabled: false, rules: defaultDBRules} )
+      const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, { isRealtimeEnabled: false, rules: defaultDBRules })
       colConfig.schema = schema
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
-      setColRule(projectId, dbName, colName, defaultDBRules, true).then(() => resolve()).catch(ex => reject(ex))
+      setColRule(projectId, dbName, colName, defaultDBRules, false).then(() => resolve()).catch(ex => reject(ex))
     })
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
   })
 }
 
-export const fetchCollections = (projectId, dbName,setLoading) => {
+export const fetchCollections = (projectId, dbName, setLoading) => {
   return new Promise((resolve, reject) => {
-    if(setLoading) store.dispatch(increment("pendingRequests"))
+    if (setLoading) store.dispatch(increment("pendingRequests"))
     client.database.listCollections(projectId, dbName).then((collections = []) => {
       const connected = get(store.getState(), `extraConfig.${projectId}.crud.${dbName}.connected`, false)
       store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.collections`, collections))
@@ -85,17 +85,17 @@ export const fetchCollections = (projectId, dbName,setLoading) => {
       resolve()
     })
       .catch(ex => reject(ex))
-      .finally(() => {if(setLoading) store.dispatch(decrement("pendingRequests"))})
+      .finally(() => { if (setLoading) store.dispatch(decrement("pendingRequests")) })
   })
 }
 
-export const fetchDBConnState = (projectId, dbName) => { 
+export const fetchDBConnState = (projectId, dbName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.getConnectionState(projectId, dbName).then(connected => {
       store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, connected))
       if (connected) {
-        fetchCollections(projectId, dbName,true,true)
+        fetchCollections(projectId, dbName, true)
           .then(() => resolve()).
           catch(ex => reject(ex))
       }
@@ -136,7 +136,7 @@ export const handleReload = (projectId, dbName) => {
 }
 
 export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoading) => {
-  if(setLoading) store.dispatch(increment("pendingRequests"))
+  if (setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
     client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.enabled`, enabled)
@@ -144,14 +144,14 @@ export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoadin
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.type`, type)
       store.dispatch(set(`extraConfig.${projectId}.crud.${aliasName}.connected`, true))
       if (enabled) {
-          fetchCollections(projectId, aliasName,false).then(() => resolve()).catch(ex => reject(ex))
+        fetchCollections(projectId, aliasName, false).then(() => resolve()).catch(ex => reject(ex))
         return
       }
       resolve()
     })
       .catch(ex => reject(ex))
   })
-  .finally(() => {if(setLoading) store.dispatch(decrement("pendingRequests"))})
+    .finally(() => { if (setLoading) store.dispatch(decrement("pendingRequests")) })
 }
 
 export const removeDBConfig = (projectId, aliasName) => {
@@ -175,14 +175,14 @@ export const removeDBConfig = (projectId, aliasName) => {
 
 export const dbEnable = (projectId, aliasName, conn, rules, type, cb) => {
   store.dispatch(increment("pendingRequests"))
-  setDBConfig(projectId, aliasName, true, conn,type,false).then(() => {
+  setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
-    setColRule(projectId, aliasName, "default", rules, type,true)
+    setColRule(projectId, aliasName, "default", rules, type, true)
       .catch(ex => notify("error", "Error configuring default rules", ex))
   }).catch(ex => {
     notify("error", "Error enabling database", ex)
     if (cb) cb(ex)
   })
-  .finally(() => store.dispatch(decrement("pendingRequests")))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
 }

@@ -3,13 +3,13 @@ import React from "react"
 import { Modal, Form, Input } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 
-const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues, conformLoading}) => {
+const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const handleSubmitClick = e => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
         handleSubmit(values.conn)
-     }
+      }
     });
   }
   const { getFieldDecorator } = form;

@@ -32,7 +32,7 @@ const Schema = () => {
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (schema) => {
-    modifyColSchema(projectID, selectedDB, selectedCol, schema,true)
+    modifyColSchema(projectID, selectedDB, selectedCol, schema, true)
       .then(() => notify("success", "Success", "Saved schema successfully"))
       .catch(ex => notify("error", "Error saving schema", ex))
   }

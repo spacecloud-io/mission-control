@@ -33,7 +33,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
     if (schema) {
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
-      const newSchema = colName ? `type ${colName} ${temp.slice(index)}`:  `type ${temp.slice(index)}`
+      const newSchema = colName ? `type ${colName} ${temp.slice(index)}` : `type ${temp.slice(index)}`
       setSchema(newSchema)
     }
   }, [colName])
