@@ -63,8 +63,8 @@ const Configure = () => {
 			client.projects.deleteProject(projectID).then(() => {
 				notify("success", "Success", "Removed project config successfully")
 				const extraConfig = store.getState().extraConfig
-				const extraList = delete extraConfig[projectID]
-				store.dispatch(set(`extraConfig`, extraList))
+				const newExtraConfig = delete extraConfig[projectID]
+				store.dispatch(set(`extraConfig`, newExtraConfig))
 				const projectConfig = store.getState().projects;
 				const projectList = projectConfig.filter(project => project.id !== projectID)
 				store.dispatch(set(`projects`, projectList))
