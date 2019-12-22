@@ -54,6 +54,7 @@ const RuleForm = (props) => {
           })(
             <Radio.Group>
               <RadioCard value="database">Database</RadioCard>
+              <RadioCard value="file storage">File Storage</RadioCard>
               <RadioCard value="custom">Custom</RadioCard>
             </Radio.Group>
           )}
@@ -95,6 +96,20 @@ const RuleForm = (props) => {
             )}
           </Form.Item>
         </React.Fragment>}
+        {(!eventSource || eventSource === 'file storage') && <React.Fragment>
+        <FormItemLabel name="Trigger operation" />
+          <Form.Item>
+            {getFieldDecorator('type', {
+              rules: [{ required: true, message: 'Please select a type!' }],
+              initialValue: type ? type : (eventSource === "file storage" && "FILE_CREATE")
+            })(
+              <Radio.Group>
+                <RadioCard value="FILE_CREATE">Write</RadioCard>
+                <RadioCard value="FILE_DELETE">Delete</RadioCard>
+              </Radio.Group>
+            )}
+          </Form.Item>
+          </React.Fragment>}
         {eventSource === "custom" && <React.Fragment>
           <FormItemLabel name="Type" />
           <Form.Item>
