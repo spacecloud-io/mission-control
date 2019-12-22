@@ -42,20 +42,12 @@ const Explorer = props => {
   const [response, setResponse] = useState(null);
 
   useEffect(() => {
-    if (props.graphqlUseAdminToken && props.secret) {
+    if (props.apiUseAdminToken && props.secret) {
       props.setToken(generateAdminToken(props.secret));
     } else {
-      props.setToken(props.graphqlToken);
+      props.setToken(props.userApiToken);
     }
-  }, [props.graphqlUseAdminToken, props.secret]);
-
-  useEffect(() => {
-    if (props.spaceApiUseAdminToken && props.secret) {
-      props.setToken(generateAdminToken(props.secret));
-    } else {
-      props.setToken(props.spaceApiToken);
-    }
-  }, [props.spaceApiUseAdminToken, props.secret]);
+  }, [props.apiUseAdminToken, props.secret]);
 
   const applyRequest = () => {
     let code = props.spaceApiQuery;
@@ -113,7 +105,7 @@ const Explorer = props => {
             <div>
               <div className='row'>
                 <Checkbox
-                  checked={props.graphqlUseAdminToken}
+                  checked={props.apiUseAdminToken}
                   onChange={e =>
                     props.setUseAdminToken(e.target.checked)
                   }
@@ -130,11 +122,11 @@ const Explorer = props => {
                   />
                 </Tooltip>
               </div>
-              {!props.graphqlUseAdminToken && (
+              {!props.apiUseAdminToken && (
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.graphqlToken}
+                    value={props.userApiToken}
                     onChange={e => props.setToken(e.target.value)}
                   />
                 </div>
@@ -160,7 +152,7 @@ const Explorer = props => {
               </div>
               <div className='row'>
                 <Checkbox
-                  checked={props.spaceApiUseAdminToken}
+                  checked={props.apiUseAdminToken}
                   onChange={e =>
                     props.setUseAdminToken(e.target.checked)
                   }
@@ -177,11 +169,11 @@ const Explorer = props => {
                   />
                 </Tooltip>
               </div>
-              {!props.spaceApiUseAdminToken && (
+              {!props.apiUseAdminToken && (
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.spaceApiToken}
+                    value={props.userApiToken}
                     onChange={e => props.setToken(e.target.value)}
                   />
                 </div>
@@ -267,18 +259,12 @@ const mapStateToProps = (state, ownProps) => {
       'uiState.explorer.spaceApi.query',
       templates.defaultTemplate
     ),
-    spaceApiUseAdminToken: get(
+    apiUseAdminToken: get(
       state,
-      'uiState.explorer.spaceApi.useAdminToken',
+      'uiState.explorer.useAdminToken',
       true
     ),
-    graphqlUseAdminToken: get(
-      state,
-      'uiState.explorer.graphql.useAdminToken',
-      true
-    ),
-    spaceApiToken: get(state, 'uiState.explorer.spaceApi.token'),
-    graphqlToken: get(state, 'uiState.explorer.graphql.token')
+    userApiToken: get(state, 'uiState.explorer.token'),
   };
 };
 
@@ -294,12 +280,10 @@ const mapDispatchToProps = dispatch => {
       dispatch(set('uiState.explorer.spaceApi.query', query));
     },
     setUseAdminToken: (useAdminToken) => {
-      dispatch(set('uiState.explorer.graphql.useAdminToken', useAdminToken))
-      dispatch(set('uiState.explorer.spaceApi.useAdminToken', useAdminToken))
+      dispatch(set('uiState.explorer.useAdminToken', useAdminToken))
     },
     setToken: (token) => {
-      dispatch(set('uiState.explorer.graphql.token', token))
-      dispatch(set('uiState.explorer.spaceApi.token', token))
+      dispatch(set('uiState.explorer.token', token))
     }
   };
 };
