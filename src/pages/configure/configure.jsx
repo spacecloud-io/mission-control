@@ -59,27 +59,21 @@ const Configure = () => {
 	}
 
 	const removeProjectConfig = () => {
-		return new Promise((resolve, reject) => {
 			store.dispatch(increment("pendingRequests"))
 			client.projects.deleteProject(projectID).then(() => {
 				notify("success", "Success", "Removed project config successfully")
-				const dbConfig = store.getState().extraConfig
-				const dbList = delete dbConfig[projectID]
-				store.dispatch(set(`extraConfig`, dbList))
+				const extraConfig = store.getState().extraConfig
+				const extraList = delete extraConfig[projectID]
+				store.dispatch(set(`extraConfig`, extraList))
 				const projectConfig = store.getState().projects;
-				const projectList = projectConfig.filter(project => {
-					if(project.id !== projectID) return project
-				})
+				const projectList = projectConfig.filter(project => project.id !== projectID)
 				store.dispatch(set(`projects`, projectList))
 				history.push(`/mission-control/welcome`)
-				resolve()
 			})
 				.catch(ex => {
-					reject(ex)
 					notify("error", "Error removing project config", ex)
 				})
 				.finally(() => store.dispatch(decrement("pendingRequests")))
-		})
 	}
 	
 	return (
