@@ -4,13 +4,14 @@ import { Modal, Form, Input, Radio, Select, Collapse } from 'antd';
 import { getEventSourceFromType } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
+//import {dbIcons} from '../../utils';
 
 const RuleForm = (props) => {
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        let options = values.options 
+        let options = values.options
         if (options && !options.col) {
           delete options["col"]
         }
@@ -26,6 +27,7 @@ const RuleForm = (props) => {
   let defaultEventSource = getEventSourceFromType(type, "database")
   const temp = getFieldValue("source")
   const eventSource = temp ? temp : defaultEventSource
+
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
@@ -65,9 +67,9 @@ const RuleForm = (props) => {
                 initialValue: options ? options.db : undefined
               })(
                 <Select placeholder="Select a database">
-                  <Select.Option value="mongo">MongoDB</Select.Option>
-                  <Select.Option value="sql-postgres">PostgreSQL</Select.Option>
-                  <Select.Option value="sql-mysql">MySQL</Select.Option>
+                  {props.dbList.map((alias) => (
+                    <Select.Option value={alias.dbtype}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
+                  ))}
                 </Select>
               )}
             </Form.Item>
