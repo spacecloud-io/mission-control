@@ -1,5 +1,5 @@
 import React from "react";
-import { Router, Route, Redirect, Switch } from "react-router-dom";
+import { Router, Route, Redirect } from "react-router-dom";
 import history from "./history";
 
 import Home from "./pages/home/Home";
@@ -21,7 +21,6 @@ import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
-import AddDb from './pages/database/add-db/AddDb';
 
 export default () => {
   return (

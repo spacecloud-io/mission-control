@@ -7,25 +7,3 @@
   font-size: 12px;
   width: 170px;
 }
-
-.select-database .modal-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 16px 8px;
-}
-
-.select-database .checked {
-  color: #FF6700;
-}
-
-.select-database .modal-header .header .line {
-  margin-bottom: 0;
-}
-
-.modal-title {
-  color: white;
-}
-
-.selected-db {
-  background-color: rgba(255, 103, 0, 0.1);
-}

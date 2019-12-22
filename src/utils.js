@@ -2,16 +2,12 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import {dbTypes} from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
-
-const mysqlSvg = require(`./assets/mysqlSmall.svg`)
-const postgresSvg = require(`./assets/postgresSmall.svg`)
-const mongoSvg = require(`./assets/mongoSmall.svg`)
+import gql from 'graphql-tag';
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -72,7 +68,16 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: { },
+    crud: {
+      [dbType]: {
+        enabled: true,
+        conn: getConnString(dbType),
+        collections: {
+          default: { rules: defaultDBRules },
+          event_logs: { schema: eventLogsSchema }
+        }
+      }
+    },
     eventing: {
       enabled: true,
       dbType: dbType,
@@ -184,26 +189,90 @@ export const onAppLoad = () => {
 }
 
 
-export const dbIcons = (project, projectId, selectedDb) => {
-  
- const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+// console.log(query.definitions[0].name.value);      //customer
+// console.log(query.definitions[0].fields[0].name.value);        //id, name, address
+// console.log(query.definitions[0].fields[0].type.kind);            //check null type
+// console.log(query.definitions[0].fields[2].type.type.name.value);               // ID, String
+// console.log(query.definitions[0].fields[0].directives[0].name.value);           //primary
 
-  let checkDB = ''
-  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
-
-  var svg = mongoSvg
-  switch (checkDB) {
-    case dbTypes.MONGO:
-      svg = mongoSvg
-      break;
-    case dbTypes.MYSQL:
-      svg = mysqlSvg
-      break;
-    case dbTypes.POSTGRESQL:
-      svg = postgresSvg
-      break;
-    default:
-      svg = postgresSvg
-  }
-  return svg;
+export const getType = (schema) => {
+  return schema.definitions[0].name.value;
 }
+
+export const getFields = (schema, rules, index) => {
+  var fields = []
+  for (var i in schema.definitions[0].fields) {
+    fields.push(schema.definitions[0].fields[i].name.value + "\n");
+    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
+      continue;
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+      fields.push("{")
+      for (var j in index)
+        if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+          fields = fields.concat(getFields(gql(rules[index[j]]), rules, index))
+        }
+      fields.push("}")
+    }
+
+  }
+  return fields;
+}
+
+export const getFieldsValues = (schema, rules, index) => {
+  var fieldsValue = []
+  for (var i in schema.definitions[0].fields) {
+    fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
+    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
+      continue;
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+      for (var j in index)
+        if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+          fieldsValue.pop();
+          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
+          fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index) + "}")
+        }
+    }
+  }
+  return fieldsValue;
+}
+
+export const getVariables = (schema, rules, index) => {
+  var fieldsValue = []
+  for (var i in schema.definitions[0].fields) {
+    fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
+    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
+      continue;
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+      for (var j in index){
+        if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+          fieldsValue.pop();
+          fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
+          fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
+        }
+      }
+    }
+  }
+  return fieldsValue;
+}
+
+// export const getValue = (schema) => {
+//   var Values = []
+//   for (var i in schema.definitions[0].fields)
+//     Values.push(schema.definitions[0].fields[i].type.type.name.value);
+//   return Values;
+// }
+
+// export const checkType = (schema) => {
+//   var Type = []
+//   for (var i in schema.definitions[0].fields)
+//     Type.push(schema.definitions[0].fields[i].type.kind);
+//   return Type;
+// }
+
+// export const checkDirective = (schema) => {
+//   var Directives = []
+//   for (var i in schema.definitions[0].fields)
+//     console.log(schema.definitions[0].fields[2].directives[0].name.value)
+//   // Directives.push(schema.definitions[0].fields[0].directives[0].name.value);
+//   return Directives;
+// }

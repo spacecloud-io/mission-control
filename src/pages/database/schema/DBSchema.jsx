@@ -56,6 +56,7 @@ const Schema = () => {
       <Alert message={`You first need to add a ${selectedDB === "mongo" ? "collection" : "table"}`} type="info" banner showIcon={false} style={{ textAlign: "center" }} />
     </div>
   }
+
   return (
     <React.Fragment>
       <Topbar

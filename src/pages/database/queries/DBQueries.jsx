@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
@@ -11,10 +11,16 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import QueryWhite from "../../../components/db-query/query-white";
 import QueryDark from "../../../components/db-query/query-dark";
-
-import { getProjectConfig } from '../../../utils';
+import gql from 'graphql-tag';
+import gqlPrettier from 'graphql-prettier';
+import { format } from 'prettier-package-json';
+import { getProjectConfig, getType, getFields, getFieldsValues, getVariables } from '../../../utils';
 
 const Queries = () => {
+  var index = [];
+
+  const [selectedRule, setSelectedRule] = useState()
+
   // Router params
   const { projectID, selectedDB } = useParams()
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
@@ -35,73 +41,92 @@ const Queries = () => {
   const noOfRules = entries.length
 
   useEffect(() => {
+    let temp = rules[selectedCol]
+    setSelectedRule(temp)
+  }, [selectedCol, rules])
+
+  useEffect(() => {
     if (!rules.hasOwnProperty(selectedCol) && noOfRules) {
       handleSelect(entries[0][0])
     }
   }, [rules])
 
-  let value1 = (`query { 
-  authors ( 
-   where: { id: 1, limit: 1, skip: 0}, 
-    ) @postgres { 
-     id 
-     name 
-     posts (where: { author_id: “authors.id” }) @postgres { 
-      title 
-    } 
-  } 
+  // build the index
+  for (var x in rules) {index.push(x);}
+  // sort the index
+  index.sort(function (a, b) {return a == b ? 0 : (a > b ? 1 : -1);});
+
+  function removeComma(value) {
+    let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
+    let removeClosingComma = /\,(?=\s*?[\}\]])/g;
+    value = value.replace(removeOpeningComma, '');
+    value = value.replace(removeClosingComma, '');
+    value = format(JSON.parse(value))
+    return value
+  }
+
+
+  if (selectedRule !== undefined)
+    var query = gql(selectedRule)
+  if (query !== undefined) {
+    var value1 = gqlPrettier(`query { 
+      ${getType(query)} @mysql {
+        ${getFields(query, rules, index)}  }
 }`)
 
-  let value2 = (`{ 
-  "data":{ 
-    "authors":[ 
-      { 
-        "id":1,
-        "name":"Archu",
-        "posts":[ 
-        { title:"Post 1" }
-      ]
+    var value2 = removeComma(`{ 
+    "data": { 
+      "insert_${getType(query)}": {
+        "returning": [
+          { 
+           ${getFieldsValues(query, rules, index)}       
+          }
+        ],
+        "status": 200
+      }
     }
-  ]
- }
-}`)
-
-  let value3 = (`mutation { 
-  insert_authors ( 
-     docs: [{ 
-          "id”:"2",
-          "name":"Suhail"
-        }]      
-      ) @postgres { 
-        status
-     }
   }`)
 
-  let value4 = (`{ 
-  "data":{ 
-    "insert_authors":{ 
-      "status":200
+    var value3 = gqlPrettier(`mutation { 
+  insert_${getType(query)} ( 
+     docs: [{${getVariables(query, rules, index)}}]   
+  ) @mysql {
+    status
+    error
+    returning {
+      ${getFields(query, rules, index)}
     }
   }
 }`)
 
-  let value5 = (`mutation{ 
-  delete_authors ( 
-     where: { 
-      "id":1
-     }      
-    ) @postgres { 
+    var value4 = removeComma(`{ 
+  "data":{ 
+    "insert_${getType(query)}":{ 
+      "returning": [{ 
+        ${getFieldsValues(query, rules, index)}    
+      }],
+      "status": 200
+    }
+  }
+}`)
+
+    var value5 = gqlPrettier(`mutation { 
+  delete_${getType(query)} ( 
+     where: {${getVariables(query, rules, index)}}      
+    ) @mysql { 
        status
-     }
+       }
+     
   }`)
 
-  let value6 = (`{ 
+    var value6 = removeComma(`{ 
   "data":{ 
-    "delete_authors":{ 
+    "delete_${getType(query)}":{ 
       "status":200
     }
   }
 }`)
+}
 
   return (
     <React.Fragment>

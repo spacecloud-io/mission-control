@@ -3,8 +3,6 @@ import {getProjectConfig, setProjectConfig} from "../../utils"
 import { eventLogsSchema, defaultDBRules } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
-import { notify } from '../../utils';
-import history from '../../history';
 
 export const modifyColSchema = (projectId, dbName, colName, schema) => {
   return new Promise((resolve, reject) => {
@@ -136,52 +134,20 @@ export const handleReload = (projectId, dbName) => {
   })
 }
 
-export const setDBConfig = (projectId, aliasName, enabled, conn, type) => {
+export const setDBConfig = (projectId, dbName, enabled, conn) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
-    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
-      setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.enabled`, enabled)
-      setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.conn`, conn)
-      setProjectConfig(store.getState().projects, projectId, `modules.crud.${aliasName}.type`, type)
-      store.dispatch(set(`extraConfig.${projectId}.crud.${aliasName}.connected`, true))
+    client.database.setDbConfig(projectId, dbName, { enabled, conn }).then(() => {
+      setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.enabled`, enabled)
+      setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.conn`, conn)
+      store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.connected`, true))
       if (enabled) {
-        fetchCollections(projectId, aliasName).then(() => resolve()).catch(ex => reject(ex))
+        fetchCollections(projectId, dbName).then(() => resolve()).catch(ex => reject(ex))
         return
       }
       resolve()
     })
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
-  })
-}
-
-export const removeDBConfig = (projectId, aliasName) => {
-  return new Promise((resolve, reject) => {
-    store.dispatch(increment("pendingRequests"))
-    client.database.removeDbConfig(projectId, aliasName).then(() => {
-      notify("success", "Success", "Removed database config successfully")
-      const dbconfig = getProjectConfig(store.getState().projects, projectId, `modules.crud`)
-      const dbList = delete dbconfig[aliasName]
-      store.dispatch(set(`extraConfig.${projectId}.crud`, dbList))
-      history.push(`/mission-control/projects/${projectId}/database`)
-      resolve()
-    })
-      .catch(ex => {
-        reject(ex)
-        notify("error", "Error removing database config", ex)
-      })
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-  })
-}
-
-export const dbEnable = (projectId, aliasName, conn, rules, type, cb) => {
-  setDBConfig(projectId, aliasName, true, conn, type).then(() => {
-    notify("success", "Success", "Enabled database successfully")
-    if (cb) cb()
-    setColRule(projectId, aliasName, "default", rules, type)
-      .catch(ex => notify("error", "Error configuring default rules", ex))
-  }).catch(ex => {
-    notify("error", "Error enabling database", ex)
-    if (cb) cb(ex)
   })
 }

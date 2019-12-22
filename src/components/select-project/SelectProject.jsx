@@ -39,8 +39,8 @@ function SelectProject(props) {
     <div >
       <Modal className="select-project" footer={null} closable={false} bodyStyle={{ widtht: "800" }}
         title={<div className="modal-header">
-          <h2 className="modal-title">Select a project</h2>
-          <Button onClick={props.handleCreateProject}>Create a project</Button>
+          <Header name="Select a project" />
+          <Button type="primary" onClick={props.handleCreateProject}>Create a project</Button>
         </div>}
         visible={props.visible}
         onCancel={props.handleCancel}
