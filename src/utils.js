@@ -2,12 +2,18 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
+import { dbTypes } from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
 import gql from 'graphql-tag';
+
+const mysqlSvg = require(`./assets/mysqlSmall.svg`)
+const postgresSvg = require(`./assets/postgresSmall.svg`)
+const mongoSvg = require(`./assets/mongoSmall.svg`)
+const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -68,16 +74,7 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: {
-      [dbType]: {
-        enabled: true,
-        conn: getConnString(dbType),
-        collections: {
-          default: { rules: defaultDBRules },
-          event_logs: { schema: eventLogsSchema }
-        }
-      }
-    },
+    crud: {},
     eventing: {
       enabled: true,
       dbType: dbType,
@@ -106,6 +103,10 @@ export const getEventSourceFromType = (type, defaultValue) => {
       case "DB_UPDATE":
       case "DB_DELETE":
         source = "database"
+        break;
+      case "FILE_CREATE":
+      case "FILE_DELETE":
+        source = "file storage"
         break;
       default:
         source = "custom"
@@ -188,12 +189,32 @@ export const onAppLoad = () => {
   })
 }
 
+export const dbIcons = (project, projectId, selectedDb) => {
 
-// console.log(query.definitions[0].name.value);      //customer
-// console.log(query.definitions[0].fields[0].name.value);        //id, name, address
-// console.log(query.definitions[0].fields[0].type.kind);            //check null type
-// console.log(query.definitions[0].fields[2].type.type.name.value);               // ID, String
-// console.log(query.definitions[0].fields[0].directives[0].name.value);           //primary
+  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+  
+  let checkDB = ''
+  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
+  
+  var svg = mongoSvg
+  switch (checkDB) {
+    case dbTypes.MONGO:
+      svg = mongoSvg
+      break;
+    case dbTypes.MYSQL:
+      svg = mysqlSvg
+      break;
+    case dbTypes.POSTGRESQL:
+      svg = postgresSvg
+      break;
+    case dbTypes.SQLSERVER:
+      svg = sqlserverSvg
+      break;
+    default:
+      svg = postgresSvg
+  }
+  return svg;
+}
 
 export const getType = (schema) => {
   return schema.definitions[0].name.value;
@@ -254,25 +275,3 @@ export const getVariables = (schema, rules, index) => {
   }
   return fieldsValue;
 }
-
-// export const getValue = (schema) => {
-//   var Values = []
-//   for (var i in schema.definitions[0].fields)
-//     Values.push(schema.definitions[0].fields[i].type.type.name.value);
-//   return Values;
-// }
-
-// export const checkType = (schema) => {
-//   var Type = []
-//   for (var i in schema.definitions[0].fields)
-//     Type.push(schema.definitions[0].fields[i].type.kind);
-//   return Type;
-// }
-
-// export const checkDirective = (schema) => {
-//   var Directives = []
-//   for (var i in schema.definitions[0].fields)
-//     console.log(schema.definitions[0].fields[2].directives[0].name.value)
-//   // Directives.push(schema.definitions[0].fields[0].directives[0].name.value);
-//   return Directives;
-// }
