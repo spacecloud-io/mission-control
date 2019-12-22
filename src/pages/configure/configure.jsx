@@ -11,6 +11,7 @@ import EventingConfigure from "../../components/configure/EventingConfigure"
 import './configure.css'
 import { getProjectConfig, notify, setProjectConfig } from '../../utils';
 import client from "../../client"
+import { dbIcons } from '../../utils';
 
 const Configure = () => {
 	// Router params
@@ -29,6 +30,14 @@ const Configure = () => {
 	const projectName = getProjectConfig(projects, projectID, "name")
 	const secret = getProjectConfig(projects, projectID, "secret")
 	const eventing = getProjectConfig(projects, projectID, "modules.eventing", {})
+	// changes
+
+	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+
+	const dropArray = Object.entries(crudModule).map(([alias, obj]) => {
+		if (!obj.type) obj.type = alias
+		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
+	})
 
 	// Handlers
 	const handleSecret = (secret) => {
@@ -65,7 +74,7 @@ const Configure = () => {
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
 					<h2>Eventing Config</h2>
 					<div className="divider" />
-					<EventingConfigure dbType={eventing.dbType} col={eventing.col} handleSubmit={handleEventingConfig} />
+					<EventingConfigure dbType={eventing.dbType} dropDown={dropArray} col={eventing.col} handleSubmit={handleEventingConfig} />
 				</div>
 			</div>
 		</div>

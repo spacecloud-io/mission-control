@@ -12,6 +12,7 @@ import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./c
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
+const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -203,7 +204,7 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
       break;
     default:
-      svg = postgresSvg
+      svg = sqlserverSvg
   }
   return svg;
 }
