@@ -1,16 +1,14 @@
 import React from "react"
 
 import { Modal, Form, Input } from 'antd';
-import FormItemLabel from "../../form-item-label/FormItemLabel"
+import FormItemLabel from "../../form-item-label/FormItemLabel";
 
-const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues}) => {
+const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const handleSubmitClick = e => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(values.conn);
-        handleCancel();
-        form.resetFields();
+        handleSubmit(values.conn)
       }
     });
   }
@@ -22,6 +20,7 @@ const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues}) =
       okText="Save"
       visible={true}
       onCancel={handleCancel}
+      confirmLoading={conformLoading}
       onOk={handleSubmitClick}
     >
       <Form layout="vertical" onSubmit={handleSubmitClick}>
@@ -29,7 +28,7 @@ const EditConnectionForm = ({form, handleSubmit, handleCancel, initialValues}) =
         <Form.Item>
           {getFieldDecorator("conn", {
             rules: [{ required: true, message: 'Please provide a connection string!' }],
-            initialValue: conn
+            initialValue: conn,
           })(
             <Input placeholder="Enter connection string of your database" />
           )}

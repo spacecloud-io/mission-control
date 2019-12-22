@@ -15,6 +15,7 @@ import { Button } from 'antd';
 import store from "../../store";
 import history from "../../history"
 import Projects from '../../services/projects';
+import { dbIcons } from '../../utils';
 
 const Configure = () => {
 	// Router params
@@ -33,6 +34,14 @@ const Configure = () => {
 	const projectName = getProjectConfig(projects, projectID, "name")
 	const secret = getProjectConfig(projects, projectID, "secret")
 	const eventing = getProjectConfig(projects, projectID, "modules.eventing", {})
+	// changes
+
+	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+
+	const dbList = Object.entries(crudModule).map(([alias, obj]) => {
+		if (!obj.type) obj.type = alias
+		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
+	})
 
 	// Handlers
 	const handleSecret = (secret) => {
@@ -87,7 +96,7 @@ const Configure = () => {
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
 					<h2>Eventing Config</h2>
 					<div className="divider" />
-					<EventingConfigure dbType={eventing.dbType} col={eventing.col} handleSubmit={handleEventingConfig} />
+					<EventingConfigure dbType={eventing.dbType} dbList={dbList} col={eventing.col} handleSubmit={handleEventingConfig} />
 					<h2>Delete Project</h2>
 					<div className="divider" />
 					<p>Removes project config</p>
