@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Select, Input, Button } from 'antd';
 const { Option } = Select;
 
-const EventingConfigure = ({ form, dbType, col, handleSubmit, dropDown }) => {
+const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
 	const { getFieldDecorator } = form;
 
 	const handleSubmitClick = e => {
@@ -24,7 +24,7 @@ const EventingConfigure = ({ form, dbType, col, handleSubmit, dropDown }) => {
 						initialValue: dbType
 					})(
 						<Select placeholder="Database" style={{ minWidth: 200 }}>
-							{dropDown.map((alias) => (
+							{dbList.map((alias) => (
 								<Select.Option value={alias.dbtype} ><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
 							))}
 						</Select>

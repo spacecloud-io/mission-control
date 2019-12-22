@@ -34,7 +34,7 @@ const EventTriggers = () => {
 	const rules = getProjectConfig(projects, projectID, "modules.eventing.rules", {})
 	// changes
 	const crudModuleFetch = getProjectConfig(projects, projectID, "modules.crud", {})
-	const dropArray = Object.entries(crudModuleFetch).map(([alias, obj]) => {
+	const dbList = Object.entries(crudModuleFetch).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
 	})
@@ -171,7 +171,7 @@ const EventTriggers = () => {
 				{ruleModalVisible && <RuleForm
 					handleCancel={handleRuleModalCancel}
 					handleSubmit={handleSetRule}
-					dropDown={dropArray}
+					dbList={dbList}
 					initialValues={ruleClickedInfo} />}
 				{triggerModalVisible && <TriggerForm
 					handleCancel={handleTriggerModalCancel}

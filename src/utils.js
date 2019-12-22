@@ -203,8 +203,11 @@ export const dbIcons = (project, projectId, selectedDb) => {
     case dbTypes.POSTGRESQL:
       svg = postgresSvg
       break;
-    default:
+    case dbTypes.SQLSERVER:
       svg = sqlserverSvg
+      break;
+    default:
+      svg = postgresSvg
   }
   return svg;
 }

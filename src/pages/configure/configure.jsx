@@ -34,7 +34,7 @@ const Configure = () => {
 
 	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
 
-	const dropArray = Object.entries(crudModule).map(([alias, obj]) => {
+	const dbList = Object.entries(crudModule).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
 	})
@@ -74,7 +74,7 @@ const Configure = () => {
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
 					<h2>Eventing Config</h2>
 					<div className="divider" />
-					<EventingConfigure dbType={eventing.dbType} dropDown={dropArray} col={eventing.col} handleSubmit={handleEventingConfig} />
+					<EventingConfigure dbType={eventing.dbType} dbList={dbList} col={eventing.col} handleSubmit={handleEventingConfig} />
 				</div>
 			</div>
 		</div>

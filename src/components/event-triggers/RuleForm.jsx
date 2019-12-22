@@ -27,7 +27,7 @@ const RuleForm = (props) => {
   let defaultEventSource = getEventSourceFromType(type, "database")
   const temp = getFieldValue("source")
   const eventSource = temp ? temp : defaultEventSource
-  //const svgIcon = dbIcons(projects, projectID, selectedDB);
+
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
@@ -67,7 +67,7 @@ const RuleForm = (props) => {
                 initialValue: options ? options.db : undefined
               })(
                 <Select placeholder="Select a database">
-                  {props.dropDown.map((alias) => (
+                  {props.dbList.map((alias) => (
                     <Select.Option value={alias.dbtype}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
                   ))}
                 </Select>

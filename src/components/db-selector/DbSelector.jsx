@@ -14,7 +14,7 @@ function DbSelector(props) {
   const projects = useSelector(state => state.projects)
   const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
 
-  const array = Object.entries(crudModule).map(([alias, obj]) => {
+  const dbList = Object.entries(crudModule).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
     return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(projects, projectID, alias) }
   })
@@ -76,7 +76,7 @@ function DbSelector(props) {
         <Table
           pagination={false}
           columns={dbcolumns}
-          dataSource={array}
+          dataSource={dbList}
           size="middle"
 
           onRow={(record) => {
