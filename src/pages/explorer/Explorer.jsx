@@ -43,17 +43,17 @@ const Explorer = props => {
 
   useEffect(() => {
     if (props.graphqlUseAdminToken && props.secret) {
-      props.setToken(generateAdminToken(props.secret), 'graphql');
+      props.setToken(generateAdminToken(props.secret));
     } else {
-      props.setToken(null, 'graphql');
+      props.setToken(props.graphqlToken);
     }
   }, [props.graphqlUseAdminToken, props.secret]);
 
   useEffect(() => {
     if (props.spaceApiUseAdminToken && props.secret) {
-      props.setToken(generateAdminToken(props.secret), 'spaceApi');
+      props.setToken(generateAdminToken(props.secret));
     } else {
-      props.setToken(null, 'spaceApi');
+      props.setToken(props.spaceApiToken);
     }
   }, [props.spaceApiUseAdminToken, props.secret]);
 
@@ -115,7 +115,7 @@ const Explorer = props => {
                 <Checkbox
                   checked={props.graphqlUseAdminToken}
                   onChange={e =>
-                    props.setUseAdminToken(e.target.checked, 'graphql')
+                    props.setUseAdminToken(e.target.checked)
                   }
                 >
                   Use admin token
@@ -135,10 +135,11 @@ const Explorer = props => {
                   <Input.Password
                     placeholder='Token to authorize request'
                     value={props.graphqlToken}
-                    onChange={e => props.setToken(e.target.value, 'graphql')}
+                    onChange={e => props.setToken(e.target.value)}
                   />
                 </div>
-              )}
+              )
+              }
               <div className='graphql' style={{ marginTop: 10 }}>
                 <GraphiQL
                   fetcher={graphQLParams =>
@@ -161,7 +162,7 @@ const Explorer = props => {
                 <Checkbox
                   checked={props.spaceApiUseAdminToken}
                   onChange={e =>
-                    props.setUseAdminToken(e.target.checked, 'spaceApi')
+                    props.setUseAdminToken(e.target.checked)
                   }
                 >
                   Use admin token
@@ -181,7 +182,7 @@ const Explorer = props => {
                   <Input.Password
                     placeholder='Token to authorize request'
                     value={props.spaceApiToken}
-                    onChange={e => props.setToken(e.target.value, 'spaceApi')}
+                    onChange={e => props.setToken(e.target.value)}
                   />
                 </div>
               )}
@@ -292,17 +293,13 @@ const mapDispatchToProps = dispatch => {
     handleSpaceApiQueryChange: query => {
       dispatch(set('uiState.explorer.spaceApi.query', query));
     },
-    setUseAdminToken: (useAdminToken, query) => {
-      query === 'graphql'
-        ? dispatch(set('uiState.explorer.graphql.useAdminToken', useAdminToken))
-        : dispatch(
-          set('uiState.explorer.spaceApi.useAdminToken', useAdminToken)
-        );
+    setUseAdminToken: (useAdminToken) => {
+      dispatch(set('uiState.explorer.graphql.useAdminToken', useAdminToken))
+      dispatch(set('uiState.explorer.spaceApi.useAdminToken', useAdminToken))
     },
-    setToken: (token, query) => {
-      query === 'graphql'
-        ? dispatch(set('uiState.explorer.graphql.token', token))
-        : dispatch(set('uiState.explorer.spaceApi.token', token));
+    setToken: (token) => {
+      dispatch(set('uiState.explorer.graphql.token', token))
+      dispatch(set('uiState.explorer.spaceApi.token', token))
     }
   };
 };
