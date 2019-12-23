@@ -22,6 +22,8 @@ import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
+import ManageServices from './pages/manage-services/ManageServices';
+import Deployment from './pages/deployment/Deployment';
 
 export default () => {
   return (
@@ -51,6 +53,8 @@ export default () => {
         <Route exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <Route exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
+        <Route exact path="/mission-control/projects/:projectID/deployment" component={Deployment} />
       </Switch>
     </Router>
   );
