@@ -48,8 +48,6 @@ const ExportImport = ({ object }) => {
 
         var file = info.fileList[0].originFileObj;
         var extension = info.fileList[0].name.split('.').pop()
-        console.log(Type);
-        console.log(extension);
         const reader = new FileReader();
         reader.onload = function () {
             const getdata = reader.result
