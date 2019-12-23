@@ -13,6 +13,7 @@
     "dot-prop-immutable": "^1.5.0",
     "graphiql": "^0.14.2",
     "graphql": "^14.5.4",
+    "js-yaml": "^3.13.1",
     "jsonwebtoken": "^8.5.1",
     "less": "^3.9.0",
     "less-loader": "^5.0.0",
@@ -22,12 +23,17 @@
     "react-codemirror2": "^6.0.0",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.6",
+    "react-download-link": "^2.2.0",
+    "react-file-download": "^0.3.5",
+    "react-file-reader": "^1.1.4",
     "react-ga": "^2.6.0",
     "react-redux": "^7.1.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.0.1",
+    "read-yaml": "^1.1.0",
     "redux": "^4.0.1",
-    "space-api": "^0.10.3"
+    "space-api": "^0.10.3",
+    "yamljs": "^0.3.0"
   },
   "homepage": "https://spaceuptech.com/mission-control",
   "scripts": {

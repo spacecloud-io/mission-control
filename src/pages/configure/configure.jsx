@@ -8,6 +8,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import SecretConfigure from "../../components/configure/SecretConfigure"
 import EventingConfigure from "../../components/configure/EventingConfigure"
+import ExportImport from "../../components/configure/ExportImport"
 import './configure.css'
 import { getProjectConfig, notify, setProjectConfig } from '../../utils';
 import client from "../../client"
@@ -68,23 +69,23 @@ const Configure = () => {
 	}
 
 	const removeProjectConfig = () => {
-			store.dispatch(increment("pendingRequests"))
-			client.projects.deleteProject(projectID).then(() => {
-				notify("success", "Success", "Removed project config successfully")
-				const extraConfig = store.getState().extraConfig
-				const newExtraConfig = delete extraConfig[projectID]
-				store.dispatch(set(`extraConfig`, newExtraConfig))
-				const projectConfig = store.getState().projects;
-				const projectList = projectConfig.filter(project => project.id !== projectID)
-				store.dispatch(set(`projects`, projectList))
-				history.push(`/mission-control/welcome`)
+		store.dispatch(increment("pendingRequests"))
+		client.projects.deleteProject(projectID).then(() => {
+			notify("success", "Success", "Removed project config successfully")
+			const extraConfig = store.getState().extraConfig
+			const newExtraConfig = delete extraConfig[projectID]
+			store.dispatch(set(`extraConfig`, newExtraConfig))
+			const projectConfig = store.getState().projects;
+			const projectList = projectConfig.filter(project => project.id !== projectID)
+			store.dispatch(set(`projects`, projectList))
+			history.push(`/mission-control/welcome`)
+		})
+			.catch(ex => {
+				notify("error", "Error removing project config", ex)
 			})
-				.catch(ex => {
-					notify("error", "Error removing project config", ex)
-				})
-				.finally(() => store.dispatch(decrement("pendingRequests")))
+			.finally(() => store.dispatch(decrement("pendingRequests")))
 	}
-	
+
 	return (
 		<div className="configure-page">
 			<Topbar showProjectSelector />
@@ -97,6 +98,9 @@ const Configure = () => {
 					<h2>Eventing Config</h2>
 					<div className="divider" />
 					<EventingConfigure dbType={eventing.dbType} dbList={dbList} col={eventing.col} handleSubmit={handleEventingConfig} />
+					<h2>Export/Import Project Config</h2>
+					<div className="divider" />
+					<ExportImport object={projects[0]} />
 					<h2>Delete Project</h2>
 					<div className="divider" />
 					<p>Removes project config</p>
