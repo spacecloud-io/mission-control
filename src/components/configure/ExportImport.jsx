@@ -1,104 +1,72 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Upload, message, Form, Select, Input, Button } from 'antd';
 import { Icon } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { setProjectConfig, getProjectConfig, notify } from '../../utils';
 import { useParams } from "react-router-dom";
-import { get, set, increment, decrement } from 'automate-redux';
-import client from "../../client"
-
 
 const YAML = require('yamljs');
-const yaml = require('js-yaml');
 
-const ExportImport = ({ object }) => {
+const ExportImport = ({ projectConfig, importProjectConfig }) => {
     const { projectID, selectedDB } = useParams()
-    const [Type, setType] = useState('');
-    const dispatch = useDispatch()
-
 
     const projects = useSelector(state => state.projects)
     const projectName = getProjectConfig(projects, projectID, "name")
 
-    const downLoadJson = e => {
+    const download = (e, type) => {
         e.preventDefault();
-
-        const data = new Blob([JSON.stringify(object)], { type: 'content-type/json' });
-        const jsonURL = window.URL.createObjectURL(data);
-        const jsonLink = document.createElement('a');
-        jsonLink.href = jsonURL;
-        jsonLink.setAttribute('download', 'config.json');
-        jsonLink.click();
-
-    }
-    const downLoadYaml = e => {
-        e.preventDefault();
-        const nativeObject = YAML.parse(JSON.stringify(object));
-        const yamlString = YAML.stringify(nativeObject, 4);
-        const data = new Blob([yamlString], { type: 'text/yaml' });
-        const yamlURL = window.URL.createObjectURL(data);
-        const yamlLink = document.createElement('a');
-        yamlLink.href = yamlURL;
-        yamlLink.setAttribute('download', 'config.yaml');
-        yamlLink.click();
+        var data = ""
+        if (type === "json") {
+            data = new Blob([JSON.stringify(projectConfig, null, 2)], { type: 'content-type/json' });
+        }
+        if (type === "yaml") {
+            const yamlString = YAML.stringify(projectConfig, 10, 2);
+            data = new Blob([yamlString], { type: 'text/yaml' });
+        }
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `project-id.${type}`);
+        link.click();
 
     }
 
-    const importFiles = info => {
-
-        var file = info.fileList[0].originFileObj;
-        var extension = info.fileList[0].name.split('.').pop()
-        const reader = new FileReader();
-        reader.onload = function () {
-            const getdata = reader.result
-            if (Type === "json" && extension === "json") {
-                const jsonObj = JSON.parse(getdata);
-                dispatch(increment("pendingRequests"))
-                client.projects.importFiles(projectID, { secret: jsonObj.secret, id: projectID, name: projectName, modules: jsonObj.modules })
-                    .then(() => {
-                        setProjectConfig(projects, projectID, "modules", jsonObj.modules);
-                        setProjectConfig(projects, projectID, "secret", jsonObj.secret)
-                        notify("success", "Success", "File uploaded successfully")
-                    })
-                    .catch(ex => notify("error", "Error", ex))
-                    .finally(() => dispatch(decrement("pendingRequests")))
-                setType("");
-            }
-            if (Type === "yaml" && extension === "yaml") {
-                const yamlObj = yaml.safeLoad(getdata);
-                dispatch(increment("pendingRequests"))
-                client.projects.importFiles(projectID, { secret: yamlObj.secret, id: projectID, name: projectName, modules: yamlObj.modules })
-                    .then(() => {
-                        setProjectConfig(projects, projectID, "modules", yamlObj.modules);
-                        setProjectConfig(projects, projectID, "secret", yamlObj.secret)
-                        notify("success", "Success", "File uploaded successfully")
-                    })
-                    .catch(ex => notify("error", "Error", ex))
-                    .finally(() => dispatch(decrement("pendingRequests")))
-                setType("");
-            }
-        };
-
-        reader.onerror = function () {
-            console.log(reader.error);
-        };
-        reader.readAsBinaryString(file);
-
+    const importFiles = (info, type) => {
+        if (info.fileList.length > 0) {
+            var file = info.fileList[0].originFileObj
+            const reader = new FileReader();
+            reader.onload = function () {
+                const getdata = reader.result
+                if (type === "json") {
+                    const jsonObj = JSON.parse(getdata);
+                    importProjectConfig(projectID, { secret: jsonObj.secret, id: projectID, name: projectName, modules: jsonObj.modules })
+                }
+                if (type === "yaml") {
+                    const yamlObj = YAML.parse(getdata);
+                    importProjectConfig(projectID, { secret: yamlObj.secret, id: projectID, name: projectName, modules: yamlObj.modules })
+                }
+            };
+            reader.onerror = function () {
+                console.log(reader.error);
+            };
+            reader.readAsBinaryString(file);
+        } else {
+            console.log("error")
+        }
     };
-
 
     return (
         <div>
             <p>Download project config in JSON/YAML file </p>
             <Form layout="inline">
                 <Form.Item>
-                    <Button onClick={downLoadYaml}>
+                    <Button onClick={(e) => download(e, "yaml")}>
                         Yaml
                         <Icon type="download" />
                     </Button>
                 </Form.Item>
                 <Form.Item>
-                    <Button onClick={downLoadJson}>
+                    <Button onClick={(e) => download(e, "json")}>
                         Json
                         <Icon type="download" />
                     </Button>
@@ -107,15 +75,15 @@ const ExportImport = ({ object }) => {
             <p>Update project config by importing a JSON/YAML files</p>
             <Form layout="inline">
                 <Form.Item>
-                    <Upload onChange={importFiles}>
-                        <Button onClick={() => setType('yaml')}>
+                    <Upload onChange={(info) => importFiles(info, "yaml")} accept=".yaml" beforeUpload={file => false}>
+                        <Button>
                             <Icon type="upload" /> Yaml
                     </Button>
                     </Upload>
                 </Form.Item>
                 <Form.Item>
-                    <Upload onChange={importFiles}>
-                        <Button onClick={() => setType('json')}>
+                    <Upload onChange={(info) => importFiles(info, "json")} accept=".json" beforeUpload={file => false}>
+                        <Button>
                             <Icon type="upload" /> Json
                     </Button>
                     </Upload>

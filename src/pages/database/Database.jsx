@@ -39,12 +39,12 @@ const Database = () => {
   let dbName = ""
 
   switch (selectedDB) {
-    case "sql-mysql":
+    case "mysql":
       desc = "The world's most popular open source database."
       dbName = "MySQL"
       graphic = mysql
       break
-    case "sql-postgres":
+    case "postgres":
       desc = "The world's most advanced open source database."
       dbName = "PostgreSQL"
       graphic = postgresql

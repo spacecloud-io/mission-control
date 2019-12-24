@@ -110,7 +110,7 @@ const Overview = () => {
         setConformLoading(false);
       })
       .catch(() => {
-        notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct.`)
+        notify("error", "Connection failed", ` Unable to connect ${selectedDB}. Make sure your connection string is correct.`)
         setConformLoading(false);
       })
   }

@@ -33,8 +33,8 @@ const Database = () => {
     ReactGA.pageview("/projects/database");
   }, [])
 
-  const cards = [{ graphics: mysql, name: "MySQL", desc: "The world's most popular open source database.", key: "sql-mysql" },
-  { graphics: postgresql, name: "PostgreSQL", desc: "The world's most advanced open source database.", key: "sql-postgres" },
+  const cards = [{ graphics: mysql, name: "MySQL", desc: "The world's most popular open source database.", key: "mysql" },
+  { graphics: postgresql, name: "PostgreSQL", desc: "The world's most advanced open source database.", key: "postgres" },
   { graphics: mongodb, name: "MongoDB", desc: "A open-source cross-platform document- oriented database.", key: "mongo" }]
 
   if (activeDB) {

@@ -59,7 +59,7 @@ class Projects {
     })
   }
 
-  importFiles(projectId, config) {
+  setProjectConfig(projectId, config) {
     return new Promise((resolve, reject) => {
       this.client.putJSON(`/v1/config/projects/${projectId}`, config)
         .then(({ status, data }) => {

@@ -30,6 +30,7 @@ const Configure = () => {
 
 	// Global state
 	const projects = useSelector(state => state.projects)
+	const selectedProject = projects.find(project => project.id === projectID)
 
 	// Derived properties
 	const projectName = getProjectConfig(projects, projectID, "name")
@@ -86,6 +87,18 @@ const Configure = () => {
 			.finally(() => store.dispatch(decrement("pendingRequests")))
 	}
 
+	const importProjectConfig = (projectID, config) => {
+		dispatch(increment("pendingRequests"))
+		client.projects.setProjectConfig(projectID, config)
+			.then(() => {
+				setProjectConfig(projects, projectID, "modules", config.modules);
+				setProjectConfig(projects, projectID, "secret", config.secret)
+				notify("success", "Success", "File uploaded successfully")
+			})
+			.catch(ex => notify("error", "Error", ex))
+			.finally(() => dispatch(decrement("pendingRequests")))
+	}
+
 	return (
 		<div className="configure-page">
 			<Topbar showProjectSelector />
@@ -100,7 +113,7 @@ const Configure = () => {
 					<EventingConfigure dbType={eventing.dbType} dbList={dbList} col={eventing.col} handleSubmit={handleEventingConfig} />
 					<h2>Export/Import Project Config</h2>
 					<div className="divider" />
-					<ExportImport object={projects[0]} />
+					<ExportImport projectConfig={selectedProject} importProjectConfig={importProjectConfig} />
 					<h2>Delete Project</h2>
 					<div className="divider" />
 					<p>Removes project config</p>
