@@ -46,7 +46,7 @@ const SignUp = () => {
             <div className="right-content">
               <div class="sign-up">
                 <span>Already have an account? </span>
-                <a href=""> Sign in here</a>
+                <a href="/mission-control/sign-in"> Sign in here</a>
               </div>
               <SignUpForm isLoading={isLoading} handleSubmit={handleSubmit} />
               <div class="divider">

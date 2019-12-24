@@ -40,8 +40,8 @@ const Sidenav = (props) => {
       <Link to={`/mission-control/projects/${projectID}/manage-services`}>
         <SidenavItem name="Manage Services" icon="flare" active={props.selectedItem === 'manage-services'} />
       </Link>
-      <Link to={`/mission-control/projects/${projectID}/deployment`}>
-        <SidenavItem name="Deployment" icon="near_me" active={props.selectedItem === 'deployment'} />
+      <Link to={`/mission-control/projects/${projectID}/deployments`}>
+        <SidenavItem name="Deployments" icon="near_me" active={props.selectedItem === 'deployments'} />
       </Link>
       </Panel>
       </Collapse>

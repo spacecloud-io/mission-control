@@ -58,11 +58,11 @@ const Rules = (props) => {
   return (
     <React.Fragment>
       <Topbar />
-      <Sidenav selectedItem="deployment" />
+      <Sidenav selectedItem="deployments" />
       <div className="page-content">
         <div className="panel" style={{ margin: 24 }}>
           <img src={deployment} width="50%" />
-          <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Galaxy provides you with managed services for your data, files, APIs etc. so that you can focus more on developing rather than managing </p>
+          <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Deploy your custom code in minutes to Space Galaxy either directy from your laptop or Docker image</p>
           <Button type="primary action-rounded" style={{ marginTop: 16 }}>Add managed service</Button>
         </div>
         <React.Fragment>

@@ -7,7 +7,7 @@ function SignUpForm(props) {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.email, values.userName, values.password);
+        props.handleSubmit(values.name, values.userName, values.password);
       }
     });
   };
@@ -18,10 +18,10 @@ function SignUpForm(props) {
       <p className="sign-in">Sign Up</p>
       <Form onSubmit={handleSubmit}>
         <Form.Item>
-          {getFieldDecorator('email', {
+          {getFieldDecorator('name', {
             rules: [
-              {type: 'email',message: 'The input is not valid E-mail!'}
-            ]})(<Input placeholder="Email"/>)}
+              {type: 'name',message: 'The input is not valid!'}
+            ]})(<Input placeholder="Name"/>)}
         </Form.Item>
 
         <Form.Item >
