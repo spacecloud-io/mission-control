@@ -26,30 +26,29 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
         const url = window.URL.createObjectURL(data);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `project-id.${type}`);
+        link.setAttribute('download', `${projectID}.${type}`);
         link.click();
 
     }
 
     const importFiles = (info, type) => {
+
         if (info.fileList.length > 0) {
             var file = info.fileList[0].originFileObj
             const reader = new FileReader();
             reader.onload = function () {
                 const getdata = reader.result
-                if (type === "json") {
-                    const jsonObj = JSON.parse(getdata);
-                    importProjectConfig(projectID, { secret: jsonObj.secret, id: projectID, name: projectName, modules: jsonObj.modules })
-                }
-                if (type === "yaml") {
-                    const yamlObj = YAML.parse(getdata);
-                    importProjectConfig(projectID, { secret: yamlObj.secret, id: projectID, name: projectName, modules: yamlObj.modules })
+                try {
+                    const dataObj = type === "json" ? JSON.parse(getdata) : YAML.parse(getdata)
+                    importProjectConfig(projectID, { secret: dataObj.secret, id: projectID, name: projectName, modules: dataObj.modules })
+                } catch (err) {
+                    notify("error", "Error uploading file", "Unsupported syntax error");
                 }
             };
             reader.onerror = function () {
                 console.log(reader.error);
             };
-            reader.readAsBinaryString(file);
+            reader.readAsBinaryString(file)
         } else {
             console.log("error")
         }

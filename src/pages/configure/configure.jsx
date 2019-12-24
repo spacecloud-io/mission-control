@@ -91,9 +91,15 @@ const Configure = () => {
 		dispatch(increment("pendingRequests"))
 		client.projects.setProjectConfig(projectID, config)
 			.then(() => {
-				setProjectConfig(projects, projectID, "modules", config.modules);
-				setProjectConfig(projects, projectID, "secret", config.secret)
-				notify("success", "Success", "File uploaded successfully")
+				const updatedProjects = projects.map(project => {
+					if (project.id === config.id) {
+						project.secret = config.secret;
+						project.modules = config.modules;
+					}
+					return project
+				});
+				store.dispatch(set("projects", updatedProjects))
+				notify("success", "Success", "Updated project config successfully")
 			})
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
