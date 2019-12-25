@@ -4,6 +4,7 @@ import history from "./history";
 
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
+import SignUp from "./pages/sign-up/SignUp"
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
@@ -21,6 +22,8 @@ import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
+import ManageServices from './pages/manage-services/ManageServices';
+import Deployments from './pages/deployments/Deployments';
 
 export default () => {
   return (
@@ -29,7 +32,8 @@ export default () => {
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
         <Route exact path="/mission-control" component={Home} />
-        <Route exact path="/mission-control/login" component={Login} />
+        <Route exact path="/mission-control/sign-in" component={Login} />
+        <Route exact path="/mission-control/sign-up" component={SignUp} />
         <Route exact path="/mission-control/welcome" component={Welcome} />
         <Route exact path="/mission-control/create-project" component={CreateProject} />
         <Route exact path="/mission-control/projects/:projectID"
@@ -49,6 +53,8 @@ export default () => {
         <Route exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <Route exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
+        <Route exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
       </Switch>
     </Router>
   );

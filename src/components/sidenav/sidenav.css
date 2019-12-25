@@ -10,7 +10,7 @@
 }
 
 .sidenav-item {
-  height: 64px;
+  height: 48px;
   display: flex;
   align-items: center;
   color: rgba(0, 0, 0, 0.6);
@@ -40,4 +40,17 @@
 
 .sidenav-item__name {
   margin-left: 32px;
+}
+
+.sidenav .title {
+  font-size: 16px;
+  color: black;
+}
+
+.sidenav .ant-collapse-content > .ant-collapse-content-box{
+  padding: 0;
+}
+.sidenav .ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header{
+  padding-left: 40px;
+  background-color: white;
 }
