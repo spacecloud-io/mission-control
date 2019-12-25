@@ -173,11 +173,26 @@ export const removeDBConfig = (projectId, aliasName) => {
   })
 }
 
-export const dbEnable = (projectId, aliasName, conn, rules, type, cb) => {
+const handleEventingConfig = (projects, projectId, alias) => {
+  store.dispatch(increment("pendingRequests"))
+  client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
+    .then(() => {
+      setProjectConfig(projects, projectId, "modules.eventing", {dbType: alias, enabled: true, col: 'event_logs'})
+      notify("success", "Success", "Changed eventing config successfully")
+    })
+    .catch(ex => notify("error", "Error", ex))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+}
+
+export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) => {
   store.dispatch(increment("pendingRequests"))
   setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
+    const dbconfig = getProjectConfig(projects, projectId, `modules.crud`)
+    if(Object.keys(dbconfig).length === 0) {
+      handleEventingConfig(projects, projectId, aliasName)
+    }
     setColRule(projectId, aliasName, "default", rules, type, true)
       .catch(ex => notify("error", "Error configuring default rules", ex))
   }).catch(ex => {
