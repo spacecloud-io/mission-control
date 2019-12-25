@@ -1,8 +1,8 @@
 export const dbTypes = {
   MONGO: "mongo",
-  POSTGRESQL: "sql-postgres",
-  MYSQL: "sql-mysql",
-  SQLSERVER: "sql-sqlserver"
+  POSTGRESQL: "postgres",
+  MYSQL: "mysql",
+  SQLSERVER: "sqlserver"
 }
 
 export const defaultDbConnectionStrings = {
