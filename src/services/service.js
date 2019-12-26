@@ -26,6 +26,8 @@ class Service {
     this.remoteServices = new RemoteServices(this.client)
     this.userManagement = new UserManagement(this.client)
     this.projects = new Projects(this.client)
+    const token = localStorage.getItem("token")
+    if(token) this.client.setToken(token);
   }
 
   setToken(token) {
