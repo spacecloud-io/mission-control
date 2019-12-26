@@ -11,7 +11,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCancel, initialValues }) => {
+const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const { getFieldDecorator, getFieldValue } = form;
 
   if (!initialValues) {
@@ -33,7 +33,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
     if (schema) {
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
-      const newSchema = colName ? `type ${colName} ${temp.slice(index)}`:  `type ${temp.slice(index)}`
+      const newSchema = colName ? `type ${colName} ${temp.slice(index)}` : `type ${temp.slice(index)}`
       setSchema(newSchema)
     }
   }, [colName])
@@ -53,7 +53,6 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
             schema,
             isRealtimeEnabled
           );
-          handleCancel();
         } catch (ex) {
           notify("error", "Error", ex.toString())
         }
@@ -71,6 +70,7 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${selectedDB === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
+        confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" onSubmit={handleSubmitClick}>

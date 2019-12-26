@@ -13,6 +13,8 @@ import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFr
 import client from '../../client';
 import eventTriggersSvg from "../../assets/event-triggers.svg"
 import history from '../../history'
+import { dbIcons } from '../../utils';
+
 
 const EventTriggers = () => {
 	// Router params
@@ -30,6 +32,12 @@ const EventTriggers = () => {
 
 	// Derived properties
 	const rules = getProjectConfig(projects, projectID, "modules.eventing.rules", {})
+	// changes
+	const crudModuleFetch = getProjectConfig(projects, projectID, "modules.crud", {})
+	const dbList = Object.entries(crudModuleFetch).map(([alias, obj]) => {
+		if (!obj.type) obj.type = alias
+		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
+	})
 	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
@@ -114,32 +122,32 @@ const EventTriggers = () => {
 		}
 	]
 
-  const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
-  const activeDB = Object.keys(crudModule).find(db => {
-    return crudModule[db].enabled
+	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+	const activeDB = Object.keys(crudModule).find(db => {
+		return crudModule[db].enabled
 	})
 
-	const alertMsg = <div> 
-											<span>Space Cloud needs a database to store the event logs. First</span> 
-											<Link to={`/mission-control/projects/${projectID}/database/add-db`}> add a database </Link> 
-											<span>to Space Cloud so that eventing module can use it.</span>
-										</div>
+	const alertMsg = <div>
+		<span>Space Cloud needs a database to store the event logs. First</span>
+		<Link to={`/mission-control/projects/${projectID}/database/add-db`}> add a database </Link>
+		<span>to Space Cloud so that eventing module can use it.</span>
+	</div>
 
 	const dbAlert = () => {
-		if(!activeDB)
-		return (
-			<Row>
-				<Col lg={{span: 18, offset: 3}}>
-					<Alert style={{top: 15}}
-						message="Eventing needs to be configured"
-						description={alertMsg}	
-						type="info"
-						showIcon
-					/>
-				</Col>
-			</Row>
-		)
-	} 
+		if (!activeDB)
+			return (
+				<Row>
+					<Col lg={{ span: 18, offset: 3 }}>
+						<Alert style={{ top: 15 }}
+							message="Eventing needs to be configured"
+							description={alertMsg}
+							type="info"
+							showIcon
+						/>
+					</Col>
+				</Row>
+			)
+	}
 
 	return (
 		<div>
@@ -163,6 +171,7 @@ const EventTriggers = () => {
 				{ruleModalVisible && <RuleForm
 					handleCancel={handleRuleModalCancel}
 					handleSubmit={handleSetRule}
+					dbList={dbList}
 					initialValues={ruleClickedInfo} />}
 				{triggerModalVisible && <TriggerForm
 					handleCancel={handleTriggerModalCancel}
