@@ -74,11 +74,7 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   secret: generateId(),
   modules: {
     crud: {},
-    eventing: {
-      enabled: true,
-      dbType: dbType,
-      col: "event_logs"
-    },
+    eventing: {},
     auth: {},
     services: {
       externalServices: {}
