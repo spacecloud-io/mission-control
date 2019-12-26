@@ -86,6 +86,12 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   }
 })
 
+export const generateGalaxyProjectConfig = (projectId, clusters, projects) => ({
+  id: projectId,
+  clusters: clusters,
+  scConfig: projects
+}) 
+
 export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: msg, duration: duration });
 }
