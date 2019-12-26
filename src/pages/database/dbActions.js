@@ -177,7 +177,7 @@ const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
   client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
     .then(() => {
-      setProjectConfig(projects, projectId, "modules.eventing", {dbType: alias, enabled: true, col: 'event_logs'})
+      setProjectConfig(projects, projectId, "modules.eventing", {enabled: true, dbType: alias, col: 'event_logs'})
       notify("success", "Success", "Changed eventing config successfully")
     })
     .catch(ex => notify("error", "Error", ex))
