@@ -39,7 +39,7 @@ const Rules = () => {
   const SidePanel = () => {
     return <div className="panel panel--has-border-right">
       <div className="panel__graphic">
-        <img src={securitySvg} width="70%" />
+        <img src={securitySvg} className="db-svg"/>
       </div>
       <p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Secure who can access what</p>
       <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>

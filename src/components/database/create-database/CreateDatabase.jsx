@@ -8,6 +8,7 @@ import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import { dbEnable } from '../../../pages/database/dbActions'
 import { useHistory } from 'react-router-dom';
+import './create-db.css'
 
 const CreateDatabase = (props) => {
   const history = useHistory();
@@ -50,13 +51,12 @@ const CreateDatabase = (props) => {
     })
   }
 
-
   return (
     <div>
       <Card>
         <b><center style={{fontSize:18, marginBottom:16}}>Add a database to your project</center></b>
         <p>Select a database</p>
-        <Row className="db-display db-left">
+        <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={mongoIcon} onClick={handleMongo}
               heading="MONGODB" 

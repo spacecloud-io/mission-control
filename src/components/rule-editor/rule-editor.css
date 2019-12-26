@@ -28,7 +28,6 @@
   border-top: 1px solid #e4e4e4;
   padding: 8px;
   text-align: right;
-  margin-bottom: 80px; 
 }
 
 .rule-editor .panel>img, .rule-editor .panel__graphic{
@@ -50,5 +49,8 @@
 
   .rule-editor .panel{
     margin:0;
+  }
+  .rule-editor__footer{
+    margin-bottom: 80px; 
   }
 }
