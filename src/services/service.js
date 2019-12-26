@@ -27,7 +27,7 @@ class Service {
     this.userManagement = new UserManagement(this.client)
     this.projects = new Projects(this.client)
     const token = localStorage.getItem("token")
-    this.client.setToken(token);
+    if(token) this.client.setToken(token);
   }
 
   setToken(token) {
