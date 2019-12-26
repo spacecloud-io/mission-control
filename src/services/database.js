@@ -8,6 +8,7 @@ class Database {
   }
 
   getConnectionState(projectId, dbName) {
+    
     const token = localStorage.getItem("token")
       if(token){
         client.setToken(token)
