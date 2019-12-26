@@ -1,5 +1,6 @@
 import store from "../store"
 import { increment, decrement } from "automate-redux"
+import client from "../client"
 
 class Database {
   constructor(client) {
@@ -7,6 +8,10 @@ class Database {
   }
 
   getConnectionState(projectId, dbName) {
+    const token = localStorage.getItem("token")
+      if(token){
+        client.setToken(token)
+      }
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/database/${dbName}/connection-state`)
         .then(({ status, data }) => {
