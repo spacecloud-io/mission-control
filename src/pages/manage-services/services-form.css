@@ -1,0 +1,50 @@
+#components-form-demo-normal-login .login-form {
+  max-width: 300px;
+}
+#components-form-demo-normal-login .login-form-forgot {
+  float: right;
+}
+#components-form-demo-normal-login .login-form-button {
+  width: 100%;
+}
+
+.radio-card {
+  border: 0px;
+  border-left: 0px;
+  border-left: none;
+  outline: 0;
+}
+
+.ant-radio-button-wrapper {
+  border-left: none;
+}
+
+.radio-card:not(:first-child):not(.ant-radio-button-wrapper-checked) {
+  border-left: none;
+}
+
+.ant-radio-button-wrapper-checked:hover{
+  border-color: none;
+}
+
+.ant-radio-button-wrapper:first-child{
+  border-left: none;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+.ant-radio-button-wrapper:focus-within{
+  outline: none;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):focus-within{
+  outline: none;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover{
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}

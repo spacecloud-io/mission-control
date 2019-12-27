@@ -1,0 +1,19 @@
+.ant-tabs-nav-scroll{
+  text-align: center;
+}
+
+.ant-card-body{
+  padding: 0px;
+}
+
+.ant-tabs-nav-scroll{
+  height: 48px;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab{
+  font-size: 14px;
+}
+
+.ant-tabs-tab{
+  font-size: 14px;
+}
