@@ -186,14 +186,14 @@ const Overview = () => {
                 <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
               </Descriptions.Item>
             </Descriptions>
-            {!connected && <div className="empty-state">
+            {!connected && <div className="empty-state overview-img">
               <div className="empty-state__graphic">
-                <img src={disconnectedImg} alt="" />
+                <img src={disconnectedImg} alt=""/>
               </div>
               <p className="empty-state__description">Oops... Space Cloud could not connect to your database</p>
               <p className="empty-state__action-text">Enter the correct connection details of your database</p>
               <div className="empty-state__action-bar">
-                <Button className="action-rounded" type="default" onClick={() => handleEditConnString(connString)}>Reconnect</Button>
+                <Button className="action-rounded reconnect" type="default" onClick={() => handleEditConnString(connString)}>Reconnect</Button>
                 <Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={() => setEditConnModalVisible(true)}>Edit Connection</Button>
               </div>
             </div>}

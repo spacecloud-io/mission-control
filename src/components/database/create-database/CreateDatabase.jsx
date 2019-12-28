@@ -7,11 +7,11 @@ import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import { dbEnable } from '../../../pages/database/dbActions'
-import {useSelector, useDispatch} from 'react-redux'
+import './create-db.css'
+import { useSelector } from 'react-redux';
 
 const CreateDatabase = (props) => {
-  const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO)
-  const [dbConn, setDbConn] = useState(defaultDbConnectionStrings[dbTypes.MONGO]);
+  const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO);
   const [alias, setAlias] = useState("mongo");
   const projects = useSelector(state => state.projects)
 
@@ -53,9 +53,9 @@ const CreateDatabase = (props) => {
   return (
     <div>
       <Card>
-        <center>Add a database to your project</center>
+        <b><center style={{fontSize:18, marginBottom:16}}>Add a database to your project</center></b>
         <p>Select a database</p>
-        <Row className="db-display db-left">
+        <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={mongoIcon} onClick={handleMongo}
               heading="MONGODB" 

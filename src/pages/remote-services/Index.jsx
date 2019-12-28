@@ -74,11 +74,6 @@ const RemoteServices = () => {
       key: 'name'
     },
     {
-      title: 'URL',
-      dataIndex: 'url',
-      key: 'url'
-    },
-    {
       title: 'Actions',
       key: 'actions',
       className: 'column-actions',
@@ -100,8 +95,8 @@ const RemoteServices = () => {
       <Sidenav selectedItem='services' />
       <div className='page-content'>
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
-          <div className="panel" style={{ margin: 24 }}>
-            <img src={remoteServicesSvg} width={"60%"} />
+          <div className="panel">
+            <img src={remoteServicesSvg} />
             <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access custom business logic via the unified REST and GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/essentials/remote-services">View Docs.</a></p>
             <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first remote service</Button>
           </div>

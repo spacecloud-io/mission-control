@@ -42,6 +42,14 @@ const Login = () => {
           </Col>
         </Row>
       </div>
+
+
+      <div className="mobile-view">
+              <img className="logo" src={logo} alt="logo" /><br />
+              <div className="welcome">Welcome back!</div>
+              <div className="text">Login to configure your Space Cloud cluster.</div><br />
+              <LoginForm isLoading={isLoading} handleSubmit={handleSubmit} />
+      </div>
     </div>
   )
 }

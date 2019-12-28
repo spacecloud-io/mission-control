@@ -154,9 +154,9 @@ const EventTriggers = () => {
 			<Topbar showProjectSelector />
 			<Sidenav selectedItem="event-triggers" />
 			<div className="page-content">
-				{noOfRules === 0 && <div style={{ marginTop: 24 }}>
-					<div className="panel" style={{ margin: 24 }}>
-						<img src={eventTriggersSvg} width="60%" />
+				{noOfRules === 0 && <div>
+					<div className="panel">
+						<img src={eventTriggersSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud.<a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
 						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
 						{dbAlert()}
