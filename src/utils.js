@@ -1,17 +1,20 @@
+import React from 'react'
 import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import {dbTypes} from './constants';
+import { dbTypes } from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
+import { Redirect, Route } from "react-router-dom"
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
+const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -72,12 +75,8 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: { },
-    eventing: {
-      enabled: true,
-      dbType: dbType,
-      col: "event_logs"
-    },
+    crud: {},
+    eventing: {},
     auth: {},
     services: {
       externalServices: {}
@@ -101,6 +100,10 @@ export const getEventSourceFromType = (type, defaultValue) => {
       case "DB_UPDATE":
       case "DB_DELETE":
         source = "database"
+        break;
+      case "FILE_CREATE":
+      case "FILE_DELETE":
+        source = "file storage"
         break;
       default:
         source = "custom"
@@ -185,8 +188,8 @@ export const onAppLoad = () => {
 
 
 export const dbIcons = (project, projectId, selectedDb) => {
-  
- const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+
+  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
 
   let checkDB = ''
   if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
@@ -202,8 +205,24 @@ export const dbIcons = (project, projectId, selectedDb) => {
     case dbTypes.POSTGRESQL:
       svg = postgresSvg
       break;
+    case dbTypes.SQLSERVER:
+      svg = sqlserverSvg
+      break;
     default:
       svg = postgresSvg
   }
   return svg;
 }
+
+export const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      localStorage.getItem("token") ? (
+        <Component {...props} />
+      ) : (
+          <Redirect to={"/mission-control/login"} />
+        )
+    }
+  />
+)
