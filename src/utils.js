@@ -1,3 +1,4 @@
+import React from 'react'
 import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
@@ -8,6 +9,7 @@ import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
+import { Redirect, Route } from "react-router-dom"
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -211,3 +213,16 @@ export const dbIcons = (project, projectId, selectedDb) => {
   }
   return svg;
 }
+
+export const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      localStorage.getItem("token") ? (
+        <Component {...props} />
+      ) : (
+          <Redirect to={"/mission-control/login"} />
+        )
+    }
+  />
+)
