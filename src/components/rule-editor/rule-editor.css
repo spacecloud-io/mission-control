@@ -38,19 +38,4 @@
   .db-tab-content{
     padding:16px 16px 0;
   }
-
-  .rule-editor .ant-col{
-    width: 95%;
-    padding: 12px;
-  }
-  .rule-editor .panel--has-border-right{
-    border: none;
-  }
-
-  .rule-editor .panel{
-    margin:0;
-  }
-  .rule-editor__footer{
-    margin-bottom: 80px; 
-  }
 }
