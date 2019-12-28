@@ -9,7 +9,6 @@ import { set, get } from "automate-redux"
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
-  console.log(showSidenav)
   return (
     <React.Fragment>
 <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
