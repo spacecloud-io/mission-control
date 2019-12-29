@@ -86,7 +86,7 @@ const CreateProject = (props) => {
     content: <div>
       <Row>
         <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
-          <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}/database`)} />
+          <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
         </Col>
       </Row>
       <center className="skip-link"><Link to={`/mission-control/projects/${projectId}/overview`} >Skip for now</Link></center>

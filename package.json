@@ -27,7 +27,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.0.1",
     "redux": "^4.0.1",
-    "space-api": "^0.10.3",
+    "space-api": "^0.15.0",
     "yamljs": "^0.3.0"
   },
   "homepage": "https://spaceuptech.com/mission-control",

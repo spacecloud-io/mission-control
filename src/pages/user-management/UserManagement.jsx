@@ -35,7 +35,7 @@ const UserManagement = () => {
     dispatch(increment("pendingRequests"))
     client.userManagement.setUserManConfig(projectID, provider, config)
       .then(() => {
-        setProjectConfig(projects, projectID, `modules.auth.${provider}`, config)
+        setProjectConfig(projectID, `modules.auth.${provider}`, config)
         notify("success", "Success", "Saved auth config successfully")
       })
       .catch(ex => notify("error", "Error", ex))

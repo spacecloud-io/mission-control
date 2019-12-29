@@ -29,20 +29,6 @@ export const defaultDBRules = {
   }
 }
 
-export const eventLogsSchema = `type event_logs {
-  _id: ID! @primary
-  batchid: String
-  type: String
-  token: Integer
-  timestamp: Integer
-  event_timestamp: Integer
-  payload: String
-  status: String
-  retries: Integer
-  url: String
-  remark: String
-}`
-
 export const defaultFileRule = {
   create: {
     rule: "allow"
