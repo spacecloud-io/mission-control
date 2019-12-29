@@ -14,6 +14,20 @@ export const defaultDbConnectionStrings = {
 
 export const SPACE_CLOUD_USER_ID = "internal-sc-user"
 
+export const eventingSchema =  `type event_logs {
+  _id: ID! @primary
+  batchid: String
+  type: String
+  token: Integer
+  timestamp: Integer
+  event_timestamp: Integer
+  payload: String
+  status: String
+  retries: Integer
+  url: String
+  remark: String
+}`
+
 export const defaultDBRules = {
   create: {
     rule: 'allow'

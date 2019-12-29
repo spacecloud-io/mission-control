@@ -89,22 +89,6 @@ export const generateProjectConfig = (projectId, name) => ({
   }
 })
 
-export const generateEventingSchema = (projectId, alias) => {
-  const dbType = getDBTypeFromAlias(projectId, alias)
-  return `type event_logs {
-    ${dbType === dbTypes.MONGO ? "_id" : "id"}: ID! @primary
-    batchid: String
-    type: String
-    token: Integer
-    timestamp: Integer
-    event_timestamp: Integer
-    payload: String
-    status: String
-    retries: Integer
-    url: String
-    remark: String
-  }`
-}
 export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: msg, duration: duration });
 }

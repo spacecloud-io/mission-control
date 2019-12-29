@@ -1,6 +1,6 @@
 import store from "../../store"
-import { getProjectConfig, setProjectConfig, generateEventingSchema} from "../../utils"
-import { defaultDBRules } from "../../constants"
+import { getProjectConfig, setProjectConfig } from "../../utils"
+import { defaultDBRules, eventingSchema } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
@@ -79,7 +79,6 @@ export const fetchCollections = (projectId, dbName, setLoading) => {
       const connected = get(store.getState(), `extraConfig.${projectId}.crud.${dbName}.connected`, false)
       store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.collections`, collections))
       if (connected && !collections.includes("event_logs")) {
-        const eventingSchema = generateEventingSchema(projectId, dbName)
         modifyColSchema(projectId, dbName, "event_logs", eventingSchema, setLoading).then(() => resolve()).catch(ex => reject(ex))
         return
       }
