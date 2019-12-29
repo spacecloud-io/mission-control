@@ -29,15 +29,28 @@ function Overview() {
       <Sidenav selectedItem="overview" />
       <div className="page-content ">
         <h3>GraphQL endpoints</h3>
-        <Descriptions bordered column={1} size="small">
-          <Descriptions.Item label="GraphQL URL" >{graphqlURL}<CopyButton value={graphqlURL} /></Descriptions.Item>
-          <Descriptions.Item label="GraphQL Websockets URL">{graphqlWebsocketURL}<CopyButton value={graphqlWebsocketURL} /></Descriptions.Item>
-        </Descriptions>
-        <h3 style={{ marginTop: 24 }}>Javascript SDK config</h3>
-        <Descriptions bordered column={3} size="small">
-          <Descriptions.Item label="Project ID" span={1}>{projectID} <CopyButton value={projectID} /></Descriptions.Item>
-          <Descriptions.Item label="Space Cloud URL" span={2} >{spaceCloudURL}<CopyButton value={spaceCloudURL} /></Descriptions.Item>
-        </Descriptions>
+        <div id="hide-on-med-and-up">
+          <Descriptions bordered size="small" layout="vertical">
+            <Descriptions.Item label="GraphQL URL" >{graphqlURL}<CopyButton value={graphqlURL} /></Descriptions.Item>
+            <Descriptions.Item label="GraphQL Websockets URL">{graphqlWebsocketURL}<CopyButton value={graphqlWebsocketURL} /></Descriptions.Item>
+          </Descriptions>
+          <h3 style={{ marginTop: 24 }}>Javascript SDK config</h3>
+          <Descriptions bordered size="small" layout="vertical">
+            <Descriptions.Item label="Project ID" span={1}>{projectID} <CopyButton value={projectID} /></Descriptions.Item>
+            <Descriptions.Item label="Space Cloud URL" span={2} >{spaceCloudURL}<CopyButton value={spaceCloudURL} /></Descriptions.Item>
+          </Descriptions>
+        </div>
+        <div id="hide-on-small">
+          <Descriptions bordered column={1} size="small">
+            <Descriptions.Item label="GraphQL URL" >{graphqlURL}<CopyButton value={graphqlURL} /></Descriptions.Item>
+            <Descriptions.Item label="GraphQL Websockets URL">{graphqlWebsocketURL}<CopyButton value={graphqlWebsocketURL} /></Descriptions.Item>
+          </Descriptions>
+          <h3 style={{ marginTop: 24 }}>Javascript SDK config</h3>
+          <Descriptions bordered column={3} size="small">
+            <Descriptions.Item label="Project ID" span={1}>{projectID} <CopyButton value={projectID} /></Descriptions.Item>
+            <Descriptions.Item label="Space Cloud URL" span={2} >{spaceCloudURL}<CopyButton value={spaceCloudURL} /></Descriptions.Item>
+          </Descriptions>
+        </div>
         <br />
         <h3>Guides</h3>
         <div className="cardContainer">

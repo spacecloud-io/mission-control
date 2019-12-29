@@ -31,7 +31,7 @@ const ConfigurationForm = (props) => {
         <Form.Item>
           {getFieldDecorator('storeType', {
             rules: [{ required: true, message: 'Please select a storage backend!' }],
-            initialValue: storeType
+            initialValue: storeType ? storeType : "local"
           })(
             <Radio.Group>
               <RadioCard value="local">Local</RadioCard>

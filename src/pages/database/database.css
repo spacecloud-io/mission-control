@@ -1,195 +1,215 @@
 .database .db-desc {
-  color: #000;
-  font-size: 14px;
-  margin-bottom: 32px;
+    color: #000;
+    font-size: 14px;
+    margin-bottom: 32px;
 }
 
 .rules-main-wrapper {
-  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04),
-    0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625),
-    0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
-  margin-top: 32px !important;
+    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.04), 0px 6px 12px rgba(0, 0, 0, 0.0125), 0px 12px 24px rgba(0, 0, 0, 0.00625), 0px 24px 48px rgba(0, 0, 0, 0.003125), 0px 48px 96px rgba(0, 0, 0, 0.003125);
+    margin-top: 32px !important;
 }
 
 .rules-main-wrapper .rulesTable {
-  border: 1px solid #e4e4e4;
-  height: 300px;
-  overflow-y: scroll;
+    border: 1px solid #e4e4e4;
+    height: 300px;
+    overflow-y: scroll;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  border-radius: 2px;
+    width: 8px;
+    border-radius: 2px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
+    background: #e0e0e0;
 }
 
 .rulesTable .rule {
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  color: #000;
-  font-weight: 600;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    color: #000;
+    font-weight: 600;
 }
 
 .rules-main-wrapper .rulesTable .selected {
-  border-left: 5px solid #ff6700;
+    border-left: 5px solid #ff6700;
 }
 
 .rules-main-wrapper {
-  color: black;
+    color: black;
 }
 
 .addaRule {
-  padding: 20px;
-  color: black;
-  border: 1px solid #e4e4e4;
+    padding: 20px;
+    color: black;
+    border: 1px solid #e4e4e4;
 }
 
 .rules-main-wrapper .rulesTable .addaRule .addIcon {
-  margin-right: 20px;
+    margin-right: 20px;
 }
 
 .code .code-hint {
-  padding: 20px;
-  border: 1px solid #e4e4e4;
+    padding: 20px;
+    border: 1px solid #e4e4e4;
 }
 
 .box-heading {
-  padding: 20px;
-  color: black;
-  border: 1px solid #e4e4e4;
-  font-size: 16px;
-  font-weight: 600;
+    padding: 20px;
+    color: black;
+    border: 1px solid #e4e4e4;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .rules-main-wrapper .add-a-rule {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
 }
+
 .add-a-rule {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .collections {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 20px;
-  line-height: 27px;
-
-  color: #000000;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 27px;
+    color: #000000;
 }
 
 .tablehead {
-  color: black;
-  text-align: center;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 27px;
-  padding: 12px 0;
-  border: 1px solid #e4e4e4;
+    color: black;
+    text-align: center;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 27px;
+    padding: 12px 0;
+    border: 1px solid #e4e4e4;
 }
 
 .tabledata {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 22px;
-  text-align: center;
-  color: black;
-  padding: 12px 20px;
-  border-bottom: 1px solid #e4e4e4;
-  border-left: 1px solid #e4e4e4;
-  border-right: 1px solid #e4e4e4;
-  list-style: none;
-  cursor: pointer;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 22px;
+    text-align: center;
+    color: black;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e4e4e4;
+    border-left: 1px solid #e4e4e4;
+    border-right: 1px solid #e4e4e4;
+    list-style: none;
+    cursor: pointer;
 }
+
 .activedata {
-  background: #ecf6fd;
-  border-left: 5px solid #ff6700;
-  padding: 12px 20px;
+    background: #ecf6fd;
+    border-left: 5px solid #ff6700;
+    padding: 12px 20px;
 }
 
 .activedatabackground {
-  background: #ecf6fd;
+    background: #ecf6fd;
 }
 
 .codebox {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 19px;
-  padding: 16px 0;
-  border-right: 1px solid #e4e4e4;
-  border-top: 1px solid #e4e4e4;
-  border-bottom: 1px solid #e4e4e4;
-  color: rgba(3, 27, 78, 0.7);
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 19px;
+    padding: 16px 0;
+    border-right: 1px solid #e4e4e4;
+    border-top: 1px solid #e4e4e4;
+    border-bottom: 1px solid #e4e4e4;
+    color: rgba(3, 27, 78, 0.7);
 }
 
 .ant-tabs-tab {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 25px;
-  color: black;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 25px;
+    color: black;
 }
 
 .ant-tabs-tab-active {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 25px;
-  color: black;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 25px;
+    color: black;
 }
 
 .flex-blox {
-  display: flex;
+    display: flex;
 }
 
 .code-mirror {
-  border: 1px solid #e4e4e4;
+    border: 1px solid #e4e4e4;
 }
+
 .right-panel {
-  text-align: center;
-  border: 1px solid #e4e4e4;
-  height: 300px;
+    text-align: center;
+    border: 1px solid #e4e4e4;
+    height: 300px;
 }
 
 .column-actions a {
-  color: #5da8dc;
-  margin-right: 16px;
+    color: #5da8dc;
+    margin-right: 16px;
 }
+
 .column-rules .custom-rules {
-  color: #41a44b;
+    color: #41a44b;
 }
 
 .column-rules .default-rules {
-  color: #fe534f;
+    color: #fe534f;
 }
 
 .rules-header {
-  background: #e0e9f8;
-  padding: 16px;
+    background: #e0e9f8;
+    padding: 16px;
 }
 
 .secondary-action.ant-btn-background-ghost.ant-btn-primary:hover {
-  color: #88ceff;
-  border-color: #88ceff;
+    color: #88ceff;
+    border-color: #88ceff;
 }
 
 .secondary-action.ant-btn-background-ghost.ant-btn-primary {
-  color: #5DA8DC;
-  border-color: #5DA8DC;
+    color: #5DA8DC;
+    border-color: #5DA8DC;
 }
 
 .db-tab-content {
-  padding: 32px 32px 0;
+    padding: 32px 32px 0;
+}
+
+.add-db-tab {
+    margin-left: 10%;
+    font-size: 150%;
+}
+
+.border-box {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (max-width:768px) {
+    .db-tab-content .reconnect {
+        margin-bottom: 24px;
+    }
+    .overview-img {
+        overflow: hidden;
+        margin-bottom: 64px;
+    }
 }

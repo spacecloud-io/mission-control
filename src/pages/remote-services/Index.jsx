@@ -48,7 +48,7 @@ const RemoteServices = () => {
     const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projects, projectID, `modules.services.externalServices.${name}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.services.externalServices.${name}`, newServiceConfig)
       notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -62,7 +62,7 @@ const RemoteServices = () => {
     client.remoteServices.deleteServiceConfig(projectID, name).then(() => {
       const newServices = Object.assign({}, services)
       delete newServices[name]
-      setProjectConfig(projects, projectID, "modules.services.externalServices", newServices)
+      setProjectConfig(projectID, "modules.services.externalServices", newServices)
       notify("success", "Success", "Removed service successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -72,11 +72,6 @@ const RemoteServices = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name'
-    },
-    {
-      title: 'URL',
-      dataIndex: 'url',
-      key: 'url'
     },
     {
       title: 'Actions',
@@ -100,8 +95,8 @@ const RemoteServices = () => {
       <Sidenav selectedItem='services' />
       <div className='page-content'>
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
-          <div className="panel" style={{ margin: 24 }}>
-            <img src={remoteServicesSvg} width={"60%"} />
+          <div className="panel">
+            <img src={remoteServicesSvg} />
             <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access custom business logic via the unified REST and GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/essentials/remote-services">View Docs.</a></p>
             <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first remote service</Button>
           </div>

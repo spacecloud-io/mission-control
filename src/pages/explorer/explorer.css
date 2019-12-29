@@ -1,20 +1,37 @@
 .explorer .apply-container {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 .explorer .row {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 .explorer .help {
-  color: #BDBDBD;
+    color: #BDBDBD;
 }
 
 .graphql {
-  height: 500px;
+    height: 500px;
+    margin-bottom: 64px;
 }
 
 .variable-editor {
-  height: 250px;
+    height: 250px;
+}
+
+@media screen and (max-width: 768px) {
+    .graphql .graphiql-container .editorBar {
+        flex-direction: column;
+    }
+    .graphql .topBar {
+        overflow: scroll;
+        height: 54px !important;
+    }
+    .explorer .CodeMirror-scroll {
+        overflow: hidden !important;
+    }
+    .explorer .apply-container {
+        margin-bottom: 80px;
+    }
 }

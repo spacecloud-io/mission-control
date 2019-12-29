@@ -1,43 +1,100 @@
 .create-project {
-  color: rgba(0, 0, 0, 0.87);
+    color: rgba(0, 0, 0, 0.87);
 }
 
 .create-project .content {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 48px 16px;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 80px 16px;
+}
+
+.create-project .content .project-name {
+    width: 600px;
 }
 
 .create-project .underline {
-  width: 750px;
-  height: 1px;
-  background: #bdbdbd;
-  margin-bottom: 24px;
+    width: 750px;
+    height: 1px;
+    background: #bdbdbd;
+    margin-bottom: 24px;
 }
 
 .create-project .image {
-  position: absolute;
-  right: 2vw;
-  top: 1vw;
+    position: absolute;
+    right: 2vw;
+    top: 1vw;
 }
 
 .create-project .next-btn {
-  position: absolute;
-  right: 30vw;
-  margin-top: 16px;
-  border-radius: 15px;
-  padding: 0 20px;
-  font-weight: 600;
-  margin-bottom: 32px;
+    position: absolute;
+    right: 30vw;
+    margin-top: 16px;
+    border-radius: 15px;
+    padding: 0 20px;
+    font-weight: 600;
+    margin-bottom: 32px;
 }
 
 .create-project .cards {
-  padding-right: 100px;
+    padding-right: 100px;
 }
 
 .create-project .ant-input-affix-wrapper .ant-input:not(:first-child) {
-  padding-left: 40px;
+    padding-left: 40px;
+}
+
+@media screen and (max-width:768px) {
+    .create-project .image {
+        display: none;
+    }
+    .create-project .content .project-name {
+        width: -webkit-fill-available;
+    }
+    .create-project .underline {
+        width: auto;
+    }
+    .create-project .content {
+        position: unset;
+        padding: 80px 16px;
+    }
+    .create-project .cards {
+        padding-right: 0;
+    }
+    .create-project .cards .template {
+        height: unset;
+        width: unset;
+    }
+    .create-project .next-btn {
+        margin-bottom: 80px;
+    }
+}
+
+.label-spacing {
+    margin-top: 7%;
+}
+
+.project-btn {
+    width: 100%;
+    margin-top: 14%;
+}
+
+.db-display {
+    display: inline-block;
+    margin-right: 2.5%;
+    margin-bottom: 0%;
+}
+
+.db-left {
+    margin-left: 2.3%;
+}
+
+.db-btn {
+    width: 100%;
+    margin-top: 4%;
+}
+
+.skip-link {
+    margin-left: 4%;
 }

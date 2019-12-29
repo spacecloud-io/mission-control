@@ -31,20 +31,11 @@ const Rules = () => {
 
   const handleSubmit = (rules) => {
     const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
-    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled)
+    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled, true)
       .then(() => notify("success", "Success", "Saved rule successfully"))
       .catch(ex => notify("error", "Error saving rule", ex))
   }
 
-  const SidePanel = () => {
-    return <div className="panel panel--has-border-right">
-      <div className="panel__graphic">
-        <img src={securitySvg} width="70%" />
-      </div>
-      <p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Secure who can access what</p>
-      <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
-    </div>
-  }
   return (
     <React.Fragment>
       <Topbar
@@ -63,8 +54,7 @@ const Rules = () => {
             <RuleEditor rules={rules}
               selectedRuleName={selectedCol}
               handleSelect={handleSelect}
-              handleSubmit={handleSubmit}
-              sidePanel={<SidePanel />} />
+              handleSubmit={handleSubmit} />
           </div>
         </div>
       </div>
