@@ -65,7 +65,7 @@ export const inspectColSchema = (projectId, dbName, colName) => {
       const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, { isRealtimeEnabled: false, rules: defaultDBRules })
       colConfig.schema = schema
       setProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
-      setColRule(projectId, dbName, colName, defaultDBRules, false).then(() => resolve()).catch(ex => reject(ex))
+      setColRule(projectId, dbName, colName, {}, false).then(() => resolve()).catch(ex => reject(ex))
     })
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
@@ -177,7 +177,7 @@ const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
   client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
     .then(() => {
-      setProjectConfig(projects, projectId, "modules.eventing", {enabled: true, dbType: alias, col: 'event_logs'})
+      setProjectConfig(projects, projectId, "modules.eventing", { enabled: true, dbType: alias, col: 'event_logs' })
       notify("success", "Success", "Changed eventing config successfully")
     })
     .catch(ex => notify("error", "Error", ex))
@@ -190,7 +190,7 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) 
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
     const dbconfig = getProjectConfig(projects, projectId, `modules.crud`)
-    if(Object.keys(dbconfig).length === 0) {
+    if (Object.keys(dbconfig).length === 0) {
       handleEventingConfig(projects, projectId, aliasName)
     }
     setColRule(projectId, aliasName, "default", rules, type, true)

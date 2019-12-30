@@ -39,6 +39,7 @@ const Overview = () => {
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
+  const defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`)
   const { hostName, port } = parseDbConnString(connString);
   const unTrackedCollections = allCollections.filter(col => !collections[col])
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
@@ -188,7 +189,7 @@ const Overview = () => {
             </Descriptions>
             {!connected && <div className="empty-state overview-img">
               <div className="empty-state__graphic">
-                <img src={disconnectedImg} alt=""/>
+                <img src={disconnectedImg} alt="" />
               </div>
               <p className="empty-state__description">Oops... Space Cloud could not connect to your database</p>
               <p className="empty-state__action-text">Enter the correct connection details of your database</p>
@@ -249,6 +250,7 @@ const Overview = () => {
               initialValues={clickedColDetails}
               selectedDB={selectedDB}
               conformLoading={conformLoading}
+              defaultRules={defaultRules}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}

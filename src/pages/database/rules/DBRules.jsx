@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
-import { set } from 'automate-redux';
+import { set, increment, decrement } from 'automate-redux';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import RuleEditor from "../../../components/rule-editor/RuleEditor"
 import securitySvg from "../../../assets/security.svg"
-
-import { getProjectConfig, notify } from '../../../utils';
-import { setColRule } from '../dbActions';
+import client from "../../../client"
+import { getProjectConfig, notify, setProjectConfig } from '../../../utils';
+import { setColRule, setColConfig } from '../dbActions';
+import { Button } from "antd"
+import AddDbRuleForm from '../../../components/database/add-collection-form/AddDbRuleForm';
 
 const Rules = () => {
   // Router params
@@ -19,11 +21,15 @@ const Rules = () => {
   // Global state
   const projects = useSelector(state => state.projects)
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
+  const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
+  const [conformLoading, setConformLoading] = useState(false);
+
 
   const dispatch = useDispatch()
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
+  const rule = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
   const rules = Object.entries(collections).filter(([name]) => name !== "event_logs").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
 
   // Handlers
@@ -36,6 +42,39 @@ const Rules = () => {
       .catch(ex => notify("error", "Error saving rule", ex))
   }
 
+  const handleDeleteRule = () => {
+    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    dispatch(increment("pendingRequests"))
+    setColRule(projectID, selectedDB, selectedCol, {}, isRealtimeEnabled, true)
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
+  }
+
+  const addDbRule = (name, rule) => {
+    setConformLoading(true)
+    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    dispatch(increment("pendingRequests"))
+    setColRule(projectID, selectedDB, name, rule, isRealtimeEnabled, true)
+      .then(() => {
+        notify("success", "Success", "Saved rule successfully")
+        setAddRuleModalVisible(false);
+        setConformLoading(false);
+      })
+      .catch(ex => {
+        notify("error", "Error saving rule", ex)
+        setConformLoading(false);
+      })
+      .finally(() => dispatch(decrement("pendingRequests")))
+  }
+
+  const EmptyState = () => {
+    return <div style={{ marginTop: 24 }}>
+      <div className="panel">
+        <img src={securitySvg} width="240px" />
+        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+      </div>
+    </div>
+  }
   return (
     <React.Fragment>
       <Topbar
@@ -51,11 +90,23 @@ const Rules = () => {
             activeKey='rules'
           />
           <div className="db-tab-content">
+            <React.Fragment>
+              <h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
+            </React.Fragment>
             <RuleEditor rules={rules}
               selectedRuleName={selectedCol}
               handleSelect={handleSelect}
-              handleSubmit={handleSubmit} />
+              handleSubmit={handleSubmit}
+              canDeleteRules
+              handleDelete={handleDeleteRule}
+              emptyState={<EmptyState />}
+            />
           </div>
+          {addRuleModalVisible && <AddDbRuleForm
+            defaultRules={rule}
+            handleSubmit={addDbRule}
+            conformLoading={conformLoading}
+            handleCancel={() => setAddRuleModalVisible(false)} />}
         </div>
       </div>
     </React.Fragment>
