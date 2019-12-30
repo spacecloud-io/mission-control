@@ -67,7 +67,7 @@ const Explorer = props => {
 
     setLoading(true);
     client
-      .execSpaceAPI(props.projectId, code, props.spaceApiToken)
+      .execSpaceAPI(props.projectId, code, props.userApiToken)
       .then(res => {
         setResponse(res);
       })
@@ -135,7 +135,7 @@ const Explorer = props => {
               <div className='graphql' style={{ marginTop: 10 }}>
                 <GraphiQL
                   fetcher={graphQLParams =>
-                    graphQLFetcher(graphQLParams, props.projectId, props.graphqlToken)
+                    graphQLFetcher(graphQLParams, props.projectId, props.userApiToken)
                   }
                   schema={null}
                 />
