@@ -4,7 +4,7 @@ import './database-card.css'
 
 function DatabaseCard(props) {
   return (
-    <Col span={8} >
+    <Col xs={24} m={8} lg={8} >
       <div className="db-card">
         <div className="db-image">
           <img src={props.graphics} alt={props.name} />

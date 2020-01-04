@@ -1,3 +1,4 @@
+import React from 'react'
 import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
@@ -7,7 +8,8 @@ import { dbTypes } from './constants';
 import store from "./store"
 import client from "./client"
 import history from "./history"
-import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
+import { defaultDbConnectionStrings } from "./constants"
+import { Redirect, Route } from "react-router-dom"
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -45,7 +47,8 @@ export const getProjectConfig = (projects, projectId, path, defaultValue) => {
   return get(project, path, defaultValue)
 }
 
-export const setProjectConfig = (projects, projectId, path, value) => {
+export const setProjectConfig = (projectId, path, value) => {
+  const projects = get(store.getState(), "projects", [])
   const updatedProjects = projects.map(project => {
     if (project.id === projectId) {
       return setObjectPath(project, path, value)
@@ -68,7 +71,7 @@ const getConnString = (dbType) => {
   return connString ? connString : "localhost"
 }
 
-export const generateProjectConfig = (projectId, name, dbType) => ({
+export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
   secret: generateId(),
@@ -169,6 +172,7 @@ export const handleConfigLogin = (token, lastProjectId) => {
 export const onAppLoad = () => {
   client.fetchEnv().then(isProd => {
     const token = localStorage.getItem("token")
+    localStorage.getItem("isProd", isProd.toString())
     if (isProd && !token) {
       history.push("/mission-control/login")
       return
@@ -210,4 +214,22 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
   }
   return svg;
+}
+
+export const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")) ? (
+        <Redirect to={"/mission-control/login"} />
+      ) : (
+          <Component {...props} />
+        )
+    }
+  />
+)
+
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }

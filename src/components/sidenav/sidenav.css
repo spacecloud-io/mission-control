@@ -1,12 +1,13 @@
-.sidenav {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  bottom: 0;
-  z-index: 99;
-  width: 300px;
-  background: #ffffff;
-  box-shadow: 10px 0 5px -5px #eee;
+.sidenav,
+.no-sidenav {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    z-index: 99;
+    width: 300px !important;
+    background: #ffffff;
+    box-shadow: 10px 0 5px -5px #eee;
 }
 
 .sidenav-item {
@@ -21,25 +22,25 @@
 }
 
 .sidenav-item--active {
-  color: #ff6700 !important;
-  background: rgba(255, 103, 0, 0.2) !important;
-  border-left: 4px solid #ff6700;
+    color: #ff6700 !important;
+    background: rgba(255, 103, 0, 0.2) !important;
+    border-left: 4px solid #ff6700;
 }
 
 .sidenav-item:hover {
-  font-weight: 600;
-  width: 100%;
-  color: rgba(0, 0, 0, 0.6);
-  background: #eee;
+    font-weight: 600;
+    width: 100%;
+    color: rgba(0, 0, 0, 0.6);
+    background: #eee;
 }
 
 .sidenav-item__icon {
-  font-size: 20px;
-  margin-left: 32px;
+    font-size: 20px;
+    margin-left: 32px;
 }
 
 .sidenav-item__name {
-  margin-left: 32px;
+    margin-left: 32px;
 }
 
 .sidenav .title {
@@ -53,4 +54,30 @@
 .sidenav .ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header{
   padding-left: 40px;
   background-color: white;
+}
+
+@media screen and (max-width: 768px) {
+    .sidenav {
+        position: fixed;
+        left: 0px;
+        z-index: 101;
+        box-shadow: none;
+    }
+    .no-sidenav {
+        left: -310px;
+        position: absolute;
+    }
+    .overlay {
+        background-color: #000;
+        opacity: 0.7;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+    }
+    .no-overlay {
+        display: none;
+    }
 }

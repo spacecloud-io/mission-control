@@ -4,11 +4,16 @@ import SidenavItem from './SidenavItem'
 import './sidenav.css'
 import { Collapse } from 'antd';
 const { Panel } = Collapse;
+import { useSelector } from "react-redux";
+import store from "../../store"
+import { set } from "automate-redux"
 
 const Sidenav = (props) => {
   const { projectID } = useParams()
+  const showSidenav = useSelector(state => state.uiState.showSidenav)
   return (
-    <div className="sidenav">
+    <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
+    <div className={showSidenav ? 'sidenav' : 'no-sidenav'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}>
       <Collapse accordion expandIconPosition="right">
         <Panel header="Develop" className="title">
           <Link to={`/mission-control/projects/${projectID}/overview`}>
@@ -36,18 +41,16 @@ const Sidenav = (props) => {
             <SidenavItem name="Configure" icon="settings" active={props.selectedItem === 'configure'} />
           </Link>
         </Panel>
-      <Panel header="Manage" className="title">
-      <Link to={`/mission-control/projects/${projectID}/manage-services`}>
-        <SidenavItem name="Manage Services" icon="flare" active={props.selectedItem === 'manage-services'} />
-      </Link>
-      <Link to={`/mission-control/projects/${projectID}/deployments`}>
-        <SidenavItem name="Deployments" icon="near_me" active={props.selectedItem === 'deployments'} />
-      </Link>
-      </Panel>
+        <Panel header="Manage" className="title">
+          <Link to={`/mission-control/projects/${projectID}/manage-services`}>
+            <SidenavItem name="Manage Services" icon="flare" active={props.selectedItem === 'manage-services'} />
+          </Link>
+          <Link to={`/mission-control/projects/${projectID}/deployments`}>
+            <SidenavItem name="Deployments" icon="near_me" active={props.selectedItem === 'deployments'} />
+          </Link>
+        </Panel>
       </Collapse>
     </div>
   )
 }
-
-
 export default Sidenav;

@@ -37,16 +37,6 @@ const Schema = () => {
       .catch(ex => notify("error", "Error saving schema", ex))
   }
 
-  const SidePanel = () => {
-    return <div className="panel panel--has-border-right">
-      <div className="panel__graphic">
-        <img src={dataModellingSvg} width="70%" />
-      </div>
-      <p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Schema lets you manage types and relations</p>
-      <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/essentials/data-modelling" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
-    </div>
-  }
-
   const EmptyState = () => {
     return <div>
       <div className="panel" style={{ margin: 24 }}>
@@ -77,8 +67,7 @@ const Schema = () => {
               handleSelect={handleSelect}
               handleSubmit={handleSubmit}
               stringifyRules={false}
-              emptyState={<EmptyState />}
-              sidePanel={<SidePanel />} />
+              emptyState={<EmptyState />}/>
           </div>
         </div>
       </div>
