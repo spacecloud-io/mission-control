@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import client from '../../client';
 import store from "../../store"
 import postgresIcon from '../../assets/postgresIcon.svg'
+import yb from '../../assets/yb.svg'
 import { generateProjectConfig, notify, getProjectConfig, generateGalaxyProjectConfig } from '../../utils';
 import StarterTemplate from '../../components/starter-template/StarterTemplate'
 import {dbTypes} from '../../constants';
@@ -28,21 +29,20 @@ const CreateProject = (props) => {
 
   const { getFieldDecorator, validateFields, getFieldValue, setFieldsValue } = props.form;
   const { Step } = Steps;
-
+  const { Option } = Select;
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
   const [projectId, setProjectId] = useState(projectID);
   const clusters = getFieldValue("cluster");
-
-  const projects = useSelector(state => state.projects)
+  const defaultEnv = getFieldValue("defaultEnv");
 
   const handleSubmit = e => {
     //e.preventDefault();
     setProjectId(projectID);
     validateFields((err, values) => {
       if (!err) {
-        const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB, clusters)
-        const galaxyProjectConfig = generateGalaxyProjectConfig(projectID, clusters, projectConfig)
+        const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+        const galaxyProjectConfig = generateGalaxyProjectConfig(projectID, defaultEnv, clusters, projectConfig)
         dispatch(increment("pendingRequests"))
         client.projects.addProject(galaxyProjectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, galaxyProjectConfig]
@@ -69,7 +69,7 @@ const CreateProject = (props) => {
                         <Card>
                             <center>Create Project</center>
                             <div className="label-spacing">
-                            <p>Project name</p>
+                            <p style={{ marginBottom: 0, marginTop: 0 }}>Project name</p>
                             <Form>
                                 <Form.Item >
                                     {getFieldDecorator('projectName', {
@@ -82,7 +82,16 @@ const CreateProject = (props) => {
                                     <br/>
                                     {projectID && <span className="hint">ProjectID: {projectID}</span>}
                                 </Form.Item>
-                                  <p>Select the cluster for this project</p>
+                                  <p style={{ marginBottom: 0, marginTop: 0 }}>Name your default environment</p>
+                                  <label style={{ fontSize: 12 }}>You can add other environments later like staging,testig,etc</label>
+                                  <Form.Item >
+                                      {getFieldDecorator('defaultEnv', {
+                                      rules: [{ required: true, message: 'Please input a default environment' }],
+                                      })(
+                                      <Input placeholder="Example: Testing" />,
+                                      )}
+                                  </Form.Item>
+                                  <p style={{ marginBottom: 0, marginTop: 0 }}>Select the clusters for this environment</p>
                                   <Form.Item>
                                     {getFieldDecorator('cluster', {
                                         rules: [{ required: true, message: 'Please select cluster for the project' }],
@@ -116,7 +125,9 @@ const CreateProject = (props) => {
                         <StarterTemplate icon={postgresIcon} onClick={handlePostgres}
                           heading="POSTGRESQL" 
                           recommended={false}
-                          active={selectedDB === "sql-postgres"} />
+                          active={selectedDB === dbTypes.POSTGRESQL}
+                          dbicon={yb}
+                          db="Yugabyte DB" />
                       </Col>
                     </Row>
                     <p>Version</p>
@@ -125,8 +136,8 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please select a version' }],
                           initialValue: "1"
                           })(
-                          <Select placeholder="Select a version" style={{width: "32%"}}>
-                            <Select.Option value="1">YB - 2.0.8 (Postgres - 11.2)</Select.Option>
+                          <Select placeholder="Select a version" className="align-input">
+                            <Option value="1">YB - 2.0.8 (Postgres - 11.2)</Option>
                           </Select>
                       )}
                     </Form.Item>
@@ -136,11 +147,11 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please select instance type for the project' }],
                           initialValue: "1"
                           })(
-                          <Select placeholder="Select instance type" style={{width: "32%"}}>
-                            <Select.Option value="1">1 vCPU / 2GB RAM</Select.Option>
-                            <Select.Option value="2">2 vCPU / 4GB RAM</Select.Option>
-                            <Select.Option value="3">4 vCPU / 8GB RAM</Select.Option>
-                            <Select.Option value="4">6 vCPU / 16GB RAM</Select.Option>
+                          <Select placeholder="Select instance type" className="align-input">
+                            <Option value="1">1 vCPU / 2GB RAM</Option>
+                            <Option value="2">2 vCPU / 4GB RAM</Option>
+                            <Option value="3">4 vCPU / 8GB RAM</Option>
+                            <Option value="4">6 vCPU / 16GB RAM</Option>
                           </Select>
                       )}
                     </Form.Item>
@@ -151,7 +162,8 @@ const CreateProject = (props) => {
                       max={16384}
                       tipFormatter={(value) => `${value} GB`}
                       defaultValue={25}
-                      style={{width: "32%", float:"left"}}
+                      className="align-input slider-width"
+                      style={{ float:"left"}}
                       onChange={(value) => setSliderValue(value)}
                       value={typeof sliderValue === 'number' ? sliderValue : 25}
                     />
@@ -159,8 +171,8 @@ const CreateProject = (props) => {
                       min={25}
                       max={16384}
                       formatter={value => `${value} GB`}
-                      style={{ marginLeft: "2%", width: "15%" }}
                       value={sliderValue}
+                      className="slider-inputWidth"
                       onChange={(value) => setSliderValue(value)}
                     />
                     </Form.Item>
@@ -176,7 +188,7 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please input an alias for your database' }],
                           initialValue: alias
                         })(
-                          <Input placeholder="eg: postgres" style={{width: "32%" }} />,
+                          <Input placeholder="eg: postgres" className="align-input" />,
                         )}
                       </Form.Item>
                       </div>
@@ -187,10 +199,10 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please select replication factor for the project' }],
                           initialValue: "1"
                           })(
-                          <Select placeholder="Select replication factor" style={{width: "32%"}}>
-                            <Select.Option value="1">1</Select.Option>
-                            <Select.Option value="3">3</Select.Option>
-                            <Select.Option value="5">5</Select.Option>
+                          <Select placeholder="Select replication factor" className="align-input">
+                            <Option value="1">1</Option>
+                            <Option value="3">3</Option>
+                            <Option value="5">5</Option>
                           </Select>
                       )}
                     </Form.Item>
@@ -201,7 +213,7 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please input an instances' }],
                           initialValue: "1"
                         })(
-                          <InputNumber style={{width: "32%"}} />,
+                          <InputNumber className="align-input" />,
                       )}
                     </Form.Item>
                     <p>Cluster</p>
@@ -210,10 +222,10 @@ const CreateProject = (props) => {
                           rules: [{ required: true, message: 'Please select cluster for the project' }],
                           initialValue: "cluster_1"
                           })(
-                          <Select placeholder="Select cluster" mode="multiple" style={{width: "32%"}}>
-                            <Select.Option value="cluster_1">Cluster 1</Select.Option>
-                            <Select.Option value="cluster_2">Cluster 2</Select.Option>
-                            <Select.Option value="cluster_3">Cluster 3</Select.Option>
+                          <Select placeholder="Select cluster" mode="multiple" className="align-input">
+                            <Option value="cluster_1">Cluster 1</Option>
+                            <Option value="cluster_2">Cluster 2</Option>
+                            <Option value="cluster_3">Cluster 3</Option>
                           </Select>
                       )}
                     </Form.Item>

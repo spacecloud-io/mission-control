@@ -1,5 +1,5 @@
 .template {
-  height: 75px;
+  height: 95px;
   width: 190px;
   border: 1px solid #BDBDBD;
   border-radius: 30px;
@@ -47,4 +47,11 @@
   color: #FF6700;
   float: right;
   margin-right: 5px;
+}
+
+.ybdb{
+  margin-top: -5%;
+  margin-left: 13%;
+  font-size: 90%;
+  font-weight: 400;
 }

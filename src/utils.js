@@ -86,9 +86,12 @@ export const generateProjectConfig = (projectId, name, dbType) => ({
   }
 })
 
-export const generateGalaxyProjectConfig = (projectId, clusters, projects) => ({
+export const generateGalaxyProjectConfig = (projectId, defaultEnv, clusters, projects) => ({
   id: projectId,
-  clusters: clusters,
+  env: [{
+    defaultEnvironment: defaultEnv,
+    clusters: clusters
+  }],
   scConfig: projects
 }) 
 
