@@ -9,6 +9,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import "./rule-editor.css"
 import { notify } from "../../utils";
+import useDeepCompareEffect from 'use-deep-compare-effect'
 
 const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
@@ -17,9 +18,9 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")
 
-  const unSavedChanges = (selectedRule && initialRule && selectedRule !== initialRule ) || !initialRule
+  var unSavedChanges = selectedRule && selectedRule !== initialRule
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     let temp = rules[selectedRuleName]
 
     if (stringifyRules) {
