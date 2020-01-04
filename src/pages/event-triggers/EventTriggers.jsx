@@ -72,7 +72,7 @@ const EventTriggers = () => {
 		const isRulePresent = rules[name] ? true : false
 		dispatch(increment("pendingRequests"))
 		client.eventTriggers.setTriggerRule(projectID, name, triggerRule).then(() => {
-			setProjectConfig(projects, projectID, `modules.eventing.rules.${name}`, triggerRule)
+			setProjectConfig(projectID, `modules.eventing.rules.${name}`, triggerRule)
 			notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
@@ -81,7 +81,7 @@ const EventTriggers = () => {
 		const newRules = Object.assign({}, rules)
 		delete newRules[name]
 		client.eventTriggers.deleteTriggerRule(projectID, name).then(() => {
-			setProjectConfig(projects, projectID, `modules.eventing.rules`, newRules)
+			setProjectConfig(projectID, `modules.eventing.rules`, newRules)
 			notify("success", "Success", "Deleted trigger rule successfully")
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}

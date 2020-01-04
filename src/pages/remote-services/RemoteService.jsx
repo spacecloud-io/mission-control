@@ -72,7 +72,7 @@ const RemoteService = () => {
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
-      setProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -84,7 +84,7 @@ const RemoteService = () => {
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", "Removed endpoint successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }

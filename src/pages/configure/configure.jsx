@@ -50,7 +50,7 @@ const Configure = () => {
 		dispatch(increment("pendingRequests"))
 		client.projects.setProjectGlobalConfig(projectID, { secret, id: projectID, name: projectName })
 			.then(() => {
-				setProjectConfig(projects, projectID, "secret", secret)
+				setProjectConfig(projectID, "secret", secret)
 				notify("success", "Success", "Changed JWT secret successfully")
 			})
 			.catch(ex => notify("error", "Error", ex))
@@ -61,8 +61,8 @@ const Configure = () => {
 		dispatch(increment("pendingRequests"))
 		client.eventTriggers.setEventingConfig(projectID, { enabled: true, dbType, col })
 			.then(() => {
-				setProjectConfig(projects, projectID, "modules.eventing.dbType", dbType)
-				setProjectConfig(projects, projectID, "modules.eventing.col", col)
+				setProjectConfig(projectID, "modules.eventing.dbType", dbType)
+				setProjectConfig(projectID, "modules.eventing.col", col)
 				notify("success", "Success", "Changed eventing config successfully")
 			})
 			.catch(ex => notify("error", "Error", ex))
@@ -73,7 +73,7 @@ const Configure = () => {
 		store.dispatch(increment("pendingRequests"))
 		client.projects.deleteProject(projectID).then(() => {
 			notify("success", "Success", "Removed project config successfully")
-			const extraConfig = store.getState().extraConfig
+			const extraConfig = get(store.getState(), "extraConfig", {})
 			const newExtraConfig = delete extraConfig[projectID]
 			store.dispatch(set(`extraConfig`, newExtraConfig))
 			const projectConfig = store.getState().projects;
@@ -82,7 +82,7 @@ const Configure = () => {
 			history.push(`/mission-control/welcome`)
 		})
 			.catch(ex => {
-				notify("error", "Error removing project config", ex)
+				notify("error", "Error removing project config", ex.toString())
 			})
 			.finally(() => store.dispatch(decrement("pendingRequests")))
 	}

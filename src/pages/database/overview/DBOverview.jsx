@@ -40,8 +40,9 @@ const Overview = () => {
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
   const defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`)
+  const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
-  const unTrackedCollections = allCollections.filter(col => !collections[col])
+  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
   const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
@@ -248,6 +249,7 @@ const Overview = () => {
             {addColModalVisible && <AddCollectionForm
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
+              projectId={projectID}
               selectedDB={selectedDB}
               conformLoading={conformLoading}
               defaultRules={defaultRules}

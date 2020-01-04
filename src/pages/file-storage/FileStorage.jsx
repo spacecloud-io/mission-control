@@ -59,7 +59,7 @@ const Rules = (props) => {
 		const newConfig = { enabled: true, ...config }
 		client.fileStore.setConfig(projectID, newConfig).then(() => {
 			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-			setProjectConfig(projects, projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
+			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
 			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
 			notify("success", "Success", "Configured file storage successfully")
 		})
@@ -74,7 +74,7 @@ const Rules = (props) => {
 				if (r.name !== selectedRuleName) return rule
 				return Object.assign({}, r, rule)
 			})
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Saved rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
@@ -85,7 +85,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
 			const newRules = [...rules, { name: ruleName, ...rule }]
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Added rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
@@ -96,7 +96,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.deleteRule(projectID, ruleName).then(() => {
 			const newRules = rules.filter(r => r.name !== ruleName)
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Deleted rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
