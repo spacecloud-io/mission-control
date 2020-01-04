@@ -17,7 +17,7 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")
 
-  const unSavedChanges = selectedRule && initialRule && selectedRule !== initialRule
+  const unSavedChanges = (selectedRule && initialRule && selectedRule !== initialRule ) || !initialRule
 
   useEffect(() => {
     let temp = rules[selectedRuleName]
