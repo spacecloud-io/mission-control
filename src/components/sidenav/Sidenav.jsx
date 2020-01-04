@@ -3,16 +3,16 @@ import { Link, useParams } from 'react-router-dom';
 import SidenavItem from './SidenavItem'
 import './sidenav.css'
 import { Collapse } from 'antd';
-const { Panel } = Collapse;
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
+const { Panel } = Collapse;
 
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   return (
-    <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
+    <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}>
     <div className={showSidenav ? 'sidenav' : 'no-sidenav'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}>
       <Collapse accordion expandIconPosition="right">
         <Panel header="Develop" className="title">
@@ -50,6 +50,7 @@ const Sidenav = (props) => {
           </Link>
         </Panel>
       </Collapse>
+    </div>
     </div>
   )
 }
