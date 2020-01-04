@@ -32,7 +32,6 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
     }
 
     const importFiles = (info, type) => {
-
         if (info.fileList.length > 0) {
             var file = info.fileList[0].originFileObj
             const reader = new FileReader();
@@ -46,11 +45,9 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
                 }
             };
             reader.onerror = function () {
-                console.log(reader.error);
+                notify("error", "Error uploading file", reader.error.toString())
             };
             reader.readAsBinaryString(file)
-        } else {
-            console.log("error")
         }
     };
 

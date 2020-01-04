@@ -74,13 +74,16 @@ const Settings = () => {
             <h3>Disable database</h3>
             <p>Disables all access to this database</p>
             {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
-              <Button type="danger" disabled >Disable</Button>
+              <Button type="danger" disabled>Disable</Button>
             </Tooltip>}
             {canDisableDB && <Button type="danger" onClick={handleDisable} >Disable</Button>}
             <Divider />
             <h3>Remove Config</h3>
             <p>Removes the config (schema, rules, etc.) of this database without dropping any tables or database</p>
-            <Button type="danger" onClick={handleRemoveDb}>Remove</Button>
+            {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
+              <Button type="danger" disabled>Remove</Button>
+            </Tooltip>}
+            {canDisableDB && <Button type="danger" onClick={handleRemoveDb} >Remove</Button>}
           </div>
         </div>
       </div>

@@ -11,6 +11,13 @@ body {
   right: 0;
 }
 
+@media screen and (max-width: 768px) {
+  .page-content {
+    left: 0px;
+    padding: 32px 16px 0 16px;
+  }
+}
+
 .page-content--no-padding {
   padding: 0;
 }
@@ -94,12 +101,27 @@ body {
 }
 
 .panel {
+  margin: 24px;
   height: 100%;
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.panel > img {
+  width: 60%;
+}
+
+@media screen and (max-width: 768px) {
+  .panel {
+    padding: 0;
+    margin: 24px 0 0 0;
+  }
+  .panel > img {
+    width: 90%;
+  }
 }
 
 .panel--has-border-right {
@@ -134,7 +156,8 @@ body {
   background: #002c39;
 }
 
-.ant-modal-title, .ant-modal-close-x {
+.ant-modal-title,
+.ant-modal-close-x {
   color: #fff;
 }
 
@@ -149,4 +172,39 @@ body {
   justify-content: center;
   background: rgba(0, 0, 0, 0.45);
   z-index: 100;
+}
+
+.remote-img {
+  width: 40% !important;
+}
+
+@media screen and (max-width: 450px) {
+  .remote-img {
+    width: 80% !important;
+  }
+  .radio-card {
+    margin: 8px 16px 8px 0;
+  }
+}
+@media screen and (min-width: 768px) {
+  .file-storage .ant-row-flex {
+    flex-flow: inherit;
+  }
+  .file-storage .ant-row-flex .panel {
+    margin: 0;
+  }
+  .file-storage .ant-row-flex .panel .panel__graphic .file-storage-svg {
+    width: 100% !important;
+  }
+  .file-storage .ant-row-flex .panel .panel__graphic{
+    width: inherit !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  .file-storage .ant-row-flex {
+    flex-flow: row wrap;
+  }
+  .file-storage .ant-row-flex .panel .panel__graphic .file-storage-svg {
+    width: 100% !important;
+  }
 }

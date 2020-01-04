@@ -1,5 +1,6 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
+import { PrivateRoute } from "./utils";
 import history from "./history";
 
 import Home from "./pages/home/Home";
@@ -34,27 +35,27 @@ export default () => {
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/sign-in" component={Login} />
         <Route exact path="/mission-control/sign-up" component={SignUp} />
-        <Route exact path="/mission-control/welcome" component={Welcome} />
-        <Route exact path="/mission-control/create-project" component={CreateProject} />
-        <Route exact path="/mission-control/projects/:projectID"
+        <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
+        <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
-        <Route exact path="/mission-control/projects/:projectID/overview" component={Overview} />
-        <Route exact path="/mission-control/projects/:projectID/database" component={DatabaseModulePage} />
-        <Route exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
-        <Route exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
-        <Route exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
-        <Route exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
-        <Route exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
-        <Route exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <Route exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
-        <Route exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
-        <Route exact path="/mission-control/projects/:projectID/configure" component={Configure} />
-        <Route exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
-        <Route exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/overview" component={Overview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database" component={DatabaseModulePage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
       </Switch>
     </Router>
   );

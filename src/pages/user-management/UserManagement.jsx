@@ -32,11 +32,10 @@ const UserManagement = () => {
 
   // Handlers
   const handleProviderConfig = (provider, config) => {
-    console.log("Provedr:", provider, config)
     dispatch(increment("pendingRequests"))
     client.userManagement.setUserManConfig(projectID, provider, config)
       .then(() => {
-        setProjectConfig(projects, projectID, `modules.auth.${provider}`, config)
+        setProjectConfig(projectID, `modules.auth.${provider}`, config)
         notify("success", "Success", "Saved auth config successfully")
       })
       .catch(ex => notify("error", "Error", ex))

@@ -72,7 +72,7 @@ const RemoteService = () => {
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
-      setProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -84,7 +84,7 @@ const RemoteService = () => {
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", "Removed endpoint successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -128,10 +128,10 @@ const RemoteService = () => {
         <ServiceTopBar serviceName={serviceName} projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           {noOfEndpoints === 0 && <div style={{ marginTop: 24 }}>
-            <div className="panel" style={{ margin: 24 }}>
-              <img src={endpointImg} width="240px" />
+            <div className="panel">
+              <img src={endpointImg} className="remote-img"/>
               <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>A service can have multiple endpoints that can be accessed from the frontend.</p>
-              <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first endpoint</Button>
+              <Button style={{ marginTop: 16, marginBottom: 80 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first endpoint</Button>
             </div>
           </div>}
           {noOfEndpoints > 0 && (

@@ -39,8 +39,9 @@ const Overview = () => {
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
+  const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
-  const unTrackedCollections = allCollections.filter(col => !collections[col])
+  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
   const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
@@ -186,14 +187,14 @@ const Overview = () => {
                 <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
               </Descriptions.Item>
             </Descriptions>
-            {!connected && <div className="empty-state">
+            {!connected && <div className="empty-state overview-img">
               <div className="empty-state__graphic">
-                <img src={disconnectedImg} alt="" />
+                <img src={disconnectedImg} alt=""/>
               </div>
               <p className="empty-state__description">Oops... Space Cloud could not connect to your database</p>
               <p className="empty-state__action-text">Enter the correct connection details of your database</p>
               <div className="empty-state__action-bar">
-                <Button className="action-rounded" type="default" onClick={() => handleEditConnString(connString)}>Reconnect</Button>
+                <Button className="action-rounded reconnect" type="default" onClick={() => handleEditConnString(connString)}>Reconnect</Button>
                 <Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={() => setEditConnModalVisible(true)}>Edit Connection</Button>
               </div>
             </div>}
@@ -247,6 +248,7 @@ const Overview = () => {
             {addColModalVisible && <AddCollectionForm
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
+              projectId={projectID}
               selectedDB={selectedDB}
               conformLoading={conformLoading}
               handleCancel={() => handleCancelAddColModal(false)}

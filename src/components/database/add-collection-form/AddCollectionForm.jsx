@@ -9,15 +9,17 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
-import { notify } from '../../../utils';
+import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const { getFieldDecorator, getFieldValue } = form;
+
+  const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
   if (!initialValues) {
     initialValues = {
       schema: `type {
-  ${selectedDB === 'mongo' ? '_id' : 'id'}: ID! @primary
+  ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
 }`,
       rules: defaultDBRules,
       isRealtimeEnabled: true
@@ -68,21 +70,21 @@ const AddCollectionForm = ({ form, editMode, selectedDB, handleSubmit, handleCan
         visible={true}
         width={720}
         okText={editMode ? "Save" : "Add"}
-        title={`${editMode ? "Edit" : "Add"} ${selectedDB === "mongo" ? "Collection" : "Table"}`}
+        title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
         confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" onSubmit={handleSubmitClick}>
-          <FormItemLabel name={selectedDB === 'mongo' ? 'Collection Name' : 'Table Name'} />
+          <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />
           <Form.Item>
             {getFieldDecorator("name", {
-              rules: [{ required: true, message: `${selectedDB === 'mongo' ? 'Collection' : 'Table'} name is required` }],
+              rules: [{ required: true, message: `${dbType === 'mongo' ? 'Collection' : 'Table'} name is required` }],
               initialValue: initialValues.name
             })(
               <Input
                 className="input"
-                placeholder={`Enter ${selectedDB === "mongo" ? "Collection" : "Table"} name`}
+                placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
                 disabled={editMode}
               />
             )}
