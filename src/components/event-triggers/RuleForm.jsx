@@ -69,7 +69,7 @@ const RuleForm = (props) => {
               })(
                 <Select placeholder="Select a database">
                   {props.dbList.map((alias) => (
-                    <Select.Option value={alias.dbtype}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
+                    <Select.Option value={alias.alias}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
                   ))}
                 </Select>
               )}

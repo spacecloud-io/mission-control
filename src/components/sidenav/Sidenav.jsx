@@ -9,9 +9,10 @@ import { set, get } from "automate-redux"
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
+  const version = useSelector(state => state.version)
   return (
     <React.Fragment>
-<div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
+    <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}>
         <Link to={`/mission-control/projects/${projectID}/overview`}>
           <SidenavItem name="Project Overview" icon="home" active={props.selectedItem === 'overview'} />
@@ -37,6 +38,9 @@ const Sidenav = (props) => {
         <Link to={`/mission-control/projects/${projectID}/configure`}>
           <SidenavItem name="Configure" icon="settings" active={props.selectedItem === 'configure'} />
         </Link>
+        <div className="sidenav-version">
+          SC v{version}
+        </div>
       </div>
     
     </React.Fragment>
