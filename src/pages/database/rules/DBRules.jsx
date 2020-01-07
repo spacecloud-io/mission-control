@@ -31,7 +31,7 @@ const Rules = () => {
 
   const handleSubmit = (rules) => {
     const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
-    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled, true)
+    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled)
       .then(() => notify("success", "Success", "Saved rule successfully"))
       .catch(ex => notify("error", "Error saving rule", ex))
   }

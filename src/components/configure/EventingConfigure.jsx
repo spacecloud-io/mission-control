@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Select, Input, Button } from 'antd';
 const { Option } = Select;
 
-const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
+const EventingConfigure = ({ form, dbType, col, handleSubmit }) => {
 	const { getFieldDecorator } = form;
 
 	const handleSubmitClick = e => {
@@ -24,9 +24,9 @@ const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
 						initialValue: dbType
 					})(
 						<Select placeholder="Database" style={{ minWidth: 200 }}>
-							{dbList.map((alias) => (
-								<Select.Option value={alias.dbtype} ><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
-							))}
+							<Option value="mongo">MongoDB</Option>
+							<Option value="sql-postgres">PostgreSQL</Option>
+							<Option value="sql-mysql">MySQL</Option>
 						</Select>
 					)}
 				</Form.Item>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { get, increment, decrement } from 'automate-redux';
+import { useParams, Redirect } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { get } from 'automate-redux';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -9,6 +9,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
 import EditConnectionForm from '../../../components/database/edit-connection-form/EditConnectionForm';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
+import history from '../../../history';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
@@ -20,9 +21,6 @@ const Overview = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
-  // changes
-  const dispatch = useDispatch();
-
   // Global state
   const projects = useSelector(state => state.projects)
   const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.collections`, []))
@@ -32,8 +30,6 @@ const Overview = () => {
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
-  // making changes for loading button
-  const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
@@ -54,7 +50,7 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
-    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
+    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled)
   }
 
   const handleAddClick = () => {
@@ -74,6 +70,10 @@ const Overview = () => {
     setClickedCol("")
   }
 
+  const handleViewQueries = () => {
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
+  }
+
   const handleDelete = (colName) => {
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
       .catch(ex => notify("error", "Error", ex))
@@ -89,31 +89,15 @@ const Overview = () => {
   }
 
   const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
-    setConformLoading(true);
     setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
-      setAddColModalVisible(false);
-      setAddColFormInEditMode(false);
-      setConformLoading(false);
-    }).catch(ex => {
-      notify("error", "Error", ex)
-      setConformLoading(false);
-    })
+    }).catch(ex => notify("error", "Error", ex))
   }
 
   const handleEditConnString = (conn) => {
-    setConformLoading(true);
-    setDBConfig(projectID, selectedDB, true, conn, false)
-      .then(() => {
-        notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)
-        setEditConnModalVisible(false);
-        setConformLoading(false);
-      })
-      .catch(() => {
-        notify("error", "Connection failed", ` Enable to connect ${selectedDB}. Make sure your connection string is correct.`)
-        setConformLoading(false);
-      })
+    setDBConfig(projectID, selectedDB, true, conn).catch(ex => notify("error", "Error", ex))
   }
+
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [
     {
@@ -141,6 +125,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={handleViewQueries}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -248,14 +233,12 @@ const Overview = () => {
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
               selectedDB={selectedDB}
-              conformLoading={conformLoading}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
               selectedDB={selectedDB}
-              conformLoading={conformLoading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}
           </div>

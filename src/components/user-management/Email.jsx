@@ -18,7 +18,7 @@ const Email = ({ form, initialValues, handleSubmit }) => {
       <Form.Item>
         <FormItemLabel name={"Enabled"} />
         {getFieldDecorator('enabled', { initialValue: initialValues.enabled })(
-          <Switch defaultChecked={initialValues.enabled} />
+          <Switch />
         )}
       </Form.Item>
       <br />
