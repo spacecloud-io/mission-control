@@ -24,6 +24,7 @@ import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
 import ManageServices from './pages/manage-services/ManageServices';
+import DatabaseDetails from './pages/manage-services/database/DatabaseDetails'
 import Deployments from './pages/deployments/Deployments';
 
 export default () => {
@@ -55,6 +56,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services/:serviceName" component={DatabaseDetails} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
       </Switch>
     </Router>
