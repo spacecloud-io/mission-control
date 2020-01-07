@@ -52,9 +52,9 @@ const Queries = () => {
   }, [rules])
 
   // build the index
-  for (var x in rules) {index.push(x);}
+  for (var x in rules) { index.push(x); }
   // sort the index
-  index.sort(function (a, b) {return a == b ? 0 : (a > b ? 1 : -1);});
+  index.sort(function (a, b) { return a == b ? 0 : (a > b ? 1 : -1); });
 
   function removeComma(value) {
     let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
@@ -69,6 +69,11 @@ const Queries = () => {
   if (selectedRule !== undefined)
     var query = gql(selectedRule)
   if (query !== undefined) {
+
+    console.log(`query { 
+      ${getType(query)} @mysql {
+        ${getFields(query, rules, index)}  }
+}`);
     var value1 = gqlPrettier(`query { 
       ${getType(query)} @mysql {
         ${getFields(query, rules, index)}  }
@@ -126,7 +131,7 @@ const Queries = () => {
     }
   }
 }`)
-}
+  }
 
   return (
     <React.Fragment>
