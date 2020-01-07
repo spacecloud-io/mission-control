@@ -5,18 +5,21 @@ import { set, increment, decrement } from "automate-redux"
 import { Link } from 'react-router-dom';
 import client from '../../client';
 import store from "../../store"
-import history from "../../history"
-import { generateProjectConfig, notify, setProjectConfig } from '../../utils';
-import CreateDatabase from '../../components/database/create-database/CreateDatabase';
-import { dbEnable } from '../database/dbActions'
-
-import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
+import postgresIcon from '../../assets/postgresIcon.svg'
+import yb from '../../assets/yb.svg'
+import { generateProjectConfig, notify, getProjectConfig, generateGalaxyProjectConfig } from '../../utils';
+import StarterTemplate from '../../components/starter-template/StarterTemplate'
+import {dbTypes} from '../../constants';
+import { Row, Col, Button, Form, Input, Icon, Steps, Card, Select, Slider, InputNumber, Checkbox } from 'antd'
 import Topbar from '../../components/topbar/Topbar'
 import './create-project.css'
 
 const CreateProject = (props) => {
-  const [selectedDB, setSelectedDB] = useState("mongo");
-  const [current, setCurrent] = useState(0);
+  const [selectedDB, setSelectedDB] = useState(dbTypes.POSTGRESQL);
+  const [current,setCurrent] = useState(0);
+  const [alias, setAlias] = useState("postgres");
+  const [sliderValue, setSliderValue] = useState(25);
+  const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,12 +29,12 @@ const CreateProject = (props) => {
 
   const { getFieldDecorator, validateFields, getFieldValue, setFieldsValue } = props.form;
   const { Step } = Steps;
-
+  const { Option } = Select;
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
   const [projectId, setProjectId] = useState(projectID);
-
-  const projects = useSelector(state => state.projects)
+  const clusters = getFieldValue("cluster");
+  const defaultEnv = getFieldValue("defaultEnv");
 
   const handleSubmit = e => {
     //e.preventDefault();
@@ -39,9 +42,10 @@ const CreateProject = (props) => {
     validateFields((err, values) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+        const galaxyProjectConfig = generateGalaxyProjectConfig(projectID, defaultEnv, clusters, projectConfig)
         dispatch(increment("pendingRequests"))
-        client.projects.addProject(projectConfig).then(() => {
-          const updatedProjects = [...store.getState().projects, projectConfig]
+        client.projects.addProject(galaxyProjectConfig).then(() => {
+          const updatedProjects = [...store.getState().projects, galaxyProjectConfig]
           dispatch(set("projects", updatedProjects))
           setCurrent(current + 1);
           notify("success", "Success", "Project created successfully with suitable defaults")
@@ -51,47 +55,191 @@ const CreateProject = (props) => {
     });
   };
 
+  const handlePostgres = () => {
+    setSelectedDB(dbTypes.POSTGRESQL);
+    setFieldsValue({
+      alias: "postgres"
+    });
+  }
   const steps = [{
     title: 'Create Project',
     content: <div>
-      <Row>
-        <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} md={{ span: 12 }} >
-          <Card>
-            <center>Create Project</center>
-            <div className="label-spacing">
-              <p>Project name</p>
-              <Form>
-                <Form.Item >
-                  {getFieldDecorator('projectName', {
-                    rules: [{ required: true, message: 'Please input a project name' }],
-                  })(
-                    <Input
-                      prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                      placeholder="Project name" />,
-                  )}
-                  <br />
-                  {projectID && <span className="hint">ProjectID: {projectID}</span>}
-                </Form.Item>
-              </Form>
+                <Row>
+                    <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} >
+                        <Card>
+                            <center>Create Project</center>
+                            <div className="label-spacing">
+                            <p style={{ marginBottom: 0, marginTop: 0 }}>Project name</p>
+                            <Form>
+                                <Form.Item >
+                                    {getFieldDecorator('projectName', {
+                                    rules: [{ required: true, message: 'Please input a project name' }],
+                                    })(
+                                    <Input
+                                        prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                        placeholder="Project name" />,
+                                    )}
+                                    <br/>
+                                    {projectID && <span className="hint">ProjectID: {projectID}</span>}
+                                </Form.Item>
+                                  <p style={{ marginBottom: 0, marginTop: 0 }}>Name your default environment</p>
+                                  <label style={{ fontSize: 12 }}>You can add other environments later like staging,testig,etc</label>
+                                  <Form.Item >
+                                      {getFieldDecorator('defaultEnv', {
+                                      rules: [{ required: true, message: 'Please input a default environment' }],
+                                      })(
+                                      <Input placeholder="Example: Testing" />,
+                                      )}
+                                  </Form.Item>
+                                  <p style={{ marginBottom: 0, marginTop: 0 }}>Select the clusters for this environment</p>
+                                  <Form.Item>
+                                    {getFieldDecorator('cluster', {
+                                        rules: [{ required: true, message: 'Please select cluster for the project' }],
+                                        })(
+                                        <Select placeholder="Select cluster" mode="multiple">
+                                          <Select.Option value="cluster_1">Cluster 1</Select.Option>
+                                          <Select.Option value="cluster_2">Cluster 2</Select.Option>
+                                          <Select.Option value="cluster_3">Cluster 3</Select.Option>
+                                        </Select>
+                                    )}
+                                  </Form.Item>
+                            </Form>
+                            </div>
+                            <Button type="primary" onClick={handleSubmit} className="project-btn">Create Project</Button>
+                        </Card><br />
+                    </Col>
+                </Row>
+                <center><Link to="/mission-control/welcome">Cancel</Link></center>
             </div>
-            <Button type="primary" onClick={handleSubmit} className="project-btn">Create Project</Button>
-          </Card><br />
-        </Col>
-      </Row>
-      <center><Link to="/mission-control/welcome">Cancel</Link></center>
-    </div>
   },
   {
     title: 'Add Database',
     content: <div>
-      <Row>
-        <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
-          <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
-        </Col>
-      </Row>
-      <center className="skip-link"><Link to={`/mission-control/projects/${projectId}/overview`} >Skip for now</Link></center>
-    </div>
-  }];
+                <Row>
+                    <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
+                    <Card>
+                    <center>Add a managed database to your project</center>
+                    <p>Select a database</p>
+                    <Row className="db-display">
+                      <Col span={2}>
+                        <StarterTemplate icon={postgresIcon} onClick={handlePostgres}
+                          heading="POSTGRESQL" 
+                          recommended={false}
+                          active={selectedDB === dbTypes.POSTGRESQL}
+                          dbicon={yb}
+                          db="Yugabyte DB" />
+                      </Col>
+                    </Row>
+                    <p>Version</p>
+                    <Form.Item>
+                      {getFieldDecorator('version', {
+                          rules: [{ required: true, message: 'Please select a version' }],
+                          initialValue: "1"
+                          })(
+                          <Select placeholder="Select a version" className="align-input">
+                            <Option value="1">YB - 2.0.8 (Postgres - 11.2)</Option>
+                          </Select>
+                      )}
+                    </Form.Item>
+                    <p>Instance Type</p>
+                    <Form.Item>
+                      {getFieldDecorator('instance_type', {
+                          rules: [{ required: true, message: 'Please select instance type for the project' }],
+                          initialValue: "1"
+                          })(
+                          <Select placeholder="Select instance type" className="align-input">
+                            <Option value="1">1 vCPU / 2GB RAM</Option>
+                            <Option value="2">2 vCPU / 4GB RAM</Option>
+                            <Option value="3">4 vCPU / 8GB RAM</Option>
+                            <Option value="4">6 vCPU / 16GB RAM</Option>
+                          </Select>
+                      )}
+                    </Form.Item>
+                    <p>Storage</p>
+                    <Form.Item>
+                    <Slider
+                      min={25}
+                      max={16384}
+                      tipFormatter={(value) => `${value} GB`}
+                      defaultValue={25}
+                      className="align-input slider-width"
+                      style={{ float:"left"}}
+                      onChange={(value) => setSliderValue(value)}
+                      value={typeof sliderValue === 'number' ? sliderValue : 25}
+                    />
+                    <InputNumber
+                      min={25}
+                      max={16384}
+                      formatter={value => `${value} GB`}
+                      value={sliderValue}
+                      className="slider-inputWidth"
+                      onChange={(value) => setSliderValue(value)}
+                    />
+                    </Form.Item>
+                    <Form.Item>
+                    <Checkbox checked={check} onChange={e => setCheck(e.target.checked)}>Add Space Cloud to your project</Checkbox>
+                    </Form.Item>
+                    {check && (
+                      <div>
+                      <p style={{ marginBottom: 0, marginTop: 0 }}>Give your database an alias for Space Cloud</p>
+                      <label style={{ fontSize: 12 }}>Alias is the name that you would use in your frontend to identify your database</label>
+                      <Form.Item>
+                        {getFieldDecorator('alias', {
+                          rules: [{ required: true, message: 'Please input an alias for your database' }],
+                          initialValue: alias
+                        })(
+                          <Input placeholder="eg: postgres" className="align-input" />,
+                        )}
+                      </Form.Item>
+                      </div>
+                    )}
+                    <p>Replication Factor</p>
+                    <Form.Item>
+                      {getFieldDecorator('replication_factor', {
+                          rules: [{ required: true, message: 'Please select replication factor for the project' }],
+                          initialValue: "1"
+                          })(
+                          <Select placeholder="Select replication factor" className="align-input">
+                            <Option value="1">1</Option>
+                            <Option value="3">3</Option>
+                            <Option value="5">5</Option>
+                          </Select>
+                      )}
+                    </Form.Item>
+                    <p style={{ marginBottom: 0, marginTop: 0 }}>Instances</p>
+                    <label style={{ fontSize: 12 }}>Number of instances should always be more than that of replicas</label>
+                    <Form.Item>
+                      {getFieldDecorator('instances', {
+                          rules: [{ required: true, message: 'Please input an instances' }],
+                          initialValue: "1"
+                        })(
+                          <InputNumber className="align-input" />,
+                      )}
+                    </Form.Item>
+                    <p>Cluster</p>
+                    <Form.Item>
+                      {getFieldDecorator('cluster', {
+                          rules: [{ required: true, message: 'Please select cluster for the project' }],
+                          initialValue: "cluster_1"
+                          })(
+                          <Select placeholder="Select cluster" mode="multiple" className="align-input">
+                            <Option value="cluster_1">Cluster 1</Option>
+                            <Option value="cluster_2">Cluster 2</Option>
+                            <Option value="cluster_3">Cluster 3</Option>
+                          </Select>
+                      )}
+                    </Form.Item>
+                    <Form.Item>
+                      <Checkbox>Auto scale storage</Checkbox><br />
+                      <Checkbox>Automatic backup</Checkbox>
+                    </Form.Item>
+                    <Button type="primary" className="db-btn">Add database</Button>
+                    </Card>
+                    </Col>
+                </Row>
+                <center className="skip-link"><Link to={"/mission-control/projects/" + projectId + "/overview"} >Skip for now</Link></center>
+            </div>
+}];
 
   return (
     <div className="create-project">

@@ -71,8 +71,9 @@
     }
 }
 
-.label-spacing {
-    margin-top: 7%;
+.project-btn{
+  width: 100%;
+  margin-top: 7%;
 }
 
 .project-btn {
@@ -95,6 +96,27 @@
     margin-top: 4%;
 }
 
-.skip-link {
-    margin-left: 4%;
+.skip-link{
+  margin-left: 4%;
+}
+
+.align-input{
+  width: 32%;
+}
+
+.slider-inputWidth{
+  width: 15%;
+  margin-left: 2%;
+}
+
+@media screen and (max-width: 768px) {
+  .align-input{
+    width: 100%;
+  }
+  .slider-width{
+    width: 62%;
+  }
+  .slider-inputWidth{
+    width: 30%;
+  }
 }

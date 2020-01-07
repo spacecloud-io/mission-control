@@ -15,6 +15,7 @@ const StarterTemplate = (props) => {
         }
       </div>
       <p className="desc">{props.desc}</p>
+      <p className="ybdb">( <img src={props.dbicon} alt={props.heading} height="25" width="25" /> <span>{props.db}</span> )</p>
       {(props.recommended) &&
         <span className="recommend-footer">
           <span className="recommend">Recommended</span>

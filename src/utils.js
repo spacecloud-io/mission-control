@@ -89,6 +89,15 @@ export const generateProjectConfig = (projectId, name) => ({
   }
 })
 
+export const generateGalaxyProjectConfig = (projectId, defaultEnv, clusters, projects) => ({
+  id: projectId,
+  env: [{
+    defaultEnvironment: defaultEnv,
+    clusters: clusters
+  }],
+  scConfig: projects
+}) 
+
 export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: msg, duration: duration });
 }
