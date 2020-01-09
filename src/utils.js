@@ -131,6 +131,26 @@ export const getFileStorageProviderLabelFromStoreType = (storeType) => {
   }
 }
 
+export const getSecretType = (type, defaultValue) => {
+  let secret = defaultValue
+  if (type) {
+    switch (type) {
+      case "env var":
+        secret = "Environment Variables"
+        break;
+      case "docker secret":
+        secret = "Docker Secret"
+        break;
+      case "file secret":
+          secret = "File Secret"
+          break;
+      default:
+        secret = "Environment Variables"
+    }
+  }
+  return secret
+}
+
 export const openProject = (projectId) => {
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`

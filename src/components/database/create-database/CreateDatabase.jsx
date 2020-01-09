@@ -58,7 +58,7 @@ const CreateDatabase = (props) => {
         <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={mongoIcon} onClick={handleMongo}
-              heading="MONGODB" 
+              heading="MONGODB" template="template db-template"
               recommended={false}
               active={selectedDB === dbTypes.MONGO} />
           </Col>
@@ -66,7 +66,7 @@ const CreateDatabase = (props) => {
         <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={postgresIcon} onClick={handlePostgres}
-              heading="POSTGRESQL" 
+              heading="POSTGRESQL" template="template db-template"
               recommended={false}
               active={selectedDB === dbTypes.POSTGRESQL} />
           </Col>
@@ -74,7 +74,7 @@ const CreateDatabase = (props) => {
         <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={mysqlIcon} onClick={handleMysql}
-              heading="MYSQL" 
+              heading="MYSQL"  template="template db-template"
               recommended={false}
               active={selectedDB === dbTypes.MYSQL} />
           </Col>
@@ -82,7 +82,7 @@ const CreateDatabase = (props) => {
         <Row className="db-display">
           <Col span={2}>
             <StarterTemplate icon={sqlserverIcon} onClick={handleSqlServer}
-              heading="SQL SERVER" 
+              heading="SQL SERVER" template="template db-template"
               recommended={false}
               active={selectedDB === dbTypes.SQLSERVER} />
           </Col>

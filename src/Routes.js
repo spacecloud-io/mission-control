@@ -25,6 +25,7 @@ import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
 import ManageServices from './pages/manage-services/ManageServices';
 import Deployments from './pages/deployments/Deployments';
+import Secrets from './pages/secrets/Secrets';
 
 export default () => {
   return (
@@ -56,6 +57,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
       </Switch>
     </Router>
   );
