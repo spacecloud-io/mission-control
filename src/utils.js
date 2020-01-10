@@ -188,39 +188,6 @@ export const onAppLoad = () => {
   })
 }
 
-
-// console.log(query.definitions[0].name.value);      //customer
-// console.log(query.definitions[0].fields[0].name.value);        //id, name, address
-// console.log(query.definitions[0].fields[0].type.kind);            //check null type
-// console.log(query.definitions[0].fields[2].type.type.name.value);               // ID, String
-// console.log(query.definitions[0].fields[0].directives[0].name.value);           //primary
-
-// export const getFields = (schema, rules, index) => {
-//   var fields = []
-//   for (var i in schema.definitions[0].fields) {
-//     fields.push(schema.definitions[0].fields[i].name.value + "\n");
-//     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-//       continue;
-//     if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-//       fields.push("{")
-//       for (var j in index)
-//         if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-//           if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-//             fields = fields.concat(getFields(gql(rules[index[j]]), rules, index))
-//           }
-//           fields.push("}")
-//         }
-//         else {
-//           if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-//             fields = fields.concat(getFields(gql(rules[index[j]]), rules, index))
-//           }
-//           fields.push("}")
-//         }
-//     }
-//   }
-//   return fields;
-// }
-
 export const getType = (schema) => {
   return schema.definitions[0].name.value;
 }
@@ -243,20 +210,18 @@ export const getFields = (schema, rules, index, specificField, argumentValue) =>
         specificField = 1;
         argumentValue = schema.definitions[0].fields[i].directives[0].arguments[1].value.value;
       }
-      fields.push("{")
       for (var j in index)
         if (typeof (schema.definitions[0].fields[i].type.type != 'undefined')) {
           if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat(getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue))
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
           }
+          else continue;
         } else {
           if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat(getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue))
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
           }
-          fields.push("}")
+          else continue;
         }
-      fields.push("}")
-
     }
   }
   return fields;
@@ -309,6 +274,7 @@ export const getFieldsValues = (schema, rules, index, specificField, argumentVal
                 fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
                 fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
               }
+              else continue;
         }
       }
     return fieldsValue;
@@ -343,29 +309,9 @@ export const getFieldsValues = (schema, rules, index, specificField, argumentVal
                 fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
                 fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
               }
+            else continue;
       }
     }
     return fieldsValue;
   }
 
-// export const getValue = (schema) => {
-//   var Values = []
-//   for (var i in schema.definitions[0].fields)
-//     Values.push(schema.definitions[0].fields[i].type.type.name.value);
-//   return Values;
-// }
-
-// export const checkType = (schema) => {
-//   var Type = []
-//   for (var i in schema.definitions[0].fields)
-//     Type.push(schema.definitions[0].fields[i].type.kind);
-//   return Type;
-// }
-
-// export const checkDirective = (schema) => {
-//   var Directives = []
-//   for (var i in schema.definitions[0].fields)
-//     console.log(schema.definitions[0].fields[2].directives[0].name.value)
-//   // Directives.push(schema.definitions[0].fields[0].directives[0].name.value);
-//   return Directives;
-// }

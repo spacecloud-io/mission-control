@@ -69,11 +69,6 @@ const Queries = () => {
   if (selectedRule !== undefined)
     var query = gql(selectedRule)
   if (query !== undefined) {
-
-    console.log(`query { 
-      ${getType(query)} @mysql {
-        ${getFields(query, rules, index)}  }
-}`);
     var value1 = gqlPrettier(`query { 
       ${getType(query)} @mysql {
         ${getFields(query, rules, index)}  }
