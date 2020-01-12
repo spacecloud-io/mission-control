@@ -5,38 +5,101 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set, get } from "automate-redux"
+import {Collapse, Divider} from "antd";
+const {Panel} = Collapse;
+
+const Header = ({name, icon}) => {
+
+  return (
+    <div className="sidenav-item">
+      <i className="material-icons-outlined sidenav-item__icon">{icon}</i>
+      <span className="sidenav-item__name">{name}</span>
+  </div>
+  )
+}
+
+const PanelItem = (props) => {
+
+  return (
+    <div className={
+      props.active ? 'sidenav-item sidenav-item--active' : 'sidenav-item'
+    } >
+      <i className="material-icons-outlined sidenav-item__icon">{props.icon}</i>
+      <span className="sidenav-collapsed-item__name">{props.name}</span>
+  </div>
+  )
+}
 
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const version = useSelector(state => state.version)
+
+  const setActiveKey = () => {
+    const microservices = ["graphql", "event-triggers", "deployments", "secrets", "routing"];
+    if(props.selectedItem === "database" || props.selectedItem === "file-storage"){
+      return "1"
+    }
+    else if(microservices.some(val => val === props.selectedItem)){
+      return "2"
+    }
+  }
   return (
     <React.Fragment>
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}>
         <Link to={`/mission-control/projects/${projectID}/overview`}>
-          <SidenavItem name="Project Overview" icon="home" active={props.selectedItem === 'overview'} />
+          <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/database`}>
-          <SidenavItem name="Database" icon="dns" active={props.selectedItem === 'database'} />
-        </Link>
-        <Link to={`/mission-control/projects/${projectID}/file-storage`}>
-          <SidenavItem name="File Storage" icon="folder_open" active={props.selectedItem === 'file-storage'} />
-        </Link>
-        <Link to={`/mission-control/projects/${projectID}/event-triggers`}>
-          <SidenavItem name="Event triggers" icon="near_me" active={props.selectedItem === 'event-triggers'} />
-        </Link>
-        <Link to={`/mission-control/projects/${projectID}/remote-services`}>
-          <SidenavItem name="Remote Services" icon="code" active={props.selectedItem === 'services'} />
-        </Link>
-        <Link to={`/mission-control/projects/${projectID}/user-management`}>
-          <SidenavItem name="User Management" icon="people" active={props.selectedItem === 'user-management'} />
+        <Collapse 
+         bordered={false}
+         expandIconPosition="right"
+         defaultActiveKey={setActiveKey()}>
+          <Panel header={<Header name="Storage" icon="dns"/>} key="1">
+            <Link to={`/mission-control/projects/${projectID}/database`}>
+              <PanelItem name="Database" active={props.selectedItem === 'database'} />
+            </Link>
+            <Link to={`/mission-control/projects/${projectID}/file-storage`}>
+              <PanelItem name="File Store" active={props.selectedItem === 'file-storage'} />
+            </Link>
+          </Panel>
+          <Panel header={<Header name="Microservices" icon="widgets"/>} key="2">
+            <Link to={`/mission-control/projects/${projectID}/graphql`}>
+              <PanelItem name="GraphQL API" active={props.selectedItem === 'graphql'} />
+            </Link>
+            <Link to={`/mission-control/projects/${projectID}/event-triggers`}>
+              <PanelItem name="Event Triggers" active={props.selectedItem === 'event-triggers'} />
+            </Link>
+            <Link to={`/mission-control/projects/${projectID}/deployments`}>
+              <PanelItem name="Deployments" active={props.selectedItem === 'deployments'} />
+            </Link>
+            <Link to={`/mission-control/projects/${projectID}/secrets`}>
+              <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
+            </Link>
+            <Link to={`/mission-control/projects/${projectID}/routing`}>
+              <PanelItem name="Routing" active={props.selectedItem === 'routing'} />
+            </Link>
+          </Panel>
+        </Collapse>
+        <Link to={`/mission-control/projects/${projectID}/auth`}>
+          <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
         </Link>
         <Link to={`/mission-control/projects/${projectID}/explorer`}>
-          <SidenavItem name="Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
+          <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
         </Link>
+        <Divider />
+        <Link to={`/mission-control/projects/${projectID}/guides`}>
+          <SidenavItem name="Guides" icon="explore" active={props.selectedItem === 'guides'} />
+        </Link>
+        <Divider />
         <Link to={`/mission-control/projects/${projectID}/configure`}>
-          <SidenavItem name="Configure" icon="settings" active={props.selectedItem === 'configure'} />
+          <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
+        </Link>
+        <Link to={`/mission-control/projects/${projectID}/teams`}>
+          <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
+        </Link>
+        <Link to={`/mission-control/projects/${projectID}/billings`}>
+          <SidenavItem name="Billings" icon="attach_money" active={props.selectedItem === 'billings'} />
         </Link>
         <div className="sidenav-version">
           SC v{version}
