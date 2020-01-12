@@ -42,7 +42,7 @@
 }
 
 .sidenav-collapsed-item__name{
-  margin-left: 63px;
+  margin-left: 56px;
 }
 
 .sidenav-version {
@@ -116,4 +116,3 @@
     display: none;
   }
 }
-
