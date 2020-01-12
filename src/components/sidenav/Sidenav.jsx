@@ -5,7 +5,7 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set, get } from "automate-redux"
-import {Collapse, Divider} from "antd";
+import {Collapse, Divider, Icon} from "antd";
 const {Panel} = Collapse;
 
 const Header = ({name, icon}) => {
@@ -54,7 +54,8 @@ const Sidenav = (props) => {
         <Collapse 
          bordered={false}
          expandIconPosition="right"
-         defaultActiveKey={setActiveKey()}>
+         defaultActiveKey={setActiveKey()}
+         expandIcon={({ isActive }) => <Icon type="down" rotate={isActive ? 180 : 0}/>}>
           <Panel header={<Header name="Storage" icon="dns"/>} key="1">
             <Link to={`/mission-control/projects/${projectID}/database`}>
               <PanelItem name="Database" active={props.selectedItem === 'database'} />
@@ -89,21 +90,21 @@ const Sidenav = (props) => {
         </Link>
         <Divider />
         <Link to={`/mission-control/projects/${projectID}/guides`}>
-          <SidenavItem name="Guides" icon="explore" active={props.selectedItem === 'guides'} />
+          <SidenavItem name="Guides" icon="import_contacts" active={props.selectedItem === 'guides'} />
         </Link>
         <Divider />
-        <Link to={`/mission-control/projects/${projectID}/configure`}>
+        <Link to={`/mission-control/projects/${projectID}/settings`}>
           <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
         </Link>
         <Link to={`/mission-control/projects/${projectID}/teams`}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/billings`}>
-          <SidenavItem name="Billings" icon="attach_money" active={props.selectedItem === 'billings'} />
+        <Link to={`/mission-control/projects/${projectID}/billing`}>
+          <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
         </Link>
-        <div className="sidenav-version">
+      </div>
+      <div className="sidenav-version">
           SC v{version}
-        </div>
       </div>
     
     </React.Fragment>

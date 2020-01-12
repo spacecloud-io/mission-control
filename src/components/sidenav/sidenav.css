@@ -3,11 +3,12 @@
   position: fixed;
   top: 64px;
   left: 0;
-  bottom: 0;
+  bottom: 60px;
   z-index: 99;
-  width: 300px !important;
+  width: 240px !important;
   background: #ffffff;
   box-shadow: 10px 0 5px -5px #eee;
+  overflow-y: scroll;
 }
 
 .sidenav-item {
@@ -49,11 +50,16 @@
   position: absolute;
   bottom: 0;
   left: 0;
+  z-index: 100;
   font-weight: 700;
   font-size: 18px;
   padding: 16px;
   border-top: 1px solid #eee;
   width: 100%;
+}
+
+.content{
+  overflow-y: scroll;
 }
 
 .ant-collapse > .ant-collapse-item {
