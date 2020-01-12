@@ -3,12 +3,11 @@
   position: fixed;
   top: 64px;
   left: 0;
-  bottom: 60px;
+  bottom: 0px;
   z-index: 99;
   width: 240px !important;
   background: #ffffff;
   box-shadow: 10px 0 5px -5px #eee;
-  overflow-y: scroll;
 }
 
 .sidenav-item {
@@ -35,11 +34,11 @@
 
 .sidenav-item__icon {
   font-size: 20px;
-  margin-left: 32px;
+  margin-left: 18px;
 }
 
 .sidenav-item__name {
-  margin-left: 32px;
+  margin-left: 18px;
 }
 
 .sidenav-collapsed-item__name{

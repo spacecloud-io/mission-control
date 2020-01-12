@@ -48,6 +48,7 @@ const Sidenav = (props) => {
     <React.Fragment>
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}>
+      <div style={{height: "92%", overflowY: "auto"}}>
         <Link to={`/mission-control/projects/${projectID}/overview`}>
           <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
         </Link>
@@ -102,11 +103,11 @@ const Sidenav = (props) => {
         <Link to={`/mission-control/projects/${projectID}/billing`}>
           <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
         </Link>
-      </div>
-      <div className="sidenav-version">
+        </div>
+        <div className="sidenav-version">
           SC v{version}
       </div>
-    
+      </div>
     </React.Fragment>
     )
 }
