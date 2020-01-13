@@ -19,6 +19,7 @@ import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
+import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
@@ -50,6 +51,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
       </Switch>
     </Router>
   );
