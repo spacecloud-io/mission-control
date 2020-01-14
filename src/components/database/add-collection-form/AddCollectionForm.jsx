@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Switch, Form, Input, Row, Col } from 'antd';
+import { Modal, Switch, Form, Input, Row, Col, Checkbox } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -11,17 +11,28 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
   const { getFieldDecorator, getFieldValue } = form;
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
+  var rules;
+  try {
+    if (Object.keys(defaultRules).length > 0) {
+      rules = defaultRules
+    } else {
+      rules = defaultDBRules
+    }
+  } catch (err) {
+    rules = defaultDBRules
+    console.log(err)
+  }
 
   if (!initialValues) {
     initialValues = {
       schema: `type {
   ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
 }`,
-      rules: defaultDBRules,
+      rules: rules,
       isRealtimeEnabled: true
     }
   }
@@ -29,6 +40,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialValues.schema);
+  const [checked, getChecked] = useState(true);
 
   const colName = getFieldValue("name")
   useEffect(() => {
@@ -51,7 +63,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
         try {
           handleSubmit(
             values.name,
-            JSON.parse(rule),
+            checked ? {} : JSON.parse(rule),
             schema,
             isRealtimeEnabled
           );
@@ -68,7 +80,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
       <Modal
         className='edit-item-modal'
         visible={true}
-        width={720}
+        width={520}
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
@@ -98,44 +110,46 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               </span>
             )}
           </Form.Item>
-          <Row>
-            <Col span={12}>
-              <FormItemLabel name="Schema" />
-              <CodeMirror
-                value={schema}
-                options={{
-                  mode: { name: "javascript", json: true },
-                  lineNumbers: true,
-                  styleActiveLine: true,
-                  matchBrackets: true,
-                  autoCloseBrackets: true,
-                  tabSize: 2,
-                  autofocus: true
-                }}
-                onBeforeChange={(editor, data, value) => {
-                  setSchema(value)
-                }}
-              />
-            </Col>
-            <Col>
-              <FormItemLabel name="Rule" />
-              <CodeMirror
-                value={rule}
-                options={{
-                  mode: { name: "javascript", json: true },
-                  lineNumbers: true,
-                  styleActiveLine: true,
-                  matchBrackets: true,
-                  autoCloseBrackets: true,
-                  tabSize: 2,
-                  autofocus: false
-                }}
-                onBeforeChange={(editor, data, value) => {
-                  setRule(value)
-                }}
-              />
-            </Col>
-          </Row>
+          <FormItemLabel name="Schema" />
+          <CodeMirror
+            value={schema}
+            options={{
+              mode: { name: "javascript", json: true },
+              lineNumbers: true,
+              styleActiveLine: true,
+              matchBrackets: true,
+              autoCloseBrackets: true,
+              tabSize: 2,
+              autofocus: true
+            }}
+            onBeforeChange={(editor, data, value) => {
+              setSchema(value)
+            }}
+          />
+          <Checkbox
+            checked={checked}
+            onChange={e =>
+              getChecked(!checked)
+            }
+          >Apply default security rules</Checkbox>
+          {!checked ? <div>
+            <FormItemLabel name="Rule" />
+            <CodeMirror
+              value={rule}
+              options={{
+                mode: { name: "javascript", json: true },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2,
+                autofocus: false
+              }}
+              onBeforeChange={(editor, data, value) => {
+                setRule(value)
+              }}
+            />
+          </div> : ""}
         </Form>
       </Modal>
     </div>

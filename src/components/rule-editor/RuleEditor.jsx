@@ -13,7 +13,15 @@ import useDeepCompareEffect from 'use-deep-compare-effect'
 
 const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
-  const noOfRules = entries.length
+
+  var noOfRules = 0;
+  entries.map(([obj]) => {
+    try {
+      if (Object.keys(obj).length > 0) noOfRules += 1;
+    } catch (err) {
+      console.log(err);
+    }
+  })
 
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")
@@ -59,13 +67,19 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
       {(noOfRules > 0) && <div>
         <Row type="flex">
           <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
-            {entries.map(([ruleName]) => {
-              return <div
-                className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
-                onClick={() => handleSelect(ruleName)}>
-                <span>{ruleName}</span>
-                {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
-              </div>
+            {entries.map(([ruleName, obj]) => {
+              try {
+                if (Object.keys(obj).length > 0) {
+                  return <div
+                    className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
+                    onClick={() => handleSelect(ruleName)}>
+                    <span>{ruleName}</span>
+                    {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
+                  </div>
+                }
+              } catch (err) {
+                console.log(err);
+              }
             })}
           </Col>
           <Col xs={24} sm={24} md={24} lg={16} xl={18}>
