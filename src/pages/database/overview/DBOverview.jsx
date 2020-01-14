@@ -9,6 +9,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
 import EditConnectionForm from '../../../components/database/edit-connection-form/EditConnectionForm';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
+import history from '../../../history';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
@@ -73,6 +74,10 @@ const Overview = () => {
     setAddColModalVisible(false)
     setAddColFormInEditMode(false)
     setClickedCol("")
+  }
+
+  const handleViewQueries = () => {
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
   }
 
   const handleDelete = (colName) => {
@@ -142,6 +147,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={handleViewQueries}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>

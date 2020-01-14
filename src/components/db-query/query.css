@@ -1,0 +1,27 @@
+.query-block {
+    background: #F6F7F8;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.query-font {
+    margin-top: 15px;
+    font-size: 18px;
+    line-height: 22px;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.query-font-small {
+    margin-top: -13px;
+    font-size: 14px;
+    line-height: 22px;
+}
+
+.darkTheme .cm-s-default.CodeMirror {
+    background-color: #F6F7F8;
+}
+
+.darkTheme .cm-s-default .CodeMirror-gutters {
+    background: #EEEEEE;
+    color: rgb(83, 127, 126);
+    border: none;
+}
