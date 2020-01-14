@@ -59,7 +59,7 @@ const Rules = (props) => {
 		const newConfig = { enabled: true, ...config }
 		client.fileStore.setConfig(projectID, newConfig).then(() => {
 			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-			setProjectConfig(projects, projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
+			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
 			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
 			notify("success", "Success", "Configured file storage successfully")
 		})
@@ -74,7 +74,7 @@ const Rules = (props) => {
 				if (r.name !== selectedRuleName) return rule
 				return Object.assign({}, r, rule)
 			})
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Saved rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
@@ -85,7 +85,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
 			const newRules = [...rules, { name: ruleName, ...rule }]
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Added rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
@@ -96,7 +96,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.deleteRule(projectID, ruleName).then(() => {
 			const newRules = rules.filter(r => r.name !== ruleName)
-			setProjectConfig(projects, projectID, "modules.fileStore.rules", newRules)
+			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Deleted rule successfully")
 		})
 			.catch(ex => notify("error", "Error", ex))
@@ -116,19 +116,9 @@ const Rules = (props) => {
 		fetchConnState()
 	}, [])
 
-	const SidePanel = () => {
-		return <div className="panel panel--has-border-right">
-			<div className="panel__graphic">
-				<img src={securitySvg} width="70%" />
-			</div>
-			<p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Secure who can access what</p>
-			<a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/auth/authorization" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
-		</div>
-	}
-
 	const EmptyState = () => {
 		return <div style={{ marginTop: 24 }}>
-			<div className="panel" style={{ margin: 24 }}>
+			<div className="panel">
 				<img src={securitySvg} width="240px" />
 				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
 				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
@@ -136,13 +126,13 @@ const Rules = (props) => {
 		</div>
 	}
 	return (
-		<div>
+		<div className="file-storage">
 			<Topbar showProjectSelector />
 			<div>
 				<Sidenav selectedItem="file-storage" />
 				<div className="page-content">
-					{!enabled && <div className="panel" style={{ margin: 48 }}>
-						<img src={fileStorageSvg} width="60%" />
+					{!enabled && <div className="panel">
+						<img src={fileStorageSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
 						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
 							Get started
@@ -179,8 +169,7 @@ const Rules = (props) => {
 									handleSubmit={handleSaveRule}
 									canDeleteRules
 									handleDelete={handleDeleteRule}
-									emptyState={<EmptyState />}
-									sidePanel={<SidePanel />} />
+									emptyState={<EmptyState />} />
 							</div>
 						</React.Fragment>}
 					</React.Fragment>}

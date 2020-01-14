@@ -1,13 +1,20 @@
+import React from 'react'
 import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
+import { dbTypes } from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
-import { defaultDBRules, defaultDbConnectionStrings, eventLogsSchema } from "./constants"
-import gql from 'graphql-tag';
+import { defaultDbConnectionStrings } from "./constants"
+import { Redirect, Route } from "react-router-dom"
+
+const mysqlSvg = require(`./assets/mysqlSmall.svg`)
+const postgresSvg = require(`./assets/postgresSmall.svg`)
+const mongoSvg = require(`./assets/mongoSmall.svg`)
+const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -40,7 +47,8 @@ export const getProjectConfig = (projects, projectId, path, defaultValue) => {
   return get(project, path, defaultValue)
 }
 
-export const setProjectConfig = (projects, projectId, path, value) => {
+export const setProjectConfig = (projectId, path, value) => {
+  const projects = get(store.getState(), "projects", [])
   const updatedProjects = projects.map(project => {
     if (project.id === projectId) {
       return setObjectPath(project, path, value)
@@ -63,26 +71,13 @@ const getConnString = (dbType) => {
   return connString ? connString : "localhost"
 }
 
-export const generateProjectConfig = (projectId, name, dbType) => ({
+export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
   secret: generateId(),
   modules: {
-    crud: {
-      [dbType]: {
-        enabled: true,
-        conn: getConnString(dbType),
-        collections: {
-          default: { rules: defaultDBRules },
-          event_logs: { schema: eventLogsSchema }
-        }
-      }
-    },
-    eventing: {
-      enabled: true,
-      dbType: dbType,
-      col: "event_logs"
-    },
+    crud: {},
+    eventing: {},
     auth: {},
     services: {
       externalServices: {}
@@ -106,6 +101,10 @@ export const getEventSourceFromType = (type, defaultValue) => {
       case "DB_UPDATE":
       case "DB_DELETE":
         source = "database"
+        break;
+      case "FILE_CREATE":
+      case "FILE_DELETE":
+        source = "file storage"
         break;
       default:
         source = "custom"
@@ -171,8 +170,10 @@ export const handleConfigLogin = (token, lastProjectId) => {
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(isProd => {
+  client.fetchEnv().then(({isProd, version}) => {
     const token = localStorage.getItem("token")
+    localStorage.getItem("isProd", isProd.toString())
+    store.dispatch(set("version", version))
     if (isProd && !token) {
       history.push("/mission-control/login")
       return
@@ -188,130 +189,48 @@ export const onAppLoad = () => {
   })
 }
 
-export const getType = (schema) => {
-  return schema.definitions[0].name.value;
+
+export const dbIcons = (project, projectId, selectedDb) => {
+
+  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+
+  let checkDB = ''
+  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
+
+  var svg = mongoSvg
+  switch (checkDB) {
+    case dbTypes.MONGO:
+      svg = mongoSvg
+      break;
+    case dbTypes.MYSQL:
+      svg = mysqlSvg
+      break;
+    case dbTypes.POSTGRESQL:
+      svg = postgresSvg
+      break;
+    case dbTypes.SQLSERVER:
+      svg = sqlserverSvg
+      break;
+    default:
+      svg = postgresSvg
+  }
+  return svg;
 }
 
-export const getFields = (schema, rules, index, specificField, argumentValue) => {
-  var fields = []
-  for (var i in schema.definitions[0].fields) {
-    if (specificField === 1)
-      if (schema.definitions[0].fields[i].name.value === argumentValue) {
-        fields.push(schema.definitions[0].fields[i].name.value + "\n");
-      }
-      else
-        continue;
-    else
-      fields.push(schema.definitions[0].fields[i].name.value + "\n");
-    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-      continue;
-    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-      if (typeof (schema.definitions[0].fields[i].directives[0].arguments[1]) != 'undefined') {
-        specificField = 1;
-        argumentValue = schema.definitions[0].fields[i].directives[0].arguments[1].value.value;
-      }
-      for (var j in index)
-        if (typeof (schema.definitions[0].fields[i].type.type != 'undefined')) {
-          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-          }
-          else continue;
-        } else {
-          if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-          }
-          else continue;
-        }
+export const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")) ? (
+        <Redirect to={"/mission-control/login"} />
+      ) : (
+          <Component {...props} />
+        )
     }
-  }
-  return fields;
+  />
+)
+
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
-
-export const getFieldsValues = (schema, rules, index, specificField, argumentValue) => {
-  var fieldsValue = []
-  var nullType;                                                                      // 0 = NonNullType, 1 = NullType
-  for (var i in schema.definitions[0].fields) {
-    if (specificField === 1)
-      if (schema.definitions[0].fields[i].name.value === argumentValue) {
-        if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-          nullType = 1;
-        }
-        else {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-          nullType = 0;
-        }
-      }
-      else continue;
-      else {
-        if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-          nullType = 1;
-        }
-        else {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-          nullType = 0;
-        }
-      }
-        if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-          continue;
-        if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-          if (typeof (schema.definitions[0].fields[i].directives[0].arguments[1]) != 'undefined') {
-            specificField = 1;
-            argumentValue = schema.definitions[0].fields[i].directives[0].arguments[1].value.value;
-          }
-          for (var j in index)
-            if (nullType === 1)
-              if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-                fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-              }
-              else continue;
-            else
-              if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-                fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-              }
-              else continue;
-        }
-      }
-    return fieldsValue;
-  }
-
-
-  export const getVariables = (schema, rules, index) => {
-    var fieldsValue = []
-    var nullType;                                                                      // 0 = NonNullType, 1 = NullType
-    for (var i in schema.definitions[0].fields) {
-      if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-        fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-        nullType = 1;
-      }
-      else {
-        fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-        nullType = 0;
-      }
-      if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-        continue;
-      if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-        for (var j in index)
-          if (nullType === 0)
-            if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-              fieldsValue.pop();
-              fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
-              fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
-            }
-            else
-              if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
-                fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
-              }
-            else continue;
-      }
-    }
-    return fieldsValue;
-  }
-

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 
+
 import { Alert } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -31,19 +32,9 @@ const Schema = () => {
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (schema) => {
-    modifyColSchema(projectID, selectedDB, selectedCol, schema)
+    modifyColSchema(projectID, selectedDB, selectedCol, schema, true)
       .then(() => notify("success", "Success", "Saved schema successfully"))
       .catch(ex => notify("error", "Error saving schema", ex))
-  }
-
-  const SidePanel = () => {
-    return <div className="panel panel--has-border-right">
-      <div className="panel__graphic">
-        <img src={dataModellingSvg} width="70%" />
-      </div>
-      <p className="panel__description" style={{ marginTop: 16, marginBottom: 0 }}>Schema lets you manage types and relations</p>
-      <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/essentials/data-modelling" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
-    </div>
   }
 
   const EmptyState = () => {
@@ -56,7 +47,6 @@ const Schema = () => {
       <Alert message={`You first need to add a ${selectedDB === "mongo" ? "collection" : "table"}`} type="info" banner showIcon={false} style={{ textAlign: "center" }} />
     </div>
   }
-
   return (
     <React.Fragment>
       <Topbar
@@ -77,8 +67,7 @@ const Schema = () => {
               handleSelect={handleSelect}
               handleSubmit={handleSubmit}
               stringifyRules={false}
-              emptyState={<EmptyState />}
-              sidePanel={<SidePanel />} />
+              emptyState={<EmptyState />}/>
           </div>
         </div>
       </div>

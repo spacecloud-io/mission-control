@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
-import { Table, Button } from "antd"
+import { Table, Button, Alert, Row, Col } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
@@ -12,6 +12,9 @@ import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
 import client from '../../client';
 import eventTriggersSvg from "../../assets/event-triggers.svg"
+import history from '../../history'
+import { dbIcons } from '../../utils';
+
 
 const EventTriggers = () => {
 	// Router params
@@ -29,6 +32,12 @@ const EventTriggers = () => {
 
 	// Derived properties
 	const rules = getProjectConfig(projects, projectID, "modules.eventing.rules", {})
+	// changes
+	const crudModuleFetch = getProjectConfig(projects, projectID, "modules.crud", {})
+	const dbList = Object.entries(crudModuleFetch).map(([alias, obj]) => {
+		if (!obj.type) obj.type = alias
+		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
+	})
 	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
@@ -63,7 +72,7 @@ const EventTriggers = () => {
 		const isRulePresent = rules[name] ? true : false
 		dispatch(increment("pendingRequests"))
 		client.eventTriggers.setTriggerRule(projectID, name, triggerRule).then(() => {
-			setProjectConfig(projects, projectID, `modules.eventing.rules.${name}`, triggerRule)
+			setProjectConfig(projectID, `modules.eventing.rules.${name}`, triggerRule)
 			notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
@@ -72,7 +81,7 @@ const EventTriggers = () => {
 		const newRules = Object.assign({}, rules)
 		delete newRules[name]
 		client.eventTriggers.deleteTriggerRule(projectID, name).then(() => {
-			setProjectConfig(projects, projectID, `modules.eventing.rules`, newRules)
+			setProjectConfig(projectID, `modules.eventing.rules`, newRules)
 			notify("success", "Success", "Deleted trigger rule successfully")
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
@@ -113,16 +122,44 @@ const EventTriggers = () => {
 		}
 	]
 
+	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+	const activeDB = Object.keys(crudModule).find(db => {
+		return crudModule[db].enabled
+	})
+
+	const alertMsg = <div>
+		<span>Space Cloud needs a database to store the event logs. First</span>
+		<Link to={`/mission-control/projects/${projectID}/database/add-db`}> add a database </Link>
+		<span>to Space Cloud so that eventing module can use it.</span>
+	</div>
+
+	const dbAlert = () => {
+		if (!activeDB)
+			return (
+				<Row>
+					<Col lg={{ span: 18, offset: 3 }}>
+						<Alert style={{ top: 15 }}
+							message="Eventing needs to be configured"
+							description={alertMsg}
+							type="info"
+							showIcon
+						/>
+					</Col>
+				</Row>
+			)
+	}
+
 	return (
 		<div>
 			<Topbar showProjectSelector />
 			<Sidenav selectedItem="event-triggers" />
 			<div className="page-content">
-				{noOfRules === 0 && <div style={{ marginTop: 24 }}>
-					<div className="panel" style={{ margin: 24 }}>
-						<img src={eventTriggersSvg} width="60%" />
+				{noOfRules === 0 && <div>
+					<div className="panel">
+						<img src={eventTriggersSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud.<a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
-						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)}>Add first event trigger</Button>
+						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
+						{dbAlert()}
 					</div>
 				</div>}
 				{noOfRules > 0 && (
@@ -134,6 +171,7 @@ const EventTriggers = () => {
 				{ruleModalVisible && <RuleForm
 					handleCancel={handleRuleModalCancel}
 					handleSubmit={handleSetRule}
+					dbList={dbList}
 					initialValues={ruleClickedInfo} />}
 				{triggerModalVisible && <TriggerForm
 					handleCancel={handleTriggerModalCancel}

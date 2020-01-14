@@ -1,128 +1,145 @@
 .overview .flex-blox {
-  display: flex;
+    display: flex;
 }
 
 .overview .desc {
-  width: 60%;
-  color: #000;
-  font-size: 12px;
-  margin-bottom: 24px;
-  font-weight: 600;
+    width: 60%;
+    color: #000;
+    font-size: 12px;
+    margin-bottom: 24px;
+    font-weight: 600;
 }
 
 .overview .circle {
-  height: 44px;
-  width: 44px;
-  border-radius: 50%;
-  background-color: #ff6700;
-  text-align: center;
-  display: inline-block;
-  margin-right: 14px;
-  cursor: pointer;
+    height: 44px;
+    width: 44px;
+    border-radius: 50%;
+    background-color: #ff6700;
+    text-align: center;
+    display: inline-block;
+    margin-right: 14px;
+    cursor: pointer;
 }
 
-.overview .circle > img {
-  height: 25px;
-  width: 28px;
-  position: relative;
-  transform: translateY(35%);
+.overview .circle>img {
+    height: 25px;
+    width: 28px;
+    position: relative;
+    transform: translateY(35%);
 }
 
-.overview .get-started{
-  background: #1890FF;
-  border-color: #1890FF;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 20px;
-  text-align: center; 
-  cursor: pointer;
+.overview .get-started {
+    background: #1890FF;
+    border-color: #1890FF;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-align: center;
+    cursor: pointer;
 }
 
 .overview .ant-btn-primary:focus {
-  background: #1890FF;
-  border-color: #1890FF;
+    background: #1890FF;
+    border-color: #1890FF;
 }
 
 .overview .ant-btn-round.ant-btn-lg {
-  height: 36px;
-  padding: 0 16px;
+    height: 36px;
+    padding: 0 16px;
 }
 
-.overview .sepration{
-  height: 56px;
-  width:3px;
-  background: #979797;
-  margin-right: 32px;
-  margin-left: 16px;
+.overview .sepration {
+    height: 56px;
+    width: 3px;
+    background: #979797;
+    margin-right: 32px;
+    margin-left: 16px;
 }
 
 .overview .lang {
-  display: flex;
-  align-items: center;
-  margin-bottom: 64px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 64px;
 }
 
 .overview .overview-padding {
-  margin-left: 20px;
+    margin-left: 20px;
 }
 
-.overview .page-content{
-  margin-bottom: 72px;
+.overview .page-content {
+    margin-bottom: 72px;
 }
 
-.overview .cardContainer{
-  justify-content: space-around;
-  padding: 10px;
+.overview .cardContainer {
+    justify-content: space-around;
+    padding: 10px;
 }
 
 .overview .card {
-  width: 300px;
-  height: 80px;
-  position: relative;
-  right:10px;
-  bottom: 18px;
-  line-height: 80px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600px;
-  color: #000;
-  border: 1px solid #DADADA;
-  border-radius: 10px;
-  box-sizing: border-box;
-  margin-top: 10px;
-
+    width: 300px;
+    height: 80px;
+    position: relative;
+    right: 10px;
+    bottom: 18px;
+    line-height: 80px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600px;
+    color: #000;
+    border: 1px solid #DADADA;
+    border-radius: 10px;
+    box-sizing: border-box;
+    margin-top: 10px;
 }
 
-.overview .material-icons.copy{
-  position: relative;
-  left:30px;
-  top:8px;
+.overview .material-icons.copy {
+    position: relative;
+    left: 30px;
+    top: 8px;
 }
 
-.overview #card{
-  position: relative;
-  right:12px;
-  top:5px;
-  
+.overview #card {
+    position: relative;
+    right: 12px;
+    top: 5px;
 }
 
-.overview .card:hover{
-  box-sizing: border-box;
-  border: 1.5px solid #4285F4;
-  box-shadow: 0px 4px 4px rgba(66, 133, 244, 0.25);
-  
+.overview .card:hover {
+    box-sizing: border-box;
+    border: 1.5px solid #4285F4;
+    box-shadow: 0px 4px 4px rgba(66, 133, 244, 0.25);
 }
 
-.overview h2{
-  color:#000;
-  opacity:0.85;
+.overview h2 {
+    color: #000;
+    opacity: 0.85;
 }
 
 @media screen and (min-width: 1023px) {
-  #setup{
-    position: relative;
-    bottom:106px;
-    left:330px;
-  }
+    #setup {
+        position: relative;
+        bottom: 106px;
+        left: 330px;
+    }
+
+}
+@media screen and (min-width: 575px){
+    #hide-on-med-and-up {
+        display: none;
+    }
 }
 
+@media screen and (max-width: 575px){
+    #hide-on-small {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .ant-descriptions-bordered .ant-descriptions-view>table {
+        table-layout: fixed;
+    }
+    .ant-descriptions-item-content {
+        overflow: scroll;
+    }
+}

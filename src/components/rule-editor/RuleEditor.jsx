@@ -9,17 +9,18 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import "./rule-editor.css"
 import { notify } from "../../utils";
+import useDeepCompareEffect from 'use-deep-compare-effect'
 
-const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
+const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
   const noOfRules = entries.length
 
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")
 
-  const unSavedChanges = selectedRule && initialRule && selectedRule !== initialRule
+  var unSavedChanges = selectedRule && selectedRule !== initialRule
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     let temp = rules[selectedRuleName]
 
     if (stringifyRules) {
@@ -52,17 +53,12 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
     }
   }
 
-
-  console.log("NoOfrules", noOfRules, noOfRules)
   return (
     <div className="rule-editor">
       {noOfRules === 0 && emptyState}
       {(noOfRules > 0) && <div>
         <Row type="flex">
-          <Col span={6}>
-            {sidePanel}
-          </Col>
-          <Col span={6} className="rule-editor__rule-list">
+          <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
             {entries.map(([ruleName]) => {
               return <div
                 className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
@@ -72,7 +68,7 @@ const RuleEditor = ({ rules = {}, emptyState, sidePanel, selectedRuleName = "", 
               </div>
             })}
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={18}>
             <div className='code'>
               <CodeMirror
                 value={selectedRule}
