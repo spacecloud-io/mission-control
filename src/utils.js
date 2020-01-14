@@ -9,6 +9,7 @@ import store from "./store"
 import client from "./client"
 import history from "./history"
 import { defaultDbConnectionStrings } from "./constants"
+import { Redirect, Route } from "react-router-dom"
 import gql from 'graphql-tag';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
