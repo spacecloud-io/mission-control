@@ -18,7 +18,7 @@ const Cluster = ({ form }) => {
                     })(
                         <Select
                             mode="multiple"
-                            placeholder="Inserted are removed"
+                            placeholder="Select Clusters"
                             value={selectedItems}
                             onChange={handleChange}
                             style={{ width: '100%' }}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Form, Select, Input, Button, Alert } from 'antd';
-import Chips from "react-chips"
+
 
 const WhiteListedDomains = ({ form }) => {
     const { getFieldDecorator } = form;

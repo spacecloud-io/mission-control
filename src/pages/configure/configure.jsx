@@ -135,8 +135,10 @@ const Configure = () => {
 					<WhitelistedDomains />
 					<h2>Delete Environment</h2>
 					<div className="divider" />
-					<p>Delete this environment config. All services running in this environment will be stopped and deleted.</p>
-					<Button type="danger">Delete</Button>
+					<div style={{ paddingBottom: 15 }}>
+						<p>Delete this environment config. All services running in this environment will be stopped and deleted.</p>
+						<Button type="danger">Delete</Button>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -3,7 +3,7 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import SettingTabs from '../../../components/settings/SettingTabs'
 import { useParams } from 'react-router-dom';
-import { Card, Button, Table } from 'antd';
+import { Card, Button, Table, Popconfirm } from 'antd';
 import { useDispatch } from 'react-redux';
 import AddClusterForm from '../../../components/settings/AddClusterForm'
 import './General.css'
@@ -57,6 +57,10 @@ function Settings() {
             .finally(() => store.dispatch(decrement("pendingRequests")))
     }
 
+    const handleDelete = () => {
+        console.log("deleted");
+    }
+
     const columns = [
         {
             title: 'Name',
@@ -75,7 +79,9 @@ function Settings() {
             render: (_, record) => {
                 return (
                     <span>
-                        <a style={{ color: "red" }}>Delete</a>
+                        <Popconfirm title={`This will delete the data. Are you sure?`} onConfirm={handleDelete}>
+                            <a style={{ color: "red" }}>Delete</a>
+                        </Popconfirm>
                     </span>
                 )
             }
@@ -117,7 +123,7 @@ function Settings() {
                             <div style={{ paddingTop: 25 }}>
                                 <React.Fragment>
                                     <h2 style={{ display: "flex", justifyContent: "space-between" }}>Clusters <Button onClick={() => setModalVisibile(true)} type="primary">Add</Button></h2>
-                                    <Table columns={columns} dataSource={data} />
+                                    <Table columns={columns} dataSource={data} bordered />
                                 </React.Fragment>
                                 <h2>Delete Project</h2>
                                 <div className="divider" />
