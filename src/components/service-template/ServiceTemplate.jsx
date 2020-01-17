@@ -8,7 +8,7 @@ import go from "../../assets/go.png"
 const ServiceTemplate = (props) => {
   return (
     <div className={
-      props.active ? 'template active' : 'template'
+      props.active ? 'service-template active' : 'service-template'
     }>
       <div className="top">
           <div>
