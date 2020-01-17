@@ -33,7 +33,7 @@ const AddClusterForm = (props) => {
                         <Input placeholder="Access Key of your cluster admin" />
                     )}
                 </Form.Item>
-                <FormItemLabel name="Webhook URL" />
+                <FormItemLabel name="Cluster URL" />
                 <Form.Item >
                     {getFieldDecorator('url', {
                         rules: [{ required: true, message: 'Please provide a cluster url' }],
