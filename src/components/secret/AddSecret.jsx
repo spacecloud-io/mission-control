@@ -9,6 +9,7 @@ let env = 1;
 
 const AddSecret = (props) => {
   const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
+  const { key, location } = props.initialValues ? props.initialValues : {}
   let defaultSecretType = getSecretType(getFieldValue("type"), "Environment Variables")
 
   const handleSubmit = (e) => {
@@ -60,13 +61,15 @@ const AddSecret = (props) => {
       <Col span={10}>
         <Form.Item>
           {getFieldDecorator(`env[${k}].name`,
-           { })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
+           { rules: [{ required: true, message: 'Please input key' }] 
+           })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
         </Form.Item>
       </Col>
       <Col span={10}>
         <Form.Item>
           {getFieldDecorator(`env[${k}].value`,
-           { })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
+           { rules: [{ required: true, message: 'Please input value' }]
+            })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
         </Form.Item>
       </Col>
       <Col span={3}>
@@ -114,14 +117,16 @@ const AddSecret = (props) => {
     <Row key={k}>
       <Col span={14}>
         <Form.Item>
-          {getFieldDecorator(`file[${k}].name`, 
-           { })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
+          {getFieldDecorator(`file[${k}].location`, 
+           { rules: [{ required: true, message: 'Please input file mount location' }] 
+          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
         </Form.Item>
       </Col>
       <Col span={6}>
         <Form.Item>
           {getFieldDecorator(`file[${k}].value`,
-           { })(<Upload {...props} accept=".txt">
+           { rules: [{ required: true, message: 'Please upload a file' }] 
+           })(<Upload {...props} accept=".txt">
              <Button type="primary" style={{width: "100%",  marginRight: "6%", float: "left"}}>Choose File</Button>
            </Upload>)}
         </Form.Item>
@@ -142,7 +147,9 @@ const AddSecret = (props) => {
   ));
 
   return(
-    <Modal
+    <div>
+    {!props.eachAdd && 
+      <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Secret`}
       okText={props.initialValues ? "Save" : "Add"}
       visible={true}
@@ -159,8 +166,8 @@ const AddSecret = (props) => {
           })(
             <Radio.Group>
               <RadioCard value="env var">Environment Variables</RadioCard>
-              <RadioCard value="docker secret">Docker Secret</RadioCard>
               <RadioCard value="file secret">File Secret</RadioCard>
+              <RadioCard value="docker secret">Docker Secret</RadioCard>
             </Radio.Group>
           )}
           </Form.Item>
@@ -187,20 +194,28 @@ const AddSecret = (props) => {
               <Input placeholder="Example: DB Secret" />,
             )}
           </Form.Item>
-          <p>Docker email</p>
+          <p>Docker Username</p>
           <Form.Item>
-            {getFieldDecorator('dockerEmail', {
-              rules: [{ required: true, message: 'Please input docker email' }],
+            {getFieldDecorator('dockerUsername', {
+              rules: [{ required: true, message: 'Please input your docker username' }],
             })(
-              <Input placeholder="Email address" />,
+              <Input placeholder="Username of your docker registry" />,
             )}
           </Form.Item>
           <p>Docker Password</p>
           <Form.Item>
             {getFieldDecorator('dockerPass', {
-              rules: [{ required: true, message: 'Please input docker password' }],
+              rules: [{ required: true, message: 'Please input your docker password' }],
             })(
-              <Input placeholder="password" />,
+              <Input placeholder="Password of your docker registry" />,
+            )}
+          </Form.Item>
+          <p>Docker Registry URL</p>
+          <Form.Item>
+            {getFieldDecorator('dockerRegUrl', {
+              rules: [{ required: true, message: 'Please input your docker registry url' }],
+            })(
+              <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />,
             )}
           </Form.Item>
           </React.Fragment>)}
@@ -209,17 +224,67 @@ const AddSecret = (props) => {
           <Form.Item>
             {getFieldDecorator('secretName', {
               rules: [{ required: true, message: 'Please input a secret name' }],
-            })(
+              })(
               <Input placeholder="Example: DB Secret" />,
             )}
           </Form.Item>
-          <p>File secret</p>
+          <p>File Secret</p>
           <Form.Item>
             {formItemsFile}
           </Form.Item>
           </React.Fragment>)}
       </Form>
-    </Modal>
+    </Modal>}
+    {props.eachAdd && 
+      <Modal
+      title={`${props.initialValues ? "Update" : "Add"} ${props.type}`}
+      okText={props.initialValues ? "Save" : "Add"}
+      visible={true}
+      onCancel={props.handleCancel}
+      onOk={handleSubmit}
+      width="600px"
+    >
+        {props.type === "Environment Variables" && <Form>
+            {!props.update && <div><p>Key</p>
+            <Form.Item>
+            {getFieldDecorator(`key`, { rules: [{ required: true, message: 'Please input key' }],
+           })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
+           </Form.Item></div>}
+           {props.update && <div><p>Key</p>
+            <Form.Item>
+            {getFieldDecorator(`key`, { rules: [{ required: true, message: 'Please input key' }], initialValues: key 
+           })(<Input disabled={true} style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
+           </Form.Item></div>}
+           <p>Value</p>
+           <Form.Item>
+           {getFieldDecorator(`value`,
+           { rules: [{ required: true, message: 'Please input value' }], 
+            })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
+          </Form.Item>
+          </Form>}
+          {props.type === "File Secret" && <Form>
+            {!props.update && <div> <p>Location</p>
+            <Form.Item>
+            {getFieldDecorator(`location`, 
+            { rules: [{ required: true, message: 'Please input file mount location' }], 
+            })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
+           </Form.Item></div>}
+           {props.update && <div><p>Location</p>
+            <Form.Item>
+            {getFieldDecorator(`location`, 
+            { rules: [{ required: true, message: 'Please input file mount location' }], initialValues: location
+            })(<Input disabled={true} style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
+           </Form.Item></div>}
+           <Form.Item>
+           {getFieldDecorator(`fileUpload`,
+           { rules: [{ required: true, message: 'Please upload a file' }] 
+           })(<Upload {...props}>
+             <Button type="primary" style={{width: "100%",  marginRight: "6%", float: "left"}}>Choose File</Button>
+           </Upload>)}
+          </Form.Item>
+          </Form>} 
+    </Modal>}
+    </div>
   );
 }
 

@@ -190,9 +190,10 @@ export const handleConfigLogin = (token, lastProjectId) => {
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(isProd => {
+  client.fetchEnv().then(({isProd, version}) => {
     const token = localStorage.getItem("token")
     localStorage.getItem("isProd", isProd.toString())
+    store.dispatch(set("version", version))
     if (isProd && !token) {
       history.push("/mission-control/login")
       return
