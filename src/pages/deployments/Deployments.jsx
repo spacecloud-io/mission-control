@@ -102,7 +102,7 @@ const Deployments = (props) => {
 							<span style={{fontSize: 18, fontWeight: "bold"}}>Your Deployments</span>
 							<Button style={{ float: "right" }} onClick={() => setModalVisibility(true)}>Add</Button>
 					</div>
-          <Table columns={tableColumns} dataSource={data} />
+          <Table bordered={true} columns={tableColumns} dataSource={data} />
         </React.Fragment>
         )}
       </div>
