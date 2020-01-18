@@ -24,7 +24,7 @@ import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
 import Guides from './pages/Guides/Guides'
 import Teams from './pages/Teams/Teams'
-import Plans from './pages/Plans/Plan'
+import Plans from './pages/Plans/Plans'
 
 export default () => {
   return (

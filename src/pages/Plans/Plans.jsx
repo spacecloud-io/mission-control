@@ -12,7 +12,7 @@ function Plans() {
                 <div className="page-content">
                     <div className="panel">
                         <img src={construction} style={{ width: 550 }} />
-                        <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Space Cloud Pro is coming soon! Stay tuned.Join our <a href="https://discordapp.com/invite/ypXEEBr">Discord channel</a> to know more. </p>
+                        <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Space Cloud Pro is coming soon! Stay tuned.Join our <a onClick={() => window.open("https://discordapp.com/invite/ypXEEBr")}>Discord channel</a> to know more. </p>
                     </div>
                 </div>
             </div>

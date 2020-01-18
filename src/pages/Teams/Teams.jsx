@@ -12,7 +12,7 @@ function Teams() {
                 <div className="page-content">
                     <div className="panel">
                         <img src={construction} style={{ width: 550 }} />
-                        <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Team collaboration feature is coming soon.Join our <a href="https://discordapp.com/invite/ypXEEBr">Discord channel</a> to know more about it. </p>
+                        <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Team collaboration feature is coming soon.Join our <a onClick={() => window.open("https://discordapp.com/invite/ypXEEBr")}>Discord channel</a> to know more about it. </p>
                     </div>
                 </div>
             </div>
