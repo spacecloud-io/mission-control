@@ -4,11 +4,7 @@ import { Form, Select, Input, Button, Alert } from 'antd';
 
 const WhiteListedDomains = ({ form }) => {
     const { getFieldDecorator } = form;
-    const { Option } = Select;
     const children = [];
-    for (let i = 10; i < 36; i++) {
-        children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
-    }
 
     return (
         <div style={{ width: 800 }}>

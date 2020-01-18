@@ -6,22 +6,31 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 const AddClusterForm = (props) => {
     const { getFieldDecorator, getFieldValue } = props.form;
 
+    const handleSubmitClick = e => {
+        e.preventDefault();
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                console.log("submit")
+            }
+        });
+    };
+
     return (
         <Modal
             title="Add Cluster"
             okText="Add"
             visible={true}
             onCancel={props.handleCancel}
-        //onOk={handleSubmit}
+            onOk={handleSubmitClick}
         >
-            <Form layout="vertical">
+            <Form layout="vertical" onSubmit={handleSubmitClick}>
                 <FormItemLabel name="Username" />
                 <Form.Item>
                     {getFieldDecorator('username', {
                         rules: [{ required: true, message: 'Please provide a username' }],
                         initialValue: ""
                     })(
-                        <Input placeholder="Username of your cluster admin" />
+                        <Input className="input" placeholder="Username of your cluster admin" />
                     )}
                 </Form.Item>
                 <FormItemLabel name="Access Key" />

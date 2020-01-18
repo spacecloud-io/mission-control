@@ -18,7 +18,7 @@ function Settings() {
 
     const dispatch = useDispatch()
 
-    const [ModalVisible, setModalVisibile] = useState(false)
+    const [modalVisible, setModalVisibile] = useState(false)
     const [nameCopy, setNameCopy] = useState("copy")
     const [keyCopy, setKeyCopy] = useState("copy")
 
@@ -27,16 +27,27 @@ function Settings() {
         setModalVisibile(false)
     }
 
-    const nameCopied = (e) => {
-        e.preventDefault();
-        setNameCopy("copied");
-        setTimeout(() => setNameCopy("copy"), 15000);
+    const copyToClipBoard = (text) => {
+        var textField = document.createElement('textarea')
+        textField.innerText = text
+        document.body.appendChild(textField)
+        textField.select()
+        document.execCommand('copy')
+        textField.remove()
     }
 
-    const keyCopied = (e) => {
+    const nameCopied = (e, text) => {
         e.preventDefault();
+        copyToClipBoard(text)
+        setNameCopy("copied");
+        setTimeout(() => setNameCopy("copy"), 5000);
+    }
+
+    const keyCopied = (e, text) => {
+        e.preventDefault();
+        copyToClipBoard(text)
         setKeyCopy("copied");
-        setTimeout(() => setKeyCopy("copy"), 15000);
+        setTimeout(() => setKeyCopy("copy"), 5000);
     }
 
     const removeProjectConfig = () => {
@@ -117,8 +128,8 @@ function Settings() {
                         <div className="db-tab-content">
                             <h2>Credentials</h2>
                             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-                                <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <a onClick={nameCopied}>{nameCopy}</a></h3>
-                                <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <a onClick={keyCopied}>{keyCopy}</a></h3>
+                                <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <a onClick={(e) => nameCopied(e, "noorainp")}>{nameCopy}</a></h3>
+                                <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <a onClick={(e) => keyCopied(e, "*******************************")}>{keyCopy}</a></h3>
                             </Card>
                             <div style={{ paddingTop: 25 }}>
                                 <React.Fragment>
@@ -132,7 +143,7 @@ function Settings() {
                             </div>
                         </div>
                     </div>
-                    {ModalVisible && <AddClusterForm
+                    {modalVisible && <AddClusterForm
                         handleCancel={handleModalCancel}
                     />}
                 </div>
