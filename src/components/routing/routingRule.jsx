@@ -3,25 +3,7 @@ import { Modal, Form, Input, Select, Checkbox } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const RoutingRule = (props) => {
-    const { getFieldDecorator } = props.form;
-
-    const [rewriteCheck, setRewriteCheck] = useState(false);
-    const [hostCheck, setHostCheck] = useState(false);
-    const [routeType, setRouteType] = useState("Prefix_Match")
-    const [targetService, setTargetService] = useState("")
-
-    const onChange = (type) => {
-        if (type === "host") setHostCheck(!hostCheck)
-        if (type === "write") setRewriteCheck(!rewriteCheck)
-    }
-
-    const selectedRouteType = (value) => {
-        setRouteType(value)
-    }
-
-    const targetServices = (value) => {
-        setTargetService(value)
-    }
+    const { getFieldDecorator, getFieldValue } = props.form;
 
     const serviceObj = [
         {
@@ -38,6 +20,15 @@ const RoutingRule = (props) => {
         },
     ]
 
+    const handleSubmitClick = e => {
+        e.preventDefault();
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                console.log("submit")
+            }
+        });
+    };
+
     return (
         <div>
             <Modal
@@ -45,22 +36,22 @@ const RoutingRule = (props) => {
                 visible={true}
                 okText="Add"
                 onCancel={props.handleCancel}
-            //onOk={handleSubmit}
+                onOk={handleSubmitClick}
             >
-                <Form layout="vertical">
+                <Form layout="vertical" onSubmit={handleSubmitClick}>
                     <FormItemLabel name="Route matching type" />
                     <Form.Item>
                         {getFieldDecorator('routeType', {
                             rules: [{ required: true, message: 'Route type is required' }],
-                            initialValue: "Prefix_Match"
+                            initialValue: "prefix"
                         })(
-                            <Select style={{ width: 200 }} onChange={selectedRouteType}>
-                                <Select.Option value="Prefix_Match">Prefix Match</Select.Option>
-                                <Select.Option value="Exact_Match">Exact Match</Select.Option>
+                            <Select style={{ width: 200 }} >
+                                <Select.Option value="prefix">Prefix Match</Select.Option>
+                                <Select.Option value="exact">Exact Match</Select.Option>
                             </Select>
                         )}
                     </Form.Item>
-                    {routeType === "Exact_Match" ? (
+                    {getFieldValue('routeType') === "exact" ? (
                         <div>
                             <FormItemLabel name="URL" />
                             <Form.Item>
@@ -84,33 +75,43 @@ const RoutingRule = (props) => {
                             </div>
                         )}
                     <FormItemLabel name="Target Service" />
-                    <Form.Item>
-                        {getFieldDecorator('Service', {
-                            rules: [{ required: true, message: 'Please provide service' }]
-                        })(
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <Select style={{ width: 300 }} placeholder="Service a Service" onChange={targetServices}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <Form.Item>
+                            {getFieldDecorator('Service', {
+                                rules: [{ required: true, message: 'Please provide service' }]
+                            })(
+
+                                <Select style={{ width: 300 }} placeholder="Service a Service">
                                     {serviceObj.map(data => (
                                         <Select.Option value={data.name}>{data.name}</Select.Option>
                                     ))}
                                 </Select>
+                            )}
+                        </Form.Item>
+                        <Form.Item>
+                            {getFieldDecorator('port', {
+                                rules: [{ required: true, message: 'Please select port' }]
+                            })(
                                 <Select style={{ width: 150 }} placeholder="Select Port">
                                     {serviceObj.map(data => (
-                                        data.name === targetService ? (
+                                        data.name === getFieldValue('Service') ? (
                                             data.port.map(data => (
                                                 <Select.Option value={data}>{data}</Select.Option>
                                             ))
                                         ) : ("")
                                     ))}
                                 </Select>
-                            </div>
-                        )}
-                    </Form.Item>
+                            )}
+                        </Form.Item>
+                    </div>
                     <FormItemLabel name="Rewrite" />
                     <Form.Item>
-                        <Checkbox checked={rewriteCheck} onChange={(e) => onChange("write")} >Rewrite incoming request URL to target service</Checkbox>
+                        {getFieldDecorator('Rewrite', {
+                            valuePropName: 'checked',
+                            initialValue: false,
+                        })(<Checkbox>Rewrite incoming request URL to target service</Checkbox>)}
                     </Form.Item>
-                    {rewriteCheck ? (
+                    {getFieldValue('Rewrite') ? (
                         <div>
                             <FormItemLabel name="Rewrite URL" />
                             <Form.Item>
@@ -124,16 +125,19 @@ const RoutingRule = (props) => {
                     ) : ("")}
                     <FormItemLabel name="Hosts" />
                     <Form.Item>
-                        <Checkbox checked={hostCheck} onChange={(e) => onChange("host")} >Allow traffic from specified host only</Checkbox>
+                        {getFieldDecorator('Hosts', {
+                            valuePropName: 'checked',
+                            initialValue: false,
+                        })(<Checkbox>Allow traffic from specified hosts only</Checkbox>)}
                     </Form.Item>
-                    {hostCheck ? (
+                    {getFieldValue('Hosts') ? (
                         <div>
                             <FormItemLabel name="Allowed hosts " />
                             <Form.Item>
                                 {getFieldDecorator('Allow hosts', {
                                     rules: [{ required: true, message: 'Please provide hosts' }]
                                 })(
-                                    <Input placeholder="Add hosts that you want to allow for this route" />
+                                    <Input placeholder="Add hosts that you want to whitelist for this route" />
                                 )}
                             </Form.Item>
                         </div>

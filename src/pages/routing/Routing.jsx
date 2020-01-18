@@ -37,7 +37,7 @@ function Routing() {
             render: () => {
                 return (
                     <span>
-                        <a style={{ color: "blue" }}>Edit</a>
+                        <a style={{ color: "#40A9FF" }}>Edit</a>
                         <Popconfirm title={`This will delete all the data. Are you sure?`} onConfirm={handleDelete}>
                             <a style={{ color: "red", paddingLeft: 10 }}>Delete</a>
                         </Popconfirm>
