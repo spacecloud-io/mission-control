@@ -21,8 +21,11 @@ import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
-import AddDb from './pages/database/add-db/AddDb';
 import Settings from './pages/settings/general/General'
+import Routing from './pages/routing/Routing';
+import Guides from './pages/Guides/Guides'
+import Teams from './pages/Teams/Teams'
+import Plans from './pages/Plans/Plans'
 
 export default () => {
   return (
@@ -47,12 +50,16 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
       </Switch>
     </Router>
   );
