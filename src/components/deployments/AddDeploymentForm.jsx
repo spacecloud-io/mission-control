@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import './add-deployment-form.css';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import ServiceTemplate from '../service-template/ServiceTemplate';
-import AdvancedForm from "./AdvancedForm";
+import {notify} from "../../utils";
 
-import { Modal, Form, Radio, Input, Row, Col, Select, Button, Icon, Collapse } from 'antd';
+import { Modal, Form, Radio, Input, Row, Col, Select, Button, Icon, Collapse, InputNumber } from 'antd';
 const {Option} = Select;
 const {Panel} = Collapse;
 
 let ports = 1;
+let env = 0;
+let white = 1;
+let upstreams = 1;
 const AddDeploymentForm = (props) => {
   const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
   const [selectedService, setSelectedService] = useState('');
@@ -18,10 +21,14 @@ const AddDeploymentForm = (props) => {
     props.form.validateFields((err, values) => {
       if (!err) {
        console.log(values)
+       props.handleCancel()
+       notify("success", "Deployment added successfully", "", 3)
       }
     });
   };
 
+  const initialKeys = [0];
+  // PORTS
   const remove = k => {
     const keys = getFieldValue("keys");
     if (keys.length === 1) {
@@ -46,8 +53,6 @@ const AddDeploymentForm = (props) => {
     }
   };
 
-  const initialKeys = [0];
-
   getFieldDecorator("keys", { initialValue: initialKeys });
   const keys = getFieldValue("keys");
   const formItemsPorts = keys.map((k, index) => (
@@ -60,6 +65,12 @@ const AddDeploymentForm = (props) => {
             <Option value="http">HTTP</Option>
           </Select>)}
         </Form.Item>
+        <br/>
+        {index === keys.length - 1 && (
+          <Button onClick={() => add(index)} style={{marginTop: -10}}>
+            Add another pair
+          </Button>
+        )}
       </Col>
       <Col span={9}>
         <Form.Item style={{marginLeft: -40, marginRight: 30}}>
@@ -68,13 +79,193 @@ const AddDeploymentForm = (props) => {
         </Form.Item>
       </Col>
       <Col span={5}>
-        {index === keys.length - 1 && (
-          <Button onClick={() => add(index)}>
-            Add
-          </Button>
-        )}
         {index !== keys.length - 1 && (
           <Button onClick={() => remove(k)}>
+            <Icon type="delete" />
+          </Button>
+        )}
+      </Col>
+    </Row>
+  ));
+
+  // ENVIRONMENT VARIABLES
+  const envRemove = (k, i) => {
+    const envKeys = getFieldValue("envKeys");
+    const env = getFieldValue('env');
+    setFieldsValue({
+      envKeys: envKeys.filter(key => key !== k),
+      env: env.filter((value, index) => index !== i)
+    });
+  };
+
+  const envAdd = () => { 
+      const envKeys = getFieldValue("envKeys");
+      const lastIndex = envKeys.length -1;
+      if(envKeys.length !== 0){
+          if(getFieldValue(`env[${lastIndex}].key`) && getFieldValue(`env[${lastIndex}].value`)){
+            const nextKeys = envKeys.concat(env++);
+            setFieldsValue({
+             envKeys: nextKeys
+            });
+          }
+          else {
+            console.log(getFieldValue(`env`))
+            validateFields([`env[${lastIndex}].key`, `env[${lastIndex}].value`]);
+          }
+      } else {
+        const nextKeys = envKeys.concat(env++);
+            setFieldsValue({
+             envKeys: nextKeys
+            });
+      }
+  };
+
+  getFieldDecorator("envKeys", { initialValue: [] });
+  const envKeys = getFieldValue("envKeys");
+  console.log(envKeys)
+  const formItemsEnv = envKeys.map((k, index) => (
+    <Row key={k}>
+      <Col span={6}>
+        <Form.Item style={{ display: "inline-block" }} >
+          {getFieldDecorator(`env[${k}].key`, {
+            rules: [{ required: true, message: 'Please enter key!' }]
+          })(<Input style={{width: 120}} placeholder="Key"/>)}
+        </Form.Item>
+      </Col>
+      <Col span={9}>
+        <Form.Item style={{ marginRight: 30}}>
+          {getFieldDecorator(`env[${k}].value`, {
+            rules: [{ required: true, message: 'Please enter value before adding another!' }]
+          })
+          (<Input style={{width: 280, marginLeft: -40, marginRight: 30}} placeholder="Value" />)}
+        </Form.Item>
+      </Col>
+      <Col span={5}>
+          <Button onClick={() => envRemove(k, index)}>
+            <Icon type="delete" />
+          </Button>    
+      </Col>
+    </Row>
+  ));
+
+  //WHITELIST
+  const whiteRemove = k => {
+    const whiteKeys = getFieldValue("whiteKeys");
+    if (whiteKeys.length === 1) {
+      return;
+    }
+
+    setFieldsValue({
+      whiteKeys: whiteKeys.filter(key => key !== k)
+    });
+  };
+
+  const whiteAdd = (id) => {
+    if(getFieldValue(`white[${id}].project_id`) && getFieldValue(`white[${id}].service_name`)){
+      const whiteKeys = getFieldValue("whiteKeys");
+      const nextKeys = whiteKeys.concat(white++);
+      setFieldsValue({
+        whiteKeys: nextKeys
+      });
+    }
+    else {
+      validateFields([`white[${id}].project_id`, `white[${id}].service_name`])
+    }
+  };
+
+  getFieldDecorator("whiteKeys", { initialValue: [0] });
+  const whiteKeys = getFieldValue("whiteKeys");
+  const formItemsWhite = whiteKeys.map((k, index) => (
+    <Row key={k} className={index === whiteKeys.length - 1 ? "bottom-spacing" : ""}>
+      <Col span={10}>
+        <Form.Item style={{ display: "inline-block" }} >
+          {getFieldDecorator(`white[${k}].project_id`, {
+            rules: [{ required: true, message: 'Please fill this field before adding!' }],
+            initialValue: k === 0 ? "project1" : ""
+          })(<Input style={{width: 230}} placeholder="Project ID ( * to select all )"/>)}
+        </Form.Item>
+      <Icon type="right" style={{fontSize: 12, marginLeft: 16, marginTop: 8}} /><br/>
+      {index === whiteKeys.length - 1 && (
+          <Button onClick={() => whiteAdd(index)} style={{marginTop: -10}}>
+            Add another field
+          </Button>
+        )}
+      </Col>
+      <Col span={9}>
+        <Form.Item style={{ marginRight: 30}}>
+          {getFieldDecorator(`white[${k}].service_name`, {
+            rules: [{ required: true, message: 'Please fill this field before adding!' }],
+            initialValue: k === 0 ? "*" : ""
+          })
+          (<Input style={{width: 230}} placeholder="Service Name ( * to select all )" />)}
+        </Form.Item>
+      </Col>
+      <Col span={3}>
+        {index !== 0 && (
+          <Button onClick={() => whiteRemove(k)}>
+            <Icon type="delete" />
+          </Button>
+        )}
+      </Col>
+    </Row>
+  ));
+
+  //UPSTREAMS
+  const upstreamsRemove = k => {
+    const upstreamsKeys = getFieldValue("upstreamsKeys");
+    if (upstreamsKeys.length === 1) {
+      return;
+    }
+
+    setFieldsValue({
+      upstreamsKeys: upstreamsKeys.filter(key => key !== k)
+    });
+  };
+
+  const upstreamsAdd = (id) => {
+    if(getFieldValue(`upstreams[${id}].project_id`) && getFieldValue(`upstreams[${id}].service_name`)){
+      const upstreamsKeys = getFieldValue("upstreamsKeys");
+      const nextKeys = upstreamsKeys.concat(upstreams++);
+      setFieldsValue({
+        upstreamsKeys: nextKeys
+      });
+    }
+    else{
+      validateFields([`upstreams[${id}].project_id`, `upstreams[${id}].service_name`])
+    }
+  };
+
+  getFieldDecorator("upstreamsKeys", { initialValue: [0] });
+  const upstreamsKeys = getFieldValue("upstreamsKeys");
+  const formItemsUpstreams = upstreamsKeys.map((k, index) => (
+    <Row key={k} className={index === upstreamsKeys.length - 1 ? "bottom-spacing" : ""}>
+      <Col span={10}>
+        <Form.Item style={{ display: "inline-block" }} >
+          {getFieldDecorator(`upstreams[${k}].project_id`, {
+            rules: [{ required: true, message: 'Please fill this field before adding!' }],
+            initialValue: k === 0 ? "project1" : ""
+          })(<Input style={{width: 230}} placeholder="Project ID ( * to select all )"/>)}
+        </Form.Item>
+      <Icon type="right" style={{fontSize: 12, marginLeft: 16, marginTop: 8}} /><br/>
+      {index === upstreamsKeys.length - 1 && (
+          <Button onClick={() => upstreamsAdd(index)} style={{marginTop: -10}}>
+            Add another field
+          </Button>
+        )}
+      </Col>
+      <Col span={9}>
+        <Form.Item style={{ marginRight: 30}}>
+          {getFieldDecorator(`upstreams[${k}].service_name`, {
+            rules: [{ required: true, message: 'Please fill this field before adding!' }],
+            initialValue: k === 0 ? "*" : ""
+          }
+          )
+          (<Input style={{width: 230}} placeholder="Service Name ( * to select all )" />)}
+        </Form.Item>
+      </Col>
+      <Col span={5}>
+        {index !== 0 && (
+          <Button onClick={() => upstreamsRemove(k)}>
             <Icon type="delete" />
           </Button>
         )}
@@ -118,13 +309,13 @@ const AddDeploymentForm = (props) => {
                  initialValue: "postgres"
                 })(
                 <Radio.Group onChange={e => setSelectedService(e.target.value)}>
-                    <Radio.Button className="radio-card" value="nondockerized" style={{padding: 0}}>
+                    <Radio.Button className="deployment-card" value="nondockerized" style={{padding: 0}}>
                         <ServiceTemplate
                          heading="Non dockerized code"
                          active={selectedService === "nondockerized"}
                         />
                     </Radio.Button>
-                    <Radio.Button className="radio-card" value="dockerized">
+                    <Radio.Button className="deployment-card" value="dockerized">
                         <ServiceTemplate
                          heading="Docker container"
                          active={selectedService === "dockerized"} 
@@ -171,9 +362,54 @@ const AddDeploymentForm = (props) => {
                 </Form.Item>
                 <FormItemLabel name="Ports" />
                 {formItemsPorts}
-                <Collapse bordered={false}>
+                <Collapse className="deployment-collapse" bordered={false}>
                     <Panel header="Advanced" key="1">
-                        <AdvancedForm />
+                      <FormItemLabel name="Resources" />
+                      <Form.Item>
+                        {getFieldDecorator('resouces', {
+                         initialValue: "0.25"
+                        })(
+                          <Select style={{width: 250}}>
+                            <Option value="0.25">1 vCPU / 2 GB Ram</Option>
+                          </Select>
+                        )}
+                      </Form.Item>
+                      <FormItemLabel name="Auto scaling" description="Auto scale your container instances between min and max replicas based on the number of requests" />
+                      <Form.Item>
+                        <>
+                          {getFieldDecorator("min", {initialValue: 0})(
+                            <Input addonBefore="Min" style={{width: 147}}/>
+                          )}
+                          {getFieldDecorator("max", {initialValue: 100})(
+                            <Input addonBefore="Max" style={{width: 147, marginLeft: 35}}/>
+                          )}
+                        </>
+                      </Form.Item>
+                      <FormItemLabel name="Concurrency" description="Number of requests that your single instance can handle parallely" />
+                      <Form.Item>
+                        {getFieldDecorator("concurrency", {initialValue: 50})(
+                          <InputNumber style={{width: 160}}/>
+                        )}
+                      </Form.Item>
+                      <FormItemLabel name="Environment variables" />
+                      {formItemsEnv}
+                      <Button onClick={() => envAdd()} style={{marginBottom: 20}}>
+                        {envKeys.length === 0 ? "Add an environment variable" : "Add another field"}
+                      </Button>
+                      <FormItemLabel name="Secrets" />
+                        <Form.Item>
+                          {getFieldDecorator("secrets", {
+                            initialValue: "1"
+                          })(
+                            <Select placeholder="Select secrets to be applied" style={{width: 410}}>
+                              <Option value="1">Secret 1</Option>
+                            </Select>
+                          )}
+                        </Form.Item>
+                        <FormItemLabel name="Whitelist" description="Only those services that are whitelisted can access you" />
+                        {formItemsWhite}
+                        <FormItemLabel name="Upstreams" description="The upstream servces that you can access" />
+                        {formItemsUpstreams}
                     </Panel>
                 </Collapse>
             </>
