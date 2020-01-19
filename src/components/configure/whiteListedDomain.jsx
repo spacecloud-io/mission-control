@@ -19,7 +19,7 @@ const WhiteListedDomains = ({ form }) => {
                     {getFieldDecorator('cluster', {
                         rules: [{ required: true, message: 'Please enter the domain for the project' }],
                     })(
-                        <Select mode="tags" style={{ width: '100%' }} tokenSeparators={[',']}>
+                        <Select mode="tags" placeholder="Example: foo.bar.com" style={{ width: '100%' }} tokenSeparators={[',']}>
                             {children}
                         </Select>,
                     )}

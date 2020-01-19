@@ -12,6 +12,7 @@ import { getProjectConfig, notify, setProjectConfig } from '../../../utils';
 import client from "../../../client"
 import store from "../../../store";
 import history from "../../../history"
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 function Settings() {
     const { projectID, selectedDB } = useParams()
@@ -27,27 +28,15 @@ function Settings() {
         setModalVisibile(false)
     }
 
-    const copyToClipBoard = (text) => {
-        var textField = document.createElement('textarea')
-        textField.innerText = text
-        document.body.appendChild(textField)
-        textField.select()
-        document.execCommand('copy')
-        textField.remove()
-    }
-
-    const nameCopied = (e, text) => {
+    const copyValue = (e, text) => {
         e.preventDefault();
-        copyToClipBoard(text)
-        setNameCopy("copied");
-        setTimeout(() => setNameCopy("copy"), 5000);
-    }
-
-    const keyCopied = (e, text) => {
-        e.preventDefault();
-        copyToClipBoard(text)
-        setKeyCopy("copied");
-        setTimeout(() => setKeyCopy("copy"), 5000);
+        if (text === "username") {
+            setNameCopy("copied");
+            setTimeout(() => setNameCopy("copy"), 5000);
+        } else {
+            setKeyCopy("copied");
+            setTimeout(() => setKeyCopy("copy"), 5000);
+        }
     }
 
     const removeProjectConfig = () => {
@@ -128,8 +117,12 @@ function Settings() {
                         <div className="db-tab-content">
                             <h2>Credentials</h2>
                             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-                                <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <a onClick={(e) => nameCopied(e, "noorainp")}>{nameCopy}</a></h3>
-                                <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <a onClick={(e) => keyCopied(e, "*******************************")}>{keyCopy}</a></h3>
+                                <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <CopyToClipboard text="noorainp">
+                                    <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
+                                </CopyToClipboard></h3>
+                                <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text="*************************">
+                                    <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
+                                </CopyToClipboard></h3>
                             </Card>
                             <div style={{ paddingTop: 25 }}>
                                 <React.Fragment>
