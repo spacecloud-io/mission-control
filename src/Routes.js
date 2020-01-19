@@ -22,6 +22,7 @@ import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
+import Routing from './pages/routing/Routing';
 import Guides from './pages/Guides/Guides'
 import Teams from './pages/Teams/Teams'
 import Plans from './pages/Plans/Plans'
@@ -47,6 +48,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
