@@ -22,6 +22,9 @@ import UserManagement from "./pages/user-management/UserManagement";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import AddDb from './pages/database/add-db/AddDb';
+import Guides from './pages/Guides/Guides'
+import Teams from './pages/Teams/Teams'
+import Plans from './pages/Plans/Plans'
 
 export default () => {
   return (
@@ -50,6 +53,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
       </Switch>
     </Router>
   );
