@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import security from '../../assets/security.svg';
-import { Button, Table, Icon, Row, Col, Popconfirm } from 'antd';
+import { Button, Table, Popconfirm } from 'antd';
 import AddSecret from '../../components/secret/AddSecret';
-import { getSecretType, getProjectConfig } from '../../utils';
+import { getSecretType } from '../../utils';
 import { useHistory, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch} from 'react-redux';
 import { set } from 'automate-redux';
 
 const Secrets = () => {
@@ -14,15 +14,8 @@ const Secrets = () => {
 	const { projectID } = useParams();
 	const dispatch = useDispatch();
 	const [secretModalVisible, setSecretModalVisible] = useState(false);
-	const [EachAddModalVisible, setEachAddModalVisible] = useState(false);
-	const [secret, setSecret] = useState(true);
-	const [secretName, setSecretName] = useState("");
 	const [secretType, setSecretType] = useState("");
-	const [secretUpdate, setSecretUpdate] = useState("")
-	const [secretUpdateModal, setSecretUpdateModal] = useState(false)
-	const secrets = [];
-	const secretUpdateInfo = secretUpdate ? { name: secretUpdate, ...secrets[secretUpdate] } : undefined
-	
+
 	const handleSecretView = (name, type) => {
 		setSecretType(getSecretType(type))
 		dispatch(set("secretType", type))
@@ -102,7 +95,7 @@ const Secrets = () => {
 						<h3 style={{ display: "flex", justifyContent: "space-between" }}>Secrets <Button onClick={() => setSecretModalVisible(true)} type="primary">Add</Button></h3>
 						<Table columns={columns} dataSource={secretsTableData} bordered={true} />
 					{secretModalVisible && <AddSecret eachAdd={false}
-					handleCancel={handleSecretModalCancel} initialValues={secretUpdateInfo}/>}
+					handleCancel={handleSecretModalCancel}/>}
 				</div>
 			</div>
 		</div>

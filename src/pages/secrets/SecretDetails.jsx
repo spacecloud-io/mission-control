@@ -5,8 +5,6 @@ import { Button, Table, Icon, Row, Col, Popconfirm, Card } from 'antd';
 import AddSecret from '../../components/secret/AddSecret';
 import { getSecretType } from '../../utils';
 import { useHistory, useParams} from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { getProjectConfig} from "../../utils"
 import store from '../../store';
 
 
@@ -14,9 +12,6 @@ const SecretDetails = () => {
     const history = useHistory();
     const {projectID, secretName} = useParams();
 	const [EachAddModalVisible, setEachAddModalVisible] = useState(false);
-	const dispatch = useDispatch();
-	//const [secretname, setSecretName] = useState("");
-	//const [secretType, setSecretType] = useState("Environment Variables");
 	const [secretUpdate, setSecretUpdate] = useState("")
 	const [secretUpdateModal, setSecretUpdateModal] = useState(false)
 	const secrets = [];
