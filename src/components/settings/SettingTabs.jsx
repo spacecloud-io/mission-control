@@ -15,7 +15,7 @@ export default ({ activeKey, projectID }) => {
             }}
           />
         </TabPane>
-        <TabPane tab='Environment Settings' key='Environment Settings'>
+        <TabPane tab='Project Settings' key='Project Settings'>
           <Redirect
             to={{
               pathname: `/mission-control/projects/${projectID}/settings/environment`
