@@ -20,7 +20,7 @@ body {
 
 .page-content--no-padding {
   padding: 0;
-  top: 10px;
+  top: 0px;
   left: 0px;
   right: 0;
   position: absolute;

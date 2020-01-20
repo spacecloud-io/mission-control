@@ -57,34 +57,36 @@ const AddSecret = (props) => {
   getFieldDecorator("envKeys", { initialValue: initialKeys });
   const envKeys = getFieldValue("envKeys");
   const formItemsEnv = envKeys.map((k, index) => (
+    <div>
     <Row key={k}>
       <Col span={10}>
-        <Form.Item>
+        {defaultSecretType === "Environment Variables" && <Form.Item>
           {getFieldDecorator(`env[${k}].name`,
            { rules: [{ required: true, message: 'Please input key' }] 
            })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
-        </Form.Item>
+        </Form.Item>}
       </Col>
       <Col span={10}>
-        <Form.Item>
+        {defaultSecretType === "Environment Variables" && <Form.Item>
           {getFieldDecorator(`env[${k}].value`,
            { rules: [{ required: true, message: 'Please input value' }]
             })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
-        </Form.Item>
+        </Form.Item>}
       </Col>
       <Col span={3}>
-        {index === envKeys.length - 1 && (
-          <Button onClick={() => envAdd(index)} style={{ marginRight: "2%", float: "left"}}>
-            <Icon type="plus" />Add
-          </Button>
-        )}
-        {index !== envKeys.length - 1 && (
+        {envKeys.length > 1 ? (
           <Button onClick={() => envRemove(k)} style={{ marginRight: "2%", float: "left"}}>
             <Icon type="delete" />
           </Button>
-        )}
+        ): null}
       </Col>
     </Row>
+    {index === envKeys.length - 1 && (
+      <Button onClick={() => envAdd(index)} style={{ marginRight: "2%", float: "left"}}>
+        <Icon type="plus" />Add another pair
+      </Button>
+    )}
+    </div>
   ));
 
   const fileRemove = k => {
@@ -114,36 +116,38 @@ const AddSecret = (props) => {
   getFieldDecorator("fileKeys", { initialValue: initialKeys });
   const fileKeys = getFieldValue("fileKeys");
   const formItemsFile = fileKeys.map((k, index) => (
+    <div>
     <Row key={k}>
       <Col span={14}>
-        <Form.Item>
-          {getFieldDecorator(`file[${k}].location`, 
-           { rules: [{ required: true, message: 'Please input file mount location' }] 
-          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
-        </Form.Item>
+        {defaultSecretType === "File Secret" && <Form.Item>
+          {getFieldDecorator(`file[${k}].loc_name`, 
+           { rules: [{ required: true, message: 'Please input file name' }] 
+          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File name at the location"/>)}
+        </Form.Item>}
       </Col>
       <Col span={6}>
-        <Form.Item>
+        {defaultSecretType === "File Secret" && <Form.Item>
           {getFieldDecorator(`file[${k}].value`,
            { rules: [{ required: true, message: 'Please upload a file' }] 
-           })(<Upload {...props} accept=".txt">
-             <Button type="primary" style={{width: "100%",  marginRight: "6%", float: "left"}}>Choose File</Button>
+           })(<Upload {...props} >
+             <Button type="default" style={{width: "100%",  marginRight: "6%", float: "left"}}><Icon type="upload" />Choose File</Button>
            </Upload>)}
-        </Form.Item>
+        </Form.Item>}
       </Col>
       <Col span={3}>
-        {index === fileKeys.length - 1 && (
-          <Button onClick={() => fileAdd(index)} style={{ marginRight: "2%", float: "left"}}>
-            <Icon type="plus" />Add
-          </Button>
-        )}
-        {index !== fileKeys.length - 1 && (
+        {fileKeys.length > 1 ? (
           <Button onClick={() => fileRemove(k)} style={{ marginRight: "2%", float: "left"}}>
             <Icon type="delete" />
           </Button>
-        )}
+        ): null}
       </Col>
     </Row>
+    {index === fileKeys.length - 1 && (
+      <Button onClick={() => fileAdd(index)} style={{ marginRight: "2%", float: "left"}}>
+        <Icon type="plus" />Add another pair
+      </Button>
+    )}
+    </div>
   ));
 
   return(
@@ -175,12 +179,22 @@ const AddSecret = (props) => {
           <p>Name your secret</p>
           <Form.Item>
             {getFieldDecorator('secretName', {
-              rules: [{ required: true, message: 'Please input a secret name' }],
+              rules: [{ 
+              validator: (_, value, cb) => {
+                if (!value) {
+                  cb("Please provide a service name!")
+                  return
+                }
+                if (value.includes(" ")) {
+                  cb("Secret name cannot contain spaces!")
+                }
+                cb()
+              } }],
             })(
               <Input placeholder="Example: DB Secret" />,
             )}
           </Form.Item>
-          <p>Environment Variables</p>
+          <p>Environment variable pairs</p>
           <Form.Item >
             {formItemsEnv}
           </Form.Item>
@@ -228,7 +242,15 @@ const AddSecret = (props) => {
               <Input placeholder="Example: DB Secret" />,
             )}
           </Form.Item>
-          <p>File Secret</p>
+          <p>Mount location</p>
+          <Form.Item>
+            {getFieldDecorator('location', {
+              rules: [{ required: true, message: 'Please input a file location' }],
+              })(
+              <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />,
+            )}
+          </Form.Item>
+          <p>File secret pairs</p>
           <Form.Item>
             {formItemsFile}
           </Form.Item>

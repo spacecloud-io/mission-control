@@ -26,6 +26,10 @@ import AddDb from './pages/database/add-db/AddDb';
 import ManageServices from './pages/manage-services/ManageServices';
 import Deployments from './pages/deployments/Deployments';
 import Secrets from './pages/secrets/Secrets';
+import SecretDetails from './pages/secrets/SecretDetails';
+import Guides from './pages/Guides/Guides'
+import Teams from './pages/Teams/Teams'
+import Plans from './pages/Plans/Plans'
 
 export default () => {
   return (
@@ -58,6 +62,10 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
       </Switch>
     </Router>
   );
