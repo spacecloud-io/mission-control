@@ -115,7 +115,7 @@ const Configure = () => {
 			<Sidenav selectedItem="settings" />
 			<div className="page-content page-content--no-padding">
 				<SettingTabs activeKey='Environment Settings' projectID={projectID} />
-				<div style={{ paddingTop: 20 }}>
+				<div style={{ paddingTop: 20 }} className="db-tab-content">
 					<h2>JWT Secret</h2>
 					<div className="divider" />
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />

@@ -121,12 +121,12 @@ const SecretDetails = () => {
         <div>
             <Topbar showProjectSelector />
 			<Sidenav selectedItem="secrets" />
-			<div className="page-content">
+			<div>
             {EachAddModalVisible && <AddSecret eachAdd={true} update={false} type={secretType}
             handleCancel={() => setEachAddModalVisible(false)} />}
             {secretUpdateModal && <AddSecret eachAdd={true} update={true} type={secretType}
             handleCancel={() => setSecretUpdateModal(false)} initialValues={secretUpdateInfo}/>}
-            <div className='page-content--no-padding'>
+            <div className='page-content page-content--no-padding'>
             <div style={{
                 boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
                 height: 48,
