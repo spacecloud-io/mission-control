@@ -27,6 +27,8 @@ import ManageServices from './pages/manage-services/ManageServices';
 import Deployments from './pages/deployments/Deployments';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import Settings from './pages/settings/general/General'
+import Routing from './pages/routing/Routing';
 import Guides from './pages/Guides/Guides'
 import Teams from './pages/Teams/Teams'
 import Plans from './pages/Plans/Plans'
@@ -53,6 +55,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />

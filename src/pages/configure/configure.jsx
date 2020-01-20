@@ -17,6 +17,10 @@ import store from "../../store";
 import history from "../../history"
 import Projects from '../../services/projects';
 import { dbIcons } from '../../utils';
+import SettingTabs from '../../components/settings/SettingTabs'
+import Clusters from '../../components/configure/Clusters'
+import WhitelistedDomains from '../../components/configure/whiteListedDomain'
+
 
 const Configure = () => {
 	// Router params
@@ -108,9 +112,10 @@ const Configure = () => {
 	return (
 		<div className="configure-page">
 			<Topbar showProjectSelector />
-			<div>
-				<Sidenav selectedItem="configure" />
-				<div className="page-content">
+			<Sidenav selectedItem="settings" />
+			<div className="page-content page-content--no-padding">
+				<SettingTabs activeKey='Environment Settings' projectID={projectID} />
+				<div style={{ paddingTop: 20 }}>
 					<h2>JWT Secret</h2>
 					<div className="divider" />
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
@@ -120,10 +125,20 @@ const Configure = () => {
 					<h2>Export/Import Project Config</h2>
 					<div className="divider" />
 					<ExportImport projectConfig={selectedProject} importProjectConfig={importProjectConfig} />
-					<h2>Delete Project</h2>
+					<h2>Environment Clusters</h2>
 					<div className="divider" />
-					<p>Removes project config</p>
-					<Button type="danger" onClick={removeProjectConfig}>Remove</Button>
+					<p>Select clusters on which this environment should be deployed.</p>
+					<Clusters />
+					<h2>Whitelisted Domains</h2>
+					<div className="divider" />
+					<p>Add domains you want to whitelist for this environment. Space cloud will automatically add and renew SSL certificates for these domains </p>
+					<WhitelistedDomains />
+					<h2>Delete Environment</h2>
+					<div className="divider" />
+					<div style={{ paddingBottom: 15 }}>
+						<p>Delete this environment config. All services running in this environment will be stopped and deleted.</p>
+						<Button type="danger">Delete</Button>
+					</div>
 				</div>
 			</div>
 		</div>
