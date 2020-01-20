@@ -14,7 +14,3 @@
   .bottom-spacing {
     margin-bottom: 20px;
   }
-
-  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):focus-within{
-    outline: none;
-  }

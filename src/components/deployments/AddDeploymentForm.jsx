@@ -40,17 +40,12 @@ const AddDeploymentForm = (props) => {
     });
   };
 
-  const add = (id) => {
-    if(getFieldValue(`ports[${id}].port`)){
+  const add = () => {
       const keys = getFieldValue("keys");
       const nextKeys = keys.concat(ports++);
       setFieldsValue({
         keys: nextKeys
       });
-    }
-    else{
-      validateFields([`ports[${id}].port`])
-    }
   };
 
   getFieldDecorator("keys", { initialValue: initialKeys });
@@ -67,7 +62,7 @@ const AddDeploymentForm = (props) => {
         </Form.Item>
         <br/>
         {index === keys.length - 1 && (
-          <Button onClick={() => add(index)} style={{marginTop: -10}}>
+          <Button onClick={() => add()} style={{marginTop: -10}}>
             Add another pair
           </Button>
         )}
@@ -89,41 +84,24 @@ const AddDeploymentForm = (props) => {
   ));
 
   // ENVIRONMENT VARIABLES
-  const envRemove = (k, i) => {
+  const envRemove = (k) => {
     const envKeys = getFieldValue("envKeys");
-    const env = getFieldValue('env');
     setFieldsValue({
-      envKeys: envKeys.filter(key => key !== k),
-      env: env.filter((value, index) => index !== i)
+      envKeys: envKeys.filter(key => key !== k)
     });
   };
 
   const envAdd = () => { 
       const envKeys = getFieldValue("envKeys");
-      const lastIndex = envKeys.length -1;
-      if(envKeys.length !== 0){
-          if(getFieldValue(`env[${lastIndex}].key`) && getFieldValue(`env[${lastIndex}].value`)){
-            const nextKeys = envKeys.concat(env++);
-            setFieldsValue({
-             envKeys: nextKeys
-            });
-          }
-          else {
-            console.log(getFieldValue(`env`))
-            validateFields([`env[${lastIndex}].key`, `env[${lastIndex}].value`]);
-          }
-      } else {
-        const nextKeys = envKeys.concat(env++);
-            setFieldsValue({
-             envKeys: nextKeys
-            });
-      }
+      const nextKeys = envKeys.concat(env++);
+      setFieldsValue({
+          envKeys: nextKeys
+      });
   };
 
   getFieldDecorator("envKeys", { initialValue: [] });
   const envKeys = getFieldValue("envKeys");
-  console.log(envKeys)
-  const formItemsEnv = envKeys.map((k, index) => (
+  const formItemsEnv = envKeys.map((k) => (
     <Row key={k}>
       <Col span={6}>
         <Form.Item style={{ display: "inline-block" }} >
@@ -141,7 +119,7 @@ const AddDeploymentForm = (props) => {
         </Form.Item>
       </Col>
       <Col span={5}>
-          <Button onClick={() => envRemove(k, index)}>
+          <Button onClick={() => envRemove(k)}>
             <Icon type="delete" />
           </Button>    
       </Col>
@@ -160,17 +138,14 @@ const AddDeploymentForm = (props) => {
     });
   };
 
-  const whiteAdd = (id) => {
-    if(getFieldValue(`white[${id}].project_id`) && getFieldValue(`white[${id}].service_name`)){
+  const whiteAdd = () => {
+
       const whiteKeys = getFieldValue("whiteKeys");
       const nextKeys = whiteKeys.concat(white++);
       setFieldsValue({
         whiteKeys: nextKeys
       });
-    }
-    else {
-      validateFields([`white[${id}].project_id`, `white[${id}].service_name`])
-    }
+    
   };
 
   getFieldDecorator("whiteKeys", { initialValue: [0] });
@@ -186,7 +161,7 @@ const AddDeploymentForm = (props) => {
         </Form.Item>
       <Icon type="right" style={{fontSize: 12, marginLeft: 16, marginTop: 8}} /><br/>
       {index === whiteKeys.length - 1 && (
-          <Button onClick={() => whiteAdd(index)} style={{marginTop: -10}}>
+          <Button onClick={() => whiteAdd()} style={{marginTop: -10}}>
             Add another field
           </Button>
         )}
@@ -222,17 +197,12 @@ const AddDeploymentForm = (props) => {
     });
   };
 
-  const upstreamsAdd = (id) => {
-    if(getFieldValue(`upstreams[${id}].project_id`) && getFieldValue(`upstreams[${id}].service_name`)){
+  const upstreamsAdd = () => {
       const upstreamsKeys = getFieldValue("upstreamsKeys");
       const nextKeys = upstreamsKeys.concat(upstreams++);
       setFieldsValue({
         upstreamsKeys: nextKeys
       });
-    }
-    else{
-      validateFields([`upstreams[${id}].project_id`, `upstreams[${id}].service_name`])
-    }
   };
 
   getFieldDecorator("upstreamsKeys", { initialValue: [0] });
@@ -309,18 +279,22 @@ const AddDeploymentForm = (props) => {
                  initialValue: "postgres"
                 })(
                 <Radio.Group onChange={e => setSelectedService(e.target.value)}>
-                    <Radio.Button className="deployment-card" value="nondockerized" style={{padding: 0}}>
+                  <Row>
+                    <Col span={12}>
                         <ServiceTemplate
                          heading="Non dockerized code"
                          active={selectedService === "nondockerized"}
+                         value="nondockerized"
                         />
-                    </Radio.Button>
-                    <Radio.Button className="deployment-card" value="dockerized">
+                    </Col>
+                    <Col span={12}>
                         <ServiceTemplate
                          heading="Docker container"
-                         active={selectedService === "dockerized"} 
+                         active={selectedService === "dockerized"}
+                         value="dockerized" 
                         />
-                    </Radio.Button>
+                    </Col>
+                  </Row>
                 </Radio.Group>
                 )}
             </Form.Item>

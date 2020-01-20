@@ -4,12 +4,14 @@ import docker from "../../assets/docker.png";
 import python from "../../assets/python.png"
 import js from "../../assets/js.png"
 import go from "../../assets/go.png"
+import {Radio} from "antd";
 
 const ServiceTemplate = (props) => {
   return (
     <div className={
       props.active ? 'service-template active' : 'service-template'
     }>
+      <Radio.Button className="deployment-card" value={props.value} style={{padding: 0}}>
       <div className="top">
           <div>
         <span className="heading">{props.heading}</span>
@@ -30,6 +32,7 @@ const ServiceTemplate = (props) => {
           </div>
         )}
       </div>
+      </Radio.Button>
     </div>
   )
 }
