@@ -5,6 +5,20 @@
   border-radius: 4px !important;
   border-width: 1px !important;
 }
+.radio-card--layout-card {
+  padding: 16px 24px;
+  height: auto;
+}
+
+.radio-card--layout-card .title {
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.radio-card--layout-card .description {
+  line-height: 18px;
+  color: rgba(0, 0, 0, 0.56);
+}
 
 .radio-card:not(:first-child):not(.ant-radio-button-wrapper-checked) {
   border-left: 1px solid #d9d9d9;
