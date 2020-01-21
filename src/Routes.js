@@ -15,16 +15,15 @@ import DBOverview from "./pages/database/overview/DBOverview";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
+import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
+import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
-import AddDb from './pages/database/add-db/AddDb';
-import ManageServices from './pages/manage-services/ManageServices';
-import Deployments from './pages/deployments/Deployments';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 import Settings from './pages/settings/general/General'
@@ -64,7 +63,6 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/manage-services" component={ManageServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />

@@ -1,5 +1,12 @@
-import React from "react"
-import { Radio } from "antd"
-import "./radio-card.css"
+import React from "react";
+import { Radio } from "antd";
+import "./radio-card.css";
 
-export default (props) => <Radio.Button className="radio-card" {...props}></Radio.Button>
+export default ({ layout, ...otherProps }) => (
+  <Radio.Button
+    className={`radio-card ${
+      layout === "card" ? "radio-card--layout-card" : ""
+    }`}
+    {...otherProps}
+  ></Radio.Button>
+);
