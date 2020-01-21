@@ -129,10 +129,6 @@ function Settings() {
                                     <h2 style={{ display: "flex", justifyContent: "space-between" }}>Clusters <Button onClick={() => setModalVisibile(true)} type="primary">Add</Button></h2>
                                     <Table columns={columns} dataSource={data} bordered />
                                 </React.Fragment>
-                                <h2>Delete Project</h2>
-                                <div className="divider" />
-                                <p>Delete this project config. All services running in this project will be stopped and deleted.</p>
-                                <Button type="danger" onClick={removeProjectConfig} >Remove</Button>
                             </div>
                         </div>
                     </div>

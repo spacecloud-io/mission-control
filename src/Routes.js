@@ -8,6 +8,7 @@ import Login from "./pages/login/Login";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
+import AddDb from './pages/database/add-db/AddDb';
 import DatabaseModulePage from "./pages/database/Index";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
