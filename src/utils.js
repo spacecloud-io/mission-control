@@ -58,7 +58,7 @@ export const setProjectConfig = (projectId, path, value) => {
   store.dispatch(set("projects", updatedProjects))
 }
 
-const generateId = () => {
+export const generateId = () => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
@@ -129,6 +129,26 @@ export const getFileStorageProviderLabelFromStoreType = (storeType) => {
     default:
       return ""
   }
+}
+
+export const getSecretType = (type, defaultValue) => {
+  let secret = defaultValue
+  if (type) {
+    switch (type) {
+      case "env var":
+        secret = "Environment Variables"
+        break;
+      case "docker secret":
+        secret = "Docker Secret"
+        break;
+      case "file secret":
+          secret = "File Secret"
+          break;
+      default:
+        secret = "Environment Variables"
+    }
+  }
+  return secret
 }
 
 export const openProject = (projectId) => {

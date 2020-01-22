@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import { Button, Table, Popconfirm } from "antd";
 import Sidenav from "../../components/sidenav/Sidenav";
@@ -9,9 +9,11 @@ import AddDeploymentForm from "../../components/deployments/AddDeploymentForm";
 import client from "../../client"; 
 import source_code from "../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
+import { increment, decrement } from "automate-redux";
 
 const Deployments = () => {
   const { projectID } = useParams();
+  const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const deployments = getProjectConfig(
     projects,
@@ -106,6 +108,7 @@ const Deployments = () => {
   
     const handleSubmit = (type, values) => {
       return new Promise((resolve, reject) => {
+        dispatch(increment("pendingRequests"))
         let config =  {
           id: values.id,
           projectId: projectID,
@@ -148,15 +151,18 @@ const Deployments = () => {
           resolve()
         })
         .catch(ex => reject(ex))
+        .finally(() => dispatch(decrement("pendingRequests")))
       })
     };
 
     const handleDelete = (serviceId) => {
+      dispatch(increment("pendingRequests"))
       client.deployments.deleteDeploymentConfig(projectID, serviceId, "v1").then(() => {
         const newDeployments = deployments.filter(obj => obj.id !== serviceId)
         setProjectConfig(projectID, "modules.deployments.services", newDeployments)
         notify("success", "Success", "Successfully deleted deployment config")
       }).catch(ex => notify("error", "Error deleting deployment", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
     }
   
     const handleCancel = () => {
