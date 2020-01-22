@@ -41,7 +41,6 @@ const EventTriggers = () => {
 	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
-
 	useEffect(() => {
 		ReactGA.pageview("/projects/event-triggers");
 	}, [])

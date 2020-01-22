@@ -7,6 +7,7 @@ import EventTriggers from "./eventTriggers"
 import RemoteServices from "./remoteServices"
 import UserManagement from "./userManagement"
 import Projects from "./projects"
+import Routing from "./routing"
 
 import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
@@ -26,6 +27,7 @@ class Service {
     this.remoteServices = new RemoteServices(this.client)
     this.userManagement = new UserManagement(this.client)
     this.projects = new Projects(this.client)
+    this.routing = new Routing(this.client)
     const token = localStorage.getItem("token")
     if(token) this.client.setToken(token);
   }

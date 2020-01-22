@@ -56,9 +56,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/graphql" component={RemoteServices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/graphql/:serviceName" component={RemoteService} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />

@@ -4,7 +4,8 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const RoutingRule = (props) => {
     const { getFieldDecorator, getFieldValue } = props.form;
-
+    const { source, dest } = props.initialValues ? props.initialValues : {}
+    const children = [];
     const serviceObj = [
         {
             name: "service1",
@@ -24,17 +25,28 @@ const RoutingRule = (props) => {
         e.preventDefault();
         props.form.validateFields((err, values) => {
             if (!err) {
-                console.log("submit")
+                if(!props.initialValues){
+                    props.handleSubmit(getFieldValue("routeType"), getFieldValue("URL"), 
+                    getFieldValue("prefix"), getFieldValue("Service"), getFieldValue("port"), 
+                    getFieldValue("Rewrite URL"), getFieldValue("Allow hosts"));
+                }else{
+                    props.handleUpdate(getFieldValue("routeType"), getFieldValue("URL"), 
+                    getFieldValue("prefix"), getFieldValue("Service"), getFieldValue("port"), 
+                    getFieldValue("Rewrite URL"), getFieldValue("Allow hosts"))
+                }
+                props.handleCancel();
+                props.form.resetFields();
             }
+            
         });
     };
 
     return (
         <div>
             <Modal
-                title="Add routing rule"
+                title={`${props.initialValues ? "Edit" : "Add"} Routing Rules`}
                 visible={true}
-                okText="Add"
+                okText={props.initialValues ? "Save" : "Add"}
                 onCancel={props.handleCancel}
                 onOk={handleSubmitClick}
             >
@@ -43,7 +55,7 @@ const RoutingRule = (props) => {
                     <Form.Item>
                         {getFieldDecorator('routeType', {
                             rules: [{ required: true, message: 'Route type is required' }],
-                            initialValue: "prefix"
+                            initialValue: (source && source.type) ? source.type : "prefix" 
                         })(
                             <Select style={{ width: 200 }} >
                                 <Select.Option value="prefix">Prefix Match</Select.Option>
@@ -56,7 +68,8 @@ const RoutingRule = (props) => {
                             <FormItemLabel name="URL" />
                             <Form.Item>
                                 {getFieldDecorator('URL', {
-                                    rules: [{ required: true, message: 'Please provide URL' }]
+                                    rules: [{ required: true, message: 'Please provide URL' }],
+                                    initialValue: (source && source.url) ? source.url : ""
                                 })(
                                     <Input placeholder="The exact URL of incoming request (eg:/v1/foo/bar)" />
                                 )}
@@ -67,7 +80,8 @@ const RoutingRule = (props) => {
                                 <FormItemLabel name="Prefix" />
                                 <Form.Item>
                                     {getFieldDecorator('prefix', {
-                                        rules: [{ required: true, message: 'Please provide prefix' }]
+                                        rules: [{ required: true, message: 'Please provide prefix' }],
+                                        initialValue: (source && source.url) ? source.url.split('*', 1) : ""
                                     })(
                                         <Input placeholder="Prefix for incoming request (eg:/v1/)" />
                                     )}
@@ -78,7 +92,8 @@ const RoutingRule = (props) => {
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <Form.Item>
                             {getFieldDecorator('Service', {
-                                rules: [{ required: true, message: 'Please provide service' }]
+                                rules: [{ required: true, message: 'Please provide service' }],
+                                initialValue: (dest && dest.host) ? dest.host.split('.', 1) : ""
                             })(
 
                                 <Select style={{ width: 300 }} placeholder="Service a Service">
@@ -90,7 +105,8 @@ const RoutingRule = (props) => {
                         </Form.Item>
                         <Form.Item>
                             {getFieldDecorator('port', {
-                                rules: [{ required: true, message: 'Please select port' }]
+                                rules: [{ required: true, message: 'Please select port' }],
+                                initialValue: (dest && dest.port) ? dest.port : ""
                             })(
                                 <Select style={{ width: 150 }} placeholder="Select Port">
                                     {serviceObj.map(data => (
@@ -108,7 +124,7 @@ const RoutingRule = (props) => {
                     <Form.Item>
                         {getFieldDecorator('Rewrite', {
                             valuePropName: 'checked',
-                            initialValue: false,
+                            initialValue: (source && source.rewrite) ? true: false,
                         })(<Checkbox>Rewrite incoming request URL to target service</Checkbox>)}
                     </Form.Item>
                     {getFieldValue('Rewrite') ? (
@@ -116,7 +132,8 @@ const RoutingRule = (props) => {
                             <FormItemLabel name="Rewrite URL" />
                             <Form.Item>
                                 {getFieldDecorator('Rewrite URL', {
-                                    rules: [{ required: true, message: 'Please provide URL' }]
+                                    rules: [{ required: true, message: 'Please provide URL' }],
+                                    initialValue: (source && source.rewrite) ? source.rewrite : ""
                                 })(
                                     <Input placeholder="New Request URL that will override the incoming request " />
                                 )}
@@ -127,7 +144,7 @@ const RoutingRule = (props) => {
                     <Form.Item>
                         {getFieldDecorator('Hosts', {
                             valuePropName: 'checked',
-                            initialValue: false,
+                            initialValue: (source && source.hosts) ? true: false,
                         })(<Checkbox>Allow traffic from specified hosts only</Checkbox>)}
                     </Form.Item>
                     {getFieldValue('Hosts') ? (
@@ -135,9 +152,12 @@ const RoutingRule = (props) => {
                             <FormItemLabel name="Allowed hosts " />
                             <Form.Item>
                                 {getFieldDecorator('Allow hosts', {
-                                    rules: [{ required: true, message: 'Please provide hosts' }]
+                                rules: [{ required: true, message: 'Please enter the domain for the project' }],
+                                initialValue: (source && source.hosts) ? source.hosts : ""
                                 })(
-                                    <Input placeholder="Add hosts that you want to whitelist for this route" />
+                                    <Select mode="tags" placeholder="Add hosts that you want to allow for this route" style={{ width: '100%' }} tokenSeparators={[',']}>
+                                        {children}
+                                    </Select>,
                                 )}
                             </Form.Item>
                         </div>
