@@ -4,7 +4,6 @@ import RadioCard from "../radio-card/RadioCard";
 import { getSecretType } from '../../utils'
 import './add-secret.css';
 
-let id = 0;
 let env = 1;
 
 const AddSecret = (props) => {
@@ -122,7 +121,7 @@ const AddSecret = (props) => {
         {defaultSecretType === "File Secret" && <Form.Item>
           {getFieldDecorator(`file[${k}].loc_name`, 
            { rules: [{ required: true, message: 'Please input file name' }] 
-          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File name at the location"/>)}
+          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File name (eg: credentials.json)"/>)}
         </Form.Item>}
       </Col>
       <Col span={6}>
@@ -144,7 +143,7 @@ const AddSecret = (props) => {
     </Row>
     {index === fileKeys.length - 1 && (
       <Button onClick={() => fileAdd(index)} style={{ marginRight: "2%", float: "left"}}>
-        <Icon type="plus" />Add another pair
+        <Icon type="plus" />Add another file
       </Button>
     )}
     </div>
@@ -178,7 +177,7 @@ const AddSecret = (props) => {
           {(!defaultSecretType || defaultSecretType === "Environment Variables") && <React.Fragment> 
           <p>Name your secret</p>
           <Form.Item>
-            {getFieldDecorator('secretName', {
+            {getFieldDecorator('envVarSecretName', {
               rules: [{ 
               validator: (_, value, cb) => {
                 if (!value) {
@@ -202,7 +201,7 @@ const AddSecret = (props) => {
           {(defaultSecretType === "Docker Secret" && <React.Fragment>
           <p>Name your secret</p>
           <Form.Item>
-            {getFieldDecorator('secretName', {
+            {getFieldDecorator('dockerSecretName', {
               rules: [{ required: true, message: 'Please input a secret name' }],
             })(
               <Input placeholder="Example: DB Secret" />,
@@ -236,7 +235,7 @@ const AddSecret = (props) => {
           {(defaultSecretType === "File Secret" && <React.Fragment>
           <p>Name your secret</p>
           <Form.Item>
-            {getFieldDecorator('secretName', {
+            {getFieldDecorator('FileSecretName', {
               rules: [{ required: true, message: 'Please input a secret name' }],
               })(
               <Input placeholder="Example: DB Secret" />,
@@ -250,7 +249,7 @@ const AddSecret = (props) => {
               <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />,
             )}
           </Form.Item>
-          <p>File secret pairs</p>
+          <p>Files</p>
           <Form.Item>
             {formItemsFile}
           </Form.Item>
