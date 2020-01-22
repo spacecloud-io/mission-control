@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "./add-deployment-form.css";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import RadioCard from "../radio-card/RadioCard";
@@ -29,21 +29,37 @@ let env = 0;
 let white = 1;
 let upstreams = 1;
 const AddDeploymentForm = props => {
+  const { initialValues, projectId } = props;
   const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
-  const [selectedService, setSelectedService] = useState("");
 
   const handleSubmitClick = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        console.log(values);
-        props.handleCancel();
-        notify("success", "Deployment added successfully", "", 3);
+        delete values["keys"];
+        delete values["envKeys"];
+        delete values["whiteKeys"];
+        delete values["upstreamsKeys"];
+        values.cpu = Number(values.cpu);
+        values.memory = Number(values.memory);
+        values.min = Number(values.min);
+        values.max = Number(values.max);
+        values.serviceType = initialValues ? initialValues.serviceType : "image"
+        props
+          .handleSubmit(values)
+          .then(() => {
+            notify(
+              "success",
+              "Success",
+              "Saved deployment config successfully"
+            );
+            props.handleCancel();
+          })
+          .catch(ex => notify("error", "Error saving config", ex.toString()));
       }
     });
   };
 
-  const initialKeys = [0];
   // PORTS
   const remove = k => {
     const keys = getFieldValue("keys");
@@ -64,14 +80,21 @@ const AddDeploymentForm = props => {
     });
   };
 
-  getFieldDecorator("keys", { initialValue: initialKeys });
+  getFieldDecorator("keys", {
+    initialValue: initialValues
+      ? initialValues.ports.map((_, index) => index)
+      : [0]
+  });
   const keys = getFieldValue("keys");
   const formItemsPorts = keys.map((k, index) => (
     <Row key={k}>
       <Col span={6}>
         <Form.Item style={{ display: "inline-block" }}>
           {getFieldDecorator(`ports[${k}].protocol`, {
-            initialValue: "http"
+            initialValue:
+              initialValues && initialValues.ports[k]
+                ? initialValues.ports[k].protocol
+                : "http"
           })(
             <Select style={{ width: 120 }}>
               <Option value="http">HTTP</Option>
@@ -93,9 +116,16 @@ const AddDeploymentForm = props => {
                 required: true,
                 message: "Please fill this field before adding!"
               }
-            ]
+            ],
+            initialValue:
+              initialValues && initialValues.ports[k]
+                ? initialValues.ports[k].port
+                : ""
           })(
-            <Input placeholder="Port (Example: 8080)" style={{ width: 280 }} />
+            <InputNumber
+              placeholder="Port (Example: 8080)"
+              style={{ width: 280 }}
+            />
           )}
         </Form.Item>
       </Col>
@@ -125,14 +155,22 @@ const AddDeploymentForm = props => {
     });
   };
 
-  getFieldDecorator("envKeys", { initialValue: [] });
+  getFieldDecorator("envKeys", {
+    initialValue: initialValues
+      ? initialValues.env.map((_, index) => index)
+      : []
+  });
   const envKeys = getFieldValue("envKeys");
   const formItemsEnv = envKeys.map(k => (
     <Row key={k}>
       <Col span={6}>
         <Form.Item style={{ display: "inline-block" }}>
           {getFieldDecorator(`env[${k}].key`, {
-            rules: [{ required: true, message: "Please enter key!" }]
+            rules: [{ required: true, message: "Please enter key!" }],
+            initialValue:
+              initialValues && initialValues.env[k]
+                ? initialValues.env[k].key
+                : ""
           })(<Input style={{ width: 120 }} placeholder="Key" />)}
         </Form.Item>
       </Col>
@@ -144,7 +182,11 @@ const AddDeploymentForm = props => {
                 required: true,
                 message: "Please enter value before adding another!"
               }
-            ]
+            ],
+            initialValue:
+              initialValues && initialValues.env[k]
+                ? initialValues.env[k].value
+                : ""
           })(
             <Input
               style={{ width: 280, marginLeft: -40, marginRight: 30 }}
@@ -181,7 +223,11 @@ const AddDeploymentForm = props => {
     });
   };
 
-  getFieldDecorator("whiteKeys", { initialValue: [0] });
+  getFieldDecorator("whiteKeys", {
+    initialValue: initialValues
+      ? initialValues.whitelists.map((_, index) => index)
+      : [0]
+  });
   const whiteKeys = getFieldValue("whiteKeys");
   const formItemsWhite = whiteKeys.map((k, index) => (
     <Row
@@ -190,14 +236,17 @@ const AddDeploymentForm = props => {
     >
       <Col span={10}>
         <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`white[${k}].project_id`, {
+          {getFieldDecorator(`whitelists[${k}].projectId`, {
             rules: [
               {
                 required: true,
                 message: "Please fill the project id of the service!"
               }
             ],
-            initialValue: k === 0 ? "project1" : ""
+            initialValue:
+              initialValues && initialValues.whitelists[k]
+                ? initialValues.whitelists[k].projectId
+                : projectId
           })(
             <Input
               style={{ width: 230 }}
@@ -218,14 +267,17 @@ const AddDeploymentForm = props => {
       </Col>
       <Col span={9}>
         <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`white[${k}].service_name`, {
+          {getFieldDecorator(`whitelists[${k}].service`, {
             rules: [
               {
                 required: true,
                 message: "Please fill the name of the service!"
               }
             ],
-            initialValue: k === 0 ? "*" : ""
+            initialValue:
+              initialValues && initialValues.whitelists[k]
+                ? initialValues.whitelists[k].service
+                : "*"
           })(
             <Input
               style={{ width: 230 }}
@@ -262,7 +314,11 @@ const AddDeploymentForm = props => {
     });
   };
 
-  getFieldDecorator("upstreamsKeys", { initialValue: [0] });
+  getFieldDecorator("upstreamsKeys", {
+    initialValue: initialValues
+      ? initialValues.upstreams.map((_, index) => index)
+      : [0]
+  });
   const upstreamsKeys = getFieldValue("upstreamsKeys");
   const formItemsUpstreams = upstreamsKeys.map((k, index) => (
     <Row
@@ -271,14 +327,17 @@ const AddDeploymentForm = props => {
     >
       <Col span={10}>
         <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`upstreams[${k}].project_id`, {
+          {getFieldDecorator(`upstreams[${k}].projectId`, {
             rules: [
               {
                 required: true,
                 message: "Please fill the project id of the upstream service!"
               }
             ],
-            initialValue: k === 0 ? "project1" : ""
+            initialValue:
+              initialValues && initialValues.upstreams[k]
+                ? initialValues.upstreams[k].projectId
+                : projectId
           })(
             <Input
               style={{ width: 230 }}
@@ -302,14 +361,17 @@ const AddDeploymentForm = props => {
       </Col>
       <Col span={9}>
         <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`upstreams[${k}].service_name`, {
+          {getFieldDecorator(`upstreams[${k}].service`, {
             rules: [
               {
                 required: true,
                 message: "Please fill the name of the upstream service!"
               }
             ],
-            initialValue: k === 0 ? "*" : ""
+            initialValue:
+              initialValues && initialValues.upstreams[k]
+                ? initialValues.upstreams[k].service
+                : "*"
           })(
             <Input
               style={{ width: 230 }}
@@ -326,140 +388,159 @@ const AddDeploymentForm = props => {
     </Row>
   ));
 
-  const withFooter = {
+  const modalProps = {
     className: "edit-item-modal",
     visible: props.visible,
     width: 720,
-    okText: "Deploy",
-    title: "Deploy Service",
-    onOk: handleSubmitClick,
-    onCancel: props.handleCancel
-  };
-
-  const withoutFooter = {
-    className: "edit-item-modal",
-    visible: props.visible,
-    width: 720,
-    okText: "Deploy",
-    title: "Deploy Service",
+    okText: initialValues ? "Save" : "Deploy",
+    title: initialValues ? "Update deloyment config" : "Deploy Service",
     onOk: handleSubmitClick,
     onCancel: props.handleCancel,
-    footer: null
+    footer:
+      initialValues || getFieldValue("serviceType") === "image"
+        ? undefined
+        : null
   };
-
-  const modalProps =
-    getFieldValue("service") === "dockerized" ? withFooter : withoutFooter;
 
   return (
     <div>
       <Modal {...modalProps}>
         <Form layout="vertical" onSubmit={handleSubmitClick}>
-          <FormItemLabel name="Types of service" />
-          <Form.Item>
-            {getFieldDecorator("service", {
-              rules: [{ required: true, message: "Please select a service!" }],
-              initialValue: ""
-            })(
-              <Radio.Group onChange={e => setSelectedService(e.target.value)}>
-                <Row>
-                  <Col span={12}>
-                    <RadioCard value="nondockerized" layout="card">
-                      <div>
-                        <div className="title">Non Dockerized</div>
-                        <p className="description">
-                          Space cloud will build and run your app inside docker
-                          containers
-                        </p>
-                        <img src={python} className="icon" alt="python.png" />
-                        <img src={js} className="icon" alt="js.png" />
-                        <img src={go} className="icon" alt="go.png" />
-                      </div>
-                    </RadioCard>
-                  </Col>
-                  <Col span={12}>
-                    <RadioCard value="dockerized" layout="card">
-                      <div className="title">
-                        <div>Dockerized</div>
-                        <p className="description">
-                          Space cloud will directly the container image you
-                          provide
-                        </p>
-                        <img src={docker} className="icon" alt="docker.png" />
-                      </div>
-                    </RadioCard>
-                  </Col>
-                </Row>
-              </Radio.Group>
-            )}
-          </Form.Item>
+          {initialValues === undefined && (
+            <React.Fragment>
+              <FormItemLabel name="Types of service" />
+              <Form.Item>
+                {getFieldDecorator("serviceType", {
+                  rules: [
+                    { required: true, message: "Please select a service!" }
+                  ],
+                  initialValue: ""
+                })(
+                  <Radio.Group>
+                    <Row>
+                      <Col span={12}>
+                        <RadioCard value="code" layout="card">
+                          <div>
+                            <div className="title">Non Dockerized</div>
+                            <p className="description">
+                              Space cloud will build and run your app inside
+                              docker containers
+                            </p>
+                            <img
+                              src={python}
+                              className="icon"
+                              alt="python.png"
+                            />
+                            <img src={js} className="icon" alt="js.png" />
+                            <img src={go} className="icon" alt="go.png" />
+                          </div>
+                        </RadioCard>
+                      </Col>
+                      <Col span={12}>
+                        <RadioCard value="image" layout="card">
+                          <div className="title">
+                            <div>Dockerized</div>
+                            <p className="description">
+                              Space cloud will directly the container image you
+                              provide
+                            </p>
+                            <img
+                              src={docker}
+                              className="icon"
+                              alt="docker.png"
+                            />
+                          </div>
+                        </RadioCard>
+                      </Col>
+                    </Row>
+                  </Radio.Group>
+                )}
+              </Form.Item>
+            </React.Fragment>
+          )}
           <br />
-          {getFieldValue("service") === "dockerized" && (
-            <>
+          {(initialValues !== undefined ||
+            getFieldValue("serviceType") === "image") && (
+            <React.Fragment>
               <FormItemLabel name="Service ID" />
               <Form.Item>
-                {getFieldDecorator("service_id", {
+                {getFieldDecorator("id", {
                   rules: [
                     { required: true, message: "Please name your service!" }
-                  ]
+                  ],
+                  initialValue: initialValues ? initialValues.id : ""
                 })(
                   <Input
                     placeholder="Unique name for your service"
                     style={{ width: 288 }}
+                    disabled={initialValues ? true : false}
                   />
                 )}
               </Form.Item>
               <FormItemLabel name="Docker container" />
               <Form.Item>
-                {getFieldDecorator("docker_container", {
+                {getFieldDecorator("dockerImage", {
                   rules: [
                     {
                       required: true,
                       message: "Please input docker container!"
                     }
-                  ]
+                  ],
+                  initialValue: initialValues ? initialValues.dockerImage : ""
                 })(<Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />)}
               </Form.Item>
               <FormItemLabel name="Docker registry type" />
               <Form.Item>
-                {getFieldDecorator("registry", { initialValue: "public" })(
+                {getFieldDecorator("registryType", {
+                  initialValue: "public"
+                })(
                   <Radio.Group>
                     <Radio value="public">Public Registry</Radio>
                     <Radio value="private">Private Registry</Radio>
                   </Radio.Group>
                 )}
               </Form.Item>
-              {getFieldValue("registry") === "private" && (
-                <React.Fragment>
-                  <FormItemLabel
-                    name="Docker secret"
-                    description="Docker secret for authentication to pull private Docker images"
-                  />
-                  <Form.Item>
-                    {getFieldDecorator("docker_secret", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input docker secret!"
-                        }
-                      ]
-                    })(
-                      <Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />
-                    )}
-                  </Form.Item>
-                </React.Fragment>
-              )}
+              <React.Fragment>
+                {getFieldValue("registryType") === "private" && (
+                  <React.Fragment>
+                    <FormItemLabel
+                      name="Docker secret"
+                      description="Docker secret for authentication to pull private Docker images"
+                    />
+                    <Form.Item>
+                      {getFieldDecorator("docker_secret", {
+                        rules: [
+                          {
+                            required: true,
+                            message: "Please input docker secret!"
+                          }
+                        ]
+                      })(
+                        <Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />
+                      )}
+                    </Form.Item>
+                  </React.Fragment>
+                )}
+              </React.Fragment>
               <FormItemLabel name="Ports" />
-              {formItemsPorts}
+              <React.Fragment>{formItemsPorts}</React.Fragment>
               <Collapse className="deployment-collapse" bordered={false}>
                 <Panel header="Advanced" key="1">
-                  <FormItemLabel name="Resources" />
+                  <FormItemLabel
+                    name="Resources"
+                    description="The resources to provide to each instance of the service"
+                  />
                   <Form.Item>
-                    {getFieldDecorator("resouces", {
-                      initialValue: "0.25"
+                    {getFieldDecorator("cpu", {
+                      initialValue: initialValues ? initialValues.cpu : 0.1
+                    })(<Input addonBefore="vCPUs" style={{ width: 147 }} />)}
+                    {getFieldDecorator("memory", {
+                      initialValue: initialValues ? initialValues.memory : 100
                     })(
-                      <Select style={{ width: 250 }}>
-                        <Option value="0.25">1 vCPU / 2 GB Ram</Option>
-                      </Select>
+                      <Input
+                        addonBefore="Memory (in MBs)"
+                        style={{ width: 240, marginLeft: 35 }}
+                      />
                     )}
                   </Form.Item>
                   <FormItemLabel
@@ -467,26 +548,31 @@ const AddDeploymentForm = props => {
                     description="Auto scale your container instances between min and max replicas based on the number of requests"
                   />
                   <Form.Item>
-                    <>
-                      {getFieldDecorator("min", { initialValue: 0 })(
-                        <Input addonBefore="Min" style={{ width: 147 }} />
-                      )}
-                      {getFieldDecorator("max", { initialValue: 100 })(
-                        <Input
-                          addonBefore="Max"
-                          style={{ width: 147, marginLeft: 35 }}
-                        />
-                      )}
-                    </>
+                    {getFieldDecorator("min", {
+                      initialValue: initialValues ? initialValues.min : 0
+                    })(
+                      <Input addonBefore="Min" style={{ width: 147 }} min={1} />
+                    )}
+                    {getFieldDecorator("max", {
+                      initialValue: initialValues ? initialValues.max : 100
+                    })(
+                      <Input
+                        addonBefore="Max"
+                        style={{ width: 147, marginLeft: 35 }}
+                        min={1}
+                      />
+                    )}
                   </Form.Item>
                   <FormItemLabel
                     name="Concurrency"
                     description="Number of requests that your single instance can handle parallely"
                   />
                   <Form.Item>
-                    {getFieldDecorator("concurrency", { initialValue: 50 })(
-                      <InputNumber style={{ width: 160 }} />
-                    )}
+                    {getFieldDecorator("concurrency", {
+                      initialValue: initialValues
+                        ? initialValues.concurrency
+                        : 50
+                    })(<InputNumber style={{ width: 160 }} min={1} />)}
                   </Form.Item>
                   <FormItemLabel name="Environment variables" />
                   {formItemsEnv}
@@ -496,7 +582,7 @@ const AddDeploymentForm = props => {
                       : "Add another environment variable"}
                   </Button>
                   <FormItemLabel name="Secrets" />
-                  <Form.Item>
+                  {/* <Form.Item>
                     {getFieldDecorator("secrets", {
                       initialValue: "1"
                     })(
@@ -507,9 +593,9 @@ const AddDeploymentForm = props => {
                         <Option value="1">Secret 1</Option>
                       </Select>
                     )}
-                  </Form.Item>
+                  </Form.Item> */}
                   <FormItemLabel
-                    name="Whitelist"
+                    name="Whitelists"
                     description="Only those services that are whitelisted can access you"
                   />
                   {formItemsWhite}
@@ -520,10 +606,10 @@ const AddDeploymentForm = props => {
                   {formItemsUpstreams}
                 </Panel>
               </Collapse>
-            </>
+            </React.Fragment>
           )}
         </Form>
-        {getFieldValue("service") === "nondockerized" && (
+        {getFieldValue("serviceType") === "code" && (
           <div style={{ fontSize: 14, fontWeight: 500, marginRight: 180 }}>
             <a style={{ color: "#58B3FF" }}>Follow the instructions</a> here to
             deploy your non dockerized services from your laptop to Space Cloud.
