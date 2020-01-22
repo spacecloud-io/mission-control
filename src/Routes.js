@@ -8,6 +8,7 @@ import Login from "./pages/login/Login";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
+import AddDb from './pages/database/add-db/AddDb';
 import DatabaseModulePage from "./pages/database/Index";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
@@ -15,11 +16,13 @@ import AddDb from "./pages/database/add-db/AddDb";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
+import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
+import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import Settings from './pages/settings/general/General'
@@ -58,6 +61,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />

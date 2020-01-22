@@ -114,8 +114,8 @@ const Configure = () => {
 			<Topbar showProjectSelector />
 			<Sidenav selectedItem="settings" />
 			<div className="page-content page-content--no-padding">
-				<SettingTabs activeKey='Environment Settings' projectID={projectID} />
-				<div style={{ paddingTop: 20 }}>
+				<SettingTabs activeKey='Project Settings' projectID={projectID} />
+				<div style={{ paddingTop: 20, paddingBottom: 20 }}>
 					<h2>JWT Secret</h2>
 					<div className="divider" />
 					<SecretConfigure secret={secret} handleSubmit={handleSecret} />
@@ -125,21 +125,19 @@ const Configure = () => {
 					<h2>Export/Import Project Config</h2>
 					<div className="divider" />
 					<ExportImport projectConfig={selectedProject} importProjectConfig={importProjectConfig} />
-					<h2>Environment Clusters</h2>
+					<h2>Project Clusters</h2>
 					<div className="divider" />
-					<p>Select clusters on which this environment should be deployed.</p>
+					<p>Select clusters on which this project should be deployed.</p>
 					<Clusters />
 					<h2>Whitelisted Domains</h2>
 					<div className="divider" />
-					<p>Add domains you want to whitelist for this environment. Space cloud will automatically add and renew SSL certificates for these domains </p>
+					<p>Add domains you want to whitelist for this project. Space cloud will automatically add and renew SSL certificates for these domains </p>
 					<WhitelistedDomains />
-					<h2>Delete Environment</h2>
+					<h2>Delete Project</h2>
 					<div className="divider" />
-					<div style={{ paddingBottom: 15 }}>
-						<p>Delete this environment config. All services running in this environment will be stopped and deleted.</p>
-						<Button type="danger">Delete</Button>
-					</div>
-				</div>
+					<p>Delete this project config. All services running in this project will be stopped and deleted.</p>
+					<Button type="danger" onClick={removeProjectConfig} >Remove</Button>        
+				</div>	
 			</div>
 		</div>
 	);
