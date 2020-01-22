@@ -9,6 +9,7 @@ import UserManagement from "./userManagement"
 import Projects from "./projects"
 import Deployments from "./deployments"
 import Routes from "./routes"
+import LetsEncrypt from "./letsencrypt"
 
 import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
@@ -30,6 +31,7 @@ class Service {
     this.projects = new Projects(this.client)
     this.deployments = new Deployments(this.client)
     this.routing = new Routes(this.client)
+    this.letsencrypt = new LetsEncrypt(this.client)
     const token = localStorage.getItem("token")
     if(token) this.client.setToken(token);
   }
@@ -50,9 +52,9 @@ class Service {
     })
   }
 
-  login(user, pass) {
+  login(user, key) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON('/v1/config/login', { user, pass }).then(({ status, data }) => {
+      this.client.postJSON('/v1/config/login', { user, key }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return
