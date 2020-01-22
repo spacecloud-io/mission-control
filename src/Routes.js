@@ -11,6 +11,7 @@ import Overview from "./pages/overview/Overview";
 import DatabaseModulePage from "./pages/database/Index";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
+import AddDb from "./pages/database/add-db/AddDb";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
