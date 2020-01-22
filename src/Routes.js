@@ -12,11 +12,9 @@ import AddDb from './pages/database/add-db/AddDb';
 import DatabaseModulePage from "./pages/database/Index";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
-import AddDb from "./pages/database/add-db/AddDb";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
-import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
@@ -56,9 +54,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/graphql" component={RemoteServices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/graphql/:serviceName" component={RemoteService} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
