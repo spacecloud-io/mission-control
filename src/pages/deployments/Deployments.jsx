@@ -6,7 +6,7 @@ import { Button, Table, Popconfirm } from "antd";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import AddDeploymentForm from "../../components/deployments/AddDeploymentForm";
-import client from "../../client"; 
+import client from "../../client";
 import source_code from "../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { increment, decrement } from "automate-redux";
@@ -100,75 +100,97 @@ const Deployments = () => {
     ? data.find(obj => obj.id === deploymentClicked)
     : undefined;
 
+  const handleEditDeploymentClick = serviceId => {
+    setDeploymentClicked(serviceId);
+    setModalVisibility(true);
+  };
 
-    const handleEditDeploymentClick = serviceId => {
-      setDeploymentClicked(serviceId);
-      setModalVisibility(true);
-    };
-  
-    const handleSubmit = (type, values) => {
-      return new Promise((resolve, reject) => {
-        dispatch(increment("pendingRequests"))
-        let config =  {
-          id: values.id,
-          projectId: projectID,
-          version: "v1",
-          scale: {
-            replicas: 0,
-            minReplicas: values.min,
-            maxReplicas: values.max,
-            concurrency: values.concurrency
-          },
-          tasks: [{
+  const handleSubmit = (type, values) => {
+    return new Promise((resolve, reject) => {
+      dispatch(increment("pendingRequests"));
+      let config = {
+        id: values.id,
+        projectId: projectID,
+        version: "v1",
+        scale: {
+          replicas: 0,
+          minReplicas: values.min,
+          maxReplicas: values.max,
+          concurrency: values.concurrency
+        },
+        tasks: [
+          {
             id: values.id,
-            ports: values.ports,
+            ports: values.ports.map(obj =>
+              Object.assign(obj, { name: obj.protocol })
+            ),
             resources: {
-              cpu: values.cpu*1000,
+              cpu: values.cpu * 1000,
               memory: values.memory
             },
             docker: {
               image: values.dockerImage
             },
-            env: values.env? values.env.reduce((prev, curr) => {
-              return Object.assign({}, prev, {[curr.key]: curr.value})
-            }, {}): {},
+            env: values.env
+              ? values.env.reduce((prev, curr) => {
+                  return Object.assign({}, prev, { [curr.key]: curr.value });
+                }, {})
+              : {},
             runtime: values.serviceType
-          }],
-          whitelists: values.whitelists,
-          upstreams: values.upstreams
-        }
-        client.deployments.setDeploymentConfig(config).then(() => {
+          }
+        ],
+        whitelists: values.whitelists,
+        upstreams: values.upstreams
+      };
+      client.deployments
+        .setDeploymentConfig(config)
+        .then(() => {
           if (type === "add") {
-            const newDeployments = [...deployments, config]
-            setProjectConfig(projectID, "modules.deployments.services", newDeployments)
+            const newDeployments = [...deployments, config];
+            setProjectConfig(
+              projectID,
+              "modules.deployments.services",
+              newDeployments
+            );
           } else {
             const newDeployments = deployments.map(obj => {
-              if (obj.id === config.id) return config
-              return obj
-            })
-            setProjectConfig(projectID, "modules.deployments.services", newDeployments)
+              if (obj.id === config.id) return config;
+              return obj;
+            });
+            setProjectConfig(
+              projectID,
+              "modules.deployments.services",
+              newDeployments
+            );
           }
-          resolve()
+          resolve();
         })
         .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")))
-      })
-    };
+        .finally(() => dispatch(decrement("pendingRequests")));
+    });
+  };
 
-    const handleDelete = (serviceId) => {
-      dispatch(increment("pendingRequests"))
-      client.deployments.deleteDeploymentConfig(projectID, serviceId, "v1").then(() => {
-        const newDeployments = deployments.filter(obj => obj.id !== serviceId)
-        setProjectConfig(projectID, "modules.deployments.services", newDeployments)
-        notify("success", "Success", "Successfully deleted deployment config")
-      }).catch(ex => notify("error", "Error deleting deployment", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
-    }
-  
-    const handleCancel = () => {
-      setModalVisibility(false);
-      setDeploymentClicked("");
-    };
+  const handleDelete = serviceId => {
+    dispatch(increment("pendingRequests"));
+    client.deployments
+      .deleteDeploymentConfig(projectID, serviceId, "v1")
+      .then(() => {
+        const newDeployments = deployments.filter(obj => obj.id !== serviceId);
+        setProjectConfig(
+          projectID,
+          "modules.deployments.services",
+          newDeployments
+        );
+        notify("success", "Success", "Successfully deleted deployment config");
+      })
+      .catch(ex => notify("error", "Error deleting deployment", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleCancel = () => {
+    setModalVisibility(false);
+    setDeploymentClicked("");
+  };
 
   return (
     <React.Fragment>
@@ -225,7 +247,9 @@ const Deployments = () => {
           initialValues={deploymentClickedInfo}
           projectId={projectID}
           handleCancel={handleCancel}
-          handleSubmit={(values) => handleSubmit(deploymentClickedInfo ? "update": "add", values)}
+          handleSubmit={values =>
+            handleSubmit(deploymentClickedInfo ? "update" : "add", values)
+          }
         />
       )}
     </React.Fragment>

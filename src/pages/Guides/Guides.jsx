@@ -3,7 +3,7 @@ import construction from "../../assets/construction.svg"
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 
-function Guides() {
+const Guides = () => {
     return (
         <div>
             <Topbar showProjectSelector />

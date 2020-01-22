@@ -25,7 +25,7 @@ import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import Settings from './pages/settings/general/General'
 import Routing from './pages/routing/Routing';
-import Guides from './pages/Guides/Guides';
+import Guides from './pages/guides/Guides';
 import Teams from './pages/Teams/Teams';
 import Plans from './pages/Plans/Plans';
 import Secrets from './pages/secrets/Secrets';
