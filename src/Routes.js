@@ -15,7 +15,6 @@ import DBOverview from "./pages/database/overview/DBOverview";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
-import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventTriggers from "./pages/event-triggers/EventTriggers";
 import RemoteServices from "./pages/remote-services/Index";
@@ -26,9 +25,11 @@ import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
 import Settings from './pages/settings/general/General'
 import Routing from './pages/routing/Routing';
-import Guides from './pages/Guides/Guides'
-import Teams from './pages/Teams/Teams'
-import Plans from './pages/Plans/Plans'
+import Guides from './pages/Guides/Guides';
+import Teams from './pages/Teams/Teams';
+import Plans from './pages/Plans/Plans';
+import Secrets from './pages/secrets/Secrets';
+import SecretDetails from './pages/secrets/SecretDetails';
 
 export default () => {
   return (
@@ -64,6 +65,8 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
       </Switch>
     </Router>
   );
