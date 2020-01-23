@@ -14,6 +14,7 @@ const RoutingRule = props => {
       if (!err) {
         delete values["allowSpecificHosts"];
         delete values["performRewrite"];
+        if (!values.allowedHosts) values.allowedHosts = ["*"]
         props.handleSubmit(values).then(() => {
           notify("success", "Success", "Saved routing config successfully");
           props.handleCancel();

@@ -32,7 +32,8 @@ function Routing() {
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
 
-  const routes = getProjectConfig(projects, projectID, "modules.routes", []);
+  let routes = getProjectConfig(projects, projectID, "modules.routes", []);
+  if (!routes) routes = []
   const deployments = getProjectConfig(
     projects,
     projectID,
@@ -56,7 +57,7 @@ function Routing() {
     url: obj.source.url,
     routeType: obj.source.type,
     rewrite: obj.source.rewrite,
-    targetHost: obj.dest.host.split(".")[0],
+    targetHost: obj.dest.host,
     targetPort: obj.dest.port
   }));
 

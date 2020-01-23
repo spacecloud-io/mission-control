@@ -44,7 +44,9 @@ const AddDeploymentForm = props => {
         values.memory = Number(values.memory);
         values.min = Number(values.min);
         values.max = Number(values.max);
-        values.serviceType = initialValues ? initialValues.serviceType : "image"
+        values.serviceType = initialValues
+          ? initialValues.serviceType
+          : "image";
         props
           .handleSubmit(values)
           .then(() => {
@@ -431,8 +433,18 @@ const AddDeploymentForm = props => {
                               className="icon"
                               alt="python.png"
                             />
-                            <img src={js} className="icon" alt="js.png" />
-                            <img src={go} className="icon" alt="go.png" />
+                            <img
+                              src={js}
+                              style={{ marginLeft: 8 }}
+                              className="icon"
+                              alt="js.png"
+                            />
+                            <img
+                              src={go}
+                              style={{ marginLeft: 8 }}
+                              className="icon"
+                              alt="go.png"
+                            />
                           </div>
                         </RadioCard>
                       </Col>
@@ -581,8 +593,8 @@ const AddDeploymentForm = props => {
                       ? "Add an environment variable"
                       : "Add another environment variable"}
                   </Button>
-                  <FormItemLabel name="Secrets" />
-                  {/* <Form.Item>
+                  {/* <FormItemLabel name="Secrets" />
+                  <Form.Item>
                     {getFieldDecorator("secrets", {
                       initialValue: "1"
                     })(
