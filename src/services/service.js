@@ -15,6 +15,7 @@ import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
+import { notify } from "../utils"
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -32,12 +33,29 @@ class Service {
     this.deployments = new Deployments(this.client)
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
-    const token = localStorage.getItem("token")
-    if(token) this.client.setToken(token);
+    //const token = localStorage.getItem("token")
+    //if (token) this.client.setToken(token);
+    this.refreshToken().then(token => {
+      this.client.setToken(token);
+    }).catch(ex => console.log(ex))
+
   }
 
   setToken(token) {
     this.client.setToken(token)
+  }
+
+  refreshToken() {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON("/v1/config/refresh-token").then(({ status, data }) => {
+        if (status === 401) {
+          localStorage.removeItem("token")
+          notify("error", "Error logging in", "Invalid Credentials")
+          return
+        }
+        resolve(data.token)
+      }).catch(ex => reject(ex.toString()))
+    })
   }
 
   fetchEnv() {
