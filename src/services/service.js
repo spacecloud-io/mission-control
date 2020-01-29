@@ -33,10 +33,10 @@ class Service {
     this.deployments = new Deployments(this.client)
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
-    //const token = localStorage.getItem("token")
-    //if (token) this.client.setToken(token);
+
     this.refreshToken().then(token => {
       this.client.setToken(token);
+      localStorage.setItem("token", token);
     }).catch(ex => console.log(ex))
 
   }
