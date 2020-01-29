@@ -40,14 +40,23 @@ function graphQLFetcher(graphQLParams, projectId, token) {
 const Explorer = props => {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
+  const [initial, setinitial] = useState(false);
+  const [sendToken, setSendToken] = useState("");
 
   useEffect(() => {
     if (props.apiUseAdminToken && props.secret) {
       props.setToken(generateAdminToken(props.secret));
+      setSendToken(props.userApiToken)
+      if (!initial) {
+        props.setUserToken(generateAdminToken(props.secret))
+        setinitial(true)
+      }
     } else {
-      props.setToken(props.userApiToken);
+      props.setUserToken(props.userSetToken)
     }
   }, [props.apiUseAdminToken, props.secret]);
+
+  console.log(sendToken)
 
   const applyRequest = () => {
     let code = props.spaceApiQuery;
@@ -67,7 +76,7 @@ const Explorer = props => {
 
     setLoading(true);
     client
-      .execSpaceAPI(props.projectId, code, props.userApiToken)
+      .execSpaceAPI(props.projectId, code, sendToken)
       .then(res => {
         setResponse(res);
       })
@@ -126,8 +135,11 @@ const Explorer = props => {
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.userApiToken}
-                    onChange={e => props.setToken(e.target.value)}
+                    value={props.userSetToken}
+                    onChange={e => {
+                      props.setUserToken(e.target.value)
+                      setSendToken(e.target.value);
+                    }}
                   />
                 </div>
               )
@@ -135,7 +147,7 @@ const Explorer = props => {
               <div className='graphql' style={{ marginTop: 10 }}>
                 <GraphiQL
                   fetcher={graphQLParams =>
-                    graphQLFetcher(graphQLParams, props.projectId, props.userApiToken)
+                    graphQLFetcher(graphQLParams, props.projectId, sendToken)
                   }
                   schema={null}
                 />
@@ -173,8 +185,8 @@ const Explorer = props => {
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.userApiToken}
-                    onChange={e => props.setToken(e.target.value)}
+                    value={props.userSetToken}
+                    onChange={e => props.setUserToken(e.target.value)}
                   />
                 </div>
               )}
@@ -265,6 +277,7 @@ const mapStateToProps = (state, ownProps) => {
       true
     ),
     userApiToken: get(state, 'uiState.explorer.token'),
+    userSetToken: get(state, 'uiState.explorer.usertoken'),
   };
 };
 
@@ -284,7 +297,10 @@ const mapDispatchToProps = dispatch => {
     },
     setToken: (token) => {
       dispatch(set('uiState.explorer.token', token))
-    }
+    },
+    setUserToken: (token) => {
+      dispatch(set('uiState.explorer.usertoken', token))
+    },
   };
 };
 
