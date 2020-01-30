@@ -56,8 +56,6 @@ const Explorer = props => {
     }
   }, [props.apiUseAdminToken, props.secret]);
 
-  console.log(sendToken)
-
   const applyRequest = () => {
     let code = props.spaceApiQuery;
     if (
