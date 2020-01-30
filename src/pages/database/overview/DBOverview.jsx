@@ -35,6 +35,7 @@ const Overview = () => {
   // making changes for loading button
   const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
+  const [edit,setEdit]=useState(false);
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
@@ -61,11 +62,13 @@ const Overview = () => {
 
   const handleAddClick = () => {
     setAddColFormInEditMode(false)
+    setEdit(false)
     setAddColModalVisible(true)
   }
 
-  const handleEditClick = (colName) => {
+  const handleEditClick = (colName,bool) => {
     setClickedCol(colName)
+    setEdit(bool)
     setAddColFormInEditMode(true)
     setAddColModalVisible(true)
   }
@@ -142,7 +145,7 @@ const Overview = () => {
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={() => handleEditClick(name,true)}>Edit</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -251,6 +254,7 @@ const Overview = () => {
               initialValues={clickedColDetails}
               projectId={projectID}
               selectedDB={selectedDB}
+              editClicked={edit}
               conformLoading={conformLoading}
               defaultRules={defaultRules}
               handleCancel={() => handleCancelAddColModal(false)}

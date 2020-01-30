@@ -14,14 +14,11 @@ import useDeepCompareEffect from 'use-deep-compare-effect'
 const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
 
-  var noOfRules = 0;
-  entries.map(([obj]) => {
-    try {
-      if (Object.keys(obj).length > 0) noOfRules += 1;
-    } catch (err) {
-      console.log(err);
-    }
-  })
+  const rulesArray = entries.filter(data => (
+    Object.keys(data[1]).length > 0
+  ))
+
+  const noOfRules = rulesArray.length;
 
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")

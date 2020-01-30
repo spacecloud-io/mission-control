@@ -11,7 +11,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
+const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules, editClicked }) => {
   const { getFieldDecorator, getFieldValue } = form;
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
@@ -41,6 +41,15 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialValues.schema);
   const [checked, getChecked] = useState(true);
+
+
+  useEffect(() => {
+    if (editClicked) {
+      if (rule.length > 2) {
+        getChecked(false)
+      }
+    }
+  }, [editClicked])
 
   const colName = getFieldValue("name")
   useEffect(() => {
@@ -126,6 +135,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               setSchema(value)
             }}
           />
+          <br></br>
           <Checkbox
             checked={checked}
             onChange={e =>
@@ -133,6 +143,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
             }
           >Apply default security rules</Checkbox>
           {!checked ? <div>
+            <br></br>
             <FormItemLabel name="Rule" />
             <CodeMirror
               value={rule}
