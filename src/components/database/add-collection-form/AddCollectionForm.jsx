@@ -135,15 +135,15 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               setSchema(value)
             }}
           />
-          <br></br>
-          <Checkbox
-            checked={checked}
-            onChange={e =>
-              getChecked(!checked)
-            }
-          >Apply default security rules</Checkbox>
-          {!checked ? <div>
-            <br></br>
+          <div style={{paddingTop:20}}>
+            <Checkbox
+              checked={checked}
+              onChange={e =>
+                getChecked(!checked)
+              }
+            >Apply default security rules</Checkbox>
+          </div>
+          {!checked ? <div style={{ paddingTop: 20 }}>
             <FormItemLabel name="Rule" />
             <CodeMirror
               value={rule}
