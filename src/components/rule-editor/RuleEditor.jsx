@@ -27,7 +27,6 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
 
   useDeepCompareEffect(() => {
     let temp = rules[selectedRuleName]
-
     if (stringifyRules) {
       temp = JSON.stringify(temp, null, 2)
     }
@@ -68,7 +67,7 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
               try {
                 if (Object.keys(obj).length > 0) {
                   return <div
-                    className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
+                    className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
                     onClick={() => handleSelect(ruleName)}>
                     <span>{ruleName}</span>
                     {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}

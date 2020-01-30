@@ -18,6 +18,7 @@ import AddDbRuleForm from '../../../components/database/add-collection-form/AddD
 const Rules = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+  const ruleArray = []
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -31,7 +32,7 @@ const Rules = () => {
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const rule = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
   const rules = Object.entries(collections).filter(([name]) => name !== "event_logs").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
-
+  const array = Object.entries(collections).filter(([name]) => name !== "event_logs")
   // Handlers
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
@@ -42,10 +43,19 @@ const Rules = () => {
       .catch(ex => notify("error", "Error saving rule", ex))
   }
 
+  const filterArray = array.filter((data) => (
+    Object.keys(data[1].rules).length > 0
+  ))
+
+  filterArray.map((data) => {
+    ruleArray.push(data[0])
+  })
+
   const handleDeleteRule = () => {
     const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     dispatch(increment("pendingRequests"))
     setColRule(projectID, selectedDB, selectedCol, {}, isRealtimeEnabled, true)
+      .then(() => dispatch(set("uiState.selectedCollection", ruleArray[0])))
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -59,6 +69,7 @@ const Rules = () => {
         notify("success", "Success", "Saved rule successfully")
         setAddRuleModalVisible(false);
         setConformLoading(false);
+        dispatch(set("uiState.selectedCollection", ruleArray[0]))
       })
       .catch(ex => {
         notify("error", "Error saving rule", ex)
