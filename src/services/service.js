@@ -16,6 +16,7 @@ import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
 import { notify } from "../utils"
+import history from "../history"
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -34,22 +35,20 @@ class Service {
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
 
-    this.refreshToken().then(token => {
-      this.client.setToken(token);
-      localStorage.setItem("token", token);
-    }).catch(ex => console.log(ex))
-
+    const token = localStorage.getItem("token")
+    if (token) this.client.setToken(token);
   }
 
   setToken(token) {
     this.client.setToken(token)
   }
 
-  refreshToken() {
+  refreshToken(token) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON("/v1/config/refresh-token").then(({ status, data }) => {
+      this.client.getJSON("/v1/config/refresh-token", { headers: { "Authorization": token } }).then(({ status, data }) => {
         if (status === 401) {
           localStorage.removeItem("token")
+          history.push("/mission-control/login")
           notify("error", "Error logging in", "Invalid Credentials")
           return
         }
