@@ -40,21 +40,18 @@ function graphQLFetcher(graphQLParams, projectId, token) {
 const Explorer = props => {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
-  const [initial, setinitial] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState("");
   const [sendToken, setSendToken] = useState("");
 
   useEffect(() => {
     if (props.apiUseAdminToken && props.secret) {
-      props.setToken(generateAdminToken(props.secret));
-      setSendToken(props.userApiToken)
-      if (!initial) {
-        props.setUserToken(generateAdminToken(props.secret))
-        setinitial(true)
-      }
+      setGeneratedToken(generateAdminToken(props.secret))
+      setSendToken(generatedToken)
     } else {
-      props.setUserToken(props.userSetToken)
+      props.setToken(props.userApiToken)
+      setSendToken(props.userApiToken)
     }
-  }, [props.apiUseAdminToken, props.secret]);
+  }, [props.apiUseAdminToken, props.secret, generatedToken]);
 
   const applyRequest = () => {
     let code = props.spaceApiQuery;
@@ -133,10 +130,10 @@ const Explorer = props => {
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.userSetToken}
+                    value={props.userApiToken}
                     onChange={e => {
-                      props.setUserToken(e.target.value)
-                      setSendToken(e.target.value);
+                      props.setToken(e.target.value)
+                      setSendToken(e.target.value)
                     }}
                   />
                 </div>
@@ -183,8 +180,11 @@ const Explorer = props => {
                 <div className='row'>
                   <Input.Password
                     placeholder='Token to authorize request'
-                    value={props.userSetToken}
-                    onChange={e => props.setUserToken(e.target.value)}
+                    value={props.userApiToken}
+                    onChange={e => {
+                      props.setToken(e.target.value)
+                      setSendToken(e.target.value)
+                    }}
                   />
                 </div>
               )}
@@ -275,7 +275,6 @@ const mapStateToProps = (state, ownProps) => {
       true
     ),
     userApiToken: get(state, 'uiState.explorer.token'),
-    userSetToken: get(state, 'uiState.explorer.usertoken'),
   };
 };
 
@@ -295,9 +294,6 @@ const mapDispatchToProps = dispatch => {
     },
     setToken: (token) => {
       dispatch(set('uiState.explorer.token', token))
-    },
-    setUserToken: (token) => {
-      dispatch(set('uiState.explorer.usertoken', token))
     },
   };
 };
