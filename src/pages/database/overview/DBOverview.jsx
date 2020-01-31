@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, increment, decrement } from 'automate-redux';
+import { get, increment, decrement, set } from 'automate-redux';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -35,7 +35,7 @@ const Overview = () => {
   // making changes for loading button
   const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
-  const [edit,setEdit]=useState(false);
+  const [edit, setEdit] = useState(false);
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
@@ -66,7 +66,7 @@ const Overview = () => {
     setAddColModalVisible(true)
   }
 
-  const handleEditClick = (colName,bool) => {
+  const handleEditClick = (colName, bool) => {
     setClickedCol(colName)
     setEdit(bool)
     setAddColFormInEditMode(true)
@@ -100,6 +100,7 @@ const Overview = () => {
       setAddColModalVisible(false);
       setAddColFormInEditMode(false);
       setConformLoading(false);
+      dispatch(set("uiState.selectedCollection", colName))
     }).catch(ex => {
       notify("error", "Error", ex)
       setConformLoading(false);
@@ -145,7 +146,7 @@ const Overview = () => {
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a onClick={() => handleEditClick(name,true)}>Edit</a>
+          <a onClick={() => handleEditClick(name, true)}>Edit</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
