@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, increment, decrement } from 'automate-redux';
+import { get, increment, decrement, set } from 'automate-redux';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -14,6 +14,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
+import { defaultDBRules } from '../../../constants';
 
 
 const Overview = () => {
@@ -39,6 +40,10 @@ const Overview = () => {
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
+  let defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  if (Object.keys(defaultRules).length === 0) {
+    defaultRules = defaultDBRules
+  }
   const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
   const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
@@ -96,6 +101,7 @@ const Overview = () => {
       setAddColModalVisible(false);
       setAddColFormInEditMode(false);
       setConformLoading(false);
+      dispatch(set("uiState.selectedCollection", colName))
     }).catch(ex => {
       notify("error", "Error", ex)
       setConformLoading(false);
@@ -189,7 +195,7 @@ const Overview = () => {
             </Descriptions>
             {!connected && <div className="empty-state overview-img">
               <div className="empty-state__graphic">
-                <img src={disconnectedImg} alt=""/>
+                <img src={disconnectedImg} alt="" />
               </div>
               <p className="empty-state__description">Oops... Space Cloud could not connect to your database</p>
               <p className="empty-state__action-text">Enter the correct connection details of your database</p>
@@ -251,6 +257,7 @@ const Overview = () => {
               projectId={projectID}
               selectedDB={selectedDB}
               conformLoading={conformLoading}
+              defaultRules={defaultRules}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}
