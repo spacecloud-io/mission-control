@@ -205,6 +205,18 @@ export const onAppLoad = () => {
       lastProjectId = urlParams[3]
     }
 
+    if (isProd && token) {
+      client.refreshToken(token).then(token => {
+        localStorage.setItem("token", token)
+        handleConfigLogin(token, lastProjectId)
+      }).catch(ex => {
+        console.log("Error refreshing token: ", ex.toString())
+        localStorage.removeItem("token")
+        history.push("/mission-control/login")
+      })
+      return
+    }
+
     handleConfigLogin(token, lastProjectId)
   })
 }
