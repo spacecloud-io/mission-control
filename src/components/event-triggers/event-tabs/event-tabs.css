@@ -1,0 +1,17 @@
+.event-tabs .ant-tabs-nav-animated {
+  margin-left: 32px;
+}
+
+.event-tabs .ant-tabs-tab {
+  color: #979797;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.event-tabs .ant-tabs {
+  height: 48px;
+}
+
+.event-tabs .ant-tabs-tab-active {
+  color: #ff8629
+}

@@ -69,7 +69,7 @@ const Sidenav = (props) => {
             <Link to={`/mission-control/projects/${projectID}/graphql`}>
               <PanelItem name="GraphQL API" active={props.selectedItem === 'graphql'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/event-triggers`}>
+            <Link to={`/mission-control/projects/${projectID}/event-triggers/overview`}>
               <PanelItem name="Event Triggers" active={props.selectedItem === 'event-triggers'} />
             </Link>
             <Link to={`/mission-control/projects/${projectID}/deployments`}>

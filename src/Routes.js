@@ -16,7 +16,10 @@ import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
 import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
-import EventTriggers from "./pages/event-triggers/EventTriggers";
+import EventTriggersOverview from "./pages/event-triggers/EventTriggersOverview";
+import EventTriggersRules from "./pages/event-triggers/EventTriggersRules";
+import EventTriggersSchema from "./pages/event-triggers/EventTriggersSchema";
+import EventTriggersSettings from "./pages/event-triggers/EventTriggersSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
@@ -55,7 +58,10 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/overview" component={EventTriggersOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/rules" component={EventTriggersRules} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/schema" component={EventTriggersSchema} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/settings" component={EventTriggersSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/graphql" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/graphql/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />

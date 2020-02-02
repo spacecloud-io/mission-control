@@ -8,15 +8,17 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/event-triggers/RuleForm";
 import TriggerForm from "../../components/event-triggers/TriggerForm";
+import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
 import client from '../../client';
 import eventTriggersSvg from "../../assets/event-triggers.svg"
 import history from '../../history'
 import { dbIcons } from '../../utils';
+import './event.css'
 
 
-const EventTriggers = () => {
+const EventTriggersOverview = () => {
 	// Router params
 	const { projectID } = useParams()
 
@@ -152,18 +154,20 @@ const EventTriggers = () => {
 		<div>
 			<Topbar showProjectSelector />
 			<Sidenav selectedItem="event-triggers" />
-			<div className="page-content">
+			<div className='page-content page-content--no-padding'>
+				<EventTabs activeKey="overview" projectID={projectID} />
+			<div className="event-tab-content">
+				<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
 				{noOfRules === 0 && <div>
 					<div className="panel">
 						<img src={eventTriggersSvg} />
-						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud.<a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
-						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
+						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
+						{/* <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button> */}
 						{dbAlert()}
 					</div>
 				</div>}
 				{noOfRules > 0 && (
 					<React.Fragment>
-						<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
 						<Table columns={columns} dataSource={rulesTableData} />
 					</React.Fragment>
 				)}
@@ -176,8 +180,9 @@ const EventTriggers = () => {
 					handleCancel={handleTriggerModalCancel}
 					handleSubmit={(payload) => handleTriggerEvent(ruleClickedInfo.type, payload)} />}
 			</div>
+			</div>
 		</div>
 	)
 }
 
-export default EventTriggers;
+export default EventTriggersOverview;
