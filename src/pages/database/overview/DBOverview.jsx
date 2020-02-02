@@ -14,6 +14,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
+import { defaultDBRules } from '../../../constants';
 
 
 const Overview = () => {
@@ -35,12 +36,14 @@ const Overview = () => {
   // making changes for loading button
   const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
-  const [edit, setEdit] = useState(false);
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-  const defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`)
+  let defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  if (Object.keys(defaultRules).length === 0) {
+    defaultRules = defaultDBRules
+  }
   const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
   const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
@@ -62,13 +65,11 @@ const Overview = () => {
 
   const handleAddClick = () => {
     setAddColFormInEditMode(false)
-    setEdit(false)
     setAddColModalVisible(true)
   }
 
-  const handleEditClick = (colName, bool) => {
+  const handleEditClick = (colName) => {
     setClickedCol(colName)
-    setEdit(bool)
     setAddColFormInEditMode(true)
     setAddColModalVisible(true)
   }
@@ -146,7 +147,7 @@ const Overview = () => {
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a onClick={() => handleEditClick(name, true)}>Edit</a>
+          <a onClick={() => handleEditClick(name)}>Edit</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -255,7 +256,6 @@ const Overview = () => {
               initialValues={clickedColDetails}
               projectId={projectID}
               selectedDB={selectedDB}
-              editClicked={edit}
               conformLoading={conformLoading}
               defaultRules={defaultRules}
               handleCancel={() => handleCancelAddColModal(false)}

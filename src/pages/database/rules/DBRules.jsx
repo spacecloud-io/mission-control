@@ -13,7 +13,8 @@ import { getProjectConfig, notify } from '../../../utils';
 import { setColRule } from '../dbActions';
 import client from "../../../client"
 import { Button } from "antd"
-import AddDbRuleForm from '../../../components/database/add-collection-form/AddDbRuleForm';
+import AddDbRuleForm from '../../../components/database/add-rule-form/AddDbRuleForm';
+import { defaultDBRules } from '../../../constants';
 
 const Rules = () => {
   // Router params
@@ -29,7 +30,10 @@ const Rules = () => {
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  const rule = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  let rule = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  if (Object.keys(rule).length === 0) {
+    rule = defaultDBRules
+  }
   const rules = Object.entries(collections).filter(([name, colValue]) => name !== "event_logs" && Object.keys(colValue.rules).length > 0).reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
   // Handlers
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
@@ -71,7 +75,7 @@ const Rules = () => {
     return <div style={{ marginTop: 24 }}>
       <div className="panel">
         <img src={securitySvg} width="240px" />
-        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Secruity rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
       </div>
     </div>
   }

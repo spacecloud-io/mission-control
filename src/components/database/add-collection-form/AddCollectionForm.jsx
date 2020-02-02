@@ -11,28 +11,17 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules, editClicked }) => {
+const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
   const { getFieldDecorator, getFieldValue } = form;
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
-  var rules;
-  try {
-    if (Object.keys(defaultRules).length > 0) {
-      rules = defaultRules
-    } else {
-      rules = defaultDBRules
-    }
-  } catch (err) {
-    rules = defaultDBRules
-    console.log(err)
-  }
 
   if (!initialValues) {
     initialValues = {
       schema: `type {
   ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
 }`,
-      rules: rules,
+      rules: defaultRules,
       isRealtimeEnabled: true
     }
   }
@@ -40,16 +29,11 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialValues.schema);
-  const [checked, getChecked] = useState(true);
+  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ?  rule === "{}" : true);
 
-
-  useEffect(() => {
-    if (editClicked) {
-      if (rule.length > 2) {
-        getChecked(false)
-      }
-    }
-  }, [editClicked])
+  if (Object.keys(initialValues.rules).length === 0) {
+    initialValues.rules = defaultRules
+  }
 
   const colName = getFieldValue("name")
   useEffect(() => {
@@ -72,7 +56,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
         try {
           handleSubmit(
             values.name,
-            checked ? {} : JSON.parse(rule),
+            applyDefaultRules ? {} : JSON.parse(rule),
             schema,
             isRealtimeEnabled
           );
@@ -137,13 +121,13 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
           />
           <div style={{paddingTop:20}}>
             <Checkbox
-              checked={checked}
+              checked={applyDefaultRules}
               onChange={e =>
-                getChecked(!checked)
+                setApplyDefaultRules(!applyDefaultRules)
               }
             >Apply default security rules</Checkbox>
           </div>
-          {!checked ? <div style={{ paddingTop: 20 }}>
+          {!applyDefaultRules ? <div style={{ paddingTop: 20 }}>
             <FormItemLabel name="Rule" />
             <CodeMirror
               value={rule}

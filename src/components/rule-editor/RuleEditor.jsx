@@ -60,18 +60,12 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
         <Row type="flex">
           <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
             {entries.map(([ruleName, obj]) => {
-              try {
-                if (Object.keys(obj).length > 0) {
-                  return <div
-                    className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
-                    onClick={() => handleSelect(ruleName)}>
-                    <span>{ruleName}</span>
-                    {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
-                  </div>
-                }
-              } catch (err) {
-                console.log(err);
-              }
+              return <div
+              className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
+              onClick={() => handleSelect(ruleName)}>
+              <span>{ruleName}</span>
+              {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
+            </div>
             })}
           </Col>
           <Col xs={24} sm={24} md={24} lg={16} xl={18}>

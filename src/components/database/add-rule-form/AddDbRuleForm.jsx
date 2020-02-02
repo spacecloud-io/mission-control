@@ -11,16 +11,10 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify } from '../../../utils';
 
-const AddDbRuleForm = ({ form, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
-    const { getFieldDecorator, getFieldValue } = form;
+const AddDbRuleForm = ({ form, handleSubmit, handleCancel, conformLoading, defaultRules }) => {
+    const { getFieldDecorator } = form;
 
-    if (!initialValues) {
-        initialValues = {
-            rules: Object.keys(defaultRules).length > 0 ? defaultRules : defaultDBRules,
-            isRealtimeEnabled: true
-        }
-    }
-    const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
+    const [rule, setRule] = useState(JSON.stringify(defaultRules, null, 2));
 
     const handleSubmitClick = e => {
         e.preventDefault();
