@@ -1,31 +1,57 @@
-import React from 'react';
-import { Modal, Form, Input, Upload, Button, Icon, Radio, Row, Col, message } from 'antd';
+import React from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  Icon,
+  Radio,
+  Row,
+  Col,
+  message
+} from "antd";
 import RadioCard from "../radio-card/RadioCard";
-import { getSecretType } from '../../utils'
-import './add-secret.css';
+import "./add-secret.css";
 
 let env = 1;
 
-const AddSecret = (props) => {
+const AddSecret = props => {
   const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
-  const { key, location } = props.initialValues ? props.initialValues : {}
-  let defaultSecretType = getSecretType(getFieldValue("type"), "Environment Variables")
+  let secretType = getFieldValue("type");
+  if (!secretType) secretType = "env";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    props.form.validateFields((err, values) => {
+    props.form.validateFields((err, formValues) => {
       if (!err) {
-        let options = values.options
-        if (options && !options.col) {
-          delete options["col"]
+        const values = {
+          name: formValues.name,
+          type: formValues.type
+        };
+        switch (values.type) {
+          case "env":
+            values.data = formValues.env.reduce((prev, curr) => {
+              return Object.assign({}, prev, { [curr.name]: curr.value });
+            }, {});
+            break;
+          case "docker":
+            values.data = formValues.data;
+            break;
+          case "file":
+            values.rootPath = formValues.rootPath 
+            values.data = formValues.file.reduce((prev, curr) => {
+              return Object.assign({}, prev, { [curr.name]: curr.value });
+            }, {});
+            break;
         }
 
-        //props.handleSubmit(getFieldValue("secretName"), getFieldValue("dockerEmail"), getFieldValue("dockerPass"), getFieldValue("fileSecret"), getFieldValue("names"));
-        props.handleCancel();
-        props.form.resetFields();
+        props.handleSubmit(values).then(() => {
+          props.handleCancel();
+          props.form.resetFields();
+        })
       }
     });
-  }
+  };
 
   const initialKeys = [0];
   // ENVIRONMENT VARIABLES
@@ -40,15 +66,14 @@ const AddSecret = (props) => {
     });
   };
 
-  const envAdd = (id) => {
-    if(getFieldValue(`env[${id}].name`) && getFieldValue(`env[${id}].value`)){
+  const envAdd = id => {
+    if (getFieldValue(`env[${id}].name`) && getFieldValue(`env[${id}].value`)) {
       const envKeys = getFieldValue("envKeys");
       const nextKeys = envKeys.concat(env++);
       setFieldsValue({
         envKeys: nextKeys
       });
-    }
-    else{
+    } else {
       message.info("Please first input key value pair then add new field");
     }
   };
@@ -57,34 +82,55 @@ const AddSecret = (props) => {
   const envKeys = getFieldValue("envKeys");
   const formItemsEnv = envKeys.map((k, index) => (
     <div>
-    <Row key={k}>
-      <Col span={10}>
-        {defaultSecretType === "Environment Variables" && <Form.Item>
-          {getFieldDecorator(`env[${k}].name`,
-           { rules: [{ required: true, message: 'Please input key' }] 
-           })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
-        </Form.Item>}
-      </Col>
-      <Col span={10}>
-        {defaultSecretType === "Environment Variables" && <Form.Item>
-          {getFieldDecorator(`env[${k}].value`,
-           { rules: [{ required: true, message: 'Please input value' }]
-            })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
-        </Form.Item>}
-      </Col>
-      <Col span={3}>
-        {envKeys.length > 1 ? (
-          <Button onClick={() => envRemove(k)} style={{ marginRight: "2%", float: "left"}}>
-            <Icon type="delete" />
-          </Button>
-        ): null}
-      </Col>
-    </Row>
-    {index === envKeys.length - 1 && (
-      <Button onClick={() => envAdd(index)} style={{ marginRight: "2%", float: "left"}}>
-        <Icon type="plus" />Add another pair
-      </Button>
-    )}
+      <Row key={k}>
+        <Col span={10}>
+          {secretType === "env" && (
+            <Form.Item>
+              {getFieldDecorator(`env[${k}].name`, {
+                rules: [{ required: true, message: "Please input key" }]
+              })(
+                <Input
+                  style={{ width: "90%", marginRight: "6%", float: "left" }}
+                  placeholder="Key"
+                />
+              )}
+            </Form.Item>
+          )}
+        </Col>
+        <Col span={10}>
+          {secretType === "env" && (
+            <Form.Item>
+              {getFieldDecorator(`env[${k}].value`, {
+                rules: [{ required: true, message: "Please input value" }]
+              })(
+                <Input
+                  placeholder="Value"
+                  style={{ width: "90%", marginRight: "6%", float: "left" }}
+                />
+              )}
+            </Form.Item>
+          )}
+        </Col>
+        <Col span={3}>
+          {index > 0 ? (
+            <Button
+              onClick={() => envRemove(k)}
+              style={{ marginRight: "2%", float: "left" }}
+            >
+              <Icon type="delete" />
+            </Button>
+          ) : null}
+        </Col>
+      </Row>
+      {index === envKeys.length - 1 && (
+        <Button
+          onClick={() => envAdd(index)}
+          style={{ marginRight: "2%", float: "left" }}
+        >
+          <Icon type="plus" />
+          Add another pair
+        </Button>
+      )}
     </div>
   ));
 
@@ -99,16 +145,20 @@ const AddSecret = (props) => {
     });
   };
 
-  const fileAdd = (id) => {
-    if(getFieldValue(`file[${id}].name`) && getFieldValue(`file[${id}].value`)){
+  const fileAdd = id => {
+    if (
+      getFieldValue(`file[${id}].name`) &&
+      getFieldValue(`file[${id}].value`)
+    ) {
       const fileKeys = getFieldValue("fileKeys");
       const nextKeys = fileKeys.concat(env++);
       setFieldsValue({
         fileKeys: nextKeys
       });
-    }
-    else{
-      message.info("Please first input location and choose a file then add new field");
+    } else {
+      message.info(
+        "Please first input location and choose a file then add new field"
+      );
     }
   };
 
@@ -116,199 +166,175 @@ const AddSecret = (props) => {
   const fileKeys = getFieldValue("fileKeys");
   const formItemsFile = fileKeys.map((k, index) => (
     <div>
-    <Row key={k}>
-      <Col span={14}>
-        {defaultSecretType === "File Secret" && <Form.Item>
-          {getFieldDecorator(`file[${k}].loc_name`, 
-           { rules: [{ required: true, message: 'Please input file name' }] 
-          })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File name (eg: credentials.json)"/>)}
-        </Form.Item>}
-      </Col>
-      <Col span={6}>
-        {defaultSecretType === "File Secret" && <Form.Item>
-          {getFieldDecorator(`file[${k}].value`,
-           { rules: [{ required: true, message: 'Please upload a file' }] 
-           })(<Upload {...props} >
-             <Button type="default" style={{width: "100%",  marginRight: "6%", float: "left"}}><Icon type="upload" />Choose File</Button>
-           </Upload>)}
-        </Form.Item>}
-      </Col>
-      <Col span={3}>
-        {fileKeys.length > 1 ? (
-          <Button onClick={() => fileRemove(k)} style={{ marginRight: "2%", float: "left"}}>
-            <Icon type="delete" />
-          </Button>
-        ): null}
-      </Col>
-    </Row>
-    {index === fileKeys.length - 1 && (
-      <Button onClick={() => fileAdd(index)} style={{ marginRight: "2%", float: "left"}}>
-        <Icon type="plus" />Add another file
-      </Button>
-    )}
+      <Row key={k}>
+        <Col span={8}>
+          {secretType === "file" && (
+            <Form.Item>
+              {getFieldDecorator(`file[${k}].name`, {
+                rules: [{ required: true, message: "Please input file name" }]
+              })(
+                <Input
+                  style={{ width: "98%", marginRight: "6%", float: "left" }}
+                  placeholder="File name (eg: credentials.json)"
+                />
+              )}
+            </Form.Item>
+          )}
+        </Col>
+        <Col span={12}>
+          {secretType === "file" && (
+            <Form.Item>
+              {getFieldDecorator(`file[${k}].value`, {
+                rules: [{ required: true, message: "Please upload a file" }]
+              })(
+                <Input.TextArea
+                  rows={4}
+                  placeholder="File contents"
+                  style={{ width: "90%", marginRight: "6%", float: "left" }}
+                />
+              )}
+            </Form.Item>
+          )}
+        </Col>
+        <Col span={3}>
+          {index > 0 ? (
+            <Button
+              onClick={() => fileRemove(k)}
+              style={{ marginRight: "2%", float: "left" }}
+            >
+              <Icon type="delete" />
+            </Button>
+          ) : null}
+        </Col>
+      </Row>
+      {index === fileKeys.length - 1 && (
+        <Button
+          onClick={() => fileAdd(index)}
+          style={{ marginRight: "2%", float: "left" }}
+        >
+          <Icon type="plus" />
+          Add another file
+        </Button>
+      )}
     </div>
   ));
 
-  return(
-    <div>
-    {!props.eachAdd && 
-      <Modal
+  return (
+    <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Secret`}
       okText={props.initialValues ? "Save" : "Add"}
       visible={true}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
-      width="600px"
+      width="800px"
     >
       <Form>
-          <p>Secret type</p>
-          <Form.Item>
-          {getFieldDecorator('type', {
-            rules: [{ required: true, message: 'Please select a type!' }],
-            initialValue: "env var"
+        <p>Secret type</p>
+        <Form.Item>
+          {getFieldDecorator("type", {
+            rules: [{ required: true, message: "Please select a type!" }],
+            initialValue: "env"
           })(
             <Radio.Group>
-              <RadioCard value="env var">Environment Variables</RadioCard>
-              <RadioCard value="file secret">File Secret</RadioCard>
-              <RadioCard value="docker secret">Docker Secret</RadioCard>
+              <RadioCard value="env">Environment Variables</RadioCard>
+              <RadioCard value="file">File Secret</RadioCard>
+              <RadioCard value="docker">Docker Secret</RadioCard>
             </Radio.Group>
           )}
-          </Form.Item>
-          {(!defaultSecretType || defaultSecretType === "Environment Variables") && <React.Fragment> 
-          <p>Name your secret</p>
-          <Form.Item>
-            {getFieldDecorator('envVarSecretName', {
-              rules: [{ 
-              validator: (_, value, cb) => {
-                if (!value) {
-                  cb("Please provide a service name!")
-                  return
-                }
-                if (value.includes(" ")) {
-                  cb("Secret name cannot contain spaces!")
-                }
-                cb()
-              } }],
-            })(
-              <Input placeholder="Example: DB Secret" />,
-            )}
-          </Form.Item>
-          <p>Environment variable pairs</p>
-          <Form.Item >
-            {formItemsEnv}
-          </Form.Item>
-          </React.Fragment>}
-          {(defaultSecretType === "Docker Secret" && <React.Fragment>
-          <p>Name your secret</p>
-          <Form.Item>
-            {getFieldDecorator('dockerSecretName', {
-              rules: [{ required: true, message: 'Please input a secret name' }],
-            })(
-              <Input placeholder="Example: DB Secret" />,
-            )}
-          </Form.Item>
-          <p>Docker Username</p>
-          <Form.Item>
-            {getFieldDecorator('dockerUsername', {
-              rules: [{ required: true, message: 'Please input your docker username' }],
-            })(
-              <Input placeholder="Username of your docker registry" />,
-            )}
-          </Form.Item>
-          <p>Docker Password</p>
-          <Form.Item>
-            {getFieldDecorator('dockerPass', {
-              rules: [{ required: true, message: 'Please input your docker password' }],
-            })(
-              <Input placeholder="Password of your docker registry" />,
-            )}
-          </Form.Item>
-          <p>Docker Registry URL</p>
-          <Form.Item>
-            {getFieldDecorator('dockerRegUrl', {
-              rules: [{ required: true, message: 'Please input your docker registry url' }],
-            })(
-              <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />,
-            )}
-          </Form.Item>
-          </React.Fragment>)}
-          {(defaultSecretType === "File Secret" && <React.Fragment>
-          <p>Name your secret</p>
-          <Form.Item>
-            {getFieldDecorator('FileSecretName', {
-              rules: [{ required: true, message: 'Please input a secret name' }],
+        </Form.Item>
+        {secretType === "env" && (
+          <React.Fragment>
+            <p>Name your secret</p>
+            <Form.Item>
+              {getFieldDecorator("name", {
+                rules: [
+                  { required: true, message: "Please input a secret name" }
+                ]
+              })(<Input placeholder="Example: DB Secret" />)}
+            </Form.Item>
+            <p>Environment variable pairs</p>
+            <Form.Item>{formItemsEnv}</Form.Item>
+          </React.Fragment>
+        )}
+        {secretType === "docker" && (
+          <React.Fragment>
+            <p>Name your secret</p>
+            <Form.Item>
+              {getFieldDecorator("name", {
+                rules: [
+                  { required: true, message: "Please input a secret name" }
+                ]
+              })(<Input placeholder="Example: DB Secret" />)}
+            </Form.Item>
+            <p>Docker Username</p>
+            <Form.Item>
+              {getFieldDecorator("data.username", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input your docker username"
+                  }
+                ]
+              })(<Input placeholder="Username of your docker registry" />)}
+            </Form.Item>
+            <p>Docker Password</p>
+            <Form.Item>
+              {getFieldDecorator("data.pasword", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input your docker password"
+                  }
+                ]
+              })(<Input placeholder="Password of your docker registry" />)}
+            </Form.Item>
+            <p>Docker Registry URL</p>
+            <Form.Item>
+              {getFieldDecorator("data.url", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input your docker registry url"
+                  }
+                ]
               })(
-              <Input placeholder="Example: DB Secret" />,
-            )}
-          </Form.Item>
-          <p>Mount location</p>
-          <Form.Item>
-            {getFieldDecorator('location', {
-              rules: [{ required: true, message: 'Please input a file location' }],
+                <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />
+              )}
+            </Form.Item>
+          </React.Fragment>
+        )}
+        {secretType === "file" && (
+          <React.Fragment>
+            <p>Name your secret</p>
+            <Form.Item>
+              {getFieldDecorator("name", {
+                rules: [
+                  { required: true, message: "Please input a secret name" }
+                ]
+              })(<Input placeholder="Example: DB Secret" />)}
+            </Form.Item>
+            <p>Mount location</p>
+            <Form.Item>
+              {getFieldDecorator("rootPath", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input a file location"
+                  }
+                ]
               })(
-              <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />,
-            )}
-          </Form.Item>
-          <p>Files</p>
-          <Form.Item>
-            {formItemsFile}
-          </Form.Item>
-          </React.Fragment>)}
+                <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />
+              )}
+            </Form.Item>
+            <p>Files</p>
+            <Form.Item>{formItemsFile}</Form.Item>
+          </React.Fragment>
+        )}
       </Form>
-    </Modal>}
-    {props.eachAdd && 
-      <Modal
-      title={`${props.initialValues ? "Update" : "Add"} ${props.type}`}
-      okText={props.initialValues ? "Save" : "Add"}
-      visible={true}
-      onCancel={props.handleCancel}
-      onOk={handleSubmit}
-      width="600px"
-    >
-        {props.type === "Environment Variables" && <Form>
-            {!props.update && <div><p>Key</p>
-            <Form.Item>
-            {getFieldDecorator(`key`, { rules: [{ required: true, message: 'Please input key' }],
-           })(<Input style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
-           </Form.Item></div>}
-           {props.update && <div><p>Key</p>
-            <Form.Item>
-            {getFieldDecorator(`key`, { rules: [{ required: true, message: 'Please input key' }], initialValues: key 
-           })(<Input disabled={true} style={{width: "90%", marginRight: "6%", float: "left"}} placeholder="Key"/>)}
-           </Form.Item></div>}
-           <p>Value</p>
-           <Form.Item>
-           {getFieldDecorator(`value`,
-           { rules: [{ required: true, message: 'Please input value' }], 
-            })(<Input placeholder="Value"  style={{width: "90%",  marginRight: "6%", float: "left"}} />)}
-          </Form.Item>
-          </Form>}
-          {props.type === "File Secret" && <Form>
-            {!props.update && <div> <p>Location</p>
-            <Form.Item>
-            {getFieldDecorator(`location`, 
-            { rules: [{ required: true, message: 'Please input file mount location' }], 
-            })(<Input style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
-           </Form.Item></div>}
-           {props.update && <div><p>Location</p>
-            <Form.Item>
-            {getFieldDecorator(`location`, 
-            { rules: [{ required: true, message: 'Please input file mount location' }], initialValues: location
-            })(<Input disabled={true} style={{width: "98%", marginRight: "6%", float: "left"}} placeholder="File mount location"/>)}
-           </Form.Item></div>}
-           <Form.Item>
-           {getFieldDecorator(`fileUpload`,
-           { rules: [{ required: true, message: 'Please upload a file' }] 
-           })(<Upload {...props}>
-             <Button type="primary" style={{width: "100%",  marginRight: "6%", float: "left"}}>Choose File</Button>
-           </Upload>)}
-          </Form.Item>
-          </Form>} 
-    </Modal>}
-    </div>
+    </Modal>
   );
-}
+};
 
 const WrappedRuleForm = Form.create({})(AddSecret);
 
-export default WrappedRuleForm
+export default WrappedRuleForm;

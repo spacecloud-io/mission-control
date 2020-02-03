@@ -21,6 +21,9 @@ const Deployments = () => {
     "modules.deployments.services",
     []
   );
+  const totalSecrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+  const dockerSecrets = totalSecrets.filter(obj => obj.type === "docker").map(obj => obj.name);
+  const secrets = totalSecrets.filter(obj => obj.type !== "docker").map(obj => obj.name);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [deploymentClicked, setDeploymentClicked] = useState("");
 
@@ -77,7 +80,9 @@ const Deployments = () => {
       id: obj.id,
       serviceType: task.runtime,
       dockerImage: task.docker.image,
-      registryType: "public",
+      dockerSecret: task.docker.secret,
+      secrets: task.secrets ? task.secrets : [],
+      registryType: task.docker.secret ? "private": "public",
       ports: task.ports,
       cpu: task.resources.cpu / 1000,
       memory: task.resources.memory,
@@ -129,8 +134,10 @@ const Deployments = () => {
               memory: values.memory
             },
             docker: {
-              image: values.dockerImage
+              image: values.dockerImage,
+              secret: values.dockerSecret
             },
+            secrets: values.secrets,
             env: values.env
               ? values.env.reduce((prev, curr) => {
                   return Object.assign({}, prev, { [curr.key]: curr.value });
@@ -246,6 +253,8 @@ const Deployments = () => {
           visible={modalVisibility}
           initialValues={deploymentClickedInfo}
           projectId={projectID}
+          dockerSecrets={dockerSecrets}
+          secrets={secrets}
           handleCancel={handleCancel}
           handleSubmit={values =>
             handleSubmit(deploymentClickedInfo ? "update" : "add", values)

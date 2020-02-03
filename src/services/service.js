@@ -10,6 +10,7 @@ import Projects from "./projects"
 import Deployments from "./deployments"
 import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
+import Secrets from "./secrets"
 
 import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
@@ -32,6 +33,7 @@ class Service {
     this.deployments = new Deployments(this.client)
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
+    this.secrets = new Secrets(this.client)
     const token = localStorage.getItem("token")
     if(token) this.client.setToken(token);
   }

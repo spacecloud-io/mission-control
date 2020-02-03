@@ -29,7 +29,7 @@ let env = 0;
 let white = 1;
 let upstreams = 1;
 const AddDeploymentForm = props => {
-  const { initialValues, projectId } = props;
+  const { initialValues, projectId, dockerSecrets, secrets } = props;
   const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
 
   const handleSubmitClick = e => {
@@ -504,7 +504,9 @@ const AddDeploymentForm = props => {
               <FormItemLabel name="Docker registry type" />
               <Form.Item>
                 {getFieldDecorator("registryType", {
-                  initialValue: "public"
+                  initialValue: initialValues
+                    ? initialValues.registryType
+                    : "public"
                 })(
                   <Radio.Group>
                     <Radio value="public">Public Registry</Radio>
@@ -520,15 +522,22 @@ const AddDeploymentForm = props => {
                       description="Docker secret for authentication to pull private Docker images"
                     />
                     <Form.Item>
-                      {getFieldDecorator("docker_secret", {
+                      {getFieldDecorator("dockerSecret", {
                         rules: [
                           {
                             required: true,
                             message: "Please input docker secret!"
                           }
-                        ]
+                        ],
+                        initialValue: initialValues
+                          ? initialValues.dockerSecret
+                          : ""
                       })(
-                        <Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />
+                        <Select placeholder="Select docker secret to be applied">
+                          {dockerSecrets.map(secret => (
+                            <Option value={secret}>{secret}</Option>
+                          ))}
+                        </Select>
                       )}
                     </Form.Item>
                   </React.Fragment>
@@ -593,19 +602,22 @@ const AddDeploymentForm = props => {
                       ? "Add an environment variable"
                       : "Add another environment variable"}
                   </Button>
-                  {/* <FormItemLabel name="Secrets" />
+                  <FormItemLabel name="Secrets" />
                   <Form.Item>
                     {getFieldDecorator("secrets", {
-                      initialValue: "1"
+                      initialValue: initialValues ? initialValues.secrets : []
                     })(
                       <Select
+                        mode="multiple"
                         placeholder="Select secrets to be applied"
                         style={{ width: 410 }}
                       >
-                        <Option value="1">Secret 1</Option>
+                        {secrets.map(secret => (
+                          <Option value={secret}>{secret}</Option>
+                        ))}
                       </Select>
                     )}
-                  </Form.Item> */}
+                  </Form.Item>
                   <FormItemLabel
                     name="Whitelists"
                     description="Only those services that are whitelisted can access you"

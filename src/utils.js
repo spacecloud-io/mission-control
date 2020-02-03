@@ -135,13 +135,13 @@ export const getSecretType = (type, defaultValue) => {
   let secret = defaultValue
   if (type) {
     switch (type) {
-      case "env var":
+      case "env":
         secret = "Environment Variables"
         break;
-      case "docker secret":
+      case "docker":
         secret = "Docker Secret"
         break;
-      case "file secret":
+      case "file":
           secret = "File Secret"
           break;
       default:
