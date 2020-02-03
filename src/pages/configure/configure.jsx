@@ -79,19 +79,6 @@ const Configure = () => {
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleEventingConfig = (dbType, col) => {
-    dispatch(increment("pendingRequests"));
-    client.eventTriggers
-      .setEventingConfig(projectID, { enabled: true, dbType, col })
-      .then(() => {
-        setProjectConfig(projectID, "modules.eventing.dbType", dbType);
-        setProjectConfig(projectID, "modules.eventing.col", col);
-        notify("success", "Success", "Changed eventing config successfully");
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
-  };
-
   const removeProjectConfig = () => {
     store.dispatch(increment("pendingRequests"));
     client.projects
@@ -160,14 +147,6 @@ const Configure = () => {
           <h2>JWT Secret</h2>
           <div className="divider" />
           <SecretConfigure secret={secret} handleSubmit={handleSecret} />
-          <h2>Eventing Config</h2>
-          <div className="divider" />
-          <EventingConfigure
-            dbType={eventing.dbType}
-            dbList={dbList}
-            col={eventing.col}
-            handleSubmit={handleEventingConfig}
-          />
           <h2>Export/Import Project Config</h2>
           <div className="divider" />
           <ExportImport
