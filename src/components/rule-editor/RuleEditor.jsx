@@ -13,7 +13,8 @@ import useDeepCompareEffect from 'use-deep-compare-effect'
 
 const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
   const entries = Object.entries(rules)
-  const noOfRules = entries.length
+
+  const noOfRules = entries.length;
 
   const [selectedRule, setSelectedRule] = useState("")
   const [initialRule, setInitialrule] = useState("")
@@ -21,13 +22,14 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   var unSavedChanges = selectedRule && selectedRule !== initialRule
 
   useDeepCompareEffect(() => {
-    let temp = rules[selectedRuleName]
-
-    if (stringifyRules) {
-      temp = JSON.stringify(temp, null, 2)
+    if (selectedRuleName) {
+      let temp = rules[selectedRuleName]
+      if (stringifyRules) {
+        temp = JSON.stringify(temp, null, 2)
+      }
+      setInitialrule(temp)
+      setSelectedRule(temp)
     }
-    setInitialrule(temp)
-    setSelectedRule(temp)
   }, [selectedRuleName, rules])
 
   useEffect(() => {
@@ -59,13 +61,13 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
       {(noOfRules > 0) && <div>
         <Row type="flex">
           <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
-            {entries.map(([ruleName]) => {
+            {entries.map(([ruleName, obj]) => {
               return <div
-                className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""}`}
-                onClick={() => handleSelect(ruleName)}>
-                <span>{ruleName}</span>
-                {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
-              </div>
+              className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
+              onClick={() => handleSelect(ruleName)}>
+              <span>{ruleName}</span>
+              {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
+            </div>
             })}
           </Col>
           <Col xs={24} sm={24} md={24} lg={16} xl={18}>

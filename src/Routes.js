@@ -15,14 +15,25 @@ import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
 import DBQueries from "./pages/database/queries/DBQueries";
+import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
-import EventTriggers from "./pages/event-triggers/EventTriggers";
+import EventTriggersOverview from "./pages/event-triggers/EventTriggersOverview";
+import EventTriggersRules from "./pages/event-triggers/EventTriggersRules";
+import EventTriggersSchema from "./pages/event-triggers/EventTriggersSchema";
+import EventTriggersSettings from "./pages/event-triggers/EventTriggersSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
+import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
 import Configure from "./pages/configure/configure";
-import AddDb from './pages/database/add-db/AddDb';
+import Settings from './pages/settings/general/General'
+import Routing from './pages/routing/Routing';
+import Guides from './pages/guides/Guides';
+import Teams from './pages/teams/Teams';
+import Plans from './pages/plans/Plans';
+import Secrets from './pages/secrets/Secrets';
+import SecretDetails from './pages/secrets/SecretDetails';
 
 export default () => {
   return (
@@ -46,12 +57,24 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers" component={EventTriggers} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/overview" component={EventTriggersOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/rules" component={EventTriggersRules} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/schema" component={EventTriggersSchema} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/settings" component={EventTriggersSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/user-management" component={UserManagement} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
       </Switch>
     </Router>
   );

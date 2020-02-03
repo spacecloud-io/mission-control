@@ -7,7 +7,7 @@ function LoginForm(props) {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
-        props.handleSubmit(values.userName, values.password);
+        props.handleSubmit(values.userName, values.key);
       }
     });
   };
@@ -25,10 +25,10 @@ function LoginForm(props) {
         </Form.Item>
 
         <Form.Item>
-          {getFieldDecorator('password', {
-            rules: [{ required: true, message: 'Please input your password!' }],
+          {getFieldDecorator('key', {
+            rules: [{ required: true, message: 'Please input your key!' }],
           })(
-            <Input.Password type="password" placeholder="Password" className="input" />
+            <Input.Password type="password" placeholder="Key" className="input" />
           )}
         </Form.Item>
 

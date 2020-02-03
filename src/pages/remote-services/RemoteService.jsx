@@ -123,7 +123,7 @@ const RemoteService = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='services' />
+      <Sidenav selectedItem='remote-services' />
       <div className='page-content page-content--no-padding'>
         <ServiceTopBar serviceName={serviceName} projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
