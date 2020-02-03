@@ -254,9 +254,11 @@ export const getFields = (schema, rules, index, specificField, argumentValue) =>
     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
       continue;
     if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-      if (typeof (schema.definitions[0].fields[i].directives[0].arguments[1]) != 'undefined') {
-        specificField = 1;
-        argumentValue = schema.definitions[0].fields[i].directives[0].arguments[1].value.value;
+      for (var j in schema.definitions[0].fields[i].directives[0].arguments) {
+        if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {
+          specificField = 1;
+          argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        }
       }
       for (var j in index)
         if (typeof (schema.definitions[0].fields[i].type.type != 'undefined')) {
@@ -291,75 +293,77 @@ export const getFieldsValues = (schema, rules, index, specificField, argumentVal
         }
       }
       else continue;
-      else {
-        if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-          nullType = 1;
-        }
-        else {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-          nullType = 0;
-        }
-      }
-        if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-          continue;
-        if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-          if (typeof (schema.definitions[0].fields[i].directives[0].arguments[1]) != 'undefined') {
-            specificField = 1;
-            argumentValue = schema.definitions[0].fields[i].directives[0].arguments[1].value.value;
-          }
-          for (var j in index)
-            if (nullType === 1)
-              if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-                fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-              }
-              else continue;
-            else
-              if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-                fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
-              }
-              else continue;
-        }
-      }
-    return fieldsValue;
-  }
-
-
-  export const getVariables = (schema, rules, index) => {
-    var fieldsValue = []
-    var nullType;                                                                      // 0 = NonNullType, 1 = NullType
-    for (var i in schema.definitions[0].fields) {
+    else {
       if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-        fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
+        fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
         nullType = 1;
       }
       else {
-        fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
+        fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
         nullType = 0;
       }
-      if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
-        continue;
-      if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-        for (var j in index)
-          if (nullType === 0)
-            if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+    }
+    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
+      continue;
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+      for (var j in schema.definitions[0].fields[i].directives[0].arguments) {
+        if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {
+          specificField = 1;
+          argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        }
+      }
+      for (var j in index)
+        if (nullType === 1)
+          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fieldsValue.pop();
+            fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
+            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+          }
+          else continue;
+        else
+          if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fieldsValue.pop();
+            fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
+            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+          }
+          else continue;
+    }
+  }
+  return fieldsValue;
+}
+
+
+export const getVariables = (schema, rules, index) => {
+  var fieldsValue = []
+  var nullType;                                                                      // 0 = NonNullType, 1 = NullType
+  for (var i in schema.definitions[0].fields) {
+    if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
+      fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
+      nullType = 1;
+    }
+    else {
+      fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
+      nullType = 0;
+    }
+    if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
+      continue;
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+      for (var j in index)
+        if (nullType === 0)
+          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fieldsValue.pop();
+            fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
+            fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
+          }
+          else
+            if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
               fieldsValue.pop();
               fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
               fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
             }
-            else
-              if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-                fieldsValue.pop();
-                fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
-                fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
-              }
             else continue;
-      }
     }
-    return fieldsValue;
   }
+  return fieldsValue;
+}
 
