@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Switch, Form, Input, Row, Col } from 'antd';
+import { Modal, Form, AutoComplete, Row, Col } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -8,32 +8,31 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, getDBTypeFromAlias } from '../../utils';
+import { notify } from '../../utils';
 
-const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const EventSchemaForm = ({ form, handleSubmit, handleCancel, initialValues, customEventTypes, conformLoading }) => {
   const { getFieldDecorator, getFieldValue } = form;
 
-  const dbType = getDBTypeFromAlias(projectId, selectedDB)
+  const eventType = getFieldValue("eventType");
 
   if (!initialValues) {
     initialValues = {
       schema: `type {
-  ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
+  
 }`,
     }
   }
 
   const [schema, setSchema] = useState(initialValues.schema);
 
-  const colName = getFieldValue("name")
   useEffect(() => {
     if (schema) {
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
-      const newSchema = colName ? `type ${colName} ${temp.slice(index)}` : `type ${temp.slice(index)}`
+      const newSchema = eventType ? `type ${eventType} ${temp.slice(index)}` : `type ${temp.slice(index)}`
       setSchema(newSchema)
     }
-  }, [colName])
+  }, [eventType])
 
 
   const handleSubmitClick = e => {
@@ -59,8 +58,8 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
         className='edit-item-modal'
         visible={true}
         width={520}
-        okText={editMode ? "Save" : "Add"}
-        title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
+        okText="Add"
+        title="Add event schema"
         onOk={handleSubmitClick}
         confirmLoading={conformLoading}
         onCancel={handleCancel}
@@ -72,11 +71,13 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               rules: [{ required: true, message: `Event type is required` }],
               initialValue: initialValues.eventType
             })(
-              <Input
-                className="input"
-                placeholder={`Enter event type`}
-                disabled={editMode}
-              />
+              <AutoComplete
+                placeholder="Example: event-type"
+              >
+                {customEventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
+                  <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
+                ))}
+              </AutoComplete>
             )}
           </Form.Item>
           <Row>
@@ -105,4 +106,4 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   );
 }
 
-export default Form.create({})(AddCollectionForm);
+export default Form.create({})(EventSchemaForm);

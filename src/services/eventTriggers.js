@@ -6,7 +6,7 @@ class EventTriggers {
   setEventingConfig(projectId, config) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/event-triggers/config`, config)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
             return
@@ -20,7 +20,7 @@ class EventTriggers {
   queueEvent(projectId, event) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/api/${projectId}/event-triggers/queue`, event)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
             return
@@ -34,7 +34,7 @@ class EventTriggers {
   setTriggerRule(projectId, triggerName, triggerRule) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/event-triggers/rules/${triggerName}`, triggerRule)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
             return
@@ -48,7 +48,7 @@ class EventTriggers {
   deleteTriggerRule(projectId, triggerName) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/event-triggers/rules/${triggerName}`)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
             return
@@ -59,7 +59,7 @@ class EventTriggers {
     })
   }
 
-  deleteColRule(projectId, type) {
+  deleteSecurityRule(projectId, type) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/rules/${type}`)
         .then(({ status, data }) => {
@@ -73,9 +73,9 @@ class EventTriggers {
     })
   }
 
-  setColRule(projectId, type, rule) {
+  setSecurityRule(projectId, type, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, rule)
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, { rule: rule })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)

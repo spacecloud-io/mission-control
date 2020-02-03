@@ -6,12 +6,12 @@ import { Button } from "antd";
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from 'automate-redux'
 import { set, get } from 'automate-redux';
-import { getProjectConfig, notify, setProjectConfig } from '../../utils';
+import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType } from '../../utils';
 import client from '../../client';
 import store from '../../store';
 import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
-import AddEventRuleForm from '../../components/event-triggers/AddEventRuleForm';
+import EventSecurityRuleForm from '../../components/event-triggers/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 
 const EventTriggersRules = () => {
@@ -27,18 +27,20 @@ const EventTriggersRules = () => {
     // Derived properties
     const rule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.default`, {})
     const rules = getProjectConfig(projects, projectID, `modules.eventing.securityRules`, {})
+    const eventRules = getProjectConfig(projects, projectID, `modules.eventing.rules`, {})
+    const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)
     
     // Handlers
     const handleSelect = (eventType) => dispatch(set("uiState.selectedEvent", eventType))
   
-    const handleSubmit = (rule) => {
+    const handleSubmit = (type, rule) => {
       return new Promise((resolve, reject) => {
         setConformLoading(true)
         store.dispatch(increment("pendingRequests"))
-        client.eventTriggers.setColRule(projectID, selectedEvent, rule).then(() => {
-          setProjectConfig(projectID, `modules.eventing.securityRules.${selectedEvent}`, rule)
+        client.eventTriggers.setSecurityRule(projectID, type, rule).then(() => {
+          setProjectConfig(projectID, `modules.eventing.securityRules.${type}`, rule)
           notify("success", "Success", "Saved event rule successfully")
-          dispatch(set("uiState.selectedEvent", selectedEvent))
+          dispatch(set("uiState.selectedEvent", type))
           setAddRuleModalVisible(false);
           setConformLoading(false);
           resolve()
@@ -56,10 +58,10 @@ const EventTriggersRules = () => {
     const handleDeleteRule = (type) => {
       return new Promise((resolve, reject) => {
         store.dispatch(increment("pendingRequests"))
-        client.eventTriggers.deleteColRule(projectID, type).then(() => {
-          const newRule = getProjectConfig(store.getState().projects, projectID, `modules.eventing.securityRules`, {})
-          delete newRule[type]
-          setProjectConfig(projectID, `modules.eventing.securityRules`, newRule)
+        client.eventTriggers.deleteSecurityRule(projectID, type).then(() => {
+          let newRules = Object.assign({}, getProjectConfig(store.getState().projects, projectID, `modules.eventing.securityRules`, {}))
+          delete newRules[type]
+          setProjectConfig(projectID, `modules.eventing.securityRules`, newRules)
           notify("success", "Success", "Removed event rule successfully")
           resolve()
         })
@@ -68,27 +70,6 @@ const EventTriggersRules = () => {
             reject(ex)
           })
           .finally(() => store.dispatch(decrement("pendingRequests")))
-      })
-    }
-  
-    const addDbRule = (type, rule) => {
-      return new Promise((resolve, reject) => {
-        setConformLoading(true)
-        store.dispatch(increment("pendingRequests"))
-        client.eventTriggers.setColRule(projectID, type, rule).then(() => {
-          setProjectConfig(projectID, `modules.eventing.securityRules.${type}`, rule)
-          notify("success", "Success", "Saved rule successfully")
-          dispatch(set("uiState.selectedEvent", type))
-          setAddRuleModalVisible(false);
-          setConformLoading(false);
-          resolve()
-        })
-          .catch(ex => {
-              notify("error", "Error saving rule", ex)
-              setConformLoading(false);
-              reject(ex)
-          })
-          .finally(() => store.dispatch(decrement("pendingRequests")) )
       })
     }
   
@@ -108,19 +89,20 @@ const EventTriggersRules = () => {
             <div className='page-content page-content--no-padding'>
                 <EventTabs activeKey="rules" projectID={projectID} />
             <div className="event-tab-content"> 
-                <h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
+                <h3 style={{ display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
                 <RuleEditor rules={rules}
                     selectedRuleName={selectedEvent}
                     handleSelect={handleSelect}
-                    handleSubmit={handleSubmit}
+                    handleSubmit={(rule) => handleSubmit(selectedEvent, rule)}
                     canDeleteRules
                     handleDelete={handleDeleteRule}
                     emptyState={<EmptyState />}
                 />
-                {addRuleModalVisible && <AddEventRuleForm
+                {addRuleModalVisible && <EventSecurityRuleForm
                     defaultRules={rule}
-                    handleSubmit={addDbRule}
+                    handleSubmit={handleSubmit}
                     conformLoading={conformLoading}
+                    customEventTypes={customEventTypes}
                     handleCancel={() => setAddRuleModalVisible(false)} />}
             </div>
             </div>
