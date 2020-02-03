@@ -4,7 +4,12 @@ import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
 import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
-import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType } from "../../utils";
+import {
+  getProjectConfig,
+  notify,
+  setProjectConfig,
+  getEventSourceFromType
+} from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
 import { set, get, increment, decrement } from "automate-redux";
 import store from "../../store";
@@ -26,7 +31,7 @@ const EventTriggersSchema = () => {
     `modules.eventing.rules`,
     {}
   );
-  
+
   const customEventTypes = Object.entries(eventRules)
     .filter(([key, value]) => getEventSourceFromType(value.type) === "custom")
     .map(([_, value]) => value.type);
@@ -34,10 +39,10 @@ const EventTriggersSchema = () => {
   const dispatch = useDispatch();
 
   // Derived properties
-  const schemas = getProjectConfig(
-    projects,
-    projectID,
-    `modules.eventing.schemas`,
+  const schemas = Object.entries(
+    getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
+  ).reduce(
+    (prev, [key, value]) => Object.assign({}, prev, { [key]: value.schema }),
     {}
   );
 
@@ -88,14 +93,12 @@ const EventTriggersSchema = () => {
       client.eventTriggers
         .setEventSchema(projectID, type, schema)
         .then(() => {
-          const newSchemas = Object.assign({}, schemas, { [type]: schema})
-          setProjectConfig(
-            projectID,
-            `modules.eventing.schemas`,
-            newSchemas
-            );
+          const oldSchemas = getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
+          const newSchemas = Object.assign({}, oldSchemas, {
+            [type]: { schema: schema }
+          });
+          setProjectConfig(projectID, `modules.eventing.schemas`, newSchemas);
 
-          console.log("OldSchemas", schemas, "Schema", schema, "NewSchema", newSchemas)
           notify("success", "Success", "Saved event schema successfully");
           dispatch(set("uiState.selectedEvent", type));
           setAddColModalVisible(false);
@@ -152,7 +155,7 @@ const EventTriggersSchema = () => {
             rules={schemas}
             selectedRuleName={selectedEvent}
             handleSelect={handleSelect}
-            handleSubmit={(schema) => handleAddSchema(selectedEvent, schema)}
+            handleSubmit={schema => handleAddSchema(selectedEvent, schema)}
             canDeleteRules
             handleDelete={handleDelete}
             stringifyRules={false}

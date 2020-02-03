@@ -36,7 +36,7 @@ const Sidenav = (props) => {
   const version = useSelector(state => state.version)
 
   const setActiveKey = () => {
-    const microservices = ["graphql", "event-triggers", "deployments", "secrets", "routing"];
+    const microservices = ["remote-services", "event-triggers", "deployments", "secrets", "routing"];
     if(props.selectedItem === "database" || props.selectedItem === "file-storage"){
       return "1"
     }
@@ -66,8 +66,8 @@ const Sidenav = (props) => {
             </Link>
           </Panel>
           <Panel header={<Header name="Microservices" icon="widgets"/>} key="2">
-            <Link to={`/mission-control/projects/${projectID}/graphql`}>
-              <PanelItem name="GraphQL API" active={props.selectedItem === 'graphql'} />
+            <Link to={`/mission-control/projects/${projectID}/remote-services`}>
+              <PanelItem name="GraphQL API" active={props.selectedItem === 'remote-services'} />
             </Link>
             <Link to={`/mission-control/projects/${projectID}/event-triggers/overview`}>
               <PanelItem name="Event Triggers" active={props.selectedItem === 'event-triggers'} />

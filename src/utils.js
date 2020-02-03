@@ -44,7 +44,8 @@ export const parseDbConnString = conn => {
 export const getProjectConfig = (projects, projectId, path, defaultValue) => {
   const project = projects.find(project => project.id === projectId)
   if (!project) return defaultValue
-  return get(project, path, defaultValue)
+  const returnValue = get(project, path, defaultValue)
+  return (returnValue == undefined || returnValue == null) ? defaultValue : returnValue
 }
 
 export const setProjectConfig = (projectId, path, value) => {

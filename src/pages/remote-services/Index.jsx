@@ -92,7 +92,7 @@ const RemoteServices = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='graphql' />
+      <Sidenav selectedItem='remote-services' />
       <div className='page-content'>
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
           <div className="panel">

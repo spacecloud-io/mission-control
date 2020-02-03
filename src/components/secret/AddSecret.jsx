@@ -279,7 +279,7 @@ const AddSecret = props => {
             </Form.Item>
             <p>Docker Password</p>
             <Form.Item>
-              {getFieldDecorator("data.pasword", {
+              {getFieldDecorator("data.password", {
                 rules: [
                   {
                     required: true,

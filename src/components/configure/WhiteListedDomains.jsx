@@ -11,7 +11,7 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(values).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
+        handleSubmit(values.domains).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
         .catch(ex => notify("error", "Error", ex.toString()))
       }
     });
@@ -34,7 +34,7 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
                 message: "Please enter the domain for the project"
               }
             ],
-            initialValue: domains
+            initialValue: domains ? domains: []
           })(
             <Select
               mode="tags"

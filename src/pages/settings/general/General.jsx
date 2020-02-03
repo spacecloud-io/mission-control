@@ -115,7 +115,8 @@ function Settings() {
                     <div className='page-content page-content--no-padding'>
                         <SettingTabs activeKey='General' projectID={projectID} />
                         <div className="db-tab-content">
-                            <h2>Credentials</h2>
+                            <h3>Coming Soon!</h3>
+                            {/* <h2>Credentials</h2>
                             <Card style={{ display: "flex", justifyContent: "space-between" }}>
                                 <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <CopyToClipboard text="noorainp">
                                     <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
@@ -129,7 +130,7 @@ function Settings() {
                                     <h2 style={{ display: "flex", justifyContent: "space-between" }}>Clusters <Button onClick={() => setModalVisibile(true)} type="primary">Add</Button></h2>
                                     <Table columns={columns} dataSource={data} bordered />
                                 </React.Fragment>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                     {modalVisible && <AddClusterForm

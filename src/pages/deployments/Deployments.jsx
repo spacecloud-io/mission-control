@@ -201,7 +201,7 @@ const Deployments = () => {
 
   return (
     <React.Fragment>
-      <Topbar />
+      <Topbar showProjectSelector />
       <Sidenav selectedItem="deployments" />
       <div className="page-content">
         {!data ||

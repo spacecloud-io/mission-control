@@ -37,30 +37,12 @@ const Configure = () => {
   // Derived properties
   const projectName = getProjectConfig(projects, projectID, "name");
   const secret = getProjectConfig(projects, projectID, "secret");
-  const eventing = getProjectConfig(
-    projects,
-    projectID,
-    "modules.eventing",
-    {}
-  );
   const domains = getProjectConfig(
     projects,
     projectID,
     "modules.letsencrypt.domains",
     []
   );
-  // changes
-
-  const crudModule = getProjectConfig(projects, projectID, "modules.crud", {});
-
-  const dbList = Object.entries(crudModule).map(([alias, obj]) => {
-    if (!obj.type) obj.type = alias;
-    return {
-      alias: alias,
-      dbtype: obj.type,
-      svgIconSet: dbIcons(projects, projectID, alias)
-    };
-  });
 
   // Handlers
   const handleSecret = secret => {
@@ -153,10 +135,10 @@ const Configure = () => {
             projectConfig={selectedProject}
             importProjectConfig={importProjectConfig}
           />
-          <h2>Project Clusters</h2>
+          {/* <h2>Project Clusters</h2>
           <div className="divider" />
           <p>Select clusters on which this project should be deployed.</p>
-          <Clusters />
+          <Clusters /> */}
           <h2>Whitelisted Domains</h2>
           <div className="divider" />
           <p>

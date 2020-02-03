@@ -22,12 +22,14 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   var unSavedChanges = selectedRule && selectedRule !== initialRule
 
   useDeepCompareEffect(() => {
-    let temp = rules[selectedRuleName]
-    if (stringifyRules) {
-      temp = JSON.stringify(temp, null, 2)
+    if (selectedRuleName) {
+      let temp = rules[selectedRuleName]
+      if (stringifyRules) {
+        temp = JSON.stringify(temp, null, 2)
+      }
+      setInitialrule(temp)
+      setSelectedRule(temp)
     }
-    setInitialrule(temp)
-    setSelectedRule(temp)
   }, [selectedRuleName, rules])
 
   useEffect(() => {
