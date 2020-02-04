@@ -25,8 +25,8 @@ import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
-import Configure from "./pages/configure/configure";
-import Settings from './pages/settings/general/General'
+import ProjectSettings from "./pages/settings/project/ProjectSettings";
+import GeneralSettings from './pages/settings/general/GeneralSettings'
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
@@ -55,8 +55,10 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/environment" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings"
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/general" component={GeneralSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/overview" component={EventTriggersOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/event-triggers/rules" component={EventTriggersRules} />
@@ -66,7 +68,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={Configure} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/configure" component={ProjectSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />

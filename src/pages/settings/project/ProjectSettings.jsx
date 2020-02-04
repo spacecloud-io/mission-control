@@ -4,23 +4,23 @@ import ReactGA from "react-ga";
 import { useSelector, useDispatch } from "react-redux";
 import { get, set, increment, decrement } from "automate-redux";
 
-import Sidenav from "../../components/sidenav/Sidenav";
-import Topbar from "../../components/topbar/Topbar";
-import SecretConfigure from "../../components/configure/SecretConfigure";
-import EventingConfigure from "../../components/configure/EventingConfigure";
-import ExportImport from "../../components/configure/ExportImport";
-import "./configure.css";
-import { getProjectConfig, notify, setProjectConfig } from "../../utils";
-import client from "../../client";
+import Sidenav from "../../../components/sidenav/Sidenav";
+import Topbar from "../../../components/topbar/Topbar";
+import SecretConfigure from "../../../components/configure/SecretConfigure";
+import EventingConfigure from "../../../components/configure/EventingConfigure";
+import ExportImport from "../../../components/configure/ExportImport";
+import "./project-setting.css";
+import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
+import client from "../../../client";
 import { Button } from "antd";
-import store from "../../store";
-import history from "../../history";
-import { dbIcons } from "../../utils";
-import SettingTabs from "../../components/settings/SettingTabs";
-import Clusters from "../../components/configure/Clusters";
-import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
+import store from "../../../store";
+import history from "../../../history";
+import { dbIcons } from "../../../utils";
+import SettingTabs from "../../../components/settings/SettingTabs";
+import Clusters from "../../../components/configure/Clusters";
+import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
 
-const Configure = () => {
+const ProjectSettings = () => {
   // Router params
   const { projectID, selectedDB } = useParams();
 
@@ -117,7 +117,7 @@ const Configure = () => {
   };
 
   return (
-    <div className="configure-page">
+    <div className="projectSetting-page">
       <Topbar showProjectSelector />
       <Sidenav selectedItem="settings" />
       <div className="page-content page-content--no-padding">
@@ -161,4 +161,4 @@ const Configure = () => {
   );
 };
 
-export default Configure;
+export default ProjectSettings;
