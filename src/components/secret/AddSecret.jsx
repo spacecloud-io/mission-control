@@ -38,7 +38,7 @@ const AddSecret = props => {
             values.data = formValues.data;
             break;
           case "file":
-            values.rootPath = formValues.rootPath 
+            values.rootPath = formValues.rootPath
             values.data = formValues.file.reduce((prev, curr) => {
               return Object.assign({}, prev, { [curr.name]: curr.value });
             }, {});
@@ -286,7 +286,7 @@ const AddSecret = props => {
                     message: "Please input your docker password"
                   }
                 ]
-              })(<Input placeholder="Password of your docker registry" />)}
+              })(<Input.Password type="password" placeholder="Password of your docker registry" />)}
             </Form.Item>
             <p>Docker Registry URL</p>
             <Form.Item>
