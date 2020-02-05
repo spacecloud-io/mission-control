@@ -67,11 +67,11 @@ const CreateProject = (props) => {
                       {
                         validator: (_, value, cb) => {
                           if (!value) {
-                            cb("Please input a project name ")
+                            cb("Please input a project name")
                             return
                           }
                           if (value.includes("-") || value.includes(" ") || value.includes("_")) {
-                            cb("Project name cannot contain hiphens, spaces, underscores!")
+                            cb("Project name cannot contain hiphens, spaces or underscores!")
                           }
                           cb()
                         }
