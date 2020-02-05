@@ -9,7 +9,7 @@ import Topbar from "../../../components/topbar/Topbar";
 import SecretConfigure from "../../../components/configure/SecretConfigure";
 import EventingConfigure from "../../../components/configure/EventingConfigure";
 import ExportImport from "../../../components/configure/ExportImport";
-import "./project-setting.css";
+import "./project-settings.css";
 import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
 import client from "../../../client";
 import { Button } from "antd";
