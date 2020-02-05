@@ -63,7 +63,19 @@ const CreateProject = (props) => {
               <Form>
                 <Form.Item >
                   {getFieldDecorator('projectName', {
-                    rules: [{ required: true, message: 'Please input a project name' }],
+                    rules: [
+                      {
+                        validator: (_, value, cb) => {
+                          if (!value) {
+                            cb("Please input a project name")
+                            return
+                          }
+                          if (value.includes("-") || value.includes(" ") || value.includes("_")) {
+                            cb("Project name cannot contain hiphens, spaces or underscores!")
+                          }
+                          cb()
+                        }
+                      }],
                   })(
                     <Input
                       prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}

@@ -56,7 +56,7 @@ const UpdateDockerSecret = props => {
                 message: `Please input your docker password`
               }
             ]
-          })(<Input placeholder="Password of your docker registry" />)}
+          })(<Input.Password type="password" placeholder="Password of your docker registry" />)}
         </Form.Item>
         <p>Docker Registry URL</p>
         <Form.Item>
