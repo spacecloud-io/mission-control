@@ -13,8 +13,9 @@ import client from "../../../client"
 import store from "../../../store";
 import history from "../../../history"
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import construction from "../../../assets/construction.svg"
 
-function Settings() {
+function GeneralSettings() {
     const { projectID, selectedDB } = useParams()
 
     const dispatch = useDispatch()
@@ -115,7 +116,10 @@ function Settings() {
                     <div className='page-content page-content--no-padding'>
                         <SettingTabs activeKey='General' projectID={projectID} />
                         <div className="db-tab-content">
-                            <h3>Coming Soon!</h3>
+                            <div className="panel">
+                                <img src={construction} style={{ width: 550 }} />
+                                <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Global settings like cluster management are comming soon.... </p>
+                            </div>
                             {/* <h2>Credentials</h2>
                             <Card style={{ display: "flex", justifyContent: "space-between" }}>
                                 <h3 style={{ wordSpacing: 6 }}><b>username </b>  noorainp <CopyToClipboard text="noorainp">
@@ -142,4 +146,4 @@ function Settings() {
     )
 }
 
-export default Settings
+export default GeneralSettings
