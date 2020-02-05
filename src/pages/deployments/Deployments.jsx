@@ -217,8 +217,8 @@ const Deployments = () => {
                   marginRight: 130
                 }}
               >
-                Deploy your custom services easily from your laptop to cloud in
-                no time. Space Galaxy deploys your services in a secure service
+                Deploy any docker containers to cloud easily in
+                no time. Space Galaxy deploys your docker containers in a secure service
                 mesh and provides you with a serverless experience by taking
                 care of auto scaling, self healing, etc.
               </p>
@@ -227,7 +227,7 @@ const Deployments = () => {
                 style={{ marginTop: 16 }}
                 onClick={() => setModalVisibility(true)}
               >
-                Deploy your first service
+                Deploy your first container
               </Button>
             </div>
           ))}

@@ -44,9 +44,7 @@ const AddDeploymentForm = props => {
         values.memory = Number(values.memory);
         values.min = Number(values.min);
         values.max = Number(values.max);
-        values.serviceType = initialValues
-          ? initialValues.serviceType
-          : "image";
+        values.serviceType = "image";
         props
           .handleSubmit(values)
           .then(() => {
@@ -397,18 +395,14 @@ const AddDeploymentForm = props => {
     okText: initialValues ? "Save" : "Deploy",
     title: initialValues ? "Update deloyment config" : "Deploy Service",
     onOk: handleSubmitClick,
-    onCancel: props.handleCancel,
-    footer:
-      initialValues || getFieldValue("serviceType") === "image"
-        ? undefined
-        : null
+    onCancel: props.handleCancel
   };
 
   return (
     <div>
       <Modal {...modalProps}>
         <Form layout="vertical" onSubmit={handleSubmitClick}>
-          {initialValues === undefined && (
+          {/* {initialValues === undefined && (
             <React.Fragment>
               <FormItemLabel name="Types of service" />
               <Form.Item>
@@ -469,176 +463,164 @@ const AddDeploymentForm = props => {
                 )}
               </Form.Item>
             </React.Fragment>
-          )}
-          <br />
-          {(initialValues !== undefined ||
-            getFieldValue("serviceType") === "image") && (
-              <React.Fragment>
-                <FormItemLabel name="Service ID" />
+          )} */}
+          <React.Fragment>
+            <FormItemLabel name="Service ID" />
+            <Form.Item>
+              {getFieldDecorator("id", {
+                rules: [
+                  { required: true, message: "Please name your service!" }
+                ],
+                initialValue: initialValues ? initialValues.id : ""
+              })(
+                <Input
+                  placeholder="Unique name for your service"
+                  style={{ width: 288 }}
+                  disabled={initialValues ? true : false}
+                />
+              )}
+            </Form.Item>
+            <FormItemLabel name="Docker container" />
+            <Form.Item>
+              {getFieldDecorator("dockerImage", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input docker container!"
+                  }
+                ],
+                initialValue: initialValues ? initialValues.dockerImage : ""
+              })(<Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />)}
+            </Form.Item>
+            <FormItemLabel name="Docker registry type" />
+            <Form.Item>
+              {getFieldDecorator("registryType", {
+                initialValue: initialValues
+                  ? initialValues.registryType
+                  : "public"
+              })(
+                <Radio.Group>
+                  <Radio value="public">Public Registry</Radio>
+                  <Radio value="private">Private Registry</Radio>
+                </Radio.Group>
+              )}
+            </Form.Item>
+            <React.Fragment>
+              {getFieldValue("registryType") === "private" && (
+                <React.Fragment>
+                  <FormItemLabel
+                    name="Docker secret"
+                    description="Docker secret for authentication to pull private Docker images"
+                  />
+                  <Form.Item>
+                    {getFieldDecorator("dockerSecret", {
+                      rules: [
+                        {
+                          required: true,
+                          message: "Please input docker secret!"
+                        }
+                      ],
+                      initialValue: initialValues
+                        ? initialValues.dockerSecret
+                        : ""
+                    })(
+                      <Select placeholder="Select docker secret to be applied">
+                        {dockerSecrets.map(secret => (
+                          <Option value={secret}>{secret}</Option>
+                        ))}
+                      </Select>
+                    )}
+                  </Form.Item>
+                </React.Fragment>
+              )}
+            </React.Fragment>
+            <FormItemLabel name="Ports" />
+            <React.Fragment>{formItemsPorts}</React.Fragment>
+            <Collapse className="deployment-collapse" bordered={false}>
+              <Panel header="Advanced" key="1">
+                <FormItemLabel
+                  name="Resources"
+                  description="The resources to provide to each instance of the service"
+                />
                 <Form.Item>
-                  {getFieldDecorator("id", {
-                    rules: [
-                      { required: true, message: "Please name your service!" }
-                    ],
-                    initialValue: initialValues ? initialValues.id : ""
+                  {getFieldDecorator("cpu", {
+                    initialValue: initialValues ? initialValues.cpu : 0.1
+                  })(<Input addonBefore="vCPUs" style={{ width: 147 }} />)}
+                  {getFieldDecorator("memory", {
+                    initialValue: initialValues ? initialValues.memory : 100
                   })(
                     <Input
-                      placeholder="Unique name for your service"
-                      style={{ width: 288 }}
-                      disabled={initialValues ? true : false}
+                      addonBefore="Memory (in MBs)"
+                      style={{ width: 240, marginLeft: 35 }}
                     />
                   )}
                 </Form.Item>
-                <FormItemLabel name="Docker container" />
+                <FormItemLabel
+                  name="Auto scaling"
+                  description="Auto scale your container instances between min and max replicas based on the number of requests"
+                />
                 <Form.Item>
-                  {getFieldDecorator("dockerImage", {
-                    rules: [
-                      {
-                        required: true,
-                        message: "Please input docker container!"
-                      }
-                    ],
-                    initialValue: initialValues ? initialValues.dockerImage : ""
-                  })(<Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />)}
-                </Form.Item>
-                <FormItemLabel name="Docker registry type" />
-                <Form.Item>
-                  {getFieldDecorator("registryType", {
-                    initialValue: initialValues
-                      ? initialValues.registryType
-                      : "public"
+                  {getFieldDecorator("min", {
+                    initialValue: initialValues ? initialValues.min : 1
                   })(
-                    <Radio.Group>
-                      <Radio value="public">Public Registry</Radio>
-                      <Radio value="private">Private Registry</Radio>
-                    </Radio.Group>
+                    <Input addonBefore="Min" style={{ width: 147 }} min={1} />
+                  )}
+                  {getFieldDecorator("max", {
+                    initialValue: initialValues ? initialValues.max : 100
+                  })(
+                    <Input
+                      addonBefore="Max"
+                      style={{ width: 147, marginLeft: 35 }}
+                      min={1}
+                    />
                   )}
                 </Form.Item>
-                <React.Fragment>
-                  {getFieldValue("registryType") === "private" && (
-                    <React.Fragment>
-                      <FormItemLabel
-                        name="Docker secret"
-                        description="Docker secret for authentication to pull private Docker images"
-                      />
-                      <Form.Item>
-                        {getFieldDecorator("dockerSecret", {
-                          rules: [
-                            {
-                              required: true,
-                              message: "Please input docker secret!"
-                            }
-                          ],
-                          initialValue: initialValues
-                            ? initialValues.dockerSecret
-                            : ""
-                        })(
-                          <Select placeholder="Select docker secret to be applied">
-                            {dockerSecrets.map(secret => (
-                              <Option value={secret}>{secret}</Option>
-                            ))}
-                          </Select>
-                        )}
-                      </Form.Item>
-                    </React.Fragment>
+                <FormItemLabel
+                  name="Concurrency"
+                  description="Number of requests that your single instance can handle parallely"
+                />
+                <Form.Item>
+                  {getFieldDecorator("concurrency", {
+                    initialValue: initialValues ? initialValues.concurrency : 50
+                  })(<InputNumber style={{ width: 160 }} min={1} />)}
+                </Form.Item>
+                <FormItemLabel name="Environment variables" />
+                {formItemsEnv}
+                <Button onClick={() => envAdd()} style={{ marginBottom: 20 }}>
+                  {envKeys.length === 0
+                    ? "Add an environment variable"
+                    : "Add another environment variable"}
+                </Button>
+                <FormItemLabel name="Secrets" />
+                <Form.Item>
+                  {getFieldDecorator("secrets", {
+                    initialValue: initialValues ? initialValues.secrets : []
+                  })(
+                    <Select
+                      mode="multiple"
+                      placeholder="Select secrets to be applied"
+                      style={{ width: 410 }}
+                    >
+                      {secrets.map(secret => (
+                        <Option value={secret}>{secret}</Option>
+                      ))}
+                    </Select>
                   )}
-                </React.Fragment>
-                <FormItemLabel name="Ports" />
-                <React.Fragment>{formItemsPorts}</React.Fragment>
-                <Collapse className="deployment-collapse" bordered={false}>
-                  <Panel header="Advanced" key="1">
-                    <FormItemLabel
-                      name="Resources"
-                      description="The resources to provide to each instance of the service"
-                    />
-                    <Form.Item>
-                      {getFieldDecorator("cpu", {
-                        initialValue: initialValues ? initialValues.cpu : 0.1
-                      })(<Input addonBefore="vCPUs" style={{ width: 147 }} />)}
-                      {getFieldDecorator("memory", {
-                        initialValue: initialValues ? initialValues.memory : 100
-                      })(
-                        <Input
-                          addonBefore="Memory (in MBs)"
-                          style={{ width: 240, marginLeft: 35 }}
-                        />
-                      )}
-                    </Form.Item>
-                    <FormItemLabel
-                      name="Auto scaling"
-                      description="Auto scale your container instances between min and max replicas based on the number of requests"
-                    />
-                    <Form.Item>
-                      {getFieldDecorator("min", {
-                        initialValue: initialValues ? initialValues.min : 1
-                      })(
-                        <Input addonBefore="Min" style={{ width: 147 }} min={1} />
-                      )}
-                      {getFieldDecorator("max", {
-                        initialValue: initialValues ? initialValues.max : 100
-                      })(
-                        <Input
-                          addonBefore="Max"
-                          style={{ width: 147, marginLeft: 35 }}
-                          min={1}
-                        />
-                      )}
-                    </Form.Item>
-                    <FormItemLabel
-                      name="Concurrency"
-                      description="Number of requests that your single instance can handle parallely"
-                    />
-                    <Form.Item>
-                      {getFieldDecorator("concurrency", {
-                        initialValue: initialValues
-                          ? initialValues.concurrency
-                          : 50
-                      })(<InputNumber style={{ width: 160 }} min={1} />)}
-                    </Form.Item>
-                    <FormItemLabel name="Environment variables" />
-                    {formItemsEnv}
-                    <Button onClick={() => envAdd()} style={{ marginBottom: 20 }}>
-                      {envKeys.length === 0
-                        ? "Add an environment variable"
-                        : "Add another environment variable"}
-                    </Button>
-                    <FormItemLabel name="Secrets" />
-                    <Form.Item>
-                      {getFieldDecorator("secrets", {
-                        initialValue: initialValues ? initialValues.secrets : []
-                      })(
-                        <Select
-                          mode="multiple"
-                          placeholder="Select secrets to be applied"
-                          style={{ width: 410 }}
-                        >
-                          {secrets.map(secret => (
-                            <Option value={secret}>{secret}</Option>
-                          ))}
-                        </Select>
-                      )}
-                    </Form.Item>
-                    <FormItemLabel
-                      name="Whitelists"
-                      description="Only those services that are whitelisted can access you"
-                    />
-                    {formItemsWhite}
-                    <FormItemLabel
-                      name="Upstreams"
-                      description="The upstream servces that you want to access"
-                    />
-                    {formItemsUpstreams}
-                  </Panel>
-                </Collapse>
-              </React.Fragment>
-            )}
+                </Form.Item>
+                <FormItemLabel
+                  name="Whitelists"
+                  description="Only those services that are whitelisted can access you"
+                />
+                {formItemsWhite}
+                <FormItemLabel
+                  name="Upstreams"
+                  description="The upstream servces that you want to access"
+                />
+                {formItemsUpstreams}
+              </Panel>
+            </Collapse>
+          </React.Fragment>
         </Form>
-        {getFieldValue("serviceType") === "code" && (
-          <div style={{ fontSize: 14, fontWeight: 500, marginRight: 180 }}>
-            <a style={{ color: "#58B3FF" }}>Follow the instructions</a> here to
-            deploy your non dockerized services from your laptop to Space Cloud.
-          </div>
-        )}
       </Modal>
     </div>
   );
