@@ -190,7 +190,7 @@ const AddSecret = props => {
                 <Input.TextArea
                   rows={4}
                   placeholder="File contents"
-                  style={{ width: "90%", marginRight: "6%", float: "left" }}
+                  style={{ width: "90%", marginLeft: "6%", float: "left" }}
                 />
               )}
             </Form.Item>
