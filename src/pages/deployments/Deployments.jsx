@@ -10,6 +10,7 @@ import client from "../../client";
 import source_code from "../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { increment, decrement } from "automate-redux";
+import { handleSubmit, handleDelete } from "../../utils/Deployments"
 
 const Deployments = () => {
   const { projectID } = useParams();
@@ -65,7 +66,7 @@ const Deployments = () => {
           <a onClick={() => handleEditDeploymentClick(id)}>Edit</a>
           <Popconfirm
             title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
-            onConfirm={() => handleDelete(id)}
+            onConfirm={() => handleDeleteClick(id)}
           >
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
@@ -82,7 +83,7 @@ const Deployments = () => {
       dockerImage: task.docker.image,
       dockerSecret: task.docker.secret,
       secrets: task.secrets ? task.secrets : [],
-      registryType: task.docker.secret ? "private": "public",
+      registryType: task.docker.secret ? "private" : "public",
       ports: task.ports,
       cpu: task.resources.cpu / 1000,
       memory: task.resources.memory,
@@ -92,9 +93,9 @@ const Deployments = () => {
       concurrency: obj.scale.concurrency,
       env: task.env
         ? Object.entries(task.env).map(([key, value]) => ({
-            key: key,
-            value: value
-          }))
+          key: key,
+          value: value
+        }))
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams
@@ -110,89 +111,22 @@ const Deployments = () => {
     setModalVisibility(true);
   };
 
-  const handleSubmit = (type, values) => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      let config = {
-        id: values.id,
-        projectId: projectID,
-        version: "v1",
-        scale: {
-          replicas: 0,
-          minReplicas: values.min,
-          maxReplicas: values.max,
-          concurrency: values.concurrency
-        },
-        tasks: [
-          {
-            id: values.id,
-            ports: values.ports.map(obj =>
-              Object.assign(obj, { name: obj.protocol })
-            ),
-            resources: {
-              cpu: values.cpu * 1000,
-              memory: values.memory
-            },
-            docker: {
-              image: values.dockerImage,
-              secret: values.dockerSecret
-            },
-            secrets: values.secrets,
-            env: values.env
-              ? values.env.reduce((prev, curr) => {
-                  return Object.assign({}, prev, { [curr.key]: curr.value });
-                }, {})
-              : {},
-            runtime: values.serviceType
-          }
-        ],
-        whitelists: values.whitelists,
-        upstreams: values.upstreams
-      };
-      client.deployments
-        .setDeploymentConfig(config)
-        .then(() => {
-          if (type === "add") {
-            const newDeployments = [...deployments, config];
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          } else {
-            const newDeployments = deployments.map(obj => {
-              if (obj.id === config.id) return config;
-              return obj;
-            });
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          }
-          resolve();
-        })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
-  };
-
-  const handleDelete = serviceId => {
+  const handleSubmitClick = (type, values) => {
     dispatch(increment("pendingRequests"));
-    client.deployments
-      .deleteDeploymentConfig(projectID, serviceId, "v1")
-      .then(() => {
-        const newDeployments = deployments.filter(obj => obj.id !== serviceId);
-        setProjectConfig(
-          projectID,
-          "modules.deployments.services",
-          newDeployments
-        );
-        notify("success", "Success", "Successfully deleted deployment config");
+    handleSubmit(type, values, projectID, deployments)
+      .finally(() => {
+        dispatch(decrement("pendingRequests"));
+        setModalVisibility(false);
+      });
+  }
+
+  const handleDeleteClick = serviceId => {
+    dispatch(increment("pendingRequests"));
+    handleDelete(serviceId, projectID, deployments)
+      .finally(() => {
+        dispatch(decrement("pendingRequests"));
       })
-      .catch(ex => notify("error", "Error deleting deployment", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
-  };
+  }
 
   const handleCancel = () => {
     setModalVisibility(false);
@@ -257,7 +191,7 @@ const Deployments = () => {
           secrets={secrets}
           handleCancel={handleCancel}
           handleSubmit={values =>
-            handleSubmit(deploymentClickedInfo ? "update" : "add", values)
+            handleSubmitClick(deploymentClickedInfo ? "update" : "add", values)
           }
         />
       )}
