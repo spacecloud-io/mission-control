@@ -1,6 +1,6 @@
 import store from "../../store"
 import { getProjectConfig, setProjectConfig } from "../../utils"
-import { defaultDBRules, eventingSchema } from "../../constants"
+import { defaultDBRules, eventingSchema, defaultEventRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
@@ -173,11 +173,21 @@ export const removeDBConfig = (projectId, aliasName) => {
   })
 }
 
+const setDefaultEventSecurityRule = (projectId, type, rule) => {
+  return new Promise((resolve, reject) => {
+    client.eventTriggers.setSecurityRule(projectId, type, rule).then(() => {
+      setProjectConfig(projectId, "modules.eventing.securityRules.default", rule)
+      resolve()
+    }).catch((ex) => reject(ex))
+  })
+}
+
 const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
   client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
     .then(() => {
       setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias, col: 'event_logs' })
+      setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
       notify("success", "Success", "Changed eventing config successfully")
     })
     .catch(ex => notify("error", "Error", ex))
