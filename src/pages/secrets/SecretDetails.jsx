@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import { Button, Table, Icon, Row, Col, Popconfirm, Card, message } from "antd";
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Button, Table, Icon, Row, Col, Popconfirm, Card } from "antd";
 import AddSecretKey from "../../components/secret/AddSecretKey";
-import UpdateFileLoc from '../../components/secret/UpdateFileLoc';
+import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import client from "../../client";
@@ -36,7 +35,7 @@ const SecretDetails = () => {
   const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
   const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
   const [secretKeyClicked, setSecretKeyClicked] = useState("");
-  const [fileLocModalVisible, setFileLocModalVisible] = useState(false);
+  const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
   const handleClickUpdateSecretKey = name => {
     setSecretKeyClicked(name);
@@ -84,20 +83,20 @@ const SecretDetails = () => {
     setSecretKeyClicked("");
   };
 
-  const handleUpdateFileLoc = (path) => {
+  const handleUpdateRootpath = (path) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
-      client.secrets.setFileLocation(projectID, secretName, { rootPath : path}).then(() => {
-        const newPath = secrets.map(obj => {
+      client.secrets.setRootPath(projectID, secretName, { rootPath : path}).then(() => {
+        const updatedSecret = secrets.map(obj => {
           if (obj.name !==  secretName) return obj;
           const newData = Object.assign({}, { rootPath: path });
-          return Object.assign({}, secret, newData);
+          return Object.assign({}, obj, newData);
         });
-        setProjectConfig(projectID, `modules.secrets`, newPath);
-        notify("success", "Success", "Saved file mount location successfully")
+        setProjectConfig(projectID, `modules.secrets`, updatedSecret);
+        notify("success", "Success", "Saved root path successfully")
         resolve();
       }).catch((ex) => {
-        notify("error", "Error in saving file mount location", ex.toString());
+        notify("error", "Error in saving root path", ex.toString());
         reject(ex)
       }).finally(() => dispatch(decrement("pendingRequests")));
     })
@@ -191,15 +190,15 @@ const SecretDetails = () => {
             <Col lg={{ span: 15, offset: 1 }}>
               {secretType === "file" && (
                   <React.Fragment>
-                    <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setFileLocModalVisible(true)}>(Edit)</a></h3>
+                    <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>
                     <div className="mount-location">
                       {secret.rootPath}
                     </div>
-                    {fileLocModalVisible && (
-                      <UpdateFileLoc
+                    {rootPathModalVisible && (
+                      <UpdateRootPathModal
                         rootPath={secret.rootPath}
-                        handleSubmit={handleUpdateFileLoc}
-                        handleCancel={() => setFileLocModalVisible(false)}
+                        handleSubmit={handleUpdateRootpath}
+                        handleCancel={() => setRootPathModalVisible(false)}
                       />
                     )}
                   </React.Fragment>

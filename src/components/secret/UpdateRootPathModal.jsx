@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Form, Input } from "antd";
 import "./add-secret.css";
 
-const UpdateFileLoc = (props) => {
+const UpdateRootPathModal = (props) => {
     const { getFieldDecorator } = props.form;
     const { rootPath } = props;
 
@@ -20,7 +20,7 @@ const UpdateFileLoc = (props) => {
 
     return(
         <Modal 
-        title="Update File Mount Location"
+        title="Update file root path"
         okText="Save"
         visible={true}
         onCancel={props.handleCancel}
@@ -28,22 +28,22 @@ const UpdateFileLoc = (props) => {
         width="600px"
         >
             <Form>
-                <p>Mount location</p>
+                <p>Root path</p>
                 {getFieldDecorator("rootPath", {
                 rules: [
                   {
                     required: true,
-                    message: "Please input a file location"
+                    message: "Please input a root path"
                   }
                 ], initialValue: rootPath
                 })(
-                    <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />
+                    <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
                 )}
             </Form>
         </Modal>
     );
 }
 
-const WrappedRuleForm = Form.create({})(UpdateFileLoc);
+const WrappedRuleForm = Form.create({})(UpdateRootPathModal);
 
 export default WrappedRuleForm;
