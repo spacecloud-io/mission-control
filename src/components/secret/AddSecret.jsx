@@ -185,12 +185,12 @@ const AddSecret = props => {
           {secretType === "file" && (
             <Form.Item>
               {getFieldDecorator(`file[${k}].value`, {
-                rules: [{ required: true, message: "Please upload a file" }]
+                rules: [{ required: true, message: "Please input file contents" }]
               })(
                 <Input.TextArea
                   rows={4}
                   placeholder="File contents"
-                  style={{ width: "90%", marginRight: "6%", float: "left" }}
+                  style={{ width: "90%", marginLeft: "6%", float: "left" }}
                 />
               )}
             </Form.Item>
@@ -313,17 +313,17 @@ const AddSecret = props => {
                 ]
               })(<Input placeholder="Example: DB Secret" />)}
             </Form.Item>
-            <p>Mount location</p>
+            <p>Root path</p>
             <Form.Item>
               {getFieldDecorator("rootPath", {
                 rules: [
                   {
                     required: true,
-                    message: "Please input a file location"
+                    message: "Please input a root path"
                   }
                 ]
               })(
-                <Input placeholder="File path to mount the secret at (eg: /home/.aws)" />
+                <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
               )}
             </Form.Item>
             <p>Files</p>
