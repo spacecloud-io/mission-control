@@ -16,7 +16,7 @@ import "./add-secret.css";
 let env = 1;
 
 const AddSecret = props => {
-  const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
+  const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
   let secretType = getFieldValue("type");
   if (!secretType) secretType = "env";
 
@@ -66,16 +66,18 @@ const AddSecret = props => {
     });
   };
 
-  const envAdd = id => {
-    if (getFieldValue(`env[${id}].name`) && getFieldValue(`env[${id}].value`)) {
-      const envKeys = getFieldValue("envKeys");
-      const nextKeys = envKeys.concat(env++);
-      setFieldsValue({
-        envKeys: nextKeys
-      });
-    } else {
-      message.info("Please first input key value pair then add new field");
-    }
+  const envAdd = () => {
+    const nameFields = envKeys.map((k) => `env[${k}].name`)
+    const valueFields = envKeys.map((k) => `env[${k}].value`)
+    validateFields([...nameFields, ...valueFields], (error) => {
+      if (!error) {
+        const envKeys = getFieldValue("envKeys");
+        const nextKeys = envKeys.concat(env++);
+        setFieldsValue({
+          envKeys: nextKeys
+        });
+      }
+    })
   };
 
   getFieldDecorator("envKeys", { initialValue: initialKeys });
@@ -145,21 +147,18 @@ const AddSecret = props => {
     });
   };
 
-  const fileAdd = id => {
-    if (
-      getFieldValue(`file[${id}].name`) &&
-      getFieldValue(`file[${id}].value`)
-    ) {
-      const fileKeys = getFieldValue("fileKeys");
-      const nextKeys = fileKeys.concat(env++);
-      setFieldsValue({
-        fileKeys: nextKeys
-      });
-    } else {
-      message.info(
-        "Please first input location and choose a file then add new field"
-      );
-    }
+  const fileAdd = () => {
+    const nameFields = fileKeys.map((k) => `file[${k}].name`)
+    const valueFields = fileKeys.map((k) => `file[${k}].value`)
+    validateFields([...nameFields, ...valueFields], (error) => {
+      if (!error) {
+        const fileKeys = getFieldValue("fileKeys");
+        const nextKeys = fileKeys.concat(env++);
+        setFieldsValue({
+          fileKeys: nextKeys
+        });
+      }
+    })
   };
 
   getFieldDecorator("fileKeys", { initialValue: initialKeys });
