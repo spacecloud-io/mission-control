@@ -116,7 +116,7 @@ const RoutingRule = props => {
             {getFieldDecorator("allowSpecificHosts", {
               valuePropName: "checked",
               initialValue:
-                initialValues && initialValues.allowedHosts != ["*"]
+                initialValues && initialValues.allowedHosts === ["*"]
                   ? true
                   : false
             })(<Checkbox>Allow traffic from specified hosts only</Checkbox>)}
@@ -132,7 +132,8 @@ const RoutingRule = props => {
                       message: "Please enter the domain for the project"
                     }
                   ],
-                  initialValue: initialValues ? initialValues.allowedHosts : []
+                  initialValue: initialValues && initialValues.allowedHosts === ["*"] ? 
+                  initialValues.allowedHosts : []
                 })(
                   <Select
                     mode="tags"
