@@ -26,7 +26,6 @@ const EventTriggersSchema = () => {
   const projects = useSelector(state => state.projects);
   const selectedEvent = useSelector(state => state.uiState.selectedEvent);
   const eventRules = getProjectConfig(
-    projects,
     projectID,
     `modules.eventing.rules`,
     {}
@@ -40,7 +39,7 @@ const EventTriggersSchema = () => {
 
   // Derived properties
   const schemas = Object.entries(
-    getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
+    getProjectConfig(projectID, `modules.eventing.schemas`, {})
   ).reduce(
     (prev, [key, value]) => Object.assign({}, prev, { [key]: value.schema }),
     {}
@@ -68,7 +67,6 @@ const EventTriggersSchema = () => {
         .deleteEventSchema(projectID, type)
         .then(() => {
           const newSchema = getProjectConfig(
-            store.getState().projects,
             projectID,
             `modules.eventing.schemas`,
             {}
@@ -93,7 +91,7 @@ const EventTriggersSchema = () => {
       client.eventTriggers
         .setEventSchema(projectID, type, schema)
         .then(() => {
-          const oldSchemas = getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
+          const oldSchemas = getProjectConfig(projectID, `modules.eventing.schemas`, {})
           const newSchemas = Object.assign({}, oldSchemas, {
             [type]: { schema: schema }
           });

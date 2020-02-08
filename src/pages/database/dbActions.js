@@ -45,7 +45,7 @@ export const deleteCol = (projectId, dbName, colName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.deleteCol(projectId, dbName, colName).then(() => {
-      const newCollections = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+      const newCollections = getProjectConfig(projectId, `modules.crud.${dbName}.collections`, {})
       delete newCollections[colName]
       setProjectConfig(projectId, `modules.crud.${dbName}.collections`, newCollections)
       const allCollectionsList = get(store.getState(), `extraConfig.${projectId}.crud.${dbName}.collections`, [])
@@ -62,7 +62,7 @@ export const inspectColSchema = (projectId, dbName, colName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.inspectColSchema(projectId, dbName, colName).then(schema => {
-      const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, { isRealtimeEnabled: false, rules: defaultDBRules })
+      const colConfig = getProjectConfig(projectId, `modules.crud.${dbName}.collections.${colName}`, { isRealtimeEnabled: false, rules: defaultDBRules })
       colConfig.schema = schema
       setProjectConfig(projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
       setColRule(projectId, dbName, colName, {}, false).then(() => resolve()).catch(ex => reject(ex))
@@ -108,7 +108,7 @@ export const fetchDBConnState = (projectId, dbName) => {
 export const handleModify = (projectId, dbName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
-    let collections = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+    let collections = getProjectConfig(projectId, `modules.crud.${dbName}.collections`, {})
     let cols = {}
     Object.entries(collections).forEach(([colName, colConfig]) => {
       cols[colName] = { schema: colConfig.schema }
@@ -123,7 +123,7 @@ export const handleReload = (projectId, dbName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
     client.database.reloadSchema(projectId, dbName).then(collections => {
-      const cols = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+      const cols = getProjectConfig(projectId, `modules.crud.${dbName}.collections`, {})
       Object.keys(collections).forEach(col => {
         cols[col].schema = collections[col]
       })
@@ -159,7 +159,7 @@ export const removeDBConfig = (projectId, aliasName) => {
     store.dispatch(increment("pendingRequests"))
     client.database.removeDbConfig(projectId, aliasName).then(() => {
       notify("success", "Success", "Removed database config successfully")
-      const dbconfig = getProjectConfig(store.getState().projects, projectId, `modules.crud`)
+      const dbconfig = getProjectConfig(projectId, `modules.crud`)
       const dbList = delete dbconfig[aliasName]
       store.dispatch(set(`extraConfig.${projectId}.crud`, dbList))
       history.push(`/mission-control/projects/${projectId}/database`)
@@ -199,7 +199,7 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) 
   setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
-    const dbconfig = getProjectConfig(projects, projectId, `modules.crud`)
+    const dbconfig = getProjectConfig( projectId, `modules.crud`)
     if (Object.keys(dbconfig).length === 0) {
       handleEventingConfig(projects, projectId, aliasName)
     }

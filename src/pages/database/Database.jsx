@@ -23,7 +23,7 @@ const Database = () => {
   const [modalVisible, setModalVisible] = useState(false)
 
   // Dervied properties
-  const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
+  const { enabled } = getProjectConfig(projectID, `modules.crud.${selectedDB}`, {})
 
   // Handlers
   const handleEnable = (conn, rules, type) => {

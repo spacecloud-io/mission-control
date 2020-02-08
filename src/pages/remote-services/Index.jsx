@@ -27,7 +27,7 @@ const RemoteServices = () => {
   const [serviceClicked, setServiceClicked] = useState("")
 
   // Derived state
-  const services = getProjectConfig(projects, projectID, "modules.services.externalServices", {})
+  const services = getProjectConfig(projectID, "modules.services.externalServices", {})
   const servicesTableData = Object.entries(services).map(([name, { url }]) => ({ name, url }))
   const noOfServices = servicesTableData.length
   const serviceClickedInfo = serviceClicked ? { name: serviceClicked, url: services[serviceClicked].url } : undefined

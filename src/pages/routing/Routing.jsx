@@ -32,10 +32,9 @@ function Routing() {
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
 
-  let routes = getProjectConfig(projects, projectID, "modules.routes", []);
+  let routes = getProjectConfig(projectID, "modules.routes", []);
   if (!routes) routes = []
   const deployments = getProjectConfig(
-    projects,
     projectID,
     "modules.deployments.services",
     []

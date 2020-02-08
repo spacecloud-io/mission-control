@@ -35,10 +35,9 @@ const ProjectSettings = () => {
   const selectedProject = projects.find(project => project.id === projectID);
 
   // Derived properties
-  const projectName = getProjectConfig(projects, projectID, "name");
-  const secret = getProjectConfig(projects, projectID, "secret");
+  const projectName = getProjectConfig(projectID, "name");
+  const secret = getProjectConfig(projectID, "secret");
   const domains = getProjectConfig(
-    projects,
     projectID,
     "modules.letsencrypt.domains",
     []

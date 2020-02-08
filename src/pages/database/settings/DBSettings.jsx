@@ -16,14 +16,14 @@ const Settings = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbType")
+  const eventingDB = getProjectConfig(projectID, "modules.eventing.dbType")
   const canDisableDB = eventingDB !== selectedDB
 
   const history = useHistory()
 
   // Handlers
   const handleDisable = () => {
-    let conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
+    let conn = getProjectConfig(projectID, `modules.crud.${selectedDB}.conn`)
     setDBConfig(projectID, selectedDB, false, conn)
       .then(() => {
         notify("success", "Success", "Disabled database successfully")

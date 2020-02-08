@@ -19,13 +19,12 @@ const EventTriggersSettings = () => {
     const projects = useSelector(state => state.projects);
     
     const eventing = getProjectConfig(
-        projects,
         projectID,
         "modules.eventing",
         {}
     );
 
-    const crudModule = getProjectConfig(projects, projectID, "modules.crud", {});
+    const crudModule = getProjectConfig(projectID, "modules.crud", {});
 
     const dbList = Object.entries(crudModule).map(([alias, obj]) => {
         if (!obj.type) obj.type = alias;

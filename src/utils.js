@@ -41,7 +41,8 @@ export const parseDbConnString = conn => {
   }
   return urlObj
 }
-export const getProjectConfig = (projects, projectId, path, defaultValue) => {
+export const getProjectConfig = (projectId, path, defaultValue) => {
+  const projects = get(store.getState(), "projects", [])
   const project = projects.find(project => project.id === projectId)
   if (!project) return defaultValue
   const returnValue = get(project, path, defaultValue)
@@ -225,7 +226,7 @@ export const onAppLoad = () => {
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
-  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+  const crudModule = getProjectConfig(projectId, "modules.crud", {})
 
   let checkDB = ''
   if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
@@ -265,5 +266,5 @@ export const PrivateRoute = ({ component: Component, ...rest }) => (
 
 export const getDBTypeFromAlias = (projectId, alias) => {
   const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+  return getProjectConfig(projectId, `modules.crud.${alias}.type`, alias)
 }

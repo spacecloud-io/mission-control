@@ -26,7 +26,7 @@ const SecretDetails = () => {
   const { projectID, secretName } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
-  const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+  const secrets = getProjectConfig(projectID, "modules.secrets", []);
   let secret = secrets.find(obj => obj.name === secretName);
   if (!secret) secret = { data: {} };
   const secretType = secret.type;

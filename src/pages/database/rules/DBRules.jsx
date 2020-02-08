@@ -29,8 +29,8 @@ const Rules = () => {
   const dispatch = useDispatch()
 
   // Derived properties
-  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  let rule = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  const collections = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections`, {})
+  let rule = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
   if (Object.keys(rule).length === 0) {
     rule = defaultDBRules
   }
@@ -39,14 +39,14 @@ const Rules = () => {
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (rules) => {
-    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled, true)
       .then(() => notify("success", "Success", "Saved rule successfully"))
       .catch(ex => notify("error", "Error saving rule", ex))
   }
 
   const handleDeleteRule = () => {
-    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     dispatch(increment("pendingRequests"))
     setColRule(projectID, selectedDB, selectedCol, {}, isRealtimeEnabled, true)
       .catch(ex => notify("error", "Error", ex))
@@ -55,7 +55,7 @@ const Rules = () => {
 
   const addDbRule = (name, rule) => {
     setConformLoading(true)
-    const isRealtimeEnabled = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
+    const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     dispatch(increment("pendingRequests"))
     setColRule(projectID, selectedDB, name, rule, isRealtimeEnabled, true)
       .then(() => {

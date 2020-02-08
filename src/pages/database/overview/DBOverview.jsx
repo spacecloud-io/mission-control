@@ -38,13 +38,13 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
-  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-  let defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  const collections = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections`, {})
+  const connString = getProjectConfig(projectID, `modules.crud.${selectedDB}.conn`)
+  let defaultRules = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
   if (Object.keys(defaultRules).length === 0) {
     defaultRules = defaultDBRules
   }
-  const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
+  const eventingCol = getProjectConfig(projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
   const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
@@ -59,7 +59,7 @@ const Overview = () => {
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
-    const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
+    const rules = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
     setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
   }
 

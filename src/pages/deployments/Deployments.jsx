@@ -10,19 +10,18 @@ import client from "../../client";
 import source_code from "../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { increment, decrement } from "automate-redux";
-import { handleSubmit, handleDelete } from "../../utils/Deployments"
+import { createDeployments, deleteDeployment } from "../../actions/Deployments"
 
 const Deployments = () => {
   const { projectID } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const deployments = getProjectConfig(
-    projects,
     projectID,
     "modules.deployments.services",
     []
   );
-  const totalSecrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+  const totalSecrets = getProjectConfig(projectID, "modules.secrets", []);
   const dockerSecrets = totalSecrets.filter(obj => obj.type === "docker").map(obj => obj.name);
   const secrets = totalSecrets.filter(obj => obj.type !== "docker").map(obj => obj.name);
   const [modalVisibility, setModalVisibility] = useState(false);
@@ -112,8 +111,44 @@ const Deployments = () => {
   };
 
   const handleSubmitClick = (type, values) => {
+    let config = {
+      id: values.id,
+      projectId: projectID,
+      version: "v1",
+      scale: {
+        replicas: 0,
+        minReplicas: values.min,
+        maxReplicas: values.max,
+        concurrency: values.concurrency
+      },
+      tasks: [
+        {
+          id: values.id,
+          ports: values.ports.map(obj =>
+            Object.assign(obj, { name: obj.protocol })
+          ),
+          resources: {
+            cpu: values.cpu * 1000,
+            memory: values.memory
+          },
+          docker: {
+            image: values.dockerImage,
+            secret: values.dockerSecret
+          },
+          secrets: values.secrets,
+          env: values.env
+            ? values.env.reduce((prev, curr) => {
+              return Object.assign({}, prev, { [curr.key]: curr.value });
+            }, {})
+            : {},
+          runtime: values.serviceType
+        }
+      ],
+      whitelists: values.whitelists,
+      upstreams: values.upstreams
+    };
     dispatch(increment("pendingRequests"));
-    handleSubmit(type, values, projectID, deployments)
+    createDeployments(config, projectID)
       .finally(() => {
         dispatch(decrement("pendingRequests"));
         setModalVisibility(false);
@@ -122,10 +157,12 @@ const Deployments = () => {
 
   const handleDeleteClick = serviceId => {
     dispatch(increment("pendingRequests"));
-    handleDelete(serviceId, projectID, deployments)
-      .finally(() => {
-        dispatch(decrement("pendingRequests"));
+    deleteDeployment(serviceId, projectID)
+      .then(() => {
+        notify("success", "Success", "Successfully deleted deployment config");
       })
+      .catch(ex => notify("error", "Error deleting deployment", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleCancel = () => {

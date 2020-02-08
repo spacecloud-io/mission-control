@@ -28,7 +28,7 @@ const UserManagement = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const emailConfig = getProjectConfig(projects, projectID, "modules.auth.email", {})
+  const emailConfig = getProjectConfig(projectID, "modules.auth.email", {})
 
   // Handlers
   const handleProviderConfig = (provider, config) => {

@@ -48,8 +48,8 @@ const RemoteService = () => {
   const [endpointClicked, setEdnpointClicked] = useState("")
 
   // Derived state
-  const serviceURL = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.url`)
-  const endpoints = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.endpoints`, {})
+  const serviceURL = getProjectConfig(projectID, `modules.services.externalServices.${serviceName}.url`)
+  const endpoints = getProjectConfig(projectID, `modules.services.externalServices.${serviceName}.endpoints`, {})
   const endpointsTableData = Object.entries(endpoints).map(([name, { path, method }]) => ({ name, method, path }))
   const noOfEndpoints = endpointsTableData.length
   const endpointClickedInfo = endpointClicked ? { name: endpointClicked, ...endpoints[endpointClicked] } : undefined
@@ -66,7 +66,7 @@ const RemoteService = () => {
   }
 
   const handleSubmit = (name, method, path, rule) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`)
+    const serviceConfig = getProjectConfig(projectID, `modules.services.externalServices.${serviceName}`)
     const isEndpointPresent = endpoints[name] ? true : false
     const newEndpoints = Object.assign({}, endpoints, { [name]: { path, method, rule } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
@@ -78,7 +78,7 @@ const RemoteService = () => {
   }
 
   const handleDelete = (name) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`)
+    const serviceConfig = getProjectConfig(projectID, `modules.services.externalServices.${serviceName}`)
     const newEndpoints = Object.assign({}, endpoints)
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })

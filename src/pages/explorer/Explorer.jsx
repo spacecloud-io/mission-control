@@ -247,7 +247,7 @@ const Explorer = props => {
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
   return {
-    secret: getProjectConfig(state.projects, projectId, "secret"),
+    secret: getProjectConfig(projectId, "secret"),
     projectId: projectId,
     selectedIDE: get(state, 'uiState.explorer.selectedIDE', 'graphql'),
     selectedTemplate: get(state, 'uiState.explorer.spaceApi.selectedTemplate'),

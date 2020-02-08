@@ -33,9 +33,9 @@ const EventTriggersOverview = () => {
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived properties
-	const rules = getProjectConfig(projects, projectID, "modules.eventing.rules", {})
+	const rules = getProjectConfig(projectID, "modules.eventing.rules", {})
 	// changes
-	const crudModuleFetch = getProjectConfig(projects, projectID, "modules.crud", {})
+	const crudModuleFetch = getProjectConfig(projectID, "modules.crud", {})
 	const dbList = Object.entries(crudModuleFetch).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
@@ -123,7 +123,7 @@ const EventTriggersOverview = () => {
 		}
 	]
 
-	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+	const crudModule = getProjectConfig(projectID, "modules.crud", {})
 	const activeDB = Object.keys(crudModule).find(db => {
 		return crudModule[db].enabled
 	})

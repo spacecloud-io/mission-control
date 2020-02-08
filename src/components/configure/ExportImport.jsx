@@ -11,7 +11,7 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
     const { projectID, selectedDB } = useParams()
 
     const projects = useSelector(state => state.projects)
-    const projectName = getProjectConfig(projects, projectID, "name")
+    const projectName = getProjectConfig(projectID, "name")
 
     const download = (e, type) => {
         e.preventDefault();

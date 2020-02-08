@@ -25,9 +25,9 @@ const EventTriggersRules = () => {
     const dispatch = useDispatch()
   
     // Derived properties
-    const rule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.default`, {})
-    const rules = getProjectConfig(projects, projectID, `modules.eventing.securityRules`, {})
-    const eventRules = getProjectConfig(projects, projectID, `modules.eventing.rules`, {})
+    const rule = getProjectConfig(projectID, `modules.eventing.securityRules.default`, {})
+    const rules = getProjectConfig(projectID, `modules.eventing.securityRules`, {})
+    const eventRules = getProjectConfig(projectID, `modules.eventing.rules`, {})
     const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)
     
     // Handlers
@@ -59,7 +59,7 @@ const EventTriggersRules = () => {
       return new Promise((resolve, reject) => {
         store.dispatch(increment("pendingRequests"))
         client.eventTriggers.deleteSecurityRule(projectID, type).then(() => {
-          let newRules = Object.assign({}, getProjectConfig(store.getState().projects, projectID, `modules.eventing.securityRules`, {}))
+          let newRules = Object.assign({}, getProjectConfig(projectID, `modules.eventing.securityRules`, {}))
           delete newRules[type]
           setProjectConfig(projectID, `modules.eventing.securityRules`, newRules)
           notify("success", "Success", "Removed event rule successfully")

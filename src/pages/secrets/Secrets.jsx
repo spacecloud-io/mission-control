@@ -17,7 +17,7 @@ const Secrets = () => {
   const { projectID } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
-  const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+  const secrets = getProjectConfig(projectID, "modules.secrets", []);
   const [secretModalVisible, setSecretModalVisible] = useState(false);
   const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(
     false

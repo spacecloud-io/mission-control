@@ -35,7 +35,7 @@ const Rules = (props) => {
 	}, [])
 
 	// Derived properties
-	const { rules = [], ...config } = getProjectConfig(projects, projectID, "modules.fileStore", {})
+	const { rules = [], ...config } = getProjectConfig(projectID, "modules.fileStore", {})
 	const { enabled, ...connConfig } = config
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {
@@ -58,7 +58,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
 		client.fileStore.setConfig(projectID, newConfig).then(() => {
-			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
+			const curentConfig = getProjectConfig(projectID, "modules.fileStore", {})
 			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
 			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
 			notify("success", "Success", "Configured file storage successfully")
