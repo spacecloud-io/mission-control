@@ -44,7 +44,7 @@ const EventTriggersOverview = () => {
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
 	useEffect(() => {
-		ReactGA.pageview("/projects/event-triggers");
+		ReactGA.pageview("/projects/event-triggers/overview");
 	}, [])
 
 	// Handlers

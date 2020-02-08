@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
-
+import ReactGA from 'react-ga';
 
 import { Alert } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -17,6 +17,10 @@ import { modifyColSchema } from '../dbActions';
 const Schema = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/schema");
+  }, [])
 
   // Global state
   const projects = useSelector(state => state.projects)

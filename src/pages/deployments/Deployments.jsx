@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
+import ReactGA from 'react-ga';
 import { Button, Table, Popconfirm } from "antd";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
@@ -26,6 +26,10 @@ const Deployments = () => {
   const secrets = totalSecrets.filter(obj => obj.type !== "docker").map(obj => obj.name);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [deploymentClicked, setDeploymentClicked] = useState("");
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/deployments");
+  }, [])
 
   const tableColumns = [
     {

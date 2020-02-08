@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import ReactGA from 'react-ga';
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
@@ -32,6 +33,10 @@ function Routing() {
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/routing");
+  }, [])
+  
   let routes = getProjectConfig(projects, projectID, "modules.routes", []);
   if (!routes) routes = []
   const deployments = getProjectConfig(

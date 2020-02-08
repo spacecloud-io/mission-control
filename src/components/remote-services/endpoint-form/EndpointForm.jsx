@@ -39,6 +39,7 @@ const EndpointForm = (props) => {
       visible={true}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
+      width="1000px"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
         <FormItemLabel name="Endpoint name" />

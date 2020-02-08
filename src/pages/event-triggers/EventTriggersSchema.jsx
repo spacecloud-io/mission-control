@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
+import ReactGA from 'react-ga';
 import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import {
   getProjectConfig,
@@ -22,6 +23,10 @@ const EventTriggersSchema = () => {
   // Router params
   const { projectID, selectedDB } = useParams();
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/event-triggers/schema");
+  }, [])
+  
   // Global state
   const projects = useSelector(state => state.projects);
   const selectedEvent = useSelector(state => state.uiState.selectedEvent);
