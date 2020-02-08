@@ -6,6 +6,7 @@ import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
+import embeddedIcon from '../../../assets/embeddedIcon.svg'
 import { dbEnable } from '../../../pages/database/dbActions'
 import './create-db.css'
 import { useSelector } from 'react-redux';
@@ -43,6 +44,12 @@ const CreateDatabase = (props) => {
     setSelectedDB(dbTypes.SQLSERVER);
     setFieldsValue({ connectionString: defaultDbConnectionStrings[dbTypes.SQLSERVER], alias: "sqlserver" });
   }
+
+  const handleEmbedded = () => {
+    setSelectedDB(dbTypes.EMBEDDED);
+    setFieldsValue({ connectionString: defaultDbConnectionStrings[dbTypes.EMBEDDED], alias: "embedded" });
+  }
+
 
   const handleDbSubmit = () => {
     dbEnable(projects, props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
@@ -85,6 +92,14 @@ const CreateDatabase = (props) => {
               heading="SQL SERVER" 
               recommended={false}
               active={selectedDB === dbTypes.SQLSERVER} />
+          </Col>
+        </Row>
+        <Row className="db-display">
+          <Col span={2}>
+            <StarterTemplate icon={embeddedIcon} onClick={handleEmbedded}
+              heading="EMBEDDED" 
+              recommended={false}
+              active={selectedDB === dbTypes.EMBEDDED} />
           </Col>
         </Row>
         <p style={{ marginBottom: 0, marginTop: 0 }}>Provide a connection String</p>

@@ -97,7 +97,7 @@ const CreateProject = (props) => {
     title: 'Add Database',
     content: <div>
       <Row>
-        <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
+        <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
           <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
         </Col>
       </Row>
