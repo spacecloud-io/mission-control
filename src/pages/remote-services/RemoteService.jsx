@@ -10,6 +10,7 @@ import EndpointForm from "../../components/remote-services/endpoint-form/Endpoin
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
+import { setRemoteService } from "../../actions/RemoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -71,10 +72,10 @@ const RemoteService = () => {
     const newEndpoints = Object.assign({}, endpoints, { [name]: { path, method, rule } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
-      notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    setRemoteService(projectID, serviceName, newServiceConfig)
+      .then(() => notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`))
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleDelete = (name) => {
@@ -83,10 +84,10 @@ const RemoteService = () => {
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
-      notify("success", "Success", "Removed endpoint successfully")
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    setRemoteService(projectID, name, newServiceConfig)
+      .then(() => notify("success", "Success", "Removed endpoint successfully"))
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const tableColumns = [
@@ -129,7 +130,7 @@ const RemoteService = () => {
         <div style={{ padding: "32px 32px 0" }}>
           {noOfEndpoints === 0 && <div style={{ marginTop: 24 }}>
             <div className="panel">
-              <img src={endpointImg} className="remote-img"/>
+              <img src={endpointImg} className="remote-img" />
               <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>A service can have multiple endpoints that can be accessed from the frontend.</p>
               <Button style={{ marginTop: 16, marginBottom: 80 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first endpoint</Button>
             </div>

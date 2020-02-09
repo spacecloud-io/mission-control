@@ -9,6 +9,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import EventingConfigure from '../../components/event-triggers/EventingConfigure';
 import './event.css';
+import { setEventingConfig } from '../../actions/EventsTrigger'
 
 const EventTriggersSettings = () => {
     const { projectID, selectedDB } = useParams();
@@ -17,7 +18,7 @@ const EventTriggersSettings = () => {
 
     // Global state
     const projects = useSelector(state => state.projects);
-    
+
     const eventing = getProjectConfig(
         projectID,
         "modules.eventing",
@@ -29,23 +30,18 @@ const EventTriggersSettings = () => {
     const dbList = Object.entries(crudModule).map(([alias, obj]) => {
         if (!obj.type) obj.type = alias;
         return {
-        alias: alias,
-        dbtype: obj.type,
-        svgIconSet: dbIcons(projects, projectID, alias)
+            alias: alias,
+            dbtype: obj.type,
+            svgIconSet: dbIcons(projects, projectID, alias)
         };
     });
 
     const handleEventingConfig = (dbType, col) => {
         dispatch(increment("pendingRequests"));
-        client.eventTriggers
-          .setEventingConfig(projectID, { enabled: true, dbType, col })
-          .then(() => {
-            setProjectConfig(projectID, "modules.eventing.dbType", dbType);
-            setProjectConfig(projectID, "modules.eventing.col", col);
-            notify("success", "Success", "Changed eventing config successfully");
-          })
-          .catch(ex => notify("error", "Error", ex))
-          .finally(() => dispatch(decrement("pendingRequests")));
+        setEventingConfig(projectID, dbType, col)
+            .then(() => notify("success", "Success", "Changed eventing config successfully"))
+            .catch(ex => notify("error", "Error", ex))
+            .finally(() => dispatch(decrement("pendingRequests")))
     };
 
     return (
@@ -54,16 +50,16 @@ const EventTriggersSettings = () => {
             <Sidenav selectedItem="event-triggers" />
             <div className='page-content page-content--no-padding'>
                 <EventTabs activeKey="settings" projectID={projectID} />
-            <div className="event-tab-content">
-            <h2>Eventing Config</h2>
-            <div className="divider" />
-                <EventingConfigure
-                    dbType={eventing.dbType}
-                    dbList={dbList}
-                    col={eventing.col}
-                    handleSubmit={handleEventingConfig}
-                />
-            </div>
+                <div className="event-tab-content">
+                    <h2>Eventing Config</h2>
+                    <div className="divider" />
+                    <EventingConfigure
+                        dbType={eventing.dbType}
+                        dbList={dbList}
+                        col={eventing.col}
+                        handleSubmit={handleEventingConfig}
+                    />
+                </div>
             </div>
         </div>
     );

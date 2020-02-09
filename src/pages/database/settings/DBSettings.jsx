@@ -1,16 +1,19 @@
 import React from 'react';
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
+import { increment, decrement } from "automate-redux";
 import { Button, Divider, Tooltip, Input } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { getProjectConfig, notify } from '../../../utils';
-import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../dbActions';
+//import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../dbActions';
+import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../../../actions/DbActions';
 
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+  const dispatch = useDispatch();
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -33,19 +36,27 @@ const Settings = () => {
   }
 
   const handleReloadDB = () => {
+    dispatch(increment("pendingRequests"))
     handleReload(projectID, selectedDB)
       .then(() => notify("success", "Success", "Reloaded schema successfully"))
       .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleModifyDB = () => {
+    dispatch(increment("pendingRequests"))
     handleModify(projectID, selectedDB)
       .then(() => notify("success", "Success", "Setup database successfully"))
       .catch(ex => notify("error", "Error", ex))
+      .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   const handleRemoveDb = () => {
+    dispatch(increment("pendingRequests"))
     removeDBConfig(projectID, selectedDB)
+      .then(()=>notify("success", "Success", "Removed database config successfully"))
+      .catch((ex)=>notify("error", "Error removing database config", ex))
+      .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   return (

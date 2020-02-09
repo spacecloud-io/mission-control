@@ -14,6 +14,7 @@ import {
   getProjectConfig,
   generateId
 } from "../../utils";
+import { setRoutingConfig, deleteRoutingConfig } from "../../actions/Routes"
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -42,9 +43,9 @@ function Routing() {
   const services = deployments.map(obj => {
     const ports =
       obj.tasks &&
-      obj.tasks[0] &&
-      obj.tasks[0].ports &&
-      obj.tasks[0].ports.length
+        obj.tasks[0] &&
+        obj.tasks[0].ports &&
+        obj.tasks[0].ports.length
         ? obj.tasks[0].ports.map(port => port.port.toString())
         : [];
     return { name: obj.id, ports };
@@ -67,36 +68,25 @@ function Routing() {
     : undefined;
 
   const handleSubmit = (routeId, values) => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      const config = {
-        id: routeId ? routeId : generateId(),
-        source: {
-          hosts: values.allowedHosts,
-          url: values.url,
-          rewrite: values.rewrite,
-          type: values.routeType
-        },
-        dest: {
-          host: values.targetHost,
-          port: values.targetPort
-        }
-      };
-      client.routing
-        .setRoutingConfig(projectID, config.id, config)
-        .then(() => {
-          if (routeId) {
-            const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.routes", newRoutes)
-          } else {
-            const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.routes", newRoutes)
-          }
-          resolve()
-        })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
+    const config = {
+      id: routeId ? routeId : generateId(),
+      source: {
+        hosts: values.allowedHosts,
+        url: values.url,
+        rewrite: values.rewrite,
+        type: values.routeType
+      },
+      dest: {
+        host: values.targetHost,
+        port: values.targetPort
+      }
+    };
+    dispatch(increment("pendingRequests"));
+    setRoutingConfig(projectID, config, routeId)
+      .finally(() => {
+        setModalVisible(false)
+        dispatch(decrement("pendingRequests"))
+      })
   };
 
   const handleRouteClick = id => {
@@ -107,13 +97,8 @@ function Routing() {
 
   const handleDelete = id => {
     dispatch(increment("pendingRequests"));
-    client.routing
-      .deleteRoutingConfig(projectID, id)
-      .then(() => {
-        const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.routes`, newRoutes);
-        notify("success", "Success", "Deleted rule successfully");
-      })
+    deleteRoutingConfig(projectID, id)
+      .then(() => notify("success", "Success", "Deleted rule successfully"))
       .catch(ex => notify("error", "Error", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")));
   };

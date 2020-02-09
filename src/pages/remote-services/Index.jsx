@@ -11,6 +11,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
+import { setRemoteService, deleteServiceConfig } from "../../actions/RemoteServices"
 
 const RemoteServices = () => {
   // Router params
@@ -47,10 +48,10 @@ const RemoteServices = () => {
     const serviceConfig = services[name]
     const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
     dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${name}`, newServiceConfig)
-      notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    setRemoteService(projectID, name, newServiceConfig)
+      .then(() => notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`))
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleViewClick = (name) => {
@@ -59,12 +60,10 @@ const RemoteServices = () => {
 
   const handleDelete = (name) => {
     dispatch(increment("pendingRequests"))
-    client.remoteServices.deleteServiceConfig(projectID, name).then(() => {
-      const newServices = Object.assign({}, services)
-      delete newServices[name]
-      setProjectConfig(projectID, "modules.services.externalServices", newServices)
-      notify("success", "Success", "Removed service successfully")
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    deleteServiceConfig(projectID, name)
+      .then(() => notify("success", "Success", "Removed service successfully"))
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const tableColumns = [

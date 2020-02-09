@@ -9,6 +9,7 @@ import client from "../../client";
 import store from "../../store";
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "automate-redux";
+import { setSecretKey, deleteSecretKey } from "../../actions/Secrets"
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -40,39 +41,20 @@ const SecretDetails = () => {
   };
 
   const handleSetSecretKey = (key, value) => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets
-        .setSecretKey(projectID, secretName, key, value)
-        .then(() => {
-          const newSecrets = secrets.map(obj => {
-            if (obj.name !== secretName) return obj;
-            const newData = Object.assign({}, secret.data, { [key]: value });
-            return Object.assign({}, secret, { data: newData });
-          });
-          setProjectConfig(projectID, "modules.secrets", newSecrets);
-          resolve();
-        })
-        .catch(ex => {
-          notify("error", "Error setting secret value", ex);
-          reject();
-        })
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
+    dispatch(increment("pendingRequests"));
+    setSecretKey(key, value, projectID, secretName)
+      .catch(ex => notify("error", "Error setting secret value", ex))
+      .finally(() => {
+        dispatch(decrement("pendingRequests"))
+        setSecretKeyModalVisible(false);
+      });
   };
 
   const handleDeleteSecretKey = name => {
     dispatch(increment("pendingRequests"));
-    client.secrets.deleteSecretKey(projectID, secretName, name).then(() => {
-      const newSecrets = secrets.map(obj => {
-        if (obj.name !== secretName) return obj;
-        const newData = Object.assign({}, secret.data);
-        delete newData[name]
-        return Object.assign({}, secret, { data: newData });
-      });
-      setProjectConfig(projectID, "modules.secrets", newSecrets);
-    }).catch(ex => notify("error", "Error deleting secret value", ex))
-    .finally(() => dispatch(decrement("pendingRequests")));
+    deleteSecretKey(projectID, secretName, name)
+      .catch(ex => notify("error", "Error deleting secret value", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
   };
 
   const handleCancel = () => {

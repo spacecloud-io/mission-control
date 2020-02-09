@@ -10,7 +10,8 @@ import RuleEditor from "../../../components/rule-editor/RuleEditor"
 import securitySvg from "../../../assets/security.svg"
 
 import { getProjectConfig, notify } from '../../../utils';
-import { setColRule } from '../dbActions';
+//import { setColRule } from '../dbActions';
+import { setColRule } from '../../../actions/DbActions';
 import client from "../../../client"
 import { Button } from "antd"
 import AddDbRuleForm from '../../../components/database/add-rule-form/AddDbRuleForm';
@@ -40,15 +41,17 @@ const Rules = () => {
 
   const handleSubmit = (rules) => {
     const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
-    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled, true)
+    dispatch(increment("pendingRequests"))
+    setColRule(projectID, selectedDB, selectedCol, rules, isRealtimeEnabled)
       .then(() => notify("success", "Success", "Saved rule successfully"))
       .catch(ex => notify("error", "Error saving rule", ex))
+      .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   const handleDeleteRule = () => {
     const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     dispatch(increment("pendingRequests"))
-    setColRule(projectID, selectedDB, selectedCol, {}, isRealtimeEnabled, true)
+    setColRule(projectID, selectedDB, selectedCol, {}, isRealtimeEnabled)
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -57,7 +60,7 @@ const Rules = () => {
     setConformLoading(true)
     const isRealtimeEnabled = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${selectedCol}.isRealtimeEnabled`)
     dispatch(increment("pendingRequests"))
-    setColRule(projectID, selectedDB, name, rule, isRealtimeEnabled, true)
+    setColRule(projectID, selectedDB, name, rule, isRealtimeEnabled)
       .then(() => {
         notify("success", "Success", "Saved rule successfully")
         setAddRuleModalVisible(false);

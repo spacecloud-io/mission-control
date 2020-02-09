@@ -14,6 +14,7 @@ import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
+import { fileStorageConfig, saveRule, addRule, deleteRule } from "../../actions/FileStorage"
 
 const Rules = (props) => {
 	// Router params
@@ -57,48 +58,35 @@ const Rules = (props) => {
 	const handleConfig = (config) => {
 		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
-		client.fileStore.setConfig(projectID, newConfig).then(() => {
-			const curentConfig = getProjectConfig(projectID, "modules.fileStore", {})
-			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-			notify("success", "Success", "Configured file storage successfully")
-		})
+		fileStorageConfig(projectID, newConfig)
+			.then(() => {
+				dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
+				notify("success", "Success", "Configured file storage successfully")
+			})
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
 	}
 
 	const handleSaveRule = (rule) => {
 		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, selectedRuleName, rule).then(() => {
-			const newRules = rules.map(r => {
-				if (r.name !== selectedRuleName) return rule
-				return Object.assign({}, r, rule)
-			})
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Saved rule successfully")
-		})
+		saveRule(projectID, selectedRuleName, rule)
+			.then(() => notify("success", "Success", "Saved rule successfully"))
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
 	}
 
 	const handleAddRule = (ruleName, rule) => {
 		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
-			const newRules = [...rules, { name: ruleName, ...rule }]
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Added rule successfully")
-		})
+		addRule(projectID, ruleName, rule)
+			.then(() => notify("success", "Success", "Added rule successfully"))
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
 	}
 
 	const handleDeleteRule = (ruleName) => {
 		dispatch(increment("pendingRequests"))
-		client.fileStore.deleteRule(projectID, ruleName).then(() => {
-			const newRules = rules.filter(r => r.name !== ruleName)
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Deleted rule successfully")
-		})
+		deleteRule(projectID, ruleName)
+			.then(() => notify("success", "Success", "Deleted rule successfully"))
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
 	}

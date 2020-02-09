@@ -17,6 +17,7 @@ import client from "../../client";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/event-triggers/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
+import { deleteEventSchema, setEventSchema } from '../../actions/EventsTrigger'
 
 const EventTriggersSchema = () => {
   // Router params
@@ -61,55 +62,28 @@ const EventTriggersSchema = () => {
   };
 
   const handleDelete = type => {
-    return new Promise((resolve, reject) => {
-      store.dispatch(increment("pendingRequests"));
-      client.eventTriggers
-        .deleteEventSchema(projectID, type)
-        .then(() => {
-          const newSchema = getProjectConfig(
-            projectID,
-            `modules.eventing.schemas`,
-            {}
-          );
-          delete newSchema[type];
-          setProjectConfig(projectID, `modules.eventing.schemas`, newSchema);
-          resolve();
-          notify("success", "Success", "Removed event schema successfully");
-        })
-        .catch(ex => {
-          reject(ex);
-          notify("error", "Error removing event schema", ex);
-        })
-        .finally(() => store.dispatch(decrement("pendingRequests")));
-    });
+    dispatch(increment("pendingRequests"));
+    deleteEventSchema(projectID, type)
+      .then(() => notify("success", "Success", "Removed event schema successfully"))
+      .catch(ex => notify("error", "Error removing event schema", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   };
 
   const handleAddSchema = (type, schema) => {
-    return new Promise((resolve, reject) => {
-      setConformLoading(true);
-      store.dispatch(increment("pendingRequests"));
-      client.eventTriggers
-        .setEventSchema(projectID, type, schema)
-        .then(() => {
-          const oldSchemas = getProjectConfig(projectID, `modules.eventing.schemas`, {})
-          const newSchemas = Object.assign({}, oldSchemas, {
-            [type]: { schema: schema }
-          });
-          setProjectConfig(projectID, `modules.eventing.schemas`, newSchemas);
-
-          notify("success", "Success", "Saved event schema successfully");
-          dispatch(set("uiState.selectedEvent", type));
-          setAddColModalVisible(false);
-          setConformLoading(false);
-          resolve();
-        })
-        .catch(ex => {
-          notify("error", "Error saving event schema", ex);
-          setConformLoading(false);
-          reject(ex);
-        })
-        .finally(() => store.dispatch(decrement("pendingRequests")));
-    });
+    setConformLoading(true);
+    dispatch(increment("pendingRequests"));
+    setEventSchema(projectID, type, schema)
+      .then(() => {
+        notify("success", "Success", "Saved event schema successfully");
+        dispatch(set("uiState.selectedEvent", type));
+        setAddColModalVisible(false);
+        setConformLoading(false);
+      })
+      .catch(ex => {
+        notify("error", "Error saving event schema", ex);
+        setConformLoading(false);
+      })
+      .finally(()=>dispatch(decrement("pendingRequests")))
   };
 
   const EmptyState = () => {

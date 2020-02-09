@@ -13,7 +13,8 @@ import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
+//import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../../../actions/DbActions';
 import { defaultDBRules } from '../../../constants';
 
 
@@ -60,7 +61,9 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     const rules = getProjectConfig(projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
-    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
+    dispatch(increment("pendingRequests"))
+    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled)
+      .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   const handleAddClick = () => {
@@ -81,17 +84,21 @@ const Overview = () => {
   }
 
   const handleDelete = (colName) => {
+    dispatch(increment("pendingRequests"))
     deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
       .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
     if (clickedCol === colName) {
       setClickedCol("")
     }
   }
 
   const handleTrackCollections = (collections) => {
+    dispatch(increment("pendingRequests"))
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
       .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
       .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {

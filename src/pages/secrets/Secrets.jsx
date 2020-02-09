@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { increment, decrement } from "automate-redux";
 import client from "../../client";
 import { notify } from "../../utils";
+import { addSecrets, deleteSecret } from "../../actions/Secrets"
 
 const Secrets = () => {
   const history = useHistory();
@@ -25,31 +26,18 @@ const Secrets = () => {
   const [secretNameClicked, setSecretNameClicked] = useState("");
 
   const handleAddSecret = (secretConfig) => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets
-        .addSecret(projectID, secretConfig)
-        .then(() => {
-          const newSecrets = [...secrets.filter(obj => obj.name !== secretConfig.name), secretConfig];
-          setProjectConfig(projectID, "modules.secrets", newSecrets);
-          resolve();
-        })
-        .catch(ex => {
-          notify("error", "Error adding secret", ex);
-          reject();
-        })
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
+    dispatch(increment("pendingRequests"));
+    addSecrets(secretConfig, projectID)
+      .catch(ex => notify("error", "Error adding secret", ex))
+      .finally(() => {
+        setSecretModalVisible(false)
+        dispatch(decrement("pendingRequests"))
+      });
   };
 
   const handleDeleteSecret = secretName => {
     dispatch(increment("pendingRequests"));
-    client.secrets
-      .deleteSecret(projectID, secretName)
-      .then(() => {
-        const newSecrets = secrets.filter(obj => obj.name !== secretName);
-        setProjectConfig(projectID, "modules.secrets", newSecrets);
-      })
+    deleteSecret(secretName, projectID)
       .catch(ex => notify("error", "Error adding secret", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };

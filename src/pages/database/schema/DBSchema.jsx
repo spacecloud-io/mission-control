@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
+import { increment, decrement } from "automate-redux";
 
 
 import { Alert } from "antd"
@@ -12,7 +13,8 @@ import RuleEditor from "../../../components/rule-editor/RuleEditor"
 import dataModellingSvg from "../../../assets/data-modelling.svg"
 
 import { getProjectConfig, notify } from '../../../utils';
-import { modifyColSchema } from '../dbActions';
+//import { modifyColSchema } from '../dbActions';
+import { modifyColSchema } from '../../../actions/DbActions';
 
 const Schema = () => {
   // Router params
@@ -32,9 +34,11 @@ const Schema = () => {
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 
   const handleSubmit = (schema) => {
-    modifyColSchema(projectID, selectedDB, selectedCol, schema, true)
+    dispatch(increment("pendingRequests"))
+    modifyColSchema(projectID, selectedDB, selectedCol, schema)
       .then(() => notify("success", "Success", "Saved schema successfully"))
       .catch(ex => notify("error", "Error saving schema", ex))
+      .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   const EmptyState = () => {

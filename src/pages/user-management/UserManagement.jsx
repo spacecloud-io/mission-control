@@ -12,6 +12,7 @@ import './user-management.css'
 import { decrement, increment } from 'automate-redux';
 import { setProjectConfig, notify, getProjectConfig } from '../../utils';
 import client from "../../client"
+import { setUserManagementConfig } from "../../actions/UserManagement"
 
 const Panel = Collapse.Panel;
 const UserManagement = () => {
@@ -33,11 +34,8 @@ const UserManagement = () => {
   // Handlers
   const handleProviderConfig = (provider, config) => {
     dispatch(increment("pendingRequests"))
-    client.userManagement.setUserManConfig(projectID, provider, config)
-      .then(() => {
-        setProjectConfig(projectID, `modules.auth.${provider}`, config)
-        notify("success", "Success", "Saved auth config successfully")
-      })
+    setUserManagementConfig(projectID, provider, config)
+      .then(() => notify("success", "Success", "Saved auth config successfully"))
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")))
   }

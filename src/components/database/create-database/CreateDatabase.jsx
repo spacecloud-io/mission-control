@@ -6,9 +6,12 @@ import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
-import { dbEnable } from '../../../pages/database/dbActions'
+//import { dbEnable } from '../../../pages/database/dbActions'
+import { dbEnable } from '../../../actions/DbActions'
 import './create-db.css'
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { get, increment, decrement, set } from 'automate-redux';
+import { notify } from '../../../utils';
 
 const CreateDatabase = (props) => {
   const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO);
@@ -16,6 +19,7 @@ const CreateDatabase = (props) => {
   const projects = useSelector(state => state.projects)
 
   const { getFieldDecorator, setFieldsValue, getFieldValue } = props.form;
+  const dispatch=useDispatch()
 
   
   const handleMongo = () => {
@@ -45,9 +49,13 @@ const CreateDatabase = (props) => {
   }
 
   const handleDbSubmit = () => {
+    dispatch(increment("pendingRequests"))
     dbEnable(projects, props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
       if(!err) props.handleSubmit()
     })
+    .then(()=>notify("success", "Success", "Enabled database successfully"))
+    .catch((ex)=> notify("error", "Error enabling database", ex))
+    .finally(()=>dispatch(decrement("pendingRequests")))
   }
 
   return (
