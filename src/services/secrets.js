@@ -5,7 +5,7 @@ class Secrets {
 
   addSecret(projectId, secretConfig) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/runner/${projectId}/secrets`, secretConfig)
+      this.client.putJSON(`/v1/runner/${projectId}/secrets`, secretConfig)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -19,7 +19,7 @@ class Secrets {
 
   setSecretKey(projectId, secretName, key, value) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/runner/${projectId}/secrets/${secretName}/${key}`, { value: value })
+      this.client.putJSON(`/v1/runner/${projectId}/secrets/${secretName}/${key}`, { value: value })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -61,7 +61,7 @@ class Secrets {
 
   setRootPath(projectId, secretName, rootpath) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/runner/${projectId}/secrets/${secretName}/rootPath`, rootpath)
+      this.client.putJSON(`/v1/runner/${projectId}/secrets/${secretName}/rootPath`, rootpath)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)

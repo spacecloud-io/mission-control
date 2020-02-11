@@ -22,7 +22,7 @@ class Database {
 
   setDbConfig(projectId, dbName, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/config`, config)
+      this.client.putJSON(`/v1/config/projects/${projectId}/database/${dbName}/config`, config)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -64,7 +64,7 @@ class Database {
 
   modifySchema(projectId, dbName, collections) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/modify-schema`, { collections })
+      this.client.putJSON(`/v1/config/projects/${projectId}/database/${dbName}/modify-schema`, { collections })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -92,7 +92,7 @@ class Database {
 
   modifyColSchema(projectId, dbName, colName, schema) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/modify-schema`, { schema })
+      this.client.putJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/modify-schema`, { schema })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -134,7 +134,7 @@ class Database {
 
   setColRule(projectId, dbName, colName, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/rules`, rule)
+      this.client.putJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/rules`, rule)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
