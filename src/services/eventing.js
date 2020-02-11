@@ -1,11 +1,11 @@
-class EventTriggers {
+class Eventing {
   constructor(client) {
     this.client = client
   }
 
   setEventingConfig(projectId, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/event-triggers/config`, config)
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/config`, config)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -19,7 +19,7 @@ class EventTriggers {
 
   queueEvent(projectId, event) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/api/${projectId}/event-triggers/queue`, event)
+      this.client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -33,7 +33,7 @@ class EventTriggers {
 
   setTriggerRule(projectId, triggerName, triggerRule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/event-triggers/rules/${triggerName}`, triggerRule)
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/trigger/${triggerName}`, triggerRule)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -47,7 +47,7 @@ class EventTriggers {
 
   deleteTriggerRule(projectId, triggerName) {
     return new Promise((resolve, reject) => {
-      this.client.delete(`/v1/config/projects/${projectId}/event-triggers/rules/${triggerName}`)
+      this.client.delete(`/v1/config/projects/${projectId}/eventing/trigger/${triggerName}`)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -116,4 +116,4 @@ class EventTriggers {
   }
 }
 
-export default EventTriggers
+export default Eventing

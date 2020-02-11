@@ -11,28 +11,28 @@ export default ({ activeKey, projectID }) => {
         <TabPane tab='Overview' key='overview'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/event-triggers/overview`
+              pathname: `/mission-control/projects/${projectID}/eventing/overview`
             }}
           />
         </TabPane>
         <TabPane tab='Rules' key='rules'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/event-triggers/rules`
+              pathname: `/mission-control/projects/${projectID}/eventing/rules`
             }}
           />
         </TabPane>
         <TabPane tab='Schema' key='schema'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/event-triggers/schema`
+              pathname: `/mission-control/projects/${projectID}/eventing/schema`
             }}
           />
         </TabPane>
         <TabPane tab='Settings' key='settings'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/event-triggers/settings`
+              pathname: `/mission-control/projects/${projectID}/eventing/settings`
             }}
           />
         </TabPane>

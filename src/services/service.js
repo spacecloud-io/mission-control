@@ -3,7 +3,7 @@ import SpaceAPI from 'space-api';
 
 import Database from "./database"
 import FileStore from "./fileStore"
-import EventTriggers from "./eventTriggers"
+import Eventing from "./eventing"
 import RemoteServices from "./remoteServices"
 import UserManagement from "./userManagement"
 import Projects from "./projects"
@@ -26,7 +26,7 @@ class Service {
     this.client = new Client()
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
-    this.eventTriggers = new EventTriggers(this.client)
+    this.eventing = new Eventing(this.client)
     this.remoteServices = new RemoteServices(this.client)
     this.userManagement = new UserManagement(this.client)
     this.projects = new Projects(this.client)
