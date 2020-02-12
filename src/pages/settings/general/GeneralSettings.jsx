@@ -14,6 +14,7 @@ import store from "../../../store";
 import history from "../../../history"
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import construction from "../../../assets/construction.svg"
+import { deleteProject } from '../../../actions/settings'
 
 function GeneralSettings() {
     const { projectID, selectedDB } = useParams()
@@ -42,19 +43,12 @@ function GeneralSettings() {
 
     const removeProjectConfig = () => {
         store.dispatch(increment("pendingRequests"))
-        client.projects.deleteProject(projectID).then(() => {
-            notify("success", "Success", "Removed project config successfully")
-            const extraConfig = get(store.getState(), "extraConfig", {})
-            const newExtraConfig = delete extraConfig[projectID]
-            store.dispatch(set(`extraConfig`, newExtraConfig))
-            const projectConfig = store.getState().projects;
-            const projectList = projectConfig.filter(project => project.id !== projectID)
-            store.dispatch(set(`projects`, projectList))
-            history.push(`/mission-control/welcome`)
-        })
-            .catch(ex => {
-                notify("error", "Error removing project config", ex.toString())
+        deleteProject(projectID)
+            .then(() => {
+                notify("success", "Success", "Removed project config successfully")
+                history.push(`/mission-control/welcome`)
             })
+            .catch(ex => notify("error", "Error removing project config", ex.toString()))
             .finally(() => store.dispatch(decrement("pendingRequests")))
     }
 

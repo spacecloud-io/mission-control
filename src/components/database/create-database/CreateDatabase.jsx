@@ -6,8 +6,7 @@ import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
-//import { dbEnable } from '../../../pages/database/dbActions'
-import { dbEnable } from '../../../actions/DbActions'
+import { dbEnable } from '../../../actions/database'
 import './create-db.css'
 import { useSelector, useDispatch } from 'react-redux';
 import { get, increment, decrement, set } from 'automate-redux';

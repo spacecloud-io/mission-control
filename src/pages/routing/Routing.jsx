@@ -14,7 +14,7 @@ import {
   getProjectConfig,
   generateId
 } from "../../utils";
-import { setRoutingConfig, deleteRoutingConfig } from "../../actions/Routes"
+import { setRoutingConfig, deleteRoutingConfig } from "../../actions/routing"
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;

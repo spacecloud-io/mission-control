@@ -13,8 +13,7 @@ import RuleEditor from "../../../components/rule-editor/RuleEditor"
 import dataModellingSvg from "../../../assets/data-modelling.svg"
 
 import { getProjectConfig, notify } from '../../../utils';
-//import { modifyColSchema } from '../dbActions';
-import { modifyColSchema } from '../../../actions/DbActions';
+import { modifyColSchema } from '../../../actions/database';
 
 const Schema = () => {
   // Router params

@@ -13,8 +13,7 @@ import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
-//import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../../../actions/DbActions';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../../../actions/database';
 import { defaultDBRules } from '../../../constants';
 
 

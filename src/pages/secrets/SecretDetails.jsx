@@ -9,7 +9,7 @@ import client from "../../client";
 import store from "../../store";
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "automate-redux";
-import { setSecretKey, deleteSecretKey } from "../../actions/Secrets"
+import { setSecretKey, deleteSecretKey } from "../../actions/secrets"
 
 const getLabelFromSecretType = type => {
   switch (type) {

@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { increment, decrement } from "automate-redux";
 import client from "../../client";
 import { notify } from "../../utils";
-import { addSecrets, deleteSecret } from "../../actions/Secrets"
+import { addSecrets, deleteSecret } from "../../actions/secrets"
 
 const Secrets = () => {
   const history = useHistory();

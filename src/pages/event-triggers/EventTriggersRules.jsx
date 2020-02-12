@@ -13,7 +13,7 @@ import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
 import EventSecurityRuleForm from '../../components/event-triggers/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
-import { setSecurityRule, deleteSecurityRule } from '../../actions/EventsTrigger'
+import { setSecurityRule, deleteSecurityRule } from '../../actions/eventTrigger'
 
 const EventTriggersRules = () => {
   const { projectID } = useParams()

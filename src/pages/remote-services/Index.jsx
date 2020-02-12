@@ -11,7 +11,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
-import { setRemoteService, deleteServiceConfig } from "../../actions/RemoteServices"
+import { setRemoteService, deleteServiceConfig } from "../../actions/remoteServices"
 
 const RemoteServices = () => {
   // Router params

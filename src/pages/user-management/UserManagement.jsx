@@ -12,7 +12,7 @@ import './user-management.css'
 import { decrement, increment } from 'automate-redux';
 import { setProjectConfig, notify, getProjectConfig } from '../../utils';
 import client from "../../client"
-import { setUserManagementConfig } from "../../actions/UserManagement"
+import { setUserManagementConfig } from "../../actions/userManagement"
 
 const Panel = Collapse.Panel;
 const UserManagement = () => {

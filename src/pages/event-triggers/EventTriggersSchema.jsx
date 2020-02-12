@@ -17,7 +17,7 @@ import client from "../../client";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/event-triggers/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
-import { deleteEventSchema, setEventSchema } from '../../actions/EventsTrigger'
+import { deleteEventSchema, setEventSchema } from '../../actions/eventTrigger'
 
 const EventTriggersSchema = () => {
   // Router params

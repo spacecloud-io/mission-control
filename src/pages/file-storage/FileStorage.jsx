@@ -14,7 +14,7 @@ import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
-import { fileStorageConfig, saveRule, addRule, deleteRule } from "../../actions/FileStorage"
+import { fileStorageConfig, saveRule, addRule, deleteRule } from "../../actions/fileStorage"
 
 const Rules = (props) => {
 	// Router params

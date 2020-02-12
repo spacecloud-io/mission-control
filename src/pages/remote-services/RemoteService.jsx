@@ -10,7 +10,7 @@ import EndpointForm from "../../components/remote-services/endpoint-form/Endpoin
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
-import { setRemoteService } from "../../actions/RemoteServices"
+import { setRemoteService } from "../../actions/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 

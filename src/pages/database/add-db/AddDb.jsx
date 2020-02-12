@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
-import { dbEnable } from '../dbActions';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { Icon, Row, Col, Button } from 'antd';
 

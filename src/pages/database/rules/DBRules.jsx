@@ -10,8 +10,7 @@ import RuleEditor from "../../../components/rule-editor/RuleEditor"
 import securitySvg from "../../../assets/security.svg"
 
 import { getProjectConfig, notify } from '../../../utils';
-//import { setColRule } from '../dbActions';
-import { setColRule } from '../../../actions/DbActions';
+import { setColRule } from '../../../actions/database';
 import client from "../../../client"
 import { Button } from "antd"
 import AddDbRuleForm from '../../../components/database/add-rule-form/AddDbRuleForm';

@@ -7,8 +7,7 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { getProjectConfig, notify } from '../../../utils';
-//import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../dbActions';
-import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../../../actions/DbActions';
+import { setDBConfig, handleReload, handleModify, removeDBConfig} from '../../../actions/database';
 
 const Settings = () => {
   // Router params

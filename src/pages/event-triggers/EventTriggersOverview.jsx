@@ -16,7 +16,7 @@ import eventTriggersSvg from "../../assets/event-triggers.svg"
 import history from '../../history'
 import { dbIcons } from '../../utils';
 import './event.css'
-import { eventTriggerSetRule, deleteRule, triggerEvent } from "../../actions/EventsTrigger"
+import { eventTriggerSetRule, deleteRule, triggerEvent } from "../../actions/eventTrigger"
 
 
 const EventTriggersOverview = () => {

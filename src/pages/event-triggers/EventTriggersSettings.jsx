@@ -9,7 +9,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
 import EventingConfigure from '../../components/event-triggers/EventingConfigure';
 import './event.css';
-import { setEventingConfig } from '../../actions/EventsTrigger'
+import { setEventingConfig } from '../../actions/eventTrigger'
 
 const EventTriggersSettings = () => {
     const { projectID, selectedDB } = useParams();

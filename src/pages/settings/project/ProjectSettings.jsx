@@ -19,6 +19,7 @@ import { dbIcons } from "../../../utils";
 import SettingTabs from "../../../components/settings/SettingTabs";
 import Clusters from "../../../components/configure/Clusters";
 import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
+import { setProjectGlobal, deleteProject, settingProjectConfig, settingConfig } from '../../../actions/settings'
 
 const ProjectSettings = () => {
   // Router params
@@ -46,73 +47,35 @@ const ProjectSettings = () => {
   // Handlers
   const handleSecret = secret => {
     dispatch(increment("pendingRequests"));
-    client.projects
-      .setProjectGlobalConfig(projectID, {
-        secret,
-        id: projectID,
-        name: projectName
-      })
-      .then(() => {
-        setProjectConfig(projectID, "secret", secret);
-        notify("success", "Success", "Changed JWT secret successfully");
-      })
+    setProjectGlobal(projectID, secret)
+      .then(() => notify("success", "Success", "Changed JWT secret successfully"))
       .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+      .finally(() => dispatch(decrement("pendingRequests")))
   };
 
   const removeProjectConfig = () => {
     store.dispatch(increment("pendingRequests"));
-    client.projects
-      .deleteProject(projectID)
+    deleteProject(projectID)
       .then(() => {
-        notify("success", "Success", "Removed project config successfully");
-        const extraConfig = get(store.getState(), "extraConfig", {});
-        const newExtraConfig = delete extraConfig[projectID];
-        store.dispatch(set(`extraConfig`, newExtraConfig));
-        const projectConfig = store.getState().projects;
-        const projectList = projectConfig.filter(
-          project => project.id !== projectID
-        );
-        store.dispatch(set(`projects`, projectList));
-        history.push(`/mission-control/welcome`);
+        notify("success", "Success", "Removed project config successfully")
+        history.push(`/mission-control/welcome`)
       })
-      .catch(ex => {
-        notify("error", "Error removing project config", ex.toString());
-      })
-      .finally(() => store.dispatch(decrement("pendingRequests")));
+      .catch(ex => notify("error", "Error removing project config", ex.toString()))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
   };
 
   const importProjectConfig = (projectID, config) => {
     dispatch(increment("pendingRequests"));
-    client.projects
-      .setProjectConfig(projectID, config)
-      .then(() => {
-        const updatedProjects = projects.map(project => {
-          if (project.id === config.id) {
-            project.secret = config.secret;
-            project.modules = config.modules;
-          }
-          return project;
-        });
-        store.dispatch(set("projects", updatedProjects));
-        notify("success", "Success", "Updated project config successfully");
-      })
+    settingProjectConfig(projectID, config, projects)
+      .then(() => notify("success", "Success", "Updated project config successfully"))
       .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+      .finally(() => dispatch(decrement("pendingRequests")))
   };
 
   const handleDomains = domains => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.letsencrypt
-        .setConfig(projectID, { domains: domains })
-        .then(() => {
-          setProjectConfig(projectID, "modules.letsencrypt.domains", domains);
-          resolve();
-        })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
+    dispatch(increment("pendingRequests"));
+    settingConfig(projectID, domains)
+      .finally(() => dispatch(decrement("pendingRequests")));
   };
 
   return (
