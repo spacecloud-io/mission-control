@@ -23,6 +23,14 @@ const RoutingRule = props => {
     });
   };
 
+  const checkHost = (host) => {
+    if(host.length === 1 && host[0] === "*"){
+        return false;
+    }else {
+      return true;
+    }
+  }
+
   return (
     <div>
       <Modal
@@ -116,7 +124,7 @@ const RoutingRule = props => {
             {getFieldDecorator("allowSpecificHosts", {
               valuePropName: "checked",
               initialValue:
-                initialValues && initialValues.allowedHosts === ["*"]
+                initialValues && checkHost(initialValues.allowedHosts)
                   ? true
                   : false
             })(<Checkbox>Allow traffic from specified hosts only</Checkbox>)}
@@ -132,7 +140,7 @@ const RoutingRule = props => {
                       message: "Please enter the domain for the project"
                     }
                   ],
-                  initialValue: initialValues && initialValues.allowedHosts === ["*"] ? 
+                  initialValue: initialValues && checkHost(initialValues.allowedHosts) ? 
                   initialValues.allowedHosts : []
                 })(
                   <Select
