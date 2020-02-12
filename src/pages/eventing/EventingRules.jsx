@@ -9,12 +9,12 @@ import { set, get } from 'automate-redux';
 import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType } from '../../utils';
 import client from '../../client';
 import store from '../../store';
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
-import EventSecurityRuleForm from '../../components/event-triggers/EventSecurityRuleForm';
+import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 
-const EventTriggersRules = () => {
+const EventingRules = () => {
     const { projectID } = useParams()
   
     // Global state
@@ -37,7 +37,7 @@ const EventTriggersRules = () => {
       return new Promise((resolve, reject) => {
         setConformLoading(true)
         store.dispatch(increment("pendingRequests"))
-        client.eventTriggers.setSecurityRule(projectID, type, rule).then(() => {
+        client.eventing.setSecurityRule(projectID, type, rule).then(() => {
           setProjectConfig(projectID, `modules.eventing.securityRules.${type}`, rule)
           notify("success", "Success", "Saved event rule successfully")
           dispatch(set("uiState.selectedEvent", type))
@@ -58,7 +58,7 @@ const EventTriggersRules = () => {
     const handleDeleteRule = (type) => {
       return new Promise((resolve, reject) => {
         store.dispatch(increment("pendingRequests"))
-        client.eventTriggers.deleteSecurityRule(projectID, type).then(() => {
+        client.eventing.deleteSecurityRule(projectID, type).then(() => {
           let newRules = Object.assign({}, getProjectConfig(store.getState().projects, projectID, `modules.eventing.securityRules`, {}))
           delete newRules[type]
           setProjectConfig(projectID, `modules.eventing.securityRules`, newRules)
@@ -85,7 +85,7 @@ const EventTriggersRules = () => {
     return (
         <div>
             <Topbar showProjectSelector />
-            <Sidenav selectedItem="event-triggers" />
+            <Sidenav selectedItem="eventing" />
             <div className='page-content page-content--no-padding'>
                 <EventTabs activeKey="rules" projectID={projectID} />
             <div className="event-tab-content"> 
@@ -110,4 +110,4 @@ const EventTriggersRules = () => {
     )
 }
 
-export default EventTriggersRules;
+export default EventingRules;

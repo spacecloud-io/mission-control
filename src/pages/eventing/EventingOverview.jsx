@@ -6,19 +6,19 @@ import { Table, Button, Alert, Row, Col } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import RuleForm from "../../components/event-triggers/RuleForm";
-import TriggerForm from "../../components/event-triggers/TriggerForm";
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
+import RuleForm from "../../components/eventing/RuleForm";
+import TriggerForm from "../../components/eventing/TriggerForm";
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
 import client from '../../client';
-import eventTriggersSvg from "../../assets/event-triggers.svg"
+import eventingSvg from "../../assets/eventing.svg"
 import history from '../../history'
 import { dbIcons } from '../../utils';
 import './event.css'
 
 
-const EventTriggersOverview = () => {
+const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
 
@@ -44,7 +44,7 @@ const EventTriggersOverview = () => {
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
 	useEffect(() => {
-		ReactGA.pageview("/projects/event-triggers");
+		ReactGA.pageview("/projects/eventing");
 	}, [])
 
 	// Handlers
@@ -72,7 +72,7 @@ const EventTriggersOverview = () => {
 		const triggerRule = { type, url, retries, timeout, options }
 		const isRulePresent = rules[name] ? true : false
 		dispatch(increment("pendingRequests"))
-		client.eventTriggers.setTriggerRule(projectID, name, triggerRule).then(() => {
+		client.eventing.setTriggerRule(projectID, name, triggerRule).then(() => {
 			setProjectConfig(projectID, `modules.eventing.rules.${name}`, triggerRule)
 			notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
@@ -81,7 +81,7 @@ const EventTriggersOverview = () => {
 	const handleDeleteRule = (name) => {
 		const newRules = Object.assign({}, rules)
 		delete newRules[name]
-		client.eventTriggers.deleteTriggerRule(projectID, name).then(() => {
+		client.eventing.deleteTriggerRule(projectID, name).then(() => {
 			setProjectConfig(projectID, `modules.eventing.rules`, newRules)
 			notify("success", "Success", "Deleted trigger rule successfully")
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
@@ -90,7 +90,7 @@ const EventTriggersOverview = () => {
 	const handleTriggerEvent = (type, payload) => {
 		dispatch(increment("pendingRequests"))
 		const eventBody = { type, delay: 0, timestamp: new Date().getTime(), payload, options: {} }
-		client.eventTriggers.queueEvent(projectID, eventBody).then(() => {
+		client.eventing.queueEvent(projectID, eventBody).then(() => {
 			notify("success", "Success", "Event successfully queued to Space Cloud")
 		})
 			.catch(err => notify("error", "Error", err))
@@ -153,13 +153,13 @@ const EventTriggersOverview = () => {
 	return (
 		<div>
 			<Topbar showProjectSelector />
-			<Sidenav selectedItem="event-triggers" />
+			<Sidenav selectedItem="eventing" />
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="overview" projectID={projectID} />
 			<div className="event-tab-content">
 				{noOfRules === 0 && <div>
 					<div className="panel">
-						<img src={eventTriggersSvg} />
+						<img src={eventingSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
 						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
 						{dbAlert()}
@@ -185,4 +185,4 @@ const EventTriggersOverview = () => {
 	)
 }
 
-export default EventTriggersOverview;
+export default EventingOverview;

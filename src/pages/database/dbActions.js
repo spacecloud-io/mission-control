@@ -175,7 +175,7 @@ export const removeDBConfig = (projectId, aliasName) => {
 
 const setDefaultEventSecurityRule = (projectId, type, rule) => {
   return new Promise((resolve, reject) => {
-    client.eventTriggers.setSecurityRule(projectId, type, rule).then(() => {
+    client.eventing.setSecurityRule(projectId, type, rule).then(() => {
       setProjectConfig(projectId, "modules.eventing.securityRules.default", rule)
       resolve()
     }).catch((ex) => reject(ex))
@@ -184,7 +184,7 @@ const setDefaultEventSecurityRule = (projectId, type, rule) => {
 
 const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
-  client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
+  client.eventing.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
     .then(() => {
       setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias, col: 'event_logs' })
       setDefaultEventSecurityRule(projectId, "default", defaultEventRule)

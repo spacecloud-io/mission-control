@@ -6,11 +6,11 @@ import { getProjectConfig, dbIcons, notify, setProjectConfig } from '../../utils
 import client from '../../client';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
-import EventingConfigure from '../../components/event-triggers/EventingConfigure';
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
+import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 
-const EventTriggersSettings = () => {
+const EventingSettings = () => {
     const { projectID, selectedDB } = useParams();
 
     const dispatch = useDispatch();
@@ -38,7 +38,7 @@ const EventTriggersSettings = () => {
 
     const handleEventingConfig = (dbType, col) => {
         dispatch(increment("pendingRequests"));
-        client.eventTriggers
+        client.eventing
           .setEventingConfig(projectID, { enabled: true, dbType, col })
           .then(() => {
             setProjectConfig(projectID, "modules.eventing.dbType", dbType);
@@ -52,7 +52,7 @@ const EventTriggersSettings = () => {
     return (
         <div>
             <Topbar showProjectSelector />
-            <Sidenav selectedItem="event-triggers" />
+            <Sidenav selectedItem="eventing" />
             <div className='page-content page-content--no-padding'>
                 <EventTabs activeKey="settings" projectID={projectID} />
             <div className="event-tab-content">
@@ -70,4 +70,4 @@ const EventTriggersSettings = () => {
     );
 }
 
-export default EventTriggersSettings;
+export default EventingSettings;
