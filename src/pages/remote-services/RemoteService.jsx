@@ -5,7 +5,7 @@ import { increment, decrement } from "automate-redux"
 import client from "../../client"
 import { getProjectConfig, setProjectConfig, notify } from "../../utils"
 
-import { Button, Table, Popconfirm, Icon } from "antd"
+import { Button, Table, Popconfirm, Icon, Row, Col } from "antd"
 import EndpointForm from "../../components/remote-services/endpoint-form/EndpointForm"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -136,8 +136,12 @@ const RemoteService = () => {
           </div>}
           {noOfEndpoints > 0 && (
             <React.Fragment>
-              <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-              <Table columns={tableColumns} dataSource={endpointsTableData} />
+              <Row>
+                <Col xs={{ span:24 }}>
+                  <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
+                  <Table columns={tableColumns} dataSource={endpointsTableData} />
+                </Col>
+              </Row>
             </React.Fragment>
           )}
           {modalVisible && <EndpointForm

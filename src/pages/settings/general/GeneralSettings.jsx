@@ -117,7 +117,7 @@ function GeneralSettings() {
                         <SettingTabs activeKey='General' projectID={projectID} />
                         <div className="db-tab-content">
                             <div className="panel">
-                                <img src={construction} style={{ width: 550 }} />
+                                <img src={construction} style={{ width: "45%" }} />
                                 <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Global settings like cluster management are comming soon.... </p>
                             </div>
                             {/* <h2>Credentials</h2>

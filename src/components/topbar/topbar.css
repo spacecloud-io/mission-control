@@ -64,7 +64,12 @@
     .topbar .btn-position {
         margin-left: 0;
         position: absolute;
-        right: 0;
+        left: 33%;
+    }
+    .topbar .db-btn-position {
+        margin-left: 0;
+        position: absolute;
+        left: 66%;
     }
     .topbar .hamburger {
         margin-right: 16px;

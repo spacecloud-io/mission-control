@@ -12,7 +12,7 @@ import ExportImport from "../../../components/configure/ExportImport";
 import "./project-settings.css";
 import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
 import client from "../../../client";
-import { Button } from "antd";
+import { Button, Row, Col } from "antd";
 import store from "../../../store";
 import history from "../../../history";
 import { dbIcons } from "../../../utils";
@@ -145,7 +145,11 @@ const ProjectSettings = () => {
             Add domains you want to whitelist for this project. Space cloud will
             automatically add and renew SSL certificates for these domains{" "}
           </p>
-          <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
+          <Row>
+            <Col lg={{ span:14 }}>
+              <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
+            </Col>
+          </Row>
           <h2>Delete Project</h2>
           <div className="divider" />
           <p>

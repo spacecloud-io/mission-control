@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Row, Col } from "antd";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import AddDeploymentForm from "../../components/deployments/AddDeploymentForm";
@@ -207,21 +206,23 @@ const Deployments = () => {
         {!data ||
           (data.length === 0 && (
             <div className="panel" style={{ margin: 24 }}>
-              <img src={source_code} style={{ width: "45%" }} />
-              <p
-                className="panel__description"
-                style={{
-                  marginTop: 48,
-                  marginBottom: 0,
-                  marginLeft: 130,
-                  marginRight: 130
-                }}
-              >
-                Deploy any docker containers to cloud easily in
-                no time. Space Galaxy deploys your docker containers in a secure service
-                mesh and provides you with a serverless experience by taking
-                care of auto scaling, self healing, etc.
-              </p>
+              <img src={source_code} style={{ width:"45%" }}/>
+              <Row>
+                <Col lg={{ span:"15", offset:"4" }}>
+                  <p
+                    className="panel__description"
+                    style={{
+                      marginTop: 48,
+                      marginBottom: 0,
+                    }}
+                  >
+                    Deploy any docker containers to cloud easily in
+                    no time. Space Galaxy deploys your docker containers in a secure service
+                    mesh and provides you with a serverless experience by taking
+                    care of auto scaling, self healing, etc.
+                  </p>
+                </Col>
+              </Row>
               <Button
                 type="primary"
                 style={{ marginTop: 16 }}
