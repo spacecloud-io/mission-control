@@ -6,20 +6,20 @@ import { Table, Button, Alert, Row, Col } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import RuleForm from "../../components/event-triggers/RuleForm";
-import TriggerForm from "../../components/event-triggers/TriggerForm";
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
+import RuleForm from "../../components/eventing/RuleForm";
+import TriggerForm from "../../components/eventing/TriggerForm";
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
 import client from '../../client';
-import eventTriggersSvg from "../../assets/event-triggers.svg"
+import eventingSvg from "../../assets/eventing.svg"
 import history from '../../history'
 import { dbIcons } from '../../utils';
 import './event.css'
 import { eventTriggerSetRule, deleteRule, triggerEvent } from "../../actions/eventTrigger"
 
 
-const EventTriggersOverview = () => {
+const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
 
@@ -45,7 +45,7 @@ const EventTriggersOverview = () => {
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
 	useEffect(() => {
-		ReactGA.pageview("/projects/event-triggers");
+		ReactGA.pageview("/projects/eventing");
 	}, [])
 
 	// Handlers
@@ -82,7 +82,7 @@ const EventTriggersOverview = () => {
 	const handleDeleteRule = (name) => {
 		const newRules = Object.assign({}, rules)
 		delete newRules[name]
-		deleteRule(projectID, name)
+		deleteRule(projectID, name, newRules)
 			.then(() => notify("success", "Success", "Deleted trigger rule successfully"))
 			.catch(ex => notify("error", "Error", ex))
 			.finally(() => dispatch(decrement("pendingRequests")))
@@ -153,13 +153,13 @@ const EventTriggersOverview = () => {
 	return (
 		<div>
 			<Topbar showProjectSelector />
-			<Sidenav selectedItem="event-triggers" />
+			<Sidenav selectedItem="eventing" />
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="overview" projectID={projectID} />
 				<div className="event-tab-content">
 					{noOfRules === 0 && <div>
 						<div className="panel">
-							<img src={eventTriggersSvg} />
+							<img src={eventingSvg} />
 							<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/advanced/event-triggers">View Docs.</a></p>
 							<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
 							{dbAlert()}
@@ -185,4 +185,4 @@ const EventTriggersOverview = () => {
 	)
 }
 
-export default EventTriggersOverview;
+export default EventingOverview;

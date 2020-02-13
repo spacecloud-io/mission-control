@@ -9,13 +9,13 @@ import { set, get } from 'automate-redux';
 import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType } from '../../utils';
 import client from '../../client';
 import store from '../../store';
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
-import EventSecurityRuleForm from '../../components/event-triggers/EventSecurityRuleForm';
+import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 import { setSecurityRule, deleteSecurityRule } from '../../actions/eventTrigger'
 
-const EventTriggersRules = () => {
+const EventingRules = () => {
   const { projectID } = useParams()
 
   // Global state
@@ -69,32 +69,32 @@ const EventTriggersRules = () => {
     </div>
   }
 
-  return (
-    <div>
-      <Topbar showProjectSelector />
-      <Sidenav selectedItem="event-triggers" />
-      <div className='page-content page-content--no-padding'>
-        <EventTabs activeKey="rules" projectID={projectID} />
-        <div className="event-tab-content">
-          <h3 style={{ display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
-          <RuleEditor rules={rules}
-            selectedRuleName={selectedEvent}
-            handleSelect={handleSelect}
-            handleSubmit={(rule) => handleSubmit(selectedEvent, rule)}
-            canDeleteRules
-            handleDelete={handleDeleteRule}
-            emptyState={<EmptyState />}
-          />
-          {addRuleModalVisible && <EventSecurityRuleForm
-            defaultRules={rule}
-            handleSubmit={handleSubmit}
-            conformLoading={conformLoading}
-            customEventTypes={customEventTypes}
-            handleCancel={() => setAddRuleModalVisible(false)} />}
+    return (
+        <div>
+            <Topbar showProjectSelector />
+            <Sidenav selectedItem="eventing" />
+            <div className='page-content page-content--no-padding'>
+                <EventTabs activeKey="rules" projectID={projectID} />
+            <div className="event-tab-content"> 
+                <h3 style={{ display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
+                <RuleEditor rules={rules}
+                    selectedRuleName={selectedEvent}
+                    handleSelect={handleSelect}
+                    handleSubmit={(rule) => handleSubmit(selectedEvent, rule)}
+                    canDeleteRules
+                    handleDelete={handleDeleteRule}
+                    emptyState={<EmptyState />}
+                />
+                {addRuleModalVisible && <EventSecurityRuleForm
+                    defaultRules={rule}
+                    handleSubmit={handleSubmit}
+                    conformLoading={conformLoading}
+                    customEventTypes={customEventTypes}
+                    handleCancel={() => setAddRuleModalVisible(false)} />}
+            </div>
+            </div>
         </div>
-      </div>
-    </div>
   )
 }
 
-export default EventTriggersRules;
+export default EventingRules;

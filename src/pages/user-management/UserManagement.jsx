@@ -13,8 +13,9 @@ import { decrement, increment } from 'automate-redux';
 import { setProjectConfig, notify, getProjectConfig } from '../../utils';
 import client from "../../client"
 import { setUserManagementConfig } from "../../actions/usersManagement"
+const { Panel } = Collapse;
 
-const Panel = Collapse.Panel;
+//const Panel = Collapse.Panel;
 const UserManagement = () => {
   // Router params
   const { projectID } = useParams()
@@ -48,8 +49,10 @@ const UserManagement = () => {
         <div className="page-content">
           <h2>Auth Providers</h2>
           <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
-            <Panel header={(<CollapseHeader icon={mailIcon} desc="Mail" />)} key="1">
-              <Email initialValues={emailConfig} handleSubmit={(config) => handleProviderConfig("email", config)} />
+            <Panel header={(<div style={{ padding: "8px 0px 8px 16px" }}><CollapseHeader icon={mailIcon} desc="Mail" /></div>)} key="1">
+              <div style={{ paddingLeft: 16 }}>
+                <Email initialValues={emailConfig} handleSubmit={(config) => handleProviderConfig("email", config)} />
+              </div>
             </Panel>
           </Collapse>
         </div>

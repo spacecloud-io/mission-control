@@ -3,7 +3,7 @@ import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
-import EventTabs from "../../components/event-triggers/event-tabs/EventTabs";
+import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import {
   getProjectConfig,
   notify,
@@ -15,11 +15,11 @@ import { set, get, increment, decrement } from "automate-redux";
 import store from "../../store";
 import client from "../../client";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
-import EventSchemaForm from "../../components/event-triggers/EventSchemaForm";
+import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
 import { deleteEventSchema, setEventSchema } from '../../actions/eventTrigger'
 
-const EventTriggersSchema = () => {
+const EventingSchema = () => {
   // Router params
   const { projectID, selectedDB } = useParams();
 
@@ -113,7 +113,7 @@ const EventTriggersSchema = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="event-triggers" />
+      <Sidenav selectedItem="eventing" />
       <div className="page-content page-content--no-padding">
         <EventTabs activeKey="schema" projectID={projectID} />
         <div className="event-tab-content">
@@ -150,4 +150,4 @@ const EventTriggersSchema = () => {
   );
 };
 
-export default EventTriggersSchema;
+export default EventingSchema;

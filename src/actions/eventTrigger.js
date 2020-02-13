@@ -3,18 +3,16 @@ import client from "../client"
 
 export const eventTriggerSetRule = (projectID, name, triggerRule) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers.setTriggerRule(projectID, name, triggerRule).then(() => {
+        client.eventing.setTriggerRule(projectID, name, triggerRule).then(() => {
             setProjectConfig(projectID, `modules.eventing.rules.${name}`, triggerRule)
             resolve()
         }).catch(ex => reject(ex))
     })
 }
 
-export const deleteRule = (projectID, name) => {
-    const rules = getProjectConfig(projectID, "modules.eventing.rules", {})
-    const newRules = Object.assign({}, rules)
+export const deleteRule = (projectID, name, newRules) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers.deleteTriggerRule(projectID, name).then(() => {
+        client.eventing.deleteTriggerRule(projectID, name).then(() => {
             setProjectConfig(projectID, `modules.eventing.rules`, newRules)
             resolve()
         }).catch(ex => reject(ex))
@@ -23,7 +21,7 @@ export const deleteRule = (projectID, name) => {
 
 export const triggerEvent = (projectID, eventBody) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers.queueEvent(projectID, eventBody).then(() => {
+        client.eventing.queueEvent(projectID, eventBody).then(() => {
             resolve()
         })
             .catch(err => reject(err))
@@ -32,7 +30,7 @@ export const triggerEvent = (projectID, eventBody) => {
 
 export const setSecurityRule = (projectID, type, rule) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers.setSecurityRule(projectID, type, rule).then(() => {
+        client.eventing.setSecurityRule(projectID, type, rule).then(() => {
             setProjectConfig(projectID, `modules.eventing.securityRules.${type}`, rule)
             resolve()
         })
@@ -42,7 +40,7 @@ export const setSecurityRule = (projectID, type, rule) => {
 
 export const deleteSecurityRule = (projectID, type) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers.deleteSecurityRule(projectID, type).then(() => {
+        client.eventing.deleteSecurityRule(projectID, type).then(() => {
             let newRules = Object.assign({}, getProjectConfig(projectID, `modules.eventing.securityRules`, {}))
             delete newRules[type]
             setProjectConfig(projectID, `modules.eventing.securityRules`, newRules)
@@ -54,7 +52,7 @@ export const deleteSecurityRule = (projectID, type) => {
 
 export const deleteEventSchema = (projectID, type) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers
+        client.eventing
             .deleteEventSchema(projectID, type)
             .then(() => {
                 const newSchema = getProjectConfig(
@@ -74,7 +72,7 @@ export const deleteEventSchema = (projectID, type) => {
 
 export const setEventSchema = (projectID, type, schema) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers
+        client.eventing
             .setEventSchema(projectID, type, schema)
             .then(() => {
                 const oldSchemas = getProjectConfig(projectID, `modules.eventing.schemas`, {})
@@ -90,7 +88,7 @@ export const setEventSchema = (projectID, type, schema) => {
 
 export const setEventingConfig = (projectID, dbType, col) => {
     return new Promise((resolve, reject) => {
-        client.eventTriggers
+        client.eventing
             .setEventingConfig(projectID, { enabled: true, dbType, col })
             .then(() => {
                 setProjectConfig(projectID, "modules.eventing.dbType", dbType);
