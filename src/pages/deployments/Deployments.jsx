@@ -10,7 +10,7 @@ import client from "../../client";
 import source_code from "../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { increment, decrement } from "automate-redux";
-import { createDeployments, deleteDeployment } from "../../actions/deployments"
+import { createDeployments, deleteDeployment } from "../../actions/deployment"
 
 const Deployments = () => {
   const { projectID } = useParams();
