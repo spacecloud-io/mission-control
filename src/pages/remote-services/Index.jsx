@@ -80,9 +80,15 @@ const RemoteServices = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleViewClick(name)}>View</a>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
-          <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a style={{ color: "red" }}>Remove</a>
+          <a onClick={(e) => {
+            handleEditClick(name)
+            e.stopPropagation()
+          }}>Edit</a>
+          <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={(e) => {
+            handleDelete(name)
+            e.stopPropagation()
+          }}>
+            <a style={{ color: "red" }} onClick={e => e.stopPropagation()}>Remove</a>
           </Popconfirm>
         </span>
       )
@@ -104,7 +110,7 @@ const RemoteServices = () => {
         {noOfServices > 0 && (
           <React.Fragment>
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>Remote Services <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-            <Table columns={tableColumns} dataSource={servicesTableData} />
+            <Table onRowClick={handleViewClick} columns={tableColumns} dataSource={servicesTableData} onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }} />
           </React.Fragment>
         )}
         {modalVisible && <ServiceForm

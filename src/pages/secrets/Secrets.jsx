@@ -94,9 +94,12 @@ const Secrets = () => {
             )}
             <Popconfirm
               title={`This will delete the secrets. Are you sure?`}
-              onConfirm={() => handleDeleteSecret(record.name)}
+              onConfirm={(e) => {
+                handleDeleteSecret(record.name)
+                e.stopPropagation()
+              }}
             >
-              <a style={{ color: "red" }}>Delete</a>
+              <a style={{ color: "red" }} onClick={e => e.stopPropagation()}>Delete</a>
             </Popconfirm>
           </span>
         );
@@ -141,7 +144,7 @@ const Secrets = () => {
             </Button>
           </h3>
           {secrets.length > 0 && (
-            <Table columns={columns} dataSource={secrets} bordered={true} />
+            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.name) } } }} />
           )}
           {secrets.length === 0 && <EmptyState />}
           {secretModalVisible && (
