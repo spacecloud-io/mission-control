@@ -558,6 +558,15 @@ const AddDeploymentForm = props => {
             <React.Fragment>{formItemsPorts}</React.Fragment>
             <Collapse className="deployment-collapse" bordered={false}>
               <Panel header="Advanced" key="1">
+              <FormItemLabel name="Image pull policy" />
+                <Form.Item>
+                  {getFieldDecorator("pullPolicy", {
+                    initialValue: initialValues ? initialValues.pullPolicy : "always"
+                  })(<Select style={{ width: 175 }}> 
+                  <Select.Option value="always">Always</Select.Option>
+                  <Select.Option value="if-does-not-exits">If does not exits</Select.Option>
+                  </Select>)}
+                </Form.Item>
                 <FormItemLabel
                   name="Resources"
                   description="The resources to provide to each instance of the service"
