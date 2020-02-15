@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./add-deployment-form.css";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import RadioCard from "../radio-card/RadioCard";
@@ -19,7 +19,8 @@ import {
   Button,
   Icon,
   Collapse,
-  InputNumber
+  InputNumber,
+  Alert
 } from "antd";
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -30,7 +31,12 @@ let white = 1;
 let upstreams = 1;
 const AddDeploymentForm = props => {
   const { initialValues, projectId, dockerSecrets, secrets } = props;
-  const { getFieldDecorator, getFieldValue, setFieldsValue } = props.form;
+  const {
+    getFieldDecorator,
+    getFieldValue,
+    getFieldsValue,
+    setFieldsValue
+  } = props.form;
 
   const handleSubmitClick = e => {
     e.preventDefault();
@@ -80,6 +86,7 @@ const AddDeploymentForm = props => {
     });
   };
 
+
   getFieldDecorator("keys", {
     initialValue: initialValues
       ? initialValues.ports.map((_, index) => index)
@@ -98,6 +105,7 @@ const AddDeploymentForm = props => {
           })(
             <Select style={{ width: 120 }}>
               <Option value="http">HTTP</Option>
+              <Option value="tcp">TCP</Option>
             </Select>
           )}
         </Form.Item>
@@ -388,6 +396,10 @@ const AddDeploymentForm = props => {
     </Row>
   ));
 
+  const doesPortsContainsTCP = getFieldsValue(
+    keys.map(k => `ports[${k}].protocol`)
+  ).ports.some(obj => obj.protocol === "tcp");
+
   const modalProps = {
     className: "edit-item-modal",
     visible: props.visible,
@@ -535,6 +547,14 @@ const AddDeploymentForm = props => {
               )}
             </React.Fragment>
             <FormItemLabel name="Ports" />
+            {doesPortsContainsTCP && (
+              <Alert
+                message={<span><b>Note:</b> Tcp services do not autoscale as of now</span>}
+                type="warning"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )}
             <React.Fragment>{formItemsPorts}</React.Fragment>
             <Collapse className="deployment-collapse" bordered={false}>
               <Panel header="Advanced" key="1">
