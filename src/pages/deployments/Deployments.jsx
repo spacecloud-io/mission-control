@@ -150,7 +150,7 @@ const Deployments = () => {
         upstreams: values.upstreams
       };
       client.deployments
-        .setDeploymentConfig(config)
+        .setDeploymentConfig(projectID, config)
         .then(() => {
           if (type === "add") {
             const newDeployments = [...deployments, config];
