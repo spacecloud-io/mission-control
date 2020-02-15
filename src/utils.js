@@ -76,6 +76,8 @@ export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
   secret: generateId(),
+  AES: generateId(),
+  timeout: "5",
   modules: {
     crud: {},
     eventing: {},

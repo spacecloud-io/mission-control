@@ -7,7 +7,6 @@ import { get, set, increment, decrement } from "automate-redux";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import SecretConfigure from "../../../components/configure/SecretConfigure";
-import EventingConfigure from "../../../components/configure/EventingConfigure";
 import ExportImport from "../../../components/configure/ExportImport";
 import "./project-settings.css";
 import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
@@ -19,6 +18,8 @@ import { dbIcons } from "../../../utils";
 import SettingTabs from "../../../components/settings/SettingTabs";
 import Clusters from "../../../components/configure/Clusters";
 import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
+import AesConfigure from "../../../components/configure/AesConfigure";
+import GraphqlTimeout from "../../../components/configure/GraphqlTimeout";
 
 const ProjectSettings = () => {
   // Router params
@@ -37,6 +38,8 @@ const ProjectSettings = () => {
   // Derived properties
   const projectName = getProjectConfig(projects, projectID, "name");
   const secret = getProjectConfig(projects, projectID, "secret");
+  const aes = getProjectConfig(projects, projectID, "AES");
+  const timeout = getProjectConfig(projects, projectID, "timeout");
   const domains = getProjectConfig(
     projects,
     projectID,
@@ -50,12 +53,50 @@ const ProjectSettings = () => {
     client.projects
       .setProjectGlobalConfig(projectID, {
         secret,
+        aes: aes,
+        timeout: timeout,
         id: projectID,
         name: projectName
       })
       .then(() => {
         setProjectConfig(projectID, "secret", secret);
         notify("success", "Success", "Changed JWT secret successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleAes = AES => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, {
+        AES,
+        secret: secret,
+        timeout: timeout,
+        id: projectID,
+        name: projectName
+      })
+      .then(() => {
+        setProjectConfig(projectID, "AES", AES);
+        notify("success", "Success", "Changed AES Key successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleTimeout = timeout => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, {
+        timeout,
+        secret: secret,
+        aes: aes,
+        id: projectID,
+        name: projectName
+      })
+      .then(() => {
+        setProjectConfig(projectID, "timeout", timeout);
+        notify("success", "Success", "Changed graphQl timeout successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -91,6 +132,8 @@ const ProjectSettings = () => {
         const updatedProjects = projects.map(project => {
           if (project.id === config.id) {
             project.secret = config.secret;
+            project.AES = config.AES;
+            project.timeout = config.timeout;
             project.modules = config.modules;
           }
           return project;
@@ -129,6 +172,12 @@ const ProjectSettings = () => {
           <h2>JWT Secret</h2>
           <div className="divider" />
           <SecretConfigure secret={secret} handleSubmit={handleSecret} />
+          <h2>AES Key</h2>
+          <div className="divider" />
+          <AesConfigure aes={aes} handleSubmit={handleAes} />
+          <h2>GraphQL Timeout</h2>
+          <div className="divider" />
+          <GraphqlTimeout timeout={timeout} handleSubmit={handleTimeout} />
           <h2>Export/Import Project Config</h2>
           <div className="divider" />
           <ExportImport
