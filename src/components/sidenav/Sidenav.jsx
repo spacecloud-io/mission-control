@@ -4,7 +4,7 @@ import SidenavItem from './SidenavItem'
 import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
-import { set, get } from "automate-redux"
+import { set } from "automate-redux"
 import {Collapse, Divider, Icon} from "antd";
 const {Panel} = Collapse;
 

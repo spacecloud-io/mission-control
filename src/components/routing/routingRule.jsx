@@ -7,7 +7,6 @@ const RoutingRule = props => {
   const { getFieldDecorator, getFieldValue } = props.form;
   const initialValues = props.initialValues;
   const children = [];
-  let re = /a-zA-Z/;
   const handleSubmitClick = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
@@ -95,7 +94,7 @@ const RoutingRule = props => {
                       return
                     }
                     if (isNaN(value)) {
-                      cb("Service name cannot contain strings!")
+                      cb("Port value should be a number!")
                     }
                     cb()
                   }
