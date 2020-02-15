@@ -83,24 +83,29 @@ const Secrets = () => {
       className: "column-actions",
       render: (_, record) => {
         return (
-          <span>
+          <span style={{ display: "flex", justifyContent: "inline" }}>
             {record.type === "docker" && (
-              <a onClick={() => handleClickUpdateDockerSecret(record.name)}>
+              <a onClick={(e) => {
+                e.stopPropagation()
+                handleClickUpdateDockerSecret(record.name)
+              }}>
                 Update
               </a>
             )}
             {record.type !== "docker" && (
-              <a onClick={() => handleSecretView(record.name)}>View</a>
-            )}
-            <Popconfirm
-              title={`This will delete the secrets. Are you sure?`}
-              onConfirm={(e) => {
-                handleDeleteSecret(record.name)
+              <a onClick={(e) => {
                 e.stopPropagation()
-              }}
-            >
-              <a style={{ color: "red" }} onClick={e => e.stopPropagation()}>Delete</a>
-            </Popconfirm>
+                handleSecretView(record.name)
+              }}>View</a>
+            )}
+            <div onClick={e => e.stopPropagation()}>
+              <Popconfirm
+                title={`This will delete the secrets. Are you sure?`}
+                onConfirm={() => handleDeleteSecret(record.name)}
+              >
+                <a style={{ color: "red" }}>Delete</a>
+              </Popconfirm>
+            </div>
           </span>
         );
       }

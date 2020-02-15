@@ -78,18 +78,19 @@ const RemoteServices = () => {
       key: 'actions',
       className: 'column-actions',
       render: (_, { name }) => (
-        <span>
+        <span style={{ display: "flex", justifyContent: "inline" }}>
           <a onClick={() => handleViewClick(name)}>View</a>
           <a onClick={(e) => {
             handleEditClick(name)
             e.stopPropagation()
           }}>Edit</a>
-          <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={(e) => {
-            handleDelete(name)
-            e.stopPropagation()
-          }}>
-            <a style={{ color: "red" }} onClick={e => e.stopPropagation()}>Remove</a>
-          </Popconfirm>
+          <div onClick={e => e.stopPropagation()}>
+            <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => {
+              handleDelete(name)
+            }}>
+              <a style={{ color: "red" }}>Remove</a>
+            </Popconfirm>
+          </div>
         </span>
       )
     }
