@@ -7,7 +7,7 @@ const RoutingRule = props => {
   const { getFieldDecorator, getFieldValue } = props.form;
   const initialValues = props.initialValues;
   const children = [];
-
+  let re = /a-zA-Z/;
   const handleSubmitClick = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
@@ -88,8 +88,18 @@ const RoutingRule = props => {
           <FormItemLabel name="Target Port" />
           <Form.Item>
             {getFieldDecorator("targetPort", {
-              rules: [{ required: true, message: "Please provide target service port" }],
-              initialValue: initialValues ? initialValues.targetPort : ""
+              rules: [{ 
+                    validator: (_, value, cb) => {
+                    if (!value) {
+                      cb("Please provide target service port")
+                      return
+                    }
+                    if (isNaN(value)) {
+                      cb("Service name cannot contain strings!")
+                    }
+                    cb()
+                  }
+                }], initialValue: initialValues ? initialValues.targetPort : ""
             })(<Input placeholder="Target port (eg: 8080)" />)}
           </Form.Item>
           <FormItemLabel name="Rewrite" />

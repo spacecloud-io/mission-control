@@ -44,12 +44,17 @@ const Sidenav = (props) => {
       return "2"
     }
   }
+
+  const closeSidenav = () => {
+    store.dispatch(set("uiState.showSidenav", false))
+  }
+
   return (
     <React.Fragment>
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
-    <div className={showSidenav?'sidenav':'no-sidenav'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}>
+    <div className={showSidenav?'sidenav':'no-sidenav'}>
       <div style={{height: "92%", overflowY: "auto"}}>
-        <Link to={`/mission-control/projects/${projectID}/overview`}>
+        <Link to={`/mission-control/projects/${projectID}/overview`} onClick={closeSidenav}>
           <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
         </Link>
         <Collapse 
@@ -58,51 +63,51 @@ const Sidenav = (props) => {
          defaultActiveKey={setActiveKey()}
          expandIcon={({ isActive }) => <Icon type="down" rotate={isActive ? 180 : 0}/>}>
           <Panel header={<Header name="Storage" icon="dns"/>} key="1">
-            <Link to={`/mission-control/projects/${projectID}/database`}>
+            <Link to={`/mission-control/projects/${projectID}/database`} onClick={closeSidenav}>
               <PanelItem name="Database" active={props.selectedItem === 'database'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/file-storage`}>
+            <Link to={`/mission-control/projects/${projectID}/file-storage`} onClick={closeSidenav}>
               <PanelItem name="File Store" active={props.selectedItem === 'file-storage'} />
             </Link>
           </Panel>
           <Panel header={<Header name="Microservices" icon="widgets"/>} key="2">
-            <Link to={`/mission-control/projects/${projectID}/remote-services`}>
+            <Link to={`/mission-control/projects/${projectID}/remote-services`} onClick={closeSidenav}>
               <PanelItem name="GraphQL API" active={props.selectedItem === 'remote-services'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/eventing/overview`}>
+            <Link to={`/mission-control/projects/${projectID}/eventing/overview`} onClick={closeSidenav}>
               <PanelItem name="Eventing" active={props.selectedItem === 'eventing'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/deployments`}>
+            <Link to={`/mission-control/projects/${projectID}/deployments`} onClick={closeSidenav}>
               <PanelItem name="Deployments" active={props.selectedItem === 'deployments'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/secrets`}>
+            <Link to={`/mission-control/projects/${projectID}/secrets`} onClick={closeSidenav}>
               <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
             </Link>
-            <Link to={`/mission-control/projects/${projectID}/routing`}>
+            <Link to={`/mission-control/projects/${projectID}/routing`} onClick={closeSidenav}>
               <PanelItem name="Routing" active={props.selectedItem === 'routing'} />
             </Link>
           </Panel>
         </Collapse>
-        <Link to={`/mission-control/projects/${projectID}/auth`}>
+        <Link to={`/mission-control/projects/${projectID}/auth`} onClick={closeSidenav}>
           <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/explorer`}>
+        <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
           <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
         </Link>
         <Divider />
-        <Link to={`/mission-control/projects/${projectID}/guides`}>
+        <Link to={`/mission-control/projects/${projectID}/guides`} onClick={closeSidenav}>
           <SidenavItem name="Guides" icon="import_contacts" active={props.selectedItem === 'guides'} />
         </Link>
         <Divider />
-        <Link to={`/mission-control/projects/${projectID}/settings`}>
+        <Link to={`/mission-control/projects/${projectID}/settings`} onClick={closeSidenav}>
           <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/teams`}>
+        <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/billing`}>
+        {/* <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
           <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-        </Link>
+        </Link> */}
         </div>
         <div className="sidenav-version">
           SC v{version}
