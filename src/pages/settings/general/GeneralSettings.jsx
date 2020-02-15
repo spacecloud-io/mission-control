@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import SettingTabs from '../../../components/settings/SettingTabs'
 import { useParams } from 'react-router-dom';
 import { Card, Button, Table, Popconfirm } from 'antd';
+import ReactGA from 'react-ga';
 import { useDispatch } from 'react-redux';
 import AddClusterForm from '../../../components/settings/AddClusterForm'
 import './General.css'
@@ -17,8 +18,11 @@ import construction from "../../../assets/construction.svg"
 
 function GeneralSettings() {
     const { projectID, selectedDB } = useParams()
-
     const dispatch = useDispatch()
+
+    useEffect(() => {
+		ReactGA.pageview("/projects/settings/general");
+    }, [])
 
     const [modalVisible, setModalVisibile] = useState(false)
     const [nameCopy, setNameCopy] = useState("copy")

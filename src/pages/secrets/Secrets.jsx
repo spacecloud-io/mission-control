@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import security from "../../assets/security.svg";
 import { Button, Table, Popconfirm } from "antd";
+import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
 import { getSecretType, getProjectConfig, setProjectConfig } from "../../utils";
@@ -23,6 +24,11 @@ const Secrets = () => {
     false
   );
   const [secretNameClicked, setSecretNameClicked] = useState("");
+
+
+  useEffect(() => {
+		ReactGA.pageview("/projects/secrets");
+  }, [])
 
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {

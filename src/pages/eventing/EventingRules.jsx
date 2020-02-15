@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { useParams } from "react-router-dom";
@@ -6,6 +6,7 @@ import { Button } from "antd";
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from 'automate-redux'
 import { set, get } from 'automate-redux';
+import ReactGA from 'react-ga';
 import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType } from '../../utils';
 import client from '../../client';
 import store from '../../store';
@@ -17,6 +18,10 @@ import securitySvg from '../../assets/security.svg';
 const EventingRules = () => {
     const { projectID } = useParams()
   
+    useEffect(() => {
+      ReactGA.pageview("/projects/eventing/rules");
+    }, [])
+
     // Global state
     const projects = useSelector(state => state.projects)
     const selectedEvent = useSelector(state => state.uiState.selectedEvent)

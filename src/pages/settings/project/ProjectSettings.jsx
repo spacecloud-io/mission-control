@@ -25,7 +25,7 @@ const ProjectSettings = () => {
   const { projectID, selectedDB } = useParams();
 
   useEffect(() => {
-    ReactGA.pageview("/projects/configure");
+    ReactGA.pageview("/projects/settings/project");
   }, []);
 
   const dispatch = useDispatch();

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, increment, decrement, set } from 'automate-redux';
+import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -54,6 +55,7 @@ const Overview = () => {
 
 
   useEffect(() => {
+    ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
   }, [projectID, selectedDB])
 

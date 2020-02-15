@@ -20,7 +20,7 @@ const UserManagement = () => {
   const { projectID } = useParams()
 
   useEffect(() => {
-    ReactGA.pageview("/projects/user-management");
+    ReactGA.pageview("/projects/auth");
   }, [])
 
   const dispatch = useDispatch()

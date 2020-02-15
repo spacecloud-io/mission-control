@@ -5,12 +5,17 @@ import { useParams, useHistory } from 'react-router-dom';
 import { dbEnable } from '../dbActions';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { Icon, Row, Col, Button } from 'antd';
+import ReactGA from 'react-ga'
 
 import '../database.css';
 
 const AddDb = () => {
     const { projectID } = useParams()
     const history = useHistory()
+
+    useEffect(() => {
+        ReactGA.pageview("/projects/database/add-db");
+    }, [])
 
     return (
         <React.Fragment>
