@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { increment, decrement } from "automate-redux"
 import client from "../../client"
 import { getProjectConfig, setProjectConfig, notify } from "../../utils"
-
+import ReactGA from 'react-ga';
 import { Button, Table, Popconfirm, Icon } from "antd"
 import EndpointForm from "../../components/remote-services/endpoint-form/EndpointForm"
 import Topbar from "../../components/topbar/Topbar"
@@ -37,9 +37,12 @@ const ServiceTopBar = ({ projectID, serviceName }) => {
 const RemoteService = () => {
   // Router params
   const { projectID, serviceName } = useParams()
-
   const dispatch = useDispatch()
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/remote-services");
+  }, [])
+  
   // Global state
   const projects = useSelector(state => state.projects)
 

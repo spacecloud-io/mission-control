@@ -44,7 +44,7 @@ const EventingOverview = () => {
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
 	useEffect(() => {
-		ReactGA.pageview("/projects/eventing");
+		ReactGA.pageview("/projects/eventing/overview");
 	}, [])
 
 	// Handlers

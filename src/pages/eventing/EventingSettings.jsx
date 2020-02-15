@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { get, set, increment, decrement } from "automate-redux";
+import ReactGA from 'react-ga';
 import { getProjectConfig, dbIcons, notify, setProjectConfig } from '../../utils';
 import client from '../../client';
 import Topbar from '../../components/topbar/Topbar';
@@ -11,10 +12,13 @@ import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 
 const EventingSettings = () => {
-    const { projectID, selectedDB } = useParams();
-
+    const { projectID } = useParams();
     const dispatch = useDispatch();
 
+    useEffect(() => {
+		ReactGA.pageview("/projects/eventing/settings");
+    }, [])
+    
     // Global state
     const projects = useSelector(state => state.projects);
     

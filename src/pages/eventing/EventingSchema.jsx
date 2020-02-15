@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
+import ReactGA from 'react-ga';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import {
   getProjectConfig,
@@ -20,8 +21,12 @@ import dataModellingSvg from "../../assets/data-modelling.svg";
 
 const EventingSchema = () => {
   // Router params
-  const { projectID, selectedDB } = useParams();
+  const { projectID } = useParams();
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/eventing/schema");
+  }, [])
+  
   // Global state
   const projects = useSelector(state => state.projects);
   const selectedEvent = useSelector(state => state.uiState.selectedEvent);
@@ -166,7 +171,6 @@ const EventingSchema = () => {
               editMode={addColFormInEditMode}
               projectId={projectID}
               customEventTypes={customEventTypes}
-              selectedDB={selectedDB}
               conformLoading={conformLoading}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={handleAddSchema}

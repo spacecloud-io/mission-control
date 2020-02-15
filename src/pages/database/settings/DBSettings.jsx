@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { Button, Divider, Tooltip, Input } from "antd"
+import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -12,6 +13,9 @@ const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/settings");
+  }, [])
   // Global state
   const projects = useSelector(state => state.projects)
 
