@@ -47,7 +47,7 @@ const UserManagement = () => {
     <div className="user-management">
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="user-management" />
+        <Sidenav selectedItem="auth" />
         <div className="page-content">
           <h2>Auth Providers</h2>
           <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
