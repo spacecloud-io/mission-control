@@ -79,7 +79,7 @@ const Rules = () => {
     return <div style={{ marginTop: 24 }}>
       <div className="panel">
         <img src={securitySvg} width="240px" />
-        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/storage/database/securing-apis">View Docs.</a></p>
       </div>
     </div>
   }

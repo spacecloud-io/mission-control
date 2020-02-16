@@ -130,14 +130,14 @@ const EventingSchema = () => {
           >
             Schema lets you manage types and relations
           </p>
-          <a
+          {/* <a
             style={{ marginTop: 4 }}
             target="_blank"
             href="https://docs.spaceuptech.com/essentials/data-modelling"
             className="panel__link"
           >
             <span>View docs</span> <i className="material-icons">launch</i>
-          </a>
+          </a> */}
         </div>
       </div>
     );

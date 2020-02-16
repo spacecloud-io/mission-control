@@ -51,12 +51,12 @@ function Overview() {
             <Descriptions.Item label="Space Cloud URL" span={2} >{spaceCloudURL}<CopyButton value={spaceCloudURL} /></Descriptions.Item>
           </Descriptions>
         </div>
-        <br />
+        {/* <br />
         <h3>Guides</h3>
         <div className="cardContainer">
-          <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql/" target="_blank"><div className="card"><i className="material-icons" id="card">view_carousel</i>Make first DB query</div></a>
-          <a href="https://docs.spaceuptech.com/getting-started/setting-up-project/" target="_blank"><div className="card" id="setup"><i className="material-icons" id="card">star_border</i>Setting up client</div></a>
-        </div>
+          <a href="https://docs.spaceuptech.com/getting-started/quick-start/explore-graphql/" target="_blank"><div className="card"><i className="material-icons" id="card">view_carousel</i>Getting Started</div></a>
+          <a href="https://docs.spaceuptech.com/introduction/setting-up-project/" target="_blank"><div className="card" id="setup"><i className="material-icons" id="card">star_border</i>Setting up client</div></a>
+        </div> */}
       </div>
     </div>
   )
