@@ -1,6 +1,6 @@
 import store from "../../store"
 import { getProjectConfig, setProjectConfig } from "../../utils"
-import { defaultDBRules, eventingSchema } from "../../constants"
+import { defaultDBRules, eventingSchema, defaultEventRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
@@ -65,7 +65,7 @@ export const inspectColSchema = (projectId, dbName, colName) => {
       const colConfig = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}`, { isRealtimeEnabled: false, rules: defaultDBRules })
       colConfig.schema = schema
       setProjectConfig(projectId, `modules.crud.${dbName}.collections.${colName}`, colConfig)
-      setColRule(projectId, dbName, colName, defaultDBRules, false).then(() => resolve()).catch(ex => reject(ex))
+      setColRule(projectId, dbName, colName, {}, false).then(() => resolve()).catch(ex => reject(ex))
     })
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
@@ -173,11 +173,21 @@ export const removeDBConfig = (projectId, aliasName) => {
   })
 }
 
+const setDefaultEventSecurityRule = (projectId, type, rule) => {
+  return new Promise((resolve, reject) => {
+    client.eventing.setSecurityRule(projectId, type, rule).then(() => {
+      setProjectConfig(projectId, "modules.eventing.securityRules.default", rule)
+      resolve()
+    }).catch((ex) => reject(ex))
+  })
+}
+
 const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
-  client.eventTriggers.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
+  client.eventing.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
     .then(() => {
-      setProjectConfig(projectId, "modules.eventing", {enabled: true, dbType: alias, col: 'event_logs'})
+      setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias, col: 'event_logs' })
+      setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
       notify("success", "Success", "Changed eventing config successfully")
     })
     .catch(ex => notify("error", "Error", ex))
@@ -190,7 +200,7 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) 
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
     const dbconfig = getProjectConfig(projects, projectId, `modules.crud`)
-    if(Object.keys(dbconfig).length === 0) {
+    if (Object.keys(dbconfig).length === 0) {
       handleEventingConfig(projects, projectId, aliasName)
     }
     setColRule(projectId, aliasName, "default", rules, type, true)

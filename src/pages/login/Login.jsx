@@ -13,14 +13,14 @@ import loginBg from '../../assets/login.svg'
 
 const Login = () => {
   const isLoading = useSelector(state => state.pendingRequests > 0)
-  const handleSubmit = (user, pass) => {
-    client.login(user, pass).then(token => {
+  const handleSubmit = (user, key) => {
+    client.login(user, key).then(token => {
       localStorage.setItem("token", token)
       handleConfigLogin(token)
     }).catch(ex => notify("error", "Error logging in", ex))
   }
   useEffect(() => {
-    ReactGA.pageview("/");
+    ReactGA.pageview("/login");
   }, [])
   return (
     <div className="login">

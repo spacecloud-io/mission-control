@@ -44,7 +44,8 @@ export const parseDbConnString = conn => {
 export const getProjectConfig = (projects, projectId, path, defaultValue) => {
   const project = projects.find(project => project.id === projectId)
   if (!project) return defaultValue
-  return get(project, path, defaultValue)
+  const returnValue = get(project, path, defaultValue)
+  return (returnValue == undefined || returnValue == null) ? defaultValue : returnValue
 }
 
 export const setProjectConfig = (projectId, path, value) => {
@@ -58,7 +59,7 @@ export const setProjectConfig = (projectId, path, value) => {
   store.dispatch(set("projects", updatedProjects))
 }
 
-const generateId = () => {
+export const generateId = () => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
@@ -131,6 +132,26 @@ export const getFileStorageProviderLabelFromStoreType = (storeType) => {
   }
 }
 
+export const getSecretType = (type, defaultValue) => {
+  let secret = defaultValue
+  if (type) {
+    switch (type) {
+      case "env":
+        secret = "Environment Variables"
+        break;
+      case "docker":
+        secret = "Docker Secret"
+        break;
+      case "file":
+          secret = "File Secret"
+          break;
+      default:
+        secret = "Environment Variables"
+    }
+  }
+  return secret
+}
+
 export const openProject = (projectId) => {
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`
@@ -183,6 +204,18 @@ export const onAppLoad = () => {
     const urlParams = window.location.pathname.split("/")
     if (urlParams.length > 3 && urlParams[3]) {
       lastProjectId = urlParams[3]
+    }
+
+    if (isProd && token) {
+      client.refreshToken(token).then(token => {
+        localStorage.setItem("token", token)
+        handleConfigLogin(token, lastProjectId)
+      }).catch(ex => {
+        console.log("Error refreshing token: ", ex.toString())
+        localStorage.removeItem("token")
+        history.push("/mission-control/login")
+      })
+      return
     }
 
     handleConfigLogin(token, lastProjectId)

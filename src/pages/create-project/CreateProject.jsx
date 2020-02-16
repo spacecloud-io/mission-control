@@ -6,9 +6,8 @@ import { Link } from 'react-router-dom';
 import client from '../../client';
 import store from "../../store"
 import history from "../../history"
-import { generateProjectConfig, notify, setProjectConfig } from '../../utils';
+import { generateProjectConfig, notify } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
-import { dbEnable } from '../database/dbActions'
 
 import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
 import Topbar from '../../components/topbar/Topbar'
@@ -63,7 +62,19 @@ const CreateProject = (props) => {
               <Form>
                 <Form.Item >
                   {getFieldDecorator('projectName', {
-                    rules: [{ required: true, message: 'Please input a project name' }],
+                    rules: [
+                      {
+                        validator: (_, value, cb) => {
+                          if (!value) {
+                            cb("Please input a project name")
+                            return
+                          }
+                          if (value.includes("-") || value.includes(" ") || value.includes("_")) {
+                            cb("Project name cannot contain hiphens, spaces or underscores!")
+                          }
+                          cb()
+                        }
+                      }],
                   })(
                     <Input
                       prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
