@@ -297,7 +297,7 @@ const AddSecret = props => {
                   }
                 ]
               })(
-                <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />
+                <Input placeholder="Example: https://index.docker.io/v1/" />
               )}
             </Form.Item>
           </React.Fragment>

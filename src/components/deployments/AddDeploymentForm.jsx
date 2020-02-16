@@ -502,7 +502,7 @@ const AddDeploymentForm = props => {
                   }
                 ],
                 initialValue: initialValues ? initialValues.dockerImage : ""
-              })(<Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />)}
+              })(<Input placeholder="eg: spaceuptech/basic-service" />)}
             </Form.Item>
             <FormItemLabel name="Docker registry type" />
             <Form.Item>
