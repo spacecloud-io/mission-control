@@ -26,8 +26,8 @@ const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
 						initialValue: dbType
 					})(
 						<Select placeholder="Database" style={{ minWidth: 200 }}>
-							{dbList.map((alias) => (
-								<Select.Option value={alias.dbtype} ><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
+							{dbList.map((db) => (
+								<Select.Option value={db.alias} ><img src={db.svgIconSet} style={{ marginRight: 10 }} />{db.alias}</Select.Option>
 							))}
 						</Select>
 					)}

@@ -112,7 +112,8 @@ const Overview = () => {
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    setDBConfig(projectID, selectedDB, true, conn, false)
+    const dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    setDBConfig(projectID, selectedDB, true, conn, dbType, false)
       .then(() => {
         notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)
         setEditConnModalVisible(false);

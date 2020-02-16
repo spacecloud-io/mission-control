@@ -28,7 +28,8 @@ const Settings = () => {
   // Handlers
   const handleDisable = () => {
     let conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-    setDBConfig(projectID, selectedDB, false, conn)
+    let dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    setDBConfig(projectID, selectedDB, false, conn, dbType)
       .then(() => {
         notify("success", "Success", "Disabled database successfully")
         history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)
