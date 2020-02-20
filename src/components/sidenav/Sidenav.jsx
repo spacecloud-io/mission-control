@@ -5,7 +5,7 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
-import {Collapse, Divider, Icon} from "antd";
+import {Collapse, Divider, Icon, Button} from "antd";
 const {Panel} = Collapse;
 
 const Header = ({name, icon}) => {
@@ -110,7 +110,10 @@ const Sidenav = (props) => {
         </Link> */}
         </div>
         <div className="sidenav-version">
-          SC v{version}
+         <Icon type="info-circle" style={{fontSize:"20px", fontWeight:"700"}} /> 
+         <span className="version-no">Version - {version}</span>
+         <p className="plan">Opensource plan</p>
+         <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>
       </div>
       </div>
     </React.Fragment>
