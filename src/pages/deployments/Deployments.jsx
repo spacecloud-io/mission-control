@@ -117,10 +117,11 @@ const Deployments = () => {
   const handleSubmit = (type, values) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
+      const serviceId = values.id;
+      const version = "v1";
+
       let config = {
-        id: values.id,
         projectId: projectID,
-        version: "v1",
         scale: {
           replicas: 0,
           minReplicas: values.min,
@@ -154,7 +155,7 @@ const Deployments = () => {
         upstreams: values.upstreams
       };
       client.deployments
-        .setDeploymentConfig(projectID, config)
+        .setDeploymentConfig(projectID, serviceId, version, config)
         .then(() => {
           if (type === "add") {
             const newDeployments = [...deployments, config];

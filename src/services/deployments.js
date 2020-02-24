@@ -3,9 +3,9 @@ class Deployments {
     this.client = client
   }
 
-  setDeploymentConfig(projectId, serviceConfig) {
+  setDeploymentConfig(projectId, serviceId, version, serviceConfig) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/runner/${projectId}/services`, serviceConfig)
+      this.client.postJSON(`/v1/runner/${projectId}/services/${serviceId}/${version}`, serviceConfig)
         .then(({status, data}) => {
           if (status !== 200) {
             reject(data.error)

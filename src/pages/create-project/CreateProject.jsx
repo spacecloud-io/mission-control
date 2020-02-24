@@ -39,7 +39,7 @@ const CreateProject = (props) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
         dispatch(increment("pendingRequests"))
-        client.projects.addProject(projectConfig).then(() => {
+        client.projects.addProject(projectConfig.id, projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
           setCurrent(current + 1);
