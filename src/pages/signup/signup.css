@@ -1,0 +1,35 @@
+.dark-background {
+    background-color: #002C39;
+    position: fixed;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.ant-card-body{
+   padding: 0;
+}
+
+.logo {
+    margin-top: 5%;
+}
+
+.card-content{
+    border-radius: 8px;
+    top: 50%;
+    transform: translateY(10%);
+}
+
+@media screen and (max-width: 800px) {
+    .dark-background{
+        background-color: #ffffff;
+    }
+    .logo{
+        display: none;
+    }
+    .ant-card{
+        border: none;
+    }
+}

@@ -1,0 +1,31 @@
+.content {
+    background-color: #FAFAFA;
+    padding: 5%;
+    height: 100%;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.content-title{
+    text-align: center;
+    margin-bottom: 0%;
+    font-weight: bold;
+    font-size: 28px;
+    margin-top: 5%;
+}
+
+.content-tagline{
+    text-align: center;
+    margin-bottom: 8%;
+}
+
+.tools-icon {
+    color: #15CD72;
+    margin-right: 3%;
+    margin-top: 1%;
+}
+
+.list-content{
+    display: flex;
+    margin-bottom: 2%;
+}
