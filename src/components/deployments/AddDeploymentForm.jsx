@@ -560,11 +560,11 @@ const AddDeploymentForm = props => {
               <Panel header="Advanced" key="1">
               <FormItemLabel name="Image pull policy" />
                 <Form.Item>
-                  {getFieldDecorator("pullPolicy", {
-                    initialValue: initialValues ? initialValues.pullPolicy : "always"
+                  {getFieldDecorator("imagePullPolicy", {
+                    initialValue: initialValues ? initialValues.imagePullPolicy : "always"
                   })(<Select style={{ width: 175 }}> 
                   <Select.Option value="always">Always</Select.Option>
-                  <Select.Option value="if-does-not-exits">If does not exits</Select.Option>
+                  <Select.Option value="pull-if-not-exits">If does not exits</Select.Option>
                   </Select>)}
                 </Form.Item>
                 <FormItemLabel
