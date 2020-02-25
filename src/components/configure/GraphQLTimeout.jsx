@@ -1,25 +1,25 @@
 import React from 'react'
 import { Form, Input, Button } from 'antd';
 
-const GraphqlTimeout = ({ form, timeout, handleSubmit }) => {
+const GraphQLTimeout = ({ form, contextTimeout, handleSubmit }) => {
   const { getFieldDecorator } = form;
 
   const handleSubmitClick = e => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(values.timeout);
+        handleSubmit(values.contextTimeout);
       }
     });
   }
   return (
     <div>
-      <p>This key is used by the authorization module in Space Cloud to encrypt security rules</p>
+      <p>The timeout of GraphQL requests in seconds</p>
       <Form>
         <Form.Item>
-          {getFieldDecorator('timeout', {
+          {getFieldDecorator('contextTimeout', {
             rules: [{ required: true, message: 'Please input a time in seconds!' }],
-            initialValue: timeout
+            initialValue: contextTimeout
           })(
             <Input placeholder="Enter time in seconds" />
           )}
@@ -34,4 +34,4 @@ const GraphqlTimeout = ({ form, timeout, handleSubmit }) => {
   )
 }
 
-export default Form.create({})(GraphqlTimeout);
+export default Form.create({})(GraphQLTimeout);

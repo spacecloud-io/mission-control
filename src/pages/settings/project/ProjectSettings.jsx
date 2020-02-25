@@ -11,15 +11,15 @@ import ExportImport from "../../../components/configure/ExportImport";
 import "./project-settings.css";
 import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
 import client from "../../../client";
-import { Button } from "antd";
+import { Button, Row, Col } from "antd";
 import store from "../../../store";
 import history from "../../../history";
 import { dbIcons } from "../../../utils";
 import SettingTabs from "../../../components/settings/SettingTabs";
 import Clusters from "../../../components/configure/Clusters";
 import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
-import AesConfigure from "../../../components/configure/AesConfigure";
-import GraphqlTimeout from "../../../components/configure/GraphqlTimeout";
+import AESConfigure from "../../../components/configure/AESConfigure";
+import GraphQLTimeout from "../../../components/configure/GraphQLTimeout";
 
 const ProjectSettings = () => {
   // Router params
@@ -33,31 +33,26 @@ const ProjectSettings = () => {
 
   // Global state
   const projects = useSelector(state => state.projects);
-  const selectedProject = projects.find(project => project.id === projectID);
+  let selectedProject = projects.find(project => project.id === projectID);
+  if (!selectedProject) selectedProject = {}
 
   // Derived properties
   const projectName = getProjectConfig(projects, projectID, "name");
   const secret = getProjectConfig(projects, projectID, "secret");
-  const aes = getProjectConfig(projects, projectID, "AES");
-  const timeout = getProjectConfig(projects, projectID, "timeout");
+  const aesKey = getProjectConfig(projects, projectID, "aesKey");
+  const contextTimeout = getProjectConfig(projects, projectID, "contextTimeout");
+  const {modules, ...globalConfig} = selectedProject
   const domains = getProjectConfig(
     projects,
     projectID,
     "modules.letsencrypt.domains",
     []
   );
-
   // Handlers
   const handleSecret = secret => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, {
-        secret,
-        aes: aes,
-        timeout: timeout,
-        id: projectID,
-        name: projectName
-      })
+      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { secret: secret }))
       .then(() => {
         setProjectConfig(projectID, "secret", secret);
         notify("success", "Success", "Changed JWT secret successfully");
@@ -66,37 +61,25 @@ const ProjectSettings = () => {
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleAes = AES => {
+  const handleAES = aesKey => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, {
-        AES,
-        secret: secret,
-        timeout: timeout,
-        id: projectID,
-        name: projectName
-      })
+      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { aesKey: aesKey }))
       .then(() => {
-        setProjectConfig(projectID, "AES", AES);
+        setProjectConfig(projectID, "aesKey", aesKey);
         notify("success", "Success", "Changed AES Key successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleTimeout = timeout => {
+  const handleContextTimeout = contextTimeout => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, {
-        timeout,
-        secret: secret,
-        aes: aes,
-        id: projectID,
-        name: projectName
-      })
+      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { contextTimeout: contextTimeout }))
       .then(() => {
-        setProjectConfig(projectID, "timeout", timeout);
-        notify("success", "Success", "Changed graphQl timeout successfully");
+        setProjectConfig(projectID, "contextTimeout", contextTimeout);
+        notify("success", "Success", "Changed GraphQL timeout successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -132,8 +115,8 @@ const ProjectSettings = () => {
         const updatedProjects = projects.map(project => {
           if (project.id === config.id) {
             project.secret = config.secret;
-            project.AES = config.AES;
-            project.timeout = config.timeout;
+            project.aesKey = config.aesKey;
+            project.contextTimeout = config.contextTimeout;
             project.modules = config.modules;
           }
           return project;
@@ -169,21 +152,25 @@ const ProjectSettings = () => {
           className="db-tab-content"
           style={{ paddingTop: 20, paddingBottom: 20 }}
         >
-          <h2>JWT Secret</h2>
-          <div className="divider" />
-          <SecretConfigure secret={secret} handleSubmit={handleSecret} />
-          <h2>AES Key</h2>
-          <div className="divider" />
-          <AesConfigure aes={aes} handleSubmit={handleAes} />
-          <h2>GraphQL Timeout</h2>
-          <div className="divider" />
-          <GraphqlTimeout timeout={timeout} handleSubmit={handleTimeout} />
-          <h2>Export/Import Project Config</h2>
+          <Row>
+            <Col lg={{ span: 12}}>
+              <h2>JWT Secret</h2>
+              <div className="divider" />
+              <SecretConfigure secret={secret} handleSubmit={handleSecret} />
+              <h2>AES Key</h2>
+              <div className="divider" />
+              <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
+              <h2>GraphQL Timeout (in seconds)</h2>
+              <div className="divider" />
+              <GraphQLTimeout contextTimeout={contextTimeout} handleSubmit={handleContextTimeout} />
+            </Col>
+          </Row>
+          {/* <h2>Export/Import Project Config</h2>
           <div className="divider" />
           <ExportImport
             projectConfig={selectedProject}
             importProjectConfig={importProjectConfig}
-          />
+          /> */}
           {/* <h2>Project Clusters</h2>
           <div className="divider" />
           <p>Select clusters on which this project should be deployed.</p>

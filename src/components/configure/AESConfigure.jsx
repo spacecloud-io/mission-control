@@ -1,25 +1,25 @@
 import React from 'react'
 import { Form, Input, Button } from 'antd';
 
-const AesConfigure = ({ form, aes, handleSubmit }) => {
+const AESConfigure = ({ form, aesKey, handleSubmit }) => {
   const { getFieldDecorator } = form;
 
   const handleSubmitClick = e => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(values.aes);
+        handleSubmit(values.aesKey);
       }
     });
   }
   return (
     <div>
-      <p>This key is used by the authorization module in Space Cloud to encrypt security rules</p>
+      <p>This key is used by the security rules in Space Cloud to encrypt/decrypt certain fields</p>
       <Form>
         <Form.Item>
-          {getFieldDecorator('aes', {
+          {getFieldDecorator('aesKey', {
             rules: [{ required: true, message: 'Please input a AES Key!' }],
-            initialValue: aes
+            initialValue: aesKey
           })(
             <Input.Password placeholder="Enter AES Key" />
           )}
@@ -34,4 +34,4 @@ const AesConfigure = ({ form, aes, handleSubmit }) => {
   )
 }
 
-export default Form.create({})(AesConfigure);
+export default Form.create({})(AESConfigure);

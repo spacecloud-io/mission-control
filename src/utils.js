@@ -60,12 +60,14 @@ export const setProjectConfig = (projectId, path, value) => {
 }
 
 export const generateId = () => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
+
+export const encodeBase64 = btoa(generateId());
 
 const getConnString = (dbType) => {
   const connString = defaultDbConnectionStrings[dbType]
@@ -76,8 +78,8 @@ export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
   secret: generateId(),
-  AES: generateId(),
-  timeout: "5",
+  aesKey: encodeBase64,
+  contextTimeout: "5",
   modules: {
     crud: {},
     eventing: {},
