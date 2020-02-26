@@ -4,10 +4,31 @@
 
 .create-project .content {
     top: 64px;
-    left: 0;
+    left: 17%;
     right: 0;
     bottom: 0;
     padding: 80px 16px;
+    background-color: #002c39;
+    position: fixed;
+}
+
+.ant-card{
+    border-radius: 10px;
+}
+
+.ant-steps-item-process > .ant-steps-item-container > 
+.ant-steps-item-content > .ant-steps-item-title {
+    color: #ffffff;
+}
+
+.ant-steps-item-finish > .ant-steps-item-container > 
+.ant-steps-item-content > .ant-steps-item-title{
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.ant-steps-item-wait > .ant-steps-item-container > 
+.ant-steps-item-content > .ant-steps-item-title{
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .create-project .content .project-name {
