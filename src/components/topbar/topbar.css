@@ -78,7 +78,7 @@
     padding: 10px 30px;
 }
 
-.ant-menu-horizontal > .ant-menu-item,
+.topbar .ant-menu-horizontal > .ant-menu-item,
 .ant-menu-horizontal > .ant-menu-item:hover, 
 .ant-menu-horizontal > .ant-menu-submenu:hover, 
 .ant-menu-horizontal > .ant-menu-item-active, 
@@ -95,7 +95,7 @@
     background-color: initial;
 }
 
-.ant-popover{
+.topbar .ant-popover{
     text-align: center;
 }
 

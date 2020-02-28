@@ -111,7 +111,7 @@ const Sidenav = (props) => {
         </div>
         <div className="sidenav-version">
          <Icon type="info-circle" style={{fontSize:"20px", fontWeight:"700"}} /> 
-         <span className="version-no">Version - {version}</span>
+         <span className="version-no">Version - v{version}</span>
          <p className="plan">Opensource plan</p>
          <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>
       </div>

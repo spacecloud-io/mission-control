@@ -39,7 +39,7 @@ const Topbar = (props) => {
           </a>
         </Col>
         <Col md={{ span:12, offset:0 }}>
-          <a href="https://twitter.com/intent/tweet?text=I%20just%20tried%20%23spacecloud%20and%20it%20is%20amazing&original_referer="
+          <a href=" https://twitter.com/intent/tweet?text=Just%20deployed%20%23SpaceCloud%20-%20an%20opensource%20Firebase%20%2B%20Heroku!%20by%20%40SpaceUpTech.%0Ahttps%3A//github.com/spaceuptech/space-cloud%0A%23graphql%20%23webdev"
             target="_blank">
             <img src={twitterIcon} />
             <p style={{marginTop:"20px", color:"rgba(0, 0, 0, 0.65)", fontWeight:"600", fontSize:"14px"}}>Tweet</p>
@@ -86,7 +86,7 @@ const Topbar = (props) => {
             </Menu.Item>
             <Divider type="vertical" style={{height:"40px"}}/>
             <Menu.Item>
-              <Popover content={content} trigger="click" placement="bottom">
+              <Popover content={content} trigger="click" placement="bottomRight">
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
