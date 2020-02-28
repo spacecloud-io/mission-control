@@ -67,8 +67,6 @@ export const generateId = () => {
   });
 }
 
-export const encodeBase64 = btoa(generateId());
-
 const getConnString = (dbType) => {
   const connString = defaultDbConnectionStrings[dbType]
   return connString ? connString : "localhost"
@@ -78,8 +76,8 @@ export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
   secret: generateId(),
-  aesKey: encodeBase64,
-  contextTimeout: "5",
+  aesKey: btoa(generateId()),
+  contextTimeout: 5,
   modules: {
     crud: {},
     eventing: {},

@@ -35,13 +35,14 @@ const ProjectSettings = () => {
   const projects = useSelector(state => state.projects);
   let selectedProject = projects.find(project => project.id === projectID);
   if (!selectedProject) selectedProject = {}
+  const {modules, ...globalConfig} = selectedProject
 
   // Derived properties
-  const projectName = getProjectConfig(projects, projectID, "name");
-  const secret = getProjectConfig(projects, projectID, "secret");
-  const aesKey = getProjectConfig(projects, projectID, "aesKey");
-  const contextTimeout = getProjectConfig(projects, projectID, "contextTimeout");
-  const {modules, ...globalConfig} = selectedProject
+  const projectName = globalConfig.name;
+  const secret = globalConfig.secret
+  const aesKey = globalConfig.aesKey
+  const contextTime = globalConfig.contextTime
+  
   const domains = getProjectConfig(
     projects,
     projectID,
@@ -52,7 +53,7 @@ const ProjectSettings = () => {
   const handleSecret = secret => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { secret: secret }))
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { secret: secret }))
       .then(() => {
         setProjectConfig(projectID, "secret", secret);
         notify("success", "Success", "Changed JWT secret successfully");
@@ -64,7 +65,7 @@ const ProjectSettings = () => {
   const handleAES = aesKey => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { aesKey: aesKey }))
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { aesKey: aesKey }))
       .then(() => {
         setProjectConfig(projectID, "aesKey", aesKey);
         notify("success", "Success", "Changed AES Key successfully");
@@ -73,12 +74,12 @@ const ProjectSettings = () => {
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleContextTimeout = contextTimeout => {
+  const handleContextTime = contextTime => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, Object.assign(globalConfig, {}, { contextTimeout: contextTimeout }))
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { contextTime: contextTime }))
       .then(() => {
-        setProjectConfig(projectID, "contextTimeout", contextTimeout);
+        setProjectConfig(projectID, "contextTime", contextTime);
         notify("success", "Success", "Changed GraphQL timeout successfully");
       })
       .catch(ex => notify("error", "Error", ex))
@@ -116,7 +117,7 @@ const ProjectSettings = () => {
           if (project.id === config.id) {
             project.secret = config.secret;
             project.aesKey = config.aesKey;
-            project.contextTimeout = config.contextTimeout;
+            project.contextTime = config.contextTime;
             project.modules = config.modules;
           }
           return project;
@@ -162,7 +163,7 @@ const ProjectSettings = () => {
               <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
               <h2>GraphQL Timeout (in seconds)</h2>
               <div className="divider" />
-              <GraphQLTimeout contextTimeout={contextTimeout} handleSubmit={handleContextTimeout} />
+              <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
             </Col>
           </Row>
           {/* <h2>Export/Import Project Config</h2>
