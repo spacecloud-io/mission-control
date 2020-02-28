@@ -60,38 +60,6 @@ const CreateDatabase = (props) => {
     <div>
       <Card>
         <p style={{ fontWeight:"bold" }}>Select a database</p>
-        {/* <Row className="db-display">
-          <Col span={2}>
-            <StarterTemplate icon={mongoIcon} onClick={handleMongo}
-              heading="MONGODB" 
-              recommended={false}
-              active={selectedDB === dbTypes.MONGO} />
-          </Col>
-        </Row>
-        <Row className="db-display">
-          <Col span={2}>
-            <StarterTemplate icon={postgresIcon} onClick={handlePostgres}
-              heading="POSTGRESQL" 
-              recommended={false}
-              active={selectedDB === dbTypes.POSTGRESQL} />
-          </Col>
-        </Row>
-        <Row className="db-display">
-          <Col span={2}>
-            <StarterTemplate icon={mysqlIcon} onClick={handleMysql}
-              heading="MYSQL" 
-              recommended={false}
-              active={selectedDB === dbTypes.MYSQL} />
-          </Col>
-        </Row>
-        <Row className="db-display">
-          <Col span={2}>
-            <StarterTemplate icon={sqlserverIcon} onClick={handleSqlServer}
-              heading="SQL SERVER" 
-              recommended={false}
-              active={selectedDB === dbTypes.SQLSERVER} />
-          </Col>
-        </Row> */}
         <Form.Item>
           {getFieldDecorator("dbType", {
             rules: [{ required: true, message: "Please select a database type!" }],
