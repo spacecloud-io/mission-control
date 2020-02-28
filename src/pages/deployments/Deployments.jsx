@@ -85,6 +85,7 @@ const Deployments = () => {
       serviceType: task.runtime,
       dockerImage: task.docker.image,
       dockerSecret: task.docker.secret,
+      imagePullPolicy: task.docker.imagePullPolicy,
       secrets: task.secrets ? task.secrets : [],
       registryType: task.docker.secret ? "private": "public",
       ports: task.ports,
@@ -140,7 +141,8 @@ const Deployments = () => {
             },
             docker: {
               image: values.dockerImage,
-              secret: values.dockerSecret
+              secret: values.dockerSecret,
+              imagePullPolicy: values.imagePullPolicy
             },
             secrets: values.secrets,
             env: values.env
