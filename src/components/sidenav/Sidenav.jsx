@@ -5,7 +5,7 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
-import {Collapse, Divider, Icon} from "antd";
+import {Collapse, Divider, Icon, Button} from "antd";
 const {Panel} = Collapse;
 
 const Header = ({name, icon}) => {
@@ -50,7 +50,7 @@ const Sidenav = (props) => {
   }
 
   return (
-    <React.Fragment>
+    <div className="sidenav-container">
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'}>
       <div style={{height: "92%", overflowY: "auto"}}>
@@ -110,10 +110,13 @@ const Sidenav = (props) => {
         </Link> */}
         </div>
         <div className="sidenav-version">
-          SC v{version}
+         <Icon type="info-circle" style={{fontSize:"20px", fontWeight:"700"}} /> 
+         <span className="version-no">Version - v{version}</span>
+         <p className="plan">Opensource plan</p>
+         <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>
       </div>
       </div>
-    </React.Fragment>
+    </div>
     )
 }
 export default Sidenav;

@@ -50,10 +50,24 @@
   bottom: 0;
   left: 0;
   z-index: 100;
-  font-weight: 700;
-  font-size: 18px;
   padding: 16px;
   border-top: 1px solid #eee;
+  width: 100%;
+}
+
+.version-no{
+  font-weight: 700;
+  font-size: 18px;
+  margin-left: 10%;
+}
+
+.plan{
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 20%;
+}
+
+.sidenav-container .upgrade-btn{
   width: 100%;
 }
 
