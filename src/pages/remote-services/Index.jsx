@@ -111,7 +111,7 @@ const RemoteServices = () => {
         {noOfServices > 0 && (
           <React.Fragment>
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>Remote Services <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-            <Table onRowClick={handleViewClick} columns={tableColumns} dataSource={servicesTableData} onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }} />
+            <Table columns={tableColumns} dataSource={servicesTableData} onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }} />
           </React.Fragment>
         )}
         {modalVisible && <ServiceForm
