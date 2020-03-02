@@ -7,18 +7,19 @@ import { get, set, increment, decrement } from "automate-redux";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import SecretConfigure from "../../../components/configure/SecretConfigure";
-import EventingConfigure from "../../../components/configure/EventingConfigure";
 import ExportImport from "../../../components/configure/ExportImport";
 import "./project-settings.css";
 import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
 import client from "../../../client";
-import { Button } from "antd";
+import { Button, Row, Col } from "antd";
 import store from "../../../store";
 import history from "../../../history";
 import { dbIcons } from "../../../utils";
 import SettingTabs from "../../../components/settings/SettingTabs";
 import Clusters from "../../../components/configure/Clusters";
 import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
+import AESConfigure from "../../../components/configure/AESConfigure";
+import GraphQLTimeout from "../../../components/configure/GraphQLTimeout";
 
 const ProjectSettings = () => {
   // Router params
@@ -32,30 +33,54 @@ const ProjectSettings = () => {
 
   // Global state
   const projects = useSelector(state => state.projects);
-  const selectedProject = projects.find(project => project.id === projectID);
+  let selectedProject = projects.find(project => project.id === projectID);
+  if (!selectedProject) selectedProject = {}
+  const {modules, ...globalConfig} = selectedProject
 
   // Derived properties
-  const projectName = getProjectConfig(projects, projectID, "name");
-  const secret = getProjectConfig(projects, projectID, "secret");
+  const projectName = globalConfig.name;
+  const secret = globalConfig.secret
+  const aesKey = globalConfig.aesKey
+  const contextTime = globalConfig.contextTime
+  
   const domains = getProjectConfig(
     projects,
     projectID,
     "modules.letsencrypt.domains",
     []
   );
-
   // Handlers
   const handleSecret = secret => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, {
-        secret,
-        id: projectID,
-        name: projectName
-      })
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { secret: secret }))
       .then(() => {
         setProjectConfig(projectID, "secret", secret);
         notify("success", "Success", "Changed JWT secret successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleAES = aesKey => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { aesKey: aesKey }))
+      .then(() => {
+        setProjectConfig(projectID, "aesKey", aesKey);
+        notify("success", "Success", "Changed AES Key successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleContextTime = contextTime => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { contextTime: contextTime }))
+      .then(() => {
+        setProjectConfig(projectID, "contextTime", contextTime);
+        notify("success", "Success", "Changed GraphQL timeout successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -91,6 +116,8 @@ const ProjectSettings = () => {
         const updatedProjects = projects.map(project => {
           if (project.id === config.id) {
             project.secret = config.secret;
+            project.aesKey = config.aesKey;
+            project.contextTime = config.contextTime;
             project.modules = config.modules;
           }
           return project;
@@ -126,15 +153,25 @@ const ProjectSettings = () => {
           className="db-tab-content"
           style={{ paddingTop: 20, paddingBottom: 20 }}
         >
-          <h2>JWT Secret</h2>
-          <div className="divider" />
-          <SecretConfigure secret={secret} handleSubmit={handleSecret} />
-          <h2>Export/Import Project Config</h2>
+          <Row>
+            <Col lg={{ span: 12}}>
+              <h2>JWT Secret</h2>
+              <div className="divider" />
+              <SecretConfigure secret={secret} handleSubmit={handleSecret} />
+              <h2>AES Key</h2>
+              <div className="divider" />
+              <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
+              <h2>GraphQL Timeout (in seconds)</h2>
+              <div className="divider" />
+              <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
+            </Col>
+          </Row>
+          {/* <h2>Export/Import Project Config</h2>
           <div className="divider" />
           <ExportImport
             projectConfig={selectedProject}
             importProjectConfig={importProjectConfig}
-          />
+          /> */}
           {/* <h2>Project Clusters</h2>
           <div className="divider" />
           <p>Select clusters on which this project should be deployed.</p>
