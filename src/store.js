@@ -7,7 +7,8 @@ const initialState = {
     pendingRequests: 0,
     uiState: {
         selectedCollection: "",
-        showSidenav: false
+        showSidenav: false,
+        sideNavActiveKeys: ["1", "2"]
     }
 };
 

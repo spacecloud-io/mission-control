@@ -25,8 +25,7 @@ import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import Deployments from "./pages/deployments/Deployments";
 import Explorer from "./pages/explorer/Explorer";
-import ProjectSettings from "./pages/settings/project/ProjectSettings";
-import GeneralSettings from './pages/settings/general/GeneralSettings'
+import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
@@ -55,10 +54,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings"
-          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/general" component={GeneralSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />

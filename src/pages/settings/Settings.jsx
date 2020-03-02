@@ -1,32 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector, useDispatch } from "react-redux";
 import { get, set, increment, decrement } from "automate-redux";
 
-import Sidenav from "../../../components/sidenav/Sidenav";
-import Topbar from "../../../components/topbar/Topbar";
-import SecretConfigure from "../../../components/configure/SecretConfigure";
-import ExportImport from "../../../components/configure/ExportImport";
-import "./project-settings.css";
-import { getProjectConfig, notify, setProjectConfig } from "../../../utils";
-import client from "../../../client";
-import { Button, Row, Col } from "antd";
-import store from "../../../store";
-import history from "../../../history";
-import { dbIcons } from "../../../utils";
-import SettingTabs from "../../../components/settings/SettingTabs";
-import Clusters from "../../../components/configure/Clusters";
-import WhitelistedDomains from "../../../components/configure/WhiteListedDomains";
-import AESConfigure from "../../../components/configure/AESConfigure";
-import GraphQLTimeout from "../../../components/configure/GraphQLTimeout";
+import Sidenav from "../../components/sidenav/Sidenav";
+import Topbar from "../../components/topbar/Topbar";
+import SecretConfigure from "../../components/configure/SecretConfigure";
+import "./settings.css";
+import { getProjectConfig, notify, setProjectConfig } from "../../utils";
+import client from "../../client";
+import { Button, Row, Col, Card } from "antd";
+import store from "../../store";
+import history from "../../history";
+import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
+import AESConfigure from "../../components/configure/AESConfigure";
+import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-const ProjectSettings = () => {
+const Settings = () => {
   // Router params
-  const { projectID, selectedDB } = useParams();
+  const { projectID } = useParams();
 
   useEffect(() => {
-    ReactGA.pageview("/projects/settings/project");
+    ReactGA.pageview("/projects/settings");
   }, []);
 
   const dispatch = useDispatch();
@@ -35,14 +32,28 @@ const ProjectSettings = () => {
   const projects = useSelector(state => state.projects);
   let selectedProject = projects.find(project => project.id === projectID);
   if (!selectedProject) selectedProject = {}
-  const {modules, ...globalConfig} = selectedProject
+  const { modules, ...globalConfig } = selectedProject
+
+  const [nameCopy, setNameCopy] = useState("copy")
+  const [keyCopy, setKeyCopy] = useState("copy")
 
   // Derived properties
   const projectName = globalConfig.name;
   const secret = globalConfig.secret
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
-  
+
+  const copyValue = (e, text) => {
+    e.preventDefault();
+    if (text === "username") {
+      setNameCopy("copied");
+      setTimeout(() => setNameCopy("copy"), 5000);
+    } else {
+      setKeyCopy("copied");
+      setTimeout(() => setKeyCopy("copy"), 5000);
+    }
+  }
+
   const domains = getProjectConfig(
     projects,
     projectID,
@@ -108,26 +119,6 @@ const ProjectSettings = () => {
       .finally(() => store.dispatch(decrement("pendingRequests")));
   };
 
-  const importProjectConfig = (projectID, config) => {
-    dispatch(increment("pendingRequests"));
-    client.projects
-      .setProjectConfig(projectID, config)
-      .then(() => {
-        const updatedProjects = projects.map(project => {
-          if (project.id === config.id) {
-            project.secret = config.secret;
-            project.aesKey = config.aesKey;
-            project.contextTime = config.contextTime;
-            project.modules = config.modules;
-          }
-          return project;
-        });
-        store.dispatch(set("projects", updatedProjects));
-        notify("success", "Success", "Updated project config successfully");
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
-  };
 
   const handleDomains = domains => {
     return new Promise((resolve, reject) => {
@@ -147,55 +138,49 @@ const ProjectSettings = () => {
     <div className="projectSetting-page">
       <Topbar showProjectSelector />
       <Sidenav selectedItem="settings" />
-      <div className="page-content page-content--no-padding">
-        <SettingTabs activeKey="Project Settings" projectID={projectID} />
-        <div
-          className="db-tab-content"
-          style={{ paddingTop: 20, paddingBottom: 20 }}
-        >
-          <Row>
-            <Col lg={{ span: 12}}>
-              <h2>JWT Secret</h2>
-              <div className="divider" />
-              <SecretConfigure secret={secret} handleSubmit={handleSecret} />
-              <h2>AES Key</h2>
-              <div className="divider" />
-              <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
-              <h2>GraphQL Timeout (in seconds)</h2>
-              <div className="divider" />
-              <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
-            </Col>
-          </Row>
-          {/* <h2>Export/Import Project Config</h2>
-          <div className="divider" />
-          <ExportImport
-            projectConfig={selectedProject}
-            importProjectConfig={importProjectConfig}
-          /> */}
-          {/* <h2>Project Clusters</h2>
-          <div className="divider" />
-          <p>Select clusters on which this project should be deployed.</p>
-          <Clusters /> */}
-          <h2>Whitelisted Domains</h2>
-          <div className="divider" />
-          <p>
-            Add domains you want to whitelist for this project. Space cloud will
+      <div className="page-content">
+        <Row>
+          <Col lg={{ span: 12 }}>
+            <h2>Credentials</h2>
+            <Card style={{ display: "flex", justifyContent: "space-between" }}>
+              <h3 style={{ wordSpacing: 6 }}><b>username </b>  username <CopyToClipboard text="username">
+                <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
+              </CopyToClipboard></h3>
+              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text="*************************">
+                <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
+              </CopyToClipboard></h3>
+            </Card>
+            <br />
+            <h2>JWT Secret</h2>
+            <div className="divider" />
+            <SecretConfigure secret={secret} handleSubmit={handleSecret} />
+            <h2>AES Key</h2>
+            <div className="divider" />
+            <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
+            <h2>GraphQL Timeout (in seconds)</h2>
+            <div className="divider" />
+            <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
+            <h2>Whitelisted Domains</h2>
+            <div className="divider" />
+            <p>
+              Add domains you want to whitelist for this project. Space cloud will
             automatically add and renew SSL certificates for these domains{" "}
-          </p>
-          <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
-          <h2>Delete Project</h2>
-          <div className="divider" />
-          <p>
-            Delete this project config. All services running in this project
-            will be stopped and deleted.
-          </p>
-          <Button type="danger" onClick={removeProjectConfig}>
-            Remove
+            </p>
+            <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
+            <h2>Delete Project</h2>
+            <div className="divider" />
+            <p>
+              Delete this project config. All services running in this project
+              will be stopped and deleted.
+             </p>
+            <Button type="danger" onClick={removeProjectConfig}>
+              Remove
           </Button>
-        </div>
+          </Col>
+        </Row>
       </div>
     </div>
   );
 };
 
-export default ProjectSettings;
+export default Settings;
