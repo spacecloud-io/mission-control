@@ -11,6 +11,7 @@
     "codemirror-graphql": "^0.11.2",
     "customize-cra": "^0.2.13",
     "dot-prop-immutable": "^1.5.0",
+    "firebase": "^7.9.3",
     "graphiql": "^0.14.2",
     "graphql": "^14.5.4",
     "jsonwebtoken": "^8.5.1",

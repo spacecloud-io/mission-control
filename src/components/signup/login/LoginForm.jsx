@@ -39,7 +39,7 @@ const LoginForm = (props) => {
                         )(<Input placeholder="Email" />)}
                     </Form.Item>
                     <Form.Item>
-                        {getFieldDecorator('password', { 
+                        {getFieldDecorator('key', { 
                             rules: [{ required: true, message:"Please enter your password" }] } 
                         )(<Input.Password placeholder="Password" />)}
                     </Form.Item>

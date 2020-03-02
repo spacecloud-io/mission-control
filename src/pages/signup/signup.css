@@ -8,15 +8,15 @@
     text-align: center;
 }
 
-.ant-card-body{
+.dark-background .ant-card-body{
    padding: 0;
 }
 
-.logo {
+.dark-background .logo {
     margin-top: 5%;
 }
 
-.card-content{
+.dark-background .card-content{
     border-radius: 8px;
     top: 50%;
     transform: translateY(10%);
@@ -26,10 +26,10 @@
     .dark-background{
         background-color: #ffffff;
     }
-    .logo{
+    .dark-background .logo{
         display: none;
     }
-    .ant-card{
+    .dark-background .ant-card{
         border: none;
     }
 }

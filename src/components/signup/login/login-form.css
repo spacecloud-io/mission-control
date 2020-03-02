@@ -6,15 +6,15 @@
     border-bottom-right-radius: 8px;
 }
 
-.login-btn {
+.login-content .login-btn {
     width: 100%;
 }
 
-.title{
+.login-content .title{
     color: #ff6700;
     margin-bottom: 8%;
 }
 
-.divider{
+.login-content .divider{
     margin-bottom: 5%;
 }

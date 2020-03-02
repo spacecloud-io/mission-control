@@ -6,15 +6,15 @@
     border-bottom-right-radius: 8px;
 }
 
-.signup-btn {
+.signup-content .signup-btn {
     width: 100%;
 }
 
-.title{
+.signup-content .title{
     color: #ff6700;
     margin-bottom: 8%;
 }
 
-.divider{
+.signup-content .divider{
     margin-bottom: 5%;
 }

@@ -5,7 +5,7 @@ import history from "./history";
 
 import Home from "./pages/home/Home";
 import Signup from "./pages/signup/Signup";
-import Login from "./pages/login/Login";
+import EmailVerification from "./pages/signup/EmailVerification";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
@@ -43,6 +43,7 @@ export default () => {
           component={() => <Redirect to={"/mission-control"} />} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/signup" component={Signup} />
+        <Route exact path="/mission-control/email-verification" component={EmailVerification} />
         <Route exact path="/mission-control/login" component={Signup} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
         <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />

@@ -10,6 +10,8 @@ import client from "./client"
 import history from "./history"
 import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -191,7 +193,7 @@ export const handleConfigLogin = (token, lastProjectId) => {
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(({isProd, version}) => {
+  client.fetchEnv().then(({enterprise, isProd, version}) => {
     const token = localStorage.getItem("token")
     localStorage.getItem("isProd", isProd.toString())
     store.dispatch(set("version", version))
@@ -206,10 +208,15 @@ export const onAppLoad = () => {
       lastProjectId = urlParams[3]
     }
 
-    if (isProd && token) {
+    if (enterprise || isProd && token) {
       client.refreshToken(token).then(token => {
         localStorage.setItem("token", token)
-        handleConfigLogin(token, lastProjectId)
+        let emailVerify = firebase.auth().currentUser.emailVerified;
+        if(enterprise && !emailVerify){
+          history.push('/mission-control/email-verification')
+        }else{
+          handleConfigLogin(token, lastProjectId)
+        }
       }).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
@@ -222,6 +229,18 @@ export const onAppLoad = () => {
   })
 }
 
+export const postAuthentication = (token) => {
+  let lastProjectId = null
+    const urlParams = window.location.pathname.split("/")
+    if (urlParams.length > 3 && urlParams[3]) {
+      lastProjectId = urlParams[3]
+    }
+  client.postLogin({token: token}).then((data) => {
+    handleConfigLogin(data.token, lastProjectId)
+  }).catch((error) =>{
+    console.log(error)
+  })
+}
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
@@ -250,12 +269,24 @@ export const dbIcons = (project, projectId, selectedDb) => {
   return svg;
 }
 
+var redirectCondition, redirectUrl;
+switch(redirectCondition){
+  case (localStorage.getItem("enterprise") === "true" && !localStorage.getItem("token")):
+    redirectUrl = '/mission-control/login'
+    break;
+  case (localStorage.getItem("enterprise") === "true" && localStorage.getItem("token") && !firebase.auth().currentUser.emailVerified):
+    redirectUrl = '/mission-control/email-verification'
+    break;
+  case (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")):
+    redirectUrl = '/mission-control/login'
+    break;
+}
 export const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>
-      (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")) ? (
-        <Redirect to={"/mission-control/login"} />
+      redirectCondition ? (
+        <Redirect to={redirectUrl} />
       ) : (
           <Component {...props} />
         )

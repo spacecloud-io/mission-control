@@ -13,7 +13,7 @@ const SignupForm = (props) => {
         e.preventDefault();
         props.form.validateFields((err, values) => {
           if (!err) {
-            props.handleSubmit(values.userName, values.email, values.key);
+            props.handleSubmit(values.name, values.email, values.key);
           }
         });
       };
@@ -44,7 +44,7 @@ const SignupForm = (props) => {
                         )(<Input placeholder="Email" />)}
                     </Form.Item>
                     <Form.Item>
-                        {getFieldDecorator('password', { 
+                        {getFieldDecorator('key', { 
                             rules: [{ required: true, message:"Please enter your password" }] } 
                         )(<Input.Password placeholder="Password" />)}
                     </Form.Item>
