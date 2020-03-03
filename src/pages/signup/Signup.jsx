@@ -16,8 +16,34 @@ import {increment, decrement} from 'automate-redux';
 
 const Signup = () => {
     let match = useRouteMatch();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+    const twitterProvider = new firebase.auth.TwitterAuthProvider();
+    const githubProvider = new firebase.auth.GithubAuthProvider();
     
-    
+    const handleGoogleSignin = () => {
+        firebase.auth().signInWithPopup(googleProvider).then((userInfo) =>{
+            postAuthentication(userInfo.user.refreshToken)
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+
+    const handleTwitterSignin = () => {
+        firebase.auth().signInWithPopup(twitterProvider).then((userInfo) =>{
+            postAuthentication(userInfo.user.refreshToken)
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+
+    const handleGithubSignin = () => {
+        firebase.auth().signInWithPopup(githubProvider).then((userInfo) =>{
+            postAuthentication(userInfo.user.refreshToken)
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+
     const handleSignup = (username, email, password) => {
         store.dispatch(increment("pendingRequests"))
         firebase.auth().createUserWithEmailAndPassword(email, password).then((userInfo) => {
@@ -57,8 +83,16 @@ const Signup = () => {
                             <Content />
                         </Col>
                         <Col lg={{ span:12,offset:0 }} xs={{ span:24 }}>
-                            {match.path === '/mission-control/signup' && <SignupForm handleSubmit={handleSignup} />}
-                            {match.path === '/mission-control/login' && <LoginForm handleSubmit={handleSignin} />}
+                            {match.path === '/mission-control/signup' && 
+                                <SignupForm handleSubmit={handleSignup} 
+                                google={handleGoogleSignin}
+                                twitter={handleTwitterSignin}
+                                github={handleGithubSignin} />}
+                            {match.path === '/mission-control/login' && 
+                                <LoginForm handleSubmit={handleSignin}
+                                google={handleGoogleSignin}
+                                twitter={handleTwitterSignin}
+                                github={handleGithubSignin} />}
                         </Col>
                     </Row>
                 </Card>
