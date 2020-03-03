@@ -32,6 +32,7 @@ import Teams from './pages/teams/Teams';
 import Plans from './pages/plans/Plans';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import Cluster from './pages/clusters/cluster'
 
 export default () => {
   return (
@@ -64,6 +65,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/clusters" component={Cluster} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
