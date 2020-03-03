@@ -62,7 +62,7 @@ const CreateProject = (props) => {
     title: 'Create Project',
     content: <div>
       <Row>
-        <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} md={{ span: 12 }} >
+        <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} md={{ span: 12 }} style={{marginTop:"3%"}}>
           <Card>
               <Form>
                 <p style={{ fontWeight:"bold" }}><b>Name your project</b></p>
@@ -95,7 +95,7 @@ const CreateProject = (props) => {
                   {getFieldDecorator('cluster', {
                     rules: [{ required: true, message: "Please select cluster" }]
                   })( 
-                    <Select mode="multiple">
+                    <Select mode="multiple" placeholder="Select clusters">
                       <Select.Option value="1">cluster 1</Select.Option>
                       <Select.Option value="2">cluster 2</Select.Option>
                       <Select.Option value="3">cluster 3</Select.Option>
@@ -118,7 +118,7 @@ const CreateProject = (props) => {
     title: 'Add Database',
     content: <div>
       <Row>
-        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
+        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{marginTop:"3%"}}>
           <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
         </Col>
       </Row>
@@ -127,7 +127,6 @@ const CreateProject = (props) => {
 
   return (
     <div className="create-project">
-      <Topbar hideActions />
       <Row>
         <Col lg={{ span: 4 }} style={{ textAlign:"center", position:"fixed", top:"40%" }}>
           {current === 0 && <img src={createProject} width="80%" />}
