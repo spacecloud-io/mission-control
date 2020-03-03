@@ -4,6 +4,7 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
     projects: [],
+    serviceRoutes: {},
     pendingRequests: 0,
     uiState: {
         selectedCollection: "",

@@ -23,7 +23,8 @@ import EventingSettings from "./pages/eventing/EventingSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
-import Deployments from "./pages/deployments/Deployments";
+import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
+import DeploymentsRules from "./pages/deployments/rules/DeploymentsRules";
 import Explorer from "./pages/explorer/Explorer";
 import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
@@ -64,7 +65,10 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments"
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/rules" component={DeploymentsRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
