@@ -12,7 +12,7 @@ function RegisterCard(props) {
                 </div>
                 <div align="center" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: "#002C39", height: 40 }}>
                     <div style={{ paddingTop: 10 }}>
-                        <a href="https://www.google.com/" target="_blank">Create a new Cluster</a>
+                        <a href="https://docs.spaceuptech.com/" target="_blank">Create a new Cluster</a>
                     </div>
                 </div>
             </Card>

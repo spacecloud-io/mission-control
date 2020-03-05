@@ -16,7 +16,6 @@ function ClusterCard(props) {
                                 <b>{props.name}</b>
                                 <p>(Kubernetes)</p>
                             </div>
-                            {len === 1 ? (<h3>{`${len} Project in this cluster`}</h3>) : (<h3>{`${len} Projects in this cluster`}</h3>)}
                         </div>
                     ) : (
                             <div>
@@ -25,9 +24,11 @@ function ClusterCard(props) {
                                     <b>{props.name}</b>
                                     <p>(Docker)</p>
                                 </div>
-                                {len === 1 ? (<h3>{`${len} Project in this cluster`}</h3>) : (<h3>{`${len} Projects in this cluster`}</h3>)}
                             </div>
                         )}
+                    {len === 0 ? (<h3>{`No Project in this cluster`}</h3>) : (len === 1 ? (
+                        <h3>{`${len} Project in this cluster`}</h3>
+                    ) : (<h3>{`${len} Projects in this cluster`}</h3>))}
                 </div>
             </Card>
         </div>

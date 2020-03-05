@@ -89,21 +89,29 @@ const Secrets = () => {
       className: "column-actions",
       render: (_, record) => {
         return (
-          <span>
+          <span style={{ display: "flex", justifyContent: "inline" }}>
             {record.type === "docker" && (
-              <a onClick={() => handleClickUpdateDockerSecret(record.name)}>
+              <a onClick={(e) => {
+                e.stopPropagation()
+                handleClickUpdateDockerSecret(record.name)
+              }}>
                 Update
               </a>
             )}
             {record.type !== "docker" && (
-              <a onClick={() => handleSecretView(record.name)}>View</a>
+              <a onClick={(e) => {
+                e.stopPropagation()
+                handleSecretView(record.name)
+              }}>View</a>
             )}
-            <Popconfirm
-              title={`This will delete the secrets. Are you sure?`}
-              onConfirm={() => handleDeleteSecret(record.name)}
-            >
-              <a style={{ color: "red" }}>Delete</a>
-            </Popconfirm>
+            <div onClick={e => e.stopPropagation()}>
+              <Popconfirm
+                title={`This will delete the secrets. Are you sure?`}
+                onConfirm={() => handleDeleteSecret(record.name)}
+              >
+                <a style={{ color: "red" }}>Delete</a>
+              </Popconfirm>
+            </div>
           </span>
         );
       }
@@ -147,7 +155,7 @@ const Secrets = () => {
             </Button>
           </h3>
           {secrets.length > 0 && (
-            <Table columns={columns} dataSource={secrets} bordered={true} />
+            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.name) } } }} />
           )}
           {secrets.length === 0 && <EmptyState />}
           {secretModalVisible && (

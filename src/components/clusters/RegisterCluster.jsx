@@ -4,22 +4,39 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const RegisterCluster = (props) => {
     const { getFieldDecorator } = props.form;
+    const handleSubmitClick = e =>{
+        e.preventDefault();
+        props.form.validateFields((err,values)=>{
+            if(!err){
+                try{
+                    props.handleSubmit(
+                        values.name,
+                        values.username,
+                        values.key,
+                        values.url
+                    )
+                }catch(ex){
+                    console.log(ex);
+                }
+            }
+        })
+    }
     return (
         <Modal
             title="Register Cluster"
             visible={true}
             okText="Add"
             onCancel={props.handleCancel}
-        //onOk={handleSubmit}
+            onOk={handleSubmitClick}
         >
             <Form layout="vertical">
                 <FormItemLabel name="Cluster Name" />
                 <Form.Item>
-                    {getFieldDecorator("Cluster Name", {
+                    {getFieldDecorator("name", {
                         rules: [
                             {
                                 required: true,
-                                message: "Please give suitable name"
+                                message: "name is required"
                             }
                         ]
                     })(
@@ -34,7 +51,7 @@ const RegisterCluster = (props) => {
                         rules: [
                             {
                                 required: true,
-                                message: "Please give suitable username"
+                                message: "username is required"
                             }
                         ]
                     })(
@@ -45,11 +62,11 @@ const RegisterCluster = (props) => {
                 </Form.Item>
                 <FormItemLabel name="Access Key" />
                 <Form.Item>
-                    {getFieldDecorator("Key", {
+                    {getFieldDecorator("key", {
                         rules: [
                             {
                                 required: true,
-                                message: "Please provide Access key"
+                                message: "Access key is required"
                             }
                         ]
                     })(
@@ -64,7 +81,7 @@ const RegisterCluster = (props) => {
                         rules: [
                             {
                                 required: true,
-                                message: "Please give cluster url"
+                                message: "Url is required"
                             }
                         ]
                     })(

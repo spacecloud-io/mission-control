@@ -6,20 +6,36 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 const AddCluster = (props) => {
     const { getFieldDecorator } = props.form;
     const { Option } = Select;
+
+    const handleSubmitClick = e => {
+        e.preventDefault();
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                try {
+                    props.handleSubmit(
+                        values.name
+                    )
+                } catch (ex) {
+                    console.log(ex)
+                }
+            }
+        })
+    }
+
     return (
         <Modal
             title="Add Cluster"
             visible={true}
             okText="Add"
             onCancel={props.handleCancel}
-        //onOk={handleSubmit}
+            onOk={handleSubmitClick}
         >
             <Form layout="vertical">
                 <FormItemLabel name="Select a cluster to add to project" />
                 <Form.Item>
                     {getFieldDecorator("name")(
-                        <Select placeholder="select a cluster">
-                            {props.data.map((data) => (
+                        <Select placeholder="Select a cluster">
+                            {props.clusters.map((data) => (
                                 <Option value={data.id}>{data.id}</Option>
                             ))}
                         </Select>
