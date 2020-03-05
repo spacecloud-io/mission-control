@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
 import { Button, Table, Popconfirm } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
-import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
+import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
 import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
 import client from "../../../client";
 import source_code from "../../../assets/source_code.svg";
@@ -22,15 +22,24 @@ const DeploymentsOverview = () => {
     "modules.deployments.services",
     []
   );
-  const totalSecrets = getProjectConfig(projects, projectID, "modules.secrets", []);
-  const dockerSecrets = totalSecrets.filter(obj => obj.type === "docker").map(obj => obj.name);
-  const secrets = totalSecrets.filter(obj => obj.type !== "docker").map(obj => obj.name);
+  const totalSecrets = getProjectConfig(
+    projects,
+    projectID,
+    "modules.secrets",
+    []
+  );
+  const dockerSecrets = totalSecrets
+    .filter(obj => obj.type === "docker")
+    .map(obj => obj.name);
+  const secrets = totalSecrets
+    .filter(obj => obj.type !== "docker")
+    .map(obj => obj.name);
   const [modalVisibility, setModalVisibility] = useState(false);
-  const [deploymentClicked, setDeploymentClicked] = useState("");
+  const [deploymentClicked, setDeploymentClicked] = useState(null);
 
   useEffect(() => {
     ReactGA.pageview("/projects/deployments/overview");
-  }, [])
+  }, []);
 
   const tableColumns = [
     {
@@ -72,7 +81,7 @@ const DeploymentsOverview = () => {
       className: "column-actions",
       render: (_, { id, version }) => (
         <span>
-          <a onClick={() => handleEditDeploymentClick(id)}>Edit</a>
+          <a onClick={() => handleEditDeploymentClick(id, version)}>Edit</a>
           <Popconfirm
             title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
             onConfirm={() => handleDelete(id, version)}
@@ -104,9 +113,9 @@ const DeploymentsOverview = () => {
       concurrency: obj.scale.concurrency,
       env: task.env
         ? Object.entries(task.env).map(([key, value]) => ({
-          key: key,
-          value: value
-        }))
+            key: key,
+            value: value
+          }))
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams
@@ -114,11 +123,15 @@ const DeploymentsOverview = () => {
   });
 
   const deploymentClickedInfo = deploymentClicked
-    ? data.find(obj => obj.id === deploymentClicked)
+    ? data.find(
+        obj =>
+          obj.id === deploymentClicked.serviceId &&
+          obj.version === deploymentClicked.version
+      )
     : undefined;
 
-  const handleEditDeploymentClick = serviceId => {
-    setDeploymentClicked(serviceId);
+  const handleEditDeploymentClick = (serviceId, version) => {
+    setDeploymentClicked({ serviceId, version });
     setModalVisibility(true);
   };
 
@@ -128,6 +141,8 @@ const DeploymentsOverview = () => {
       const serviceId = values.id;
 
       let config = {
+        id: serviceId,
+        version: values.version,
         projectId: projectID,
         scale: {
           replicas: 0,
@@ -153,8 +168,8 @@ const DeploymentsOverview = () => {
             secrets: values.secrets,
             env: values.env
               ? values.env.reduce((prev, curr) => {
-                return Object.assign({}, prev, { [curr.key]: curr.value });
-              }, {})
+                  return Object.assign({}, prev, { [curr.key]: curr.value });
+                }, {})
               : {},
             runtime: values.serviceType
           }
@@ -174,7 +189,7 @@ const DeploymentsOverview = () => {
             );
           } else {
             const newDeployments = deployments.map(obj => {
-              if (obj.id === config.id) return config;
+              if (obj.id === config.id && obj.version === config.version) return config;
               return obj;
             });
             setProjectConfig(
@@ -195,7 +210,7 @@ const DeploymentsOverview = () => {
     client.deployments
       .deleteDeploymentConfig(projectID, serviceId, version)
       .then(() => {
-        const newDeployments = deployments.filter(obj => obj.id !== serviceId);
+        const newDeployments = deployments.filter(obj => !(obj.id === serviceId && obj.version === version));
         setProjectConfig(
           projectID,
           "modules.deployments.services",
@@ -209,7 +224,7 @@ const DeploymentsOverview = () => {
 
   const handleCancel = () => {
     setModalVisibility(false);
-    setDeploymentClicked("");
+    setDeploymentClicked(null);
   };
 
   return (
@@ -217,7 +232,7 @@ const DeploymentsOverview = () => {
       <Topbar showProjectSelector />
       <Sidenav selectedItem="deployments" />
       <div className="page-content page-content--no-padding">
-        <DeploymentTabs activeKey='overview' projectID={projectID} />
+        <DeploymentTabs activeKey="overview" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           {!data ||
             (data.length === 0 && (
@@ -232,18 +247,18 @@ const DeploymentsOverview = () => {
                     marginRight: 130
                   }}
                 >
-                  Deploy any docker containers to cloud easily in
-                  no time. Space Galaxy deploys your docker containers in a secure service
-                  mesh and provides you with a serverless experience by taking
-                  care of auto scaling, self healing, etc.
-              </p>
+                  Deploy any docker containers to cloud easily in no time. Space
+                  Galaxy deploys your docker containers in a secure service mesh
+                  and provides you with a serverless experience by taking care
+                  of auto scaling, self healing, etc.
+                </p>
                 <Button
                   type="primary"
                   style={{ marginTop: 16 }}
                   onClick={() => setModalVisibility(true)}
                 >
                   Deploy your first container
-              </Button>
+                </Button>
               </div>
             ))}
           {data && data.length !== 0 && (
@@ -251,13 +266,13 @@ const DeploymentsOverview = () => {
               <div style={{ marginBottom: 47 }}>
                 <span style={{ fontSize: 18, fontWeight: "bold" }}>
                   Your Deployments
-              </span>
+                </span>
                 <Button
                   style={{ float: "right" }}
                   onClick={() => setModalVisibility(true)}
                 >
                   Add
-              </Button>
+                </Button>
               </div>
               <Table bordered={true} columns={tableColumns} dataSource={data} />
             </React.Fragment>

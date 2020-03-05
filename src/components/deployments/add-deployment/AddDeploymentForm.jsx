@@ -498,7 +498,7 @@ const AddDeploymentForm = props => {
                     initialValue: initialValues ? initialValues.imagePullPolicy : "always"
                   })(<Select style={{ width: 175 }}>
                     <Select.Option value="always">Always</Select.Option>
-                    <Select.Option value="pull-if-not-exits">If does not exits</Select.Option>
+                    <Select.Option value="pull-if-not-exists">If not present</Select.Option>
                   </Select>)}
                 </Form.Item>
                 <FormItemLabel

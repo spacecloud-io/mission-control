@@ -20,7 +20,7 @@ const RoutingRule = props => {
         delete values["targetKeys"];
         if (!values.allowedHosts) values.allowedHosts = ["*"]
         if (!values.allowedMethods) values.allowedMethods = ["*"]
-        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight) }))
+        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
         const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
         if (weightSum !== 100) {
           message.error("Sum of all the target weights should be 100")
