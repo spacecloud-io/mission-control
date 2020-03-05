@@ -10,7 +10,8 @@ const initialState = {
         selectedCollection: "",
         showSidenav: false,
         sideNavActiveKeys: ["1", "2"]
-    }
+    },
+    clusters: []
 };
 
 // Generate reducers with the initial state and pass it to the redux store
