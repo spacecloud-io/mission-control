@@ -29,7 +29,14 @@ const AddClusters = (props) => {
             <Form layout="vertical">
                 <FormItemLabel name="Select a cluster to add to project" />
                 <Form.Item>
-                    {getFieldDecorator("name")(
+                    {getFieldDecorator("name", {
+                        rules: [
+                            {
+                                required: true,
+                                message: "Please select a cluster"
+                            }
+                        ]
+                    })(
                         <Select placeholder="Select a cluster">
                             {props.clusters.map((data) => (
                                 <Option value={data.id}>{data.id}</Option>
