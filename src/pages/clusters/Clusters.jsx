@@ -117,7 +117,7 @@ const Clusters = () => {
             <div>
                 <Sidenav selectedItem='clusters' />
                 <div className="page-content">
-                    <p style={{ margin: "24px 0px 0px 0px", display: "flex", fontSize: 21, justifyContent: "space-between" }}><p style={{ margin: "24px 0px 0px 0px" }}><strong>Selected Clusters</strong>{" (of this project)"}</p>
+                    <p style={{ margin: "24px 0px 0px 0px", display: "flex", fontSize: 21, justifyContent: "space-between" }}><p style={{ margin: "0px 0px 0px 0px" }}><strong>Selected Clusters</strong>{" (of this project)"}</p>
                         <div>
                             {disabled ? (
                                 <Tooltip placement="topLeft" title="All cluster are added and no cluster to add">
