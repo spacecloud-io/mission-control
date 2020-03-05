@@ -4,20 +4,16 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const RegisterCluster = (props) => {
     const { getFieldDecorator } = props.form;
-    const handleSubmitClick = e =>{
+    const handleSubmitClick = e => {
         e.preventDefault();
-        props.form.validateFields((err,values)=>{
-            if(!err){
-                try{
-                    props.handleSubmit(
-                        values.name,
-                        values.username,
-                        values.key,
-                        values.url
-                    )
-                }catch(ex){
-                    console.log(ex);
-                }
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                props.handleSubmit(
+                    values.name,
+                    values.username,
+                    values.key,
+                    values.url
+                )
             }
         })
     }
@@ -36,7 +32,7 @@ const RegisterCluster = (props) => {
                         rules: [
                             {
                                 required: true,
-                                message: "name is required"
+                                message: "Name is required"
                             }
                         ]
                     })(
@@ -51,7 +47,7 @@ const RegisterCluster = (props) => {
                         rules: [
                             {
                                 required: true,
-                                message: "username is required"
+                                message: "Username is required"
                             }
                         ]
                     })(
@@ -70,7 +66,7 @@ const RegisterCluster = (props) => {
                             }
                         ]
                     })(
-                        <Input
+                        <Input.Password
                             placeholder="Access Key of your cluster admin"
                         />
                     )}

@@ -6,12 +6,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import ClusterCard from '../../components/clusters/ClusterCard'
 import UpgradeCard from '../../components/clusters/UpgradeCard'
 import RegisterCard from '../../components/clusters/RegisterCard'
-import AddCluster from '../../components/clusters/AddClusters'
+import AddClusters from '../../components/clusters/AddClusters'
 import RegisterCluster from '../../components/clusters/RegisterCluster'
 import { useParams } from "react-router-dom";
 import client from '../../client'
 import store from '../../store';
 import { increment, decrement, set, get } from "automate-redux"
+import { notify } from '../../utils'
 
 const Clusters = () => {
 
@@ -22,7 +23,7 @@ const Clusters = () => {
             .then(clusters => {
                 store.dispatch(set(`clusters`, clusters))
             })
-            .catch(err => console.log(err))
+            .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
     }, [])
 
     const clusters = useSelector(state => state.clusters)
@@ -33,6 +34,7 @@ const Clusters = () => {
     const filteredArray = clusters.filter(data => data.projects.every(val => val != projectID))
 
     const registerCluster = (name, username, key, url) => {
+        store.dispatch(increment("pendingRequests"))
         client.clusters.registerCluster(name, username, key, url)
             .then(clusterType => {
                 const newCluster = {
@@ -43,30 +45,35 @@ const Clusters = () => {
                 }
                 const updatedCluster = [...store.getState().clusters, newCluster]
                 store.dispatch(set("clusters", updatedCluster))
+                notify("success", "Success", "Successfully register cluster to this project")
+                setRegisterClusterModalVisible(false)
             })
-            .catch(err => console.log(err))
-            .finally(() => setRegisterClusterModalVisible(false))
+            .catch(ex => notify("error", "Error registering cluster", ex.toString()))
+            .finally(() => store.dispatch(decrement("pendingRequests")))
     }
 
     const addCluster = (name) => {
+        store.dispatch(increment("pendingRequests"))
         client.clusters.addCluster(projectID, name)
             .then(() => {
                 const newList = get(store.getState(), "clusters")
                     .map(data => {
                         if (data.id === name) {
-                            data.projects.push(`${projectID}`)
-                            return data
-                        } else {
+                            data.projects.push(projectID)
                             return data
                         }
+                        return data
                     })
                 store.dispatch(set("clusters", newList))
+                notify("success", "Success", "Successfully Added cluster to this project")
+                setAddClusterModalVisible(false)
             })
-            .catch(err => console.log(err))
-            .finally(() => setAddClusterModalVisible(false))
+            .catch(ex => notify("error", "Error adding cluster", ex.toString()))
+            .finally(() => store.dispatch(decrement("pendingRequests")))
     }
 
     const removeCluster = (name) => {
+        store.dispatch(increment("pendingRequests"))
         client.clusters.removeCluster(projectID, name)
             .then(() => {
                 const newList = get(store.getState(), `clusters`)
@@ -74,13 +81,14 @@ const Clusters = () => {
                         if (data.id === name) {
                             const array = data.projects.filter(id => id !== projectID)
                             return Object.assign({}, data, { projects: array })
-                        } else {
-                            return data
                         }
+                        return data
                     })
                 store.dispatch(set(`clusters`, newList))
+                notify("success", "Success", "Successfully removed cluster from this project")
             })
-            .catch(err => console.log(err))
+            .catch(ex => notify("error", "Error in removing cluster", ex.toString()))
+            .finally(() => store.dispatch(decrement("pendingRequests")))
     }
 
     const columns = [
@@ -99,7 +107,7 @@ const Clusters = () => {
                 return (
                     <span>
                         <Popconfirm
-                            title={`This will remove the cluster. Are you sure?`}
+                            title={"This will remove this project from this cluster"}
                             onConfirm={() => removeCluster(record.id)}
                         >
                             <a style={{ color: "red" }}>Remove</a>
@@ -117,16 +125,16 @@ const Clusters = () => {
             <div>
                 <Sidenav selectedItem='clusters' />
                 <div className="page-content">
-                    <p style={{ margin: "24px 0px 0px 0px", display: "flex", fontSize: 21, justifyContent: "space-between" }}><p style={{ margin: "0px 0px 0px 0px" }}><strong>Selected Clusters</strong>{" (of this project)"}</p>
+                    <p style={{ margin: "24px 0px 0px 0px", display: "flex", fontSize: 21, justifyContent: "space-between" }}><strong>Project Clusters</strong>
                         <div>
                             {disabled ? (
-                                <Tooltip placement="topLeft" title="All cluster are added and no cluster to add">
+                                <Tooltip placement="topLeft" title="All clusters are added to this project. please register a new cluster">
                                     <Button type="primary" disabled={true} onClick={() => setAddClusterModalVisible(true)}>Add</Button>
                                 </Tooltip>
                             ) : (<Button type="primary" disabled={false} onClick={() => setAddClusterModalVisible(true)}>Add</Button>)}
                         </div>
                     </p>
-                    <p style={{ fontSize: 14, paddingBottom: 20 }}>Choose clusters to deploy this project environment on</p>
+                    <p style={{ fontSize: 14, paddingBottom: 20 }}>Clusters on which this project is deployed</p>
                     <div>
                         <Table columns={columns} dataSource={columnTableData} bordered={true} pagination={false} />
                     </div>
@@ -135,7 +143,7 @@ const Clusters = () => {
                         <div style={{ paddingBottom: 20 }}>
                             <Row gutter={[16, 16]}>
                                 <Col span={8}>
-                                    {enterprise ? <RegisterCard popup={setRegisterClusterModalVisible} /> : <UpgradeCard />}
+                                    {enterprise ? <RegisterCard handleClick={() => setRegisterClusterModalVisible(true)} /> : <UpgradeCard />}
                                 </Col>
                                 {clusters.map((data => (
                                     <Col span={8}>
@@ -145,7 +153,7 @@ const Clusters = () => {
                             </Row>
                         </div>
                     </div>
-                    {addClusterModalVisible && <AddCluster
+                    {addClusterModalVisible && <AddClusters
                         handleSubmit={addCluster}
                         handleCancel={() => setAddClusterModalVisible(false)}
                         clusters={filteredArray}

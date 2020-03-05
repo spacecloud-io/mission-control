@@ -9,7 +9,7 @@ function UpgradeCard(props) {
                 <img src={upgradeSvg} />
                 <div>
                     <h3><b>Upgrade for more clusters</b></h3>
-                    <h4>open source plan allows only 1 clusters</h4>
+                    <h4>Open source plan allows only 1 clusters</h4>
                     <Button type="primary" className="upgrade-btn">Upgrade</Button>
                 </div>
             </Card>

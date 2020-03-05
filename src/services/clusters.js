@@ -26,9 +26,9 @@ class Clusters {
                         reject(data.error)
                         return
                     }
-                    resolve(data.type)
+                    resolve(data.clusterType)
                 })
-                .catch(ex => reject(ex.string()))
+                .catch(ex => reject(ex.toString()))
         })
     }
 

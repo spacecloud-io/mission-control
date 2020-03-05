@@ -3,7 +3,7 @@ import { Modal, Form, Input, Select } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
 
-const AddCluster = (props) => {
+const AddClusters = (props) => {
     const { getFieldDecorator } = props.form;
     const { Option } = Select;
 
@@ -11,13 +11,9 @@ const AddCluster = (props) => {
         e.preventDefault();
         props.form.validateFields((err, values) => {
             if (!err) {
-                try {
-                    props.handleSubmit(
-                        values.name
-                    )
-                } catch (ex) {
-                    console.log(ex)
-                }
+                props.handleSubmit(
+                    values.name
+                )
             }
         })
     }
@@ -46,4 +42,4 @@ const AddCluster = (props) => {
     )
 }
 
-export default Form.create({})(AddCluster);
+export default Form.create({})(AddClusters);
