@@ -19,11 +19,13 @@ const Clusters = () => {
     const { projectID } = useParams()
 
     useEffect(() => {
+        store.dispatch(increment("pendingRequests"))
         client.clusters.getClusters()
             .then(clusters => {
                 store.dispatch(set(`clusters`, clusters))
             })
             .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
+            .finally(()=>store.dispatch(decrement("pendingRequests")))
     }, [])
 
     const clusters = useSelector(state => state.clusters)
@@ -45,7 +47,7 @@ const Clusters = () => {
                 }
                 const updatedCluster = [...store.getState().clusters, newCluster]
                 store.dispatch(set("clusters", updatedCluster))
-                notify("success", "Success", "Successfully register cluster to this project")
+                notify("success", "Success", "Successfully registerd cluster to this project")
                 setRegisterClusterModalVisible(false)
             })
             .catch(ex => notify("error", "Error registering cluster", ex.toString()))
@@ -65,7 +67,7 @@ const Clusters = () => {
                         return data
                     })
                 store.dispatch(set("clusters", newList))
-                notify("success", "Success", "Successfully Added cluster to this project")
+                notify("success", "Success", "Successfully added cluster to this project")
                 setAddClusterModalVisible(false)
             })
             .catch(ex => notify("error", "Error adding cluster", ex.toString()))
@@ -128,7 +130,7 @@ const Clusters = () => {
                     <p style={{ margin: "24px 0px 0px 0px", display: "flex", fontSize: 21, justifyContent: "space-between" }}><strong>Project Clusters</strong>
                         <div>
                             {disabled ? (
-                                <Tooltip placement="topLeft" title="All clusters are added to this project. please register a new cluster">
+                                <Tooltip placement="topLeft" title="All clusters are added to this project. Please register a new cluster">
                                     <Button type="primary" disabled={true} onClick={() => setAddClusterModalVisible(true)}>Add</Button>
                                 </Tooltip>
                             ) : (<Button type="primary" disabled={false} onClick={() => setAddClusterModalVisible(true)}>Add</Button>)}

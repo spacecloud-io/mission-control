@@ -4,7 +4,7 @@ import Kubernetes from '../../assets/kubernetes.svg';
 import Docker from '../../assets/docker.svg'
 
 function ClusterCard(props) {
-    const len = props.projects.length ? props.projects.length : 0;
+    const len = props.projects ? props.projects.length : 0;
     return (
         <div align="center" style={{ padding: 8 }}>
             <Card style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)", height: 356 }}>
