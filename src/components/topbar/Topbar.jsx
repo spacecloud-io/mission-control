@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useHistory, Link } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils'
-import { Button, Icon, Select, Menu, Popover, Row, Col, Divider } from 'antd';
+import { Button, Icon, Select, Menu, Popover, Row, Col, Divider, Avatar } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -14,7 +14,10 @@ import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
 
 import logo from '../../assets/logo-black.svg';
-import upLogo from '../../logo.png'
+import upLogo from '../../logo.png';
+import avatarSvg from '../../assets/avatar.svg';
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -47,6 +50,26 @@ const Topbar = (props) => {
       </Row>
     </div>
   );
+
+  const handleLogout = () =>{
+    firebase.auth().signOut().catch(error => console.log(error))
+  } 
+
+  const avatarContent = (
+    <Row className="popContent">
+      <Col lg={{ span:5 }}>
+        <img src={avatarSvg} /> 
+      </Col>
+      <Col lg={{ span:16, offset:2 }}>
+        {/* <h4>{firebase.auth().currentUser.displayName}</h4>
+        <p>{firebase.auth().currentUser.email}</p> */}
+        <h4 style={{ marginBottom:0 }}>Jayesh Choudhary</h4>
+        <p style={{ marginTop:0 }}>jayesh@spaceuptech.com</p>
+        <Button type="primary" onClick={handleLogout}>Logout</Button>
+      </Col>
+    </Row>
+  );
+
   return (
     <div>
       <div className="topbar">
@@ -87,6 +110,12 @@ const Topbar = (props) => {
             <Menu.Item>
               <Popover content={content} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: "center" }}>
                 <img src={heartIcon} />
+              </Popover>
+            </Menu.Item>
+            <Divider type="vertical" style={{height:"40px"}}/>
+            <Menu.Item>
+              <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: "center" }}>
+                <img src={avatarSvg} />
               </Popover>
             </Menu.Item>
           </Menu>

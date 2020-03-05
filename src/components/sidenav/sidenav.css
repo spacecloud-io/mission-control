@@ -75,36 +75,36 @@
   overflow-y: scroll;
 }
 
-.ant-collapse > .ant-collapse-item {
+.sidenav-container .ant-collapse > .ant-collapse-item {
   border: 1;
 }
 
-.ant-collapse-borderless > .ant-collapse-item {
+.sidenav-container .ant-collapse-borderless > .ant-collapse-item {
   border: 0;
 }
 
-.ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header {
+.sidenav-container .ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header {
   padding: 0;
 }
 
-.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+.sidenav-container .ant-collapse > .ant-collapse-item > .ant-collapse-header {
   padding: 0;
 }
 
-.ant-collapse-borderless
+.sidenav-container .ant-collapse-borderless
   > .ant-collapse-item
   > .ant-collapse-content
   > .ant-collapse-content-box {
   padding: 0;
 }
 
-.ant-collapse-content > .ant-collapse-content-box {
+.sidenav-container .ant-collapse-content > .ant-collapse-content-box {
   padding: 0;
 }
-.ant-divider {
+.sidenav-container .ant-divider {
   background: #d9d9d9;
 }
-.ant-divider-horizontal {
+.sidenav-container .ant-divider-horizontal {
   margin: 0;
 }
 
