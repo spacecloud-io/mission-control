@@ -10,7 +10,7 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 import history from '../../history';
 import client from '../../client';
-import {postAuthentication, notify} from '../../utils';
+import {enterpriseSignin, notify} from '../../utils';
 import store from '../../store';
 import {increment, decrement} from 'automate-redux';
 
@@ -22,7 +22,7 @@ const Signup = () => {
     
     const handleGoogleSignin = () => {
         firebase.auth().signInWithPopup(googleProvider).then((userInfo) =>{
-            postAuthentication(userInfo.user.refreshToken)
+            enterpriseSignin(userInfo.user.refreshToken)
         }).catch((error) => {
             console.log(error);
         })
@@ -30,7 +30,7 @@ const Signup = () => {
 
     const handleTwitterSignin = () => {
         firebase.auth().signInWithPopup(twitterProvider).then((userInfo) =>{
-            postAuthentication(userInfo.user.refreshToken)
+            enterpriseSignin(userInfo.user.refreshToken)
         }).catch((error) => {
             console.log(error);
         })
@@ -38,7 +38,7 @@ const Signup = () => {
 
     const handleGithubSignin = () => {
         firebase.auth().signInWithPopup(githubProvider).then((userInfo) =>{
-            postAuthentication(userInfo.user.refreshToken)
+            enterpriseSignin(userInfo.user.refreshToken)
         }).catch((error) => {
             console.log(error);
         })
@@ -61,7 +61,7 @@ const Signup = () => {
         store.dispatch(increment("pendingRequests"))
         firebase.auth().signInWithEmailAndPassword(email, password).then((userInfo) =>{
             if(userInfo.user.emailVerified){
-                postAuthentication(userInfo.user.refreshToken)
+                enterpriseSignin(userInfo.user.refreshToken)
                 notify("success", "Success", "Signup successful")
             }else{
                 history.push("/mission-control/email-verification")

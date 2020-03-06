@@ -39,7 +39,7 @@ class Service {
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
     const token = localStorage.getItem("token")
-    if(token) this.client.setToken(token);
+    if (token) this.client.setToken(token);
   }
 
   setToken(token) {
@@ -84,9 +84,9 @@ class Service {
     })
   }
 
-  postLogin(token) {
+  enterpriseSignin(token) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON('/v1/config/login', token).then(({ status, data }) => {
+      this.client.postJSON('/v1/config/login', { token: token }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return

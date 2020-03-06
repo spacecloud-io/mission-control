@@ -145,8 +145,8 @@ export const getSecretType = (type, defaultValue) => {
         secret = "Docker Secret"
         break;
       case "file":
-          secret = "File Secret"
-          break;
+        secret = "File Secret"
+        break;
       default:
         secret = "Environment Variables"
     }
@@ -169,13 +169,17 @@ export const openProject = (projectId) => {
 }
 
 
-export const handleConfigLogin = (token, lastProjectId) => {
+export const onToken = (token) => {
+  // Save the new token value
   if (token) {
-    client.setToken(token)
+    storeToken(token)
   }
 
-  store.dispatch(increment("pendingRequests"))
+  // Redirect if needed
+  redirectIfNeeded()
 
+  // Fetch projects
+  store.dispatch(increment("pendingRequests"))
   client.projects.getProjects().then(projects => {
     store.dispatch(set("projects", projects))
     if (projects.length === 0) {
@@ -183,41 +187,100 @@ export const handleConfigLogin = (token, lastProjectId) => {
       return
     }
 
-    // Open last project
-    if (!lastProjectId) {
-      lastProjectId = projects[0].id
+    // Decide which project to open
+    let projectToBeOpened = getProjectToBeOpened()
+    if (!projectToBeOpened) {
+      projectToBeOpened = projects[0].id
     }
-    openProject(lastProjectId)
-  }).catch(ex => notify("error", "Could not fetch config", ex))
+
+    openProject(projectToBeOpened)
+  }).catch(ex => notify("error", "Could not fetch projects", ex))
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
+const storeEnv = (enterpriseMode, isProd, version) => {
+  localStorage.setItem("enterprise", enterpriseMode.toString())
+  localStorage.setItem("isProd", isProd.toString())
+  store.dispatch(set("version", version))
+}
+
+const getTokenClaims = (token) => {
+  const temp = token.split(".")
+  const decoded = atob(temp[1])
+  let claims = {}
+  try {
+    const decodedObj = JSON.parse(decoded)
+    claims = decodedObj
+  } catch (error) {
+    console.log("Error decoding token", error)
+  }
+  return claims
+}
+
+const storeToken = (token) => {
+  // Get claims of the token
+  const { email, name, isEmailVerified } = getTokenClaims(token)
+
+  // Save token claims to local storage
+  localStorage.setItem("email", email)
+  localStorage.setItem("name", name)
+  localStorage.setItem("isEmailVerified", isEmailVerified.toString())
+
+  // Save token to local storage and set the token on the API
+  localStorage.setItem("token", token)
+  client.setToken(token)
+}
+
+const shouldRedirect = () => {
+  const enterpriseMode = localStorage.getItem("enterprise") === "true"
+  const enterpriseMode = localStorage.getItem("enterprise") === "true"
+  const productionMode = localStorage.getItem("isProd") === "true"
+  const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
+  const token = localStorage.getItem("token")
+
+
+  if (enterpriseMode && !token) {
+    return { redirect: true, redirectUrl: "/mission-control/signin" }
+  }
+
+  if (enterpriseMode && !isEmailVerified) {
+    return { redirect: true, redirectUrl: "/mission-control/email-verification" }
+  }
+
+  if (productionMode && !token) {
+    return { redirect: true, redirectUrl: "/mission-control/login" }
+  }
+
+  return { redirect: false, redirectUrl: "" }
+}
+
+const redirectIfNeeded = () => {
+  const { redirect, redirectUrl } = shouldRedirect()
+  if (redirect) {
+    history.push(redirectUrl)
+    return
+  }
+}
+
+const getProjectToBeOpened = () => {
+  let projectId = null
+  const urlParams = window.location.pathname.split("/")
+  if (urlParams.length > 3 && urlParams[3]) {
+    projectId = urlParams[3]
+  }
+  return projectId
+}
+
 export const onAppLoad = () => {
-  client.fetchEnv().then(({enterprise, isProd, version}) => {
-    const token = localStorage.getItem("token")
-    localStorage.getItem("isProd", isProd.toString())
-    store.dispatch(set("version", version))
-    if (isProd && !token) {
-      history.push("/mission-control/login")
-      return
-    }
+  client.fetchEnv().then(({ enterprise, isProd, version }) => {
+    // Store env
+    storeEnv(enterprise, isProd, version)
 
-    let lastProjectId = null
-    const urlParams = window.location.pathname.split("/")
-    if (urlParams.length > 3 && urlParams[3]) {
-      lastProjectId = urlParams[3]
-    }
+    // Redirect if needed
+    redirectIfNeeded()
 
-    if (enterprise || isProd && token) {
-      client.refreshToken(token).then(token => {
-        localStorage.setItem("token", token)
-        let emailVerify = firebase.auth().currentUser.emailVerified;
-        if(enterprise && !emailVerify){
-          history.push('/mission-control/email-verification')
-        }else{
-          handleConfigLogin(token, lastProjectId)
-        }
-      }).catch(ex => {
+    if (token) {
+      client.refreshToken(token).then(token => onToken(token)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
         history.push("/mission-control/login")
@@ -225,22 +288,38 @@ export const onAppLoad = () => {
       return
     }
 
-    handleConfigLogin(token, lastProjectId)
+    onToken(token)
   })
 }
 
-export const postAuthentication = (token) => {
-  let lastProjectId = null
-    const urlParams = window.location.pathname.split("/")
-    if (urlParams.length > 3 && urlParams[3]) {
-      lastProjectId = urlParams[3]
-    }
-  client.postLogin({token: token}).then((data) => {
-    handleConfigLogin(data.token, lastProjectId)
-  }).catch((error) =>{
+export const enterpriseSignin = (token) => {
+
+  client.enterpriseSignin(token).then(newToken => onToken(newToken)).catch((error) => {
     console.log(error)
   })
 }
+
+export const PrivateRoute = ({ component: Component, ...rest }) => {
+  const { redirect, redirectUrl } = shouldRedirect()
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        redirect ? (
+          <Redirect to={redirectUrl} />
+        ) : (
+            <Component {...props} />
+          )
+      }
+    />
+  )
+}
+
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+}
+
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
@@ -267,34 +346,4 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
   }
   return svg;
-}
-
-var redirectCondition, redirectUrl;
-switch(redirectCondition){
-  case (localStorage.getItem("enterprise") === "true" && !localStorage.getItem("token")):
-    redirectUrl = '/mission-control/login'
-    break;
-  case (localStorage.getItem("enterprise") === "true" && localStorage.getItem("token") && !firebase.auth().currentUser.emailVerified):
-    redirectUrl = '/mission-control/email-verification'
-    break;
-  case (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")):
-    redirectUrl = '/mission-control/login'
-    break;
-}
-export const PrivateRoute = ({ component: Component, ...rest }) => (
-  <Route
-    {...rest}
-    render={props =>
-      redirectCondition ? (
-        <Redirect to={redirectUrl} />
-      ) : (
-          <Component {...props} />
-        )
-    }
-  />
-)
-
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
