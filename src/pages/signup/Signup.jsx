@@ -88,7 +88,7 @@ const Signup = () => {
                                 google={handleGoogleSignin}
                                 twitter={handleTwitterSignin}
                                 github={handleGithubSignin} />}
-                            {match.path === '/mission-control/login' && 
+                            {match.path === '/mission-control/signin' && 
                                 <LoginForm handleSubmit={handleSignin}
                                 google={handleGoogleSignin}
                                 twitter={handleTwitterSignin}

@@ -233,7 +233,6 @@ const storeToken = (token) => {
 
 const shouldRedirect = () => {
   const enterpriseMode = localStorage.getItem("enterprise") === "true"
-  const enterpriseMode = localStorage.getItem("enterprise") === "true"
   const productionMode = localStorage.getItem("isProd") === "true"
   const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
   const token = localStorage.getItem("token")
@@ -279,6 +278,7 @@ export const onAppLoad = () => {
     // Redirect if needed
     redirectIfNeeded()
 
+    const token = localStorage.getItem("token")
     if (token) {
       client.refreshToken(token).then(token => onToken(token)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
@@ -288,12 +288,11 @@ export const onAppLoad = () => {
       return
     }
 
-    onToken(token)
+    onToken()
   })
 }
 
 export const enterpriseSignin = (token) => {
-
   client.enterpriseSignin(token).then(newToken => onToken(newToken)).catch((error) => {
     console.log(error)
   })
