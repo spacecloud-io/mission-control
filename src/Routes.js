@@ -19,6 +19,7 @@ import FileStorage from "./pages/file-storage/FileStorage";
 import EventingOverview from "./pages/eventing/EventingOverview";
 import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
+import EventingLogs from "./pages/eventing/EventingLogs";
 import EventingSettings from "./pages/eventing/EventingSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
@@ -61,6 +62,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/schema" component={EventingSchema} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/event-logs" component={EventingLogs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/settings" component={EventingSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
