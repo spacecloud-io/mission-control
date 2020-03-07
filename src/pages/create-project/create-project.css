@@ -1,15 +1,18 @@
 .create-project {
     color: rgba(0, 0, 0, 0.87);
-}
-
-.create-project .content {
     top: 0;
-    left: 17%;
+    left: 0;
     right: 0;
     bottom: 0;
-    padding: 150px 16px;
     background-color: #002c39;
     position: fixed;
+}
+
+.create-project--content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .ant-card{
