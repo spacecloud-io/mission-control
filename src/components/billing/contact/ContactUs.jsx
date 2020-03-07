@@ -4,18 +4,20 @@ import FormItemLabel from "../../form-item-label/FormItemLabel"
 
 const ContactUs = (props) => {
     const { getFieldDecorator } = props.form;
-
+    const defaultSubject = props.initialvalues
     return(
     <Modal
     title="Contact us"
     okText="Submit"
     visible={true}
+    onCancel={props.handleCancel}
     >
         <Form layout="vertical">
             <FormItemLabel name="Subject" />
             <Form.Item>
                 {getFieldDecorator('subject', {
-                    rules: [{ required: true, message: 'Please provide a subject' }]
+                    rules: [{ required: true, message: 'Please provide a subject' }],
+                    initialValue: defaultSubject
                 })(
                     <Input className="input" placeholder="What is this about?" />
                 )}

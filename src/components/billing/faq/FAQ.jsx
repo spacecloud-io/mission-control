@@ -2,7 +2,7 @@ import React from 'react';
 import { Collapse, Button } from 'antd';
 
 const {Panel} = Collapse;
-const FAQ = () => {
+const FAQ = (props) => {
     return(
         <div className="faq">
             <Collapse accordion>
@@ -10,13 +10,13 @@ const FAQ = () => {
                     <p>The pro version does not have a free trial as of now. 
                         However, if you want a free trial before subscribing to Pro version, let us know. 
                         We can arrange one for you!</p>
-                    <Button type="primary" ghost>Request free trial</Button>
+                    <Button type="primary" ghost onClick={props.request}>Request free trial</Button>
                 </Panel>
                 <Panel header="Any discounts for startups, NGOs or academic institutes?" key='2'>
                     <p>If you are a small team, we would love to help you! 
                         Get in touch with us and we can figure out an affordable 
                         pricing for you after discussing your use case.</p>
-                    <Button type="primary" ghost>Contact us</Button>
+                    <Button type="primary" ghost onClick={props.discount}>Contact us</Button>
                 </Panel>
                 <Panel header="Can I increase the limits of Pro version" key='3'>
                     <p>Absolutely! Each additional resource will add the following extra costs to your monthly subscription fee:</p>

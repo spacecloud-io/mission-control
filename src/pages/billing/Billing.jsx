@@ -15,8 +15,33 @@ const Billing = () => {
     useEffect(() => {
 		ReactGA.pageview("/projects/plans");
     }, [])
-    const [subscribed, setSubscribed] = useState(true) 
+    const [subscribed, setSubscribed] = useState(false) 
     const [contactModalVisible, setContactModalVisible] = useState(false)
+    const [defaultSubject, setDefaultSubject] = useState("")
+
+    const supportContact = () => {
+        setContactModalVisible(true);
+        setDefaultSubject("");
+    }
+
+    const increaseLimit = () => {
+        setContactModalVisible(true);
+        setDefaultSubject("Increase space cloud pro limit");
+    }
+
+    const requestFreeTrail = () => {
+        setContactModalVisible(true);
+        setDefaultSubject("Request for space cloud pro free trail");
+    }
+
+    const discount = () => {
+        setContactModalVisible(true);
+        setDefaultSubject("Discounts for space cloud pro");
+    }
+
+    const handleCancel = () => {
+        setContactModalVisible(false)
+    }
 
     return (
         <div>
@@ -24,7 +49,7 @@ const Billing = () => {
             <div>
                 <Sidenav selectedItem="billing" />
                 <div className="page-content">
-                    {!subscribed && <h3 style={{ marginBottom:"1%"}}>Upgrade (currently using free plan)</h3>}
+                    {!subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Upgrade <span style={{fontSize:"14px"}}>(currently using free plan)</span></h3>}
                     {subscribed && <h3 style={{ marginBottom:"1%"}}>Plan Details & Support</h3>}
                     <Row>
                         <Col lg={{ span:18}}>
@@ -32,24 +57,26 @@ const Billing = () => {
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
-                                    <PlanDetails />
+                                    <PlanDetails limit={increaseLimit} />
                                 </Col>
                                 <Col lg={{ span:11, offset:2 }}>
-                                    <Support contact={() => setContactModalVisible(true)} />
+                                    <Support contact={supportContact} />
                                 </Col>
                             </Row>}
                         </Col>
                     </Row>
-                    {!subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%"}}>Frequently asked questions</h3>}
-                    {subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%"}}>Invoices</h3>}
+                    {!subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Frequently asked questions</h3>}
+                    {subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Invoices</h3>}
                     <Row>
                         <Col lg={{ span:18 }}>
-                            {!subscribed && <FAQ />}
+                            {!subscribed && <FAQ request={requestFreeTrail} discount={discount} />}
                             {subscribed && <Invoice />}
                         </Col>
                     </Row>
                 </div>
-                {contactModalVisible && <ContactUs />}
+                {contactModalVisible && <ContactUs 
+                    initialvalues={defaultSubject}
+                    handleCancel={handleCancel} />}
             </div>
         </div>
     )

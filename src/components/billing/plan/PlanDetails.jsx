@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Button } from 'antd';
 import crown from '../../../assets/crown.svg'
 
-const PlanDetails = () => {
+const PlanDetails = (props) => {
     return(
         <Card>
             <h1 style={{marginBottom:0}}><b>Space Cloud Pro</b> <img src={crown} style={{marginLeft:"5%"}} /></h1>
@@ -11,7 +11,7 @@ const PlanDetails = () => {
             <p>Database limits: 5 databases</p>
             <p>Project limits: 3 projects</p>
             <p style={{marginBottom:"10%"}}>Cluster limits: 2 clusters</p>
-            <Button type='primary' style={{width:"100%"}}>Increase limits</Button>
+            <Button type='primary' style={{width:"100%"}} onClick={props.limit}>Increase limits</Button>
         </Card>
     );
 }

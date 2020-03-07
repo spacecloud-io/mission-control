@@ -52,7 +52,8 @@ const Topbar = (props) => {
   );
 
   const handleLogout = () =>{
-    firebase.auth().signOut().catch(error => console.log(error))
+      localStorage.clear();
+      history.push('/mission-control/sigin');  
   } 
 
   const avatarContent = (
@@ -61,10 +62,8 @@ const Topbar = (props) => {
         <img src={avatarSvg} /> 
       </Col>
       <Col lg={{ span:16, offset:2 }}>
-        {/* <h4>{firebase.auth().currentUser.displayName}</h4>
-        <p>{firebase.auth().currentUser.email}</p> */}
-        <h4 style={{ marginBottom:0 }}>Jayesh Choudhary</h4>
-        <p style={{ marginTop:0 }}>jayesh@spaceuptech.com</p>
+        <h4>{localStorage.getItem('name')}</h4>
+        <p>{localStorage.getItem('email')}</p>
         <Button type="primary" onClick={handleLogout}>Logout</Button>
       </Col>
     </Row>
@@ -114,7 +113,7 @@ const Topbar = (props) => {
             </Menu.Item>
             <Divider type="vertical" style={{height:"40px"}}/>
             <Menu.Item>
-              <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: "center" }}>
+              <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }}>
                 <img src={avatarSvg} />
               </Popover>
             </Menu.Item>
