@@ -15,8 +15,8 @@ const FilterForm = (props) => {
           const rangeValue = fieldsValue["range-picker"];
           values = {
             ...fieldsValue,
-            start_date: rangeValue[0].utcOffset(0).set({hour:0,minute:0,second:0,millisecond:0}).toISOString(),
-            end_date: rangeValue[1].utcOffset(0).set({hour:23,minute:59,second:59,millisecond:99}).toISOString()
+            startDate: rangeValue[0].toISOString(),
+            endDate: rangeValue[1].toISOString()
           }
         }
         else {

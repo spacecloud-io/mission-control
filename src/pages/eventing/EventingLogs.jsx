@@ -8,6 +8,27 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import FilterForm from "../../components/eventing/FilterForm";
 import './event.css';
 
+const getIconByStatus = (status) => {
+  switch(status){
+    case "processed":
+      return <Icon type="check" style={{color: "#00FF00"}}/>
+    case "failed":
+      return <Icon type="close" style={{color: "red"}}/>
+    default:
+      return <Icon type="hourglass" />
+  }
+}
+
+function isJson(str) {
+  try {
+      JSON.parse(str);
+  } catch (e) {
+    return str;
+  }
+  const jsonObj = JSON.parse(str)
+  return jsonObj;
+}
+
 const data = [
   {
     _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
@@ -17,7 +38,7 @@ const data = [
         response_status_code: 200,
         _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
         invocation_time: new Date(),
-        request_payload: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`,
+        request_payload: `hello world`,
         response_body: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`
       }
     ],
@@ -73,13 +94,9 @@ const data = [
 const columns = [
   { title: 'Event ID', dataIndex: '_id', key: '_id' },
   { title: 'Trigger name', dataIndex: 'rule_name', key: 'rule_name' },
-  { title: 'Invocations', key: 'invocations', render: text => <p>{text.invocations.length}</p> },
-  { title: 'Status', key: 'status', render: text => {
-    if(text.status === "processed") return <Icon type="check" style={{color: "#00FF00"}}/>
-    else if(text.status === "failed") return <Icon type="close" style={{color: "red"}}/>
-    else return <Icon type="hourglass" />
-  } },
-  { title: 'Created at', key: 'date', render:(text) => <p>{new Date(text.event_timestamp).toString()}</p> },
+  { title: 'Invocations', key: 'invocations', render: record => <p>{record.invocations.length}</p> },
+  { title: 'Status', key: 'status', render: record => getIconByStatus(record.status) },
+  { title: 'Created at', key: 'date', render:(record) => <p>{new Date(record.event_timestamp).toString()}</p> },
 ];
 
 const EventingLogs = () => {
@@ -89,8 +106,8 @@ const EventingLogs = () => {
   const [filteredData, setFilteredData] = useState(data);
   
   const expandedInvocations = record => {
-    const requestJSON = JSON.parse(record.request_payload);
-    const responseJSON = JSON.parse(record.response_body);
+    const requestJSON = isJson(record.request_payload);
+    const responseJSON = isJson(record.response_body); 
     return (
       <div>
         <b>Request payload</b><br/>
@@ -105,12 +122,12 @@ const EventingLogs = () => {
 
   const expandedRowRender = record => {
     const columns = [
-      { title: 'Status', key: 'status', render: text => {
-        if(text.response_status_code === 200) return <Icon type="check" style={{color: "#00FF00"}}/>
+      { title: 'Status', key: 'status', render: record => {
+        if(record.response_status_code === 200) return <Icon type="check" style={{color: "#00FF00"}}/>
         else return  <Icon type="close" style={{color: "red"}}/>
       } },
       { title: 'ID', dataIndex: '_id', key: '_id' },
-      { title: 'Date', key: "invocation", render: (text) => <p>{text.invocation_time.toString()}</p>}
+      { title: 'Date', key: "invocation", render: (record) => <p>{record.invocation_time.toString()}</p>}
     ];
 
     return (
@@ -126,6 +143,7 @@ const EventingLogs = () => {
 
   const filterTable = (values) => {
      setFilteredData(data.filter(val => values.status.some(el => el === val.status)))
+     console.log(values)
   }
 
 	return (
