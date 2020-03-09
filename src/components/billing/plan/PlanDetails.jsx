@@ -11,7 +11,7 @@ const PlanDetails = (props) => {
             <p>Database limits: 5 databases</p>
             <p>Project limits: 3 projects</p>
             <p style={{marginBottom:"10%"}}>Cluster limits: 2 clusters</p>
-            <Button type='primary' style={{width:"100%"}} onClick={props.limit}>Increase limits</Button>
+            <Button type='primary' style={{width:"100%"}} onClick={props.handleIncreaseLimit}>Increase limits</Button>
         </Card>
     );
 }

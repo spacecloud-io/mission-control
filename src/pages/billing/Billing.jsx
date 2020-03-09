@@ -19,24 +19,24 @@ const Billing = () => {
     const [contactModalVisible, setContactModalVisible] = useState(false)
     const [defaultSubject, setDefaultSubject] = useState("")
 
-    const supportContact = () => {
+    const handleContactUs = () => {
         setContactModalVisible(true);
         setDefaultSubject("");
     }
 
-    const increaseLimit = () => {
+    const handleIncreaseLimit = () => {
         setContactModalVisible(true);
-        setDefaultSubject("Increase space cloud pro limit");
+        setDefaultSubject("Increase Space Cloud Pro limits");
     }
 
-    const requestFreeTrail = () => {
+    const handleRequestFreeTrial = () => {
         setContactModalVisible(true);
-        setDefaultSubject("Request for space cloud pro free trail");
+        setDefaultSubject("Free trial for Space Cloud Pro");
     }
 
-    const discount = () => {
+    const handleDiscount = () => {
         setContactModalVisible(true);
-        setDefaultSubject("Discounts for space cloud pro");
+        setDefaultSubject("Request discount for Space Cloud Pro");
     }
 
     const handleCancel = () => {
@@ -50,17 +50,17 @@ const Billing = () => {
                 <Sidenav selectedItem="billing" />
                 <div className="page-content">
                     {!subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Upgrade <span style={{fontSize:"14px"}}>(currently using free plan)</span></h3>}
-                    {subscribed && <h3 style={{ marginBottom:"1%"}}>Plan Details & Support</h3>}
+                    {subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Plan Details & Support</h3>}
                     <Row>
                         <Col lg={{ span:18}}>
                             {!subscribed && <UpgradeCard />}
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
-                                    <PlanDetails limit={increaseLimit} />
+                                    <PlanDetails handleIncreaseLimit={handleIncreaseLimit} />
                                 </Col>
                                 <Col lg={{ span:11, offset:2 }}>
-                                    <Support contact={supportContact} />
+                                    <Support handleContactUs={handleContactUs} />
                                 </Col>
                             </Row>}
                         </Col>
@@ -69,7 +69,7 @@ const Billing = () => {
                     {subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Invoices</h3>}
                     <Row>
                         <Col lg={{ span:18 }}>
-                            {!subscribed && <FAQ request={requestFreeTrail} discount={discount} />}
+                            {!subscribed && <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />}
                             {subscribed && <Invoice />}
                         </Col>
                     </Row>

@@ -16,8 +16,6 @@ import twitterIcon from "../../assets/twitterIcon.svg"
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import avatarSvg from '../../assets/avatar.svg';
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -53,7 +51,7 @@ const Topbar = (props) => {
 
   const handleLogout = () =>{
       localStorage.clear();
-      history.push('/mission-control/sigin');  
+      history.push('/mission-control/signin');  
   } 
 
   const avatarContent = (
