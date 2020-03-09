@@ -45,13 +45,24 @@ const SignupForm = (props) => {
                     </Form.Item>
                     <Form.Item>
                         {getFieldDecorator('key', { 
-                            rules: [{ required: true, message:"Please enter your password" }] } 
+                            rules: [{
+                                validator: (_, value, cb) => {
+                                  if (!value) {
+                                    cb("Please enter your password")
+                                    return
+                                  }
+                                  if (value.length < 6 ) {
+                                    cb("Password should be atleast 6 characters long")
+                                  }
+                                  cb()
+                            }
+                         }] } 
                         )(<Input.Password placeholder="Password" />)}
                     </Form.Item>
                     <Button type="primary" className="signup-btn" onClick={handleSubmit}>Signup for free</Button>
                 </Form>
-                <p style={{ marginBottom:"13%" }}>No credit card required</p>
-                <Link to="/mission-control/login">Already have an account? Login</Link>
+                <p style={{ marginBottom:"13%", marginTop:"8px" }}>No credit card required</p>
+                <Link to="/mission-control/signin">Already have an account? Login</Link>
             </Col>
         </Row> 
     );

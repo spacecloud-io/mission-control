@@ -8,7 +8,20 @@
     text-align: center;
 }
 
-.verify-background .verify-card{
-    top: 50%;
-    transform:translateY(100%);
+
+@media screen and (max-width: 800px) {
+   .verify-background{
+       background-color: #ffffff;
+   }
+   .verify-background .verify-card{
+       position: relative;
+   }
 }
+
+@media screen and (min-width: 800px) {
+    .verify-background .verify-card{
+        position: absolute;
+        top: 50%;
+        transform:translateY(-50%);
+    }    
+ }

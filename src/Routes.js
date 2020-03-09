@@ -44,9 +44,9 @@ export default () => {
           component={() => <Redirect to={"/mission-control"} />} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
-        <Route exact path="/mission-control/signup" component={Signup} />
+        <Route exact path="/mission-control/signup" component={() => <Signup checkMethod='signup' />} />
         <Route exact path="/mission-control/email-verification" component={EmailVerification} />
-        <Route exact path="/mission-control/signin" component={Signup} />
+        <Route exact path="/mission-control/signin" component={() => <Signup checkMethod='signin' />} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
         <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
         <PrivateRoute exact path="/mission-control/projects/:projectID"

@@ -45,7 +45,7 @@ const LoginForm = (props) => {
                     </Form.Item>
                     <Button type="primary" className="login-btn" onClick={handleSubmit}>Login</Button>
                 </Form>
-                <p style={{ marginBottom:"13%" }}>No credit card required</p>
+                <p style={{ marginBottom:"13%", marginTop:"8px" }}>No credit card required</p>
                 <Link to="/mission-control/signup">Don’t have an account? Signup</Link>
             </Col>
         </Row> 

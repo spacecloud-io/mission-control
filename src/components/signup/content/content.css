@@ -1,4 +1,4 @@
-.content {
+.des-content {
     background-color: #FAFAFA;
     padding: 5%;
     height: 100%;
@@ -6,7 +6,7 @@
     border-bottom-left-radius: 8px;
 }
 
-.content .content-title{
+.des-content .content-title{
     text-align: center;
     margin-bottom: 0%;
     font-weight: bold;
@@ -14,18 +14,18 @@
     margin-top: 5%;
 }
 
-.content .content-tagline{
+.des-content .content-tagline{
     text-align: center;
     margin-bottom: 8%;
 }
 
-.content .tools-icon {
+.des-content .tools-icon {
     color: #15CD72;
     margin-right: 3%;
     margin-top: 1%;
 }
 
-.content .list-content{
+.des-content .list-content{
     display: flex;
     margin-bottom: 2%;
 }
