@@ -2,10 +2,10 @@ import React from 'react'
 import { Link, useParams } from 'react-router-dom';
 import SidenavItem from './SidenavItem'
 import './sidenav.css'
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
-import {Collapse, Divider, Icon} from "antd";
+import {Collapse, Divider, Icon, Button} from "antd";
 const {Panel} = Collapse;
 
 const Header = ({name, icon}) => {
@@ -33,24 +33,19 @@ const PanelItem = (props) => {
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
+  const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const version = useSelector(state => state.version)
-
-  const setActiveKey = () => {
-    const microservices = ["remote-services", "eventing", "deployments", "secrets", "routing"];
-    if(props.selectedItem === "database" || props.selectedItem === "file-storage"){
-      return "1"
-    }
-    else if(microservices.some(val => val === props.selectedItem)){
-      return "2"
-    }
-  }
 
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
 
+  const setActiveKeys = (activeKeys) => {
+    store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
+  }
+
   return (
-    <React.Fragment>
+    <div className="sidenav-container">
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'}>
       <div style={{height: "92%", overflowY: "auto"}}>
@@ -60,7 +55,8 @@ const Sidenav = (props) => {
         <Collapse 
          bordered={false}
          expandIconPosition="right"
-         defaultActiveKey={setActiveKey()}
+         onChange={setActiveKeys}
+         activeKey={sideNavActiveKeys}
          expandIcon={({ isActive }) => <Icon type="down" rotate={isActive ? 180 : 0}/>}>
           <Panel header={<Header name="Storage" icon="dns"/>} key="1">
             <Link to={`/mission-control/projects/${projectID}/database`} onClick={closeSidenav}>
@@ -91,6 +87,9 @@ const Sidenav = (props) => {
         <Link to={`/mission-control/projects/${projectID}/auth`} onClick={closeSidenav}>
           <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
         </Link>
+        <Link to={`/mission-control/projects/${projectID}/clusters`} onClick={closeSidenav}>
+          <SidenavItem name="Clusters" icon="cloud" active={props.selectedItem === 'clusters'} />
+        </Link>
         <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
           <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
         </Link>
@@ -110,10 +109,13 @@ const Sidenav = (props) => {
         </Link> */}
         </div>
         <div className="sidenav-version">
-          SC v{version}
+         <Icon type="info-circle" style={{fontSize:"20px", fontWeight:"700"}} /> 
+         <span className="version-no">Version - v{version}</span>
+         <p className="plan">Opensource plan</p>
+         <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>
       </div>
       </div>
-    </React.Fragment>
+    </div>
     )
 }
 export default Sidenav;

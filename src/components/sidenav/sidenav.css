@@ -50,10 +50,24 @@
   bottom: 0;
   left: 0;
   z-index: 100;
-  font-weight: 700;
-  font-size: 18px;
   padding: 16px;
   border-top: 1px solid #eee;
+  width: 100%;
+}
+
+.version-no{
+  font-weight: 700;
+  font-size: 18px;
+  margin-left: 10%;
+}
+
+.plan{
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 20%;
+}
+
+.sidenav-container .upgrade-btn{
   width: 100%;
 }
 
@@ -61,30 +75,30 @@
   overflow-y: scroll;
 }
 
-.ant-collapse > .ant-collapse-item {
+.sidenav-container .ant-collapse > .ant-collapse-item {
   border: 1;
 }
 
-.ant-collapse-borderless > .ant-collapse-item {
+.sidenav-container .ant-collapse-borderless > .ant-collapse-item {
   border: 0;
 }
 
-.ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header {
+.sidenav-container .ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header {
   padding: 0;
 }
 
-.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+.sidenav-container .ant-collapse > .ant-collapse-item > .ant-collapse-header {
   padding: 0;
 }
 
-.ant-collapse-borderless
+.sidenav-container .ant-collapse-borderless
   > .ant-collapse-item
   > .ant-collapse-content
   > .ant-collapse-content-box {
   padding: 0;
 }
 
-.ant-collapse-content > .ant-collapse-content-box {
+.sidenav-container .ant-collapse-content > .ant-collapse-content-box {
   padding: 0;
 }
 .ant-divider {

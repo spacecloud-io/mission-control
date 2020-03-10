@@ -8,14 +8,13 @@ import store from "../../store"
 import history from "../../history"
 import { generateProjectConfig, notify } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
-
-import { Row, Col, Button, Form, Input, Icon, Steps, Card } from 'antd'
-import Topbar from '../../components/topbar/Topbar'
+import { Row, Col, Button, Form, Input, Icon, Steps, Card, Select, Alert } from 'antd'
 import './create-project.css'
 
 const CreateProject = (props) => {
   const [selectedDB, setSelectedDB] = useState("mongo");
   const [current, setCurrent] = useState(0);
+  const [stepImg, setStepImg] = useState("create project");
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -39,7 +38,7 @@ const CreateProject = (props) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
         dispatch(increment("pendingRequests"))
-        client.projects.addProject(projectConfig).then(() => {
+        client.projects.addProject(projectConfig.id, projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
           setCurrent(current + 1);
@@ -50,66 +49,84 @@ const CreateProject = (props) => {
     });
   };
 
+  const alertMsg = <div>
+    <span style={{ fontWeight: "bold" }}>Help:</span> Can’t find your cluster above?</div>
+
+  const alertDes = <div>Don’t worry you can <Link>add an existing cluster</Link> to your
+    project or <Link>create a new one from scratch</Link>.</div>
+
   const steps = [{
     title: 'Create Project',
     content: <div>
       <Row>
-        <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} md={{ span: 12 }} >
+        <Col sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <Card>
-            <center>Create Project</center>
-            <div className="label-spacing">
-              <p>Project name</p>
-              <Form>
-                <Form.Item >
-                  {getFieldDecorator('projectName', {
-                    rules: [
-                      {
-                        validator: (_, value, cb) => {
-                          if (!value) {
-                            cb("Please input a project name")
-                            return
-                          }
-                          if (value.includes("-") || value.includes(" ") || value.includes("_")) {
-                            cb("Project name cannot contain hiphens, spaces or underscores!")
-                          }
-                          cb()
+            <Form>
+              <p style={{ fontWeight: "bold" }}><b>Name your project</b></p>
+              <Form.Item >
+                {getFieldDecorator('projectName', {
+                  rules: [
+                    {
+                      validator: (_, value, cb) => {
+                        if (!value) {
+                          cb("Please input a project name")
+                          return
                         }
-                      }],
-                  })(
-                    <Input
-                      prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                      placeholder="Project name" />,
-                  )}
-                  <br />
-                  {projectID && <span className="hint">ProjectID: {projectID}</span>}
-                </Form.Item>
-              </Form>
-            </div>
-            <Button type="primary" onClick={handleSubmit} className="project-btn">Create Project</Button>
+                        if (value.includes("-") || value.includes(" ") || value.includes("_")) {
+                          cb("Project name cannot contain hiphens, spaces or underscores!")
+                        }
+                        cb()
+                      }
+                    }],
+                })(
+                  <Input
+                    prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                    placeholder="Project name" />,
+                )}
+                <br />
+                {projectID && <span className="hint">ProjectID: {projectID}</span>}
+              </Form.Item>
+              <p style={{ marginBottom: 0, fontWeight: "bold" }}>Clusters</p>
+              <label style={{ marginTop: 0, fontSize: "12px" }}>Each project requires atleast one Space Cloud cluster to run</label>
+              <Form.Item>
+                {getFieldDecorator('cluster', {
+                  rules: [{ required: true, message: "Please select cluster" }]
+                })(
+                  <Select mode="multiple" placeholder="Select clusters">
+                    <Select.Option value="1">cluster 1</Select.Option>
+                    <Select.Option value="2">cluster 2</Select.Option>
+                    <Select.Option value="3">cluster 3</Select.Option>
+                  </Select>
+                )}
+              </Form.Item>
+              <Alert message={alertMsg}
+                description={alertDes}
+                type="info"
+                showIcon />
+            </Form>
+            <Button type="primary" onClick={handleSubmit} className="project-btn">Create project</Button>
           </Card><br />
         </Col>
       </Row>
-      <center><Link to="/mission-control/welcome">Cancel</Link></center>
+      <center><Link to="/mission-control/welcome" style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</Link></center>
     </div>
   },
   {
     title: 'Add Database',
     content: <div>
       <Row>
-        <Col lg={{ span: 15, offset: 5 }} sm={{ span: 24 }} >
+        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
         </Col>
       </Row>
-      <center className="skip-link"><Link to={`/mission-control/projects/${projectId}/overview`} >Skip for now</Link></center>
     </div>
   }];
 
   return (
     <div className="create-project">
-      <Topbar hideActions />
-      <div className="content">
+      <div className="create-project--content">
         <Row>
-          <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
+          <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} >
             <Steps current={current} className="step-display" size="small">
               {steps.map(item => (
                 <Step key={item.title} title={item.title} />
