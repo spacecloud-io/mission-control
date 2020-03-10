@@ -285,7 +285,7 @@ export const onAppLoad = () => {
       client.refreshToken(token).then(token => onToken(token)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
-        history.push("/mission-control/login")
+        redirectIfNeeded()
       })
       return
     }
