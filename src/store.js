@@ -9,9 +9,14 @@ const initialState = {
     uiState: {
         selectedCollection: "",
         showSidenav: false,
-        sideNavActiveKeys: ["1", "2"]
+        sideNavActiveKeys: ["1", "2"],
+        eventFilters: {
+          status: ["processed", "staged", "failed"]
+        },
+        triggerNames: []
     },
-    clusters: []
+    clusters: [],
+    eventLogs: []
 };
 
 // Generate reducers with the initial state and pass it to the redux store

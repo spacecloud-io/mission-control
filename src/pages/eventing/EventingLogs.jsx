@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {useParams} from "react-router-dom";
 import {Button, Icon, Table} from "antd";
 import '../../index.css';
+import client from "../../client";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import FilterForm from "../../components/eventing/FilterForm";
 import './event.css';
+//redux
+import {useDispatch, useSelector} from "react-redux";
+import {set, increment, decrement} from "automate-redux";
 
 const getIconByStatus = (status) => {
   switch(status){
@@ -29,81 +33,29 @@ function isJson(str) {
   return jsonObj;
 }
 
-const data = [
-  {
-    _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-    rule_name: "Email trigger",
-    invocations: [
-      {
-        response_status_code: 200,
-        _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-        invocation_time: new Date(),
-        request_payload: `hello world`,
-        response_body: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`
-      }
-    ],
-    status: "processed",
-    event_timestamp: 1583496732
-  },
-  {
-    _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-    rule_name: "File upload",
-    invocations: [
-      {
-        _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-        response_status_code: 404,
-        invocation_time: new Date(),
-        request_payload: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`,
-        response_body: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`
-      },
-      {
-        _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-        response_status_code: 200,
-        invocation_time: new Date(),
-        request_payload: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`,
-        response_body: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`
-      }
-    ],
-    status: "failed",
-    event_timestamp: 1583477122
-  },
-  {
-    _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-    rule_name: "Some trigger",
-    invocations: [],
-    status: "staged",
-    event_timestamp: 1583477122
-  },
-  {
-    _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-    rule_name: "Trigger 1",
-    invocations: [
-      {
-        response_status_code: 200,
-        _id: "1b6b8a79-d4c6-45c8-a4a9-84ff6ec6036d",
-        invocation_time: new Date(),
-        request_payload: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`,
-        response_body: `[{"value":"application/json","name":"Content-type"},{"value":"hasura-graphql-engine/v1.1.0","name":"User-Agent"}]`
-      }
-    ],
-    status: "processed",
-    event_timestamp: 1583477122
-  }
-]
-
 const columns = [
   { title: 'Event ID', dataIndex: '_id', key: '_id' },
   { title: 'Trigger name', dataIndex: 'rule_name', key: 'rule_name' },
-  { title: 'Invocations', key: 'invocations', render: record => <p>{record.invocations.length}</p> },
+  { title: 'Invocations', key: 'invocations', render: record => <p>{record.invocation_logs.length}</p> },
   { title: 'Status', key: 'status', render: record => getIconByStatus(record.status) },
-  { title: 'Created at', key: 'date', render:(record) => <p>{new Date(record.event_timestamp).toString()}</p> },
+  { title: 'Created at', key: 'date', render:(record) => <p>{new Date(record.event_timestamp).toISOString()}</p> },
 ];
 
 const EventingLogs = () => {
   // Router params
   const { projectID } = useParams()
   const [modalVisible, setModalVisible] = useState(false);
-  const [filteredData, setFilteredData] = useState(data);
+  const dispatch = useDispatch();
+  const eventLogs = useSelector(state => state.eventLogs);
+  const eventFilters = useSelector(state => state.uiState.eventFilters);
+
+  useEffect(() => {
+    dispatch(increment("pendingRequests"));
+    client.eventing.fetchEventLogs(projectID, eventFilters)
+    .then(res => dispatch(set("eventLogs", res)))
+    .catch(ex => console.log(ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
+  }, [eventFilters])
   
   const expandedInvocations = record => {
     const requestJSON = isJson(record.request_payload);
@@ -134,7 +86,7 @@ const EventingLogs = () => {
     <Table 
       showHeader={false} 
       columns={columns} 
-      dataSource={record.invocations} 
+      dataSource={record.invocation_logs} 
       pagination={false}
       expandedRowRender={expandedInvocations} 
       title={() => 'Invocations'} 
@@ -142,8 +94,8 @@ const EventingLogs = () => {
   }
 
   const filterTable = (values) => {
-     setFilteredData(data.filter(val => values.status.some(el => el === val.status)))
      console.log(values)
+     dispatch(set("uiState.eventFilters", values))
   }
 
 	return (
@@ -158,20 +110,18 @@ const EventingLogs = () => {
         <Table
           className="event-logs-table"
           columns={columns}
-          dataSource={filteredData}
+          dataSource={eventLogs}
           expandedRowRender={expandedRowRender}
           bordered
         />  
 			</div>
 			</div>
-      {modalVisible && (
         <FilterForm
           visible={modalVisible}
           filterTable={filterTable}
           handleCancel={() => setModalVisible(false)}
-          triggerNames={data.map(val => val.rule_name)}
+          projectID={projectID}
         />
-      )}
 		</div>
 	)
 }
