@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
-import { Row, Col, Card, Form, Input, Button, Alert, Radio} from 'antd';
+import { Row, Col, Card, Form, Input, Button, Alert, Radio } from 'antd';
 import StarterTemplate from '../../starter-template/StarterTemplate';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
@@ -9,17 +9,21 @@ import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import { dbEnable } from '../../../pages/database/dbActions'
 import './create-db.css'
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useHistory } from 'react-router-dom';
 import RadioCard from '../../radio-card/RadioCard';
+import { getProjectConfig, setProjectConfig } from "../../../utils"
+import { validate } from 'graphql';
 
 const CreateDatabase = (props) => {
+  const history = useHistory()
   const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO);
   const [alias, setAlias] = useState("mongo");
   const projects = useSelector(state => state.projects)
+  const dbconfig = getProjectConfig(projects, props.projectId, `modules.crud`)
+  const allAlias = dbconfig ? Object.entries(dbconfig).map(([alias]) => Object.assign({}, { alias: alias })) : {};
 
-  const { getFieldDecorator, setFieldsValue, getFieldValue } = props.form;
+  const { getFieldDecorator, setFieldsValue, getFieldValue, validateFields } = props.form;
 
-  
   const handleMongo = () => {
     setSelectedDB(dbTypes.MONGO);
     setFieldsValue({
@@ -47,8 +51,14 @@ const CreateDatabase = (props) => {
   }
 
   const handleDbSubmit = () => {
-    dbEnable(projects, props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
-      if(!err) props.handleSubmit()
+    validateFields((err, values) => {
+      if (!err) {
+        dbEnable(projects, props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
+          if (!err) {
+            history.push(`/mission-control/projects/${props.projectId}/database/${selectedDB}/overview`)
+          }
+        })
+      }
     })
   }
 
@@ -59,53 +69,53 @@ const CreateDatabase = (props) => {
   return (
     <div>
       <Card>
-        <p style={{ fontWeight:"bold" }}>Select a database</p>
+        <p style={{ fontWeight: "bold" }}>Select a database</p>
         <Form.Item>
           {getFieldDecorator("dbType", {
             rules: [{ required: true, message: "Please select a database type!" }],
             initialValue: "mongo"
           })(
-            <Radio.Group style={{ width:"100%" }}>
+            <Radio.Group style={{ width: "100%" }}>
               <Row gutter={16}>
                 <Col lg={{ span: 4 }} >
-                    <RadioCard value="mongo" layout="db-card" onClick={handleMongo}>
-                      <div className="db-card-content" >
-                        <img src={mongoIcon} width="24px" height="24px" />
-                        <span className="title">MongoDB</span>
-                      </div>
-                    </RadioCard>
-                  </Col>
-                  <Col lg={{ span: 4 }}>
-                    <RadioCard value="postgres" layout="db-card" onClick={handlePostgres}>
-                      <div className="db-card-content" >
-                        <img src={postgresIcon} width="24px" height="24px" />
-                        <span className="title">PostgresSQL</span>
-                      </div>
-                    </RadioCard>
-                  </Col>
-                  <Col lg={{ span: 4 }} onClick={handleMysql}>
-                    <RadioCard value="mysql" layout="db-card" >
-                      <div className="db-card-content">
-                        <img src={mysqlIcon} width="24px" height="24px" />
-                        <span className="title">MySQL</span>
-                      </div>
-                    </RadioCard>
-                  </Col>
-                  <Col lg={{ span: 4 }} >
-                    <RadioCard value="sqlserver" layout="db-card" onClick={handleSqlServer}>
-                      <div className="db-card-content">
-                        <img src={sqlserverIcon} width="24px" height="24px" />
-                        <span className="title">SQL Server</span>
-                      </div>
-                    </RadioCard>
-                  </Col>
+                  <RadioCard value="mongo" layout="db-card" onClick={handleMongo}>
+                    <div className="db-card-content" >
+                      <img src={mongoIcon} width="24px" height="24px" />
+                      <span className="title">MongoDB</span>
+                    </div>
+                  </RadioCard>
+                </Col>
+                <Col lg={{ span: 4 }}>
+                  <RadioCard value="postgres" layout="db-card" onClick={handlePostgres}>
+                    <div className="db-card-content" >
+                      <img src={postgresIcon} width="24px" height="24px" />
+                      <span className="title">PostgresSQL</span>
+                    </div>
+                  </RadioCard>
+                </Col>
+                <Col lg={{ span: 4 }} onClick={handleMysql}>
+                  <RadioCard value="mysql" layout="db-card" >
+                    <div className="db-card-content">
+                      <img src={mysqlIcon} width="24px" height="24px" />
+                      <span className="title">MySQL</span>
+                    </div>
+                  </RadioCard>
+                </Col>
+                <Col lg={{ span: 4 }} >
+                  <RadioCard value="sqlserver" layout="db-card" onClick={handleSqlServer}>
+                    <div className="db-card-content">
+                      <img src={sqlserverIcon} width="24px" height="24px" />
+                      <span className="title">SQL Server</span>
+                    </div>
+                  </RadioCard>
+                </Col>
               </Row>
-              
+
             </Radio.Group>
           )}
         </Form.Item>
         <Form>
-          <p style={{ marginBottom: 0, marginTop: 0, fontWeight:"bold" }}>Provide a connection String</p>
+          <p style={{ marginBottom: 0, marginTop: 0, fontWeight: "bold" }}>Provide a connection String</p>
           <label style={{ fontSize: 12 }}>Space Cloud requires a connection string to connect to your database</label>
           <Form.Item >
             {getFieldDecorator('connectionString', {
@@ -117,15 +127,28 @@ const CreateDatabase = (props) => {
           </Form.Item>
         </Form>
         <Alert message={alertMsg}
-            description=" "
-            type="info"
-            showIcon />
+          description=" "
+          type="info"
+          showIcon />
         <Form>
-        <p style={{ marginBottom: 0, marginTop: "2%", fontWeight:"bold" }}>Alias</p>
-        <label style={{ fontSize: 12 }}>Alias name is used in your frontend queries to identify your database</label>
+          <p style={{ marginBottom: 0, marginTop: "2%", fontWeight: "bold" }}>Alias</p>
+          <label style={{ fontSize: 12 }}>Alias name is used in your frontend queries to identify your database</label>
           <Form.Item>
             {getFieldDecorator('alias', {
-              rules: [{ required: true, message: 'Please input an alias for your database' }],
+              rules: [{
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please input an alias for your database")
+                    return
+                  }
+                  allAlias.map(data => {
+                    if (value === data.alias) {
+                      cb("Alias name already taken by another database. Please provide an unique alias name!")
+                    }
+                  })
+                  cb()
+                }
+              }],
               initialValue: alias
             })(
               <Input placeholder="eg: mongo" />,
@@ -134,7 +157,7 @@ const CreateDatabase = (props) => {
         </Form>
         <Button type="primary" className="db-btn" onClick={handleDbSubmit}>Add database</Button>
       </Card><br />
-      <center className="skip-link"><Link to={`/mission-control/projects/${props.projectId}/overview`} style={{color:"rgba(255, 255, 255, 0.6)"}} >Skip for now</Link></center>
+      <center className="skip-link"><Link to={`/mission-control/projects/${props.projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
     </div>
   );
 }
