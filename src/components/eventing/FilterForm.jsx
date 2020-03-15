@@ -4,7 +4,7 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 import client from "../../client";
 //redux
 import {useDispatch, useSelector} from "react-redux";
-import {set, increment, decrement} from "automate-redux";
+import {set, increment, decrement, reset} from "automate-redux";
 
 import moment from 'moment';
 
@@ -19,7 +19,10 @@ const FilterForm = (props) => {
   useEffect(() => {
     dispatch(increment("pendingRequests")); 
     client.eventing.fetchTriggerNames(props.projectID)
-    .then(res => dispatch(set("uiState.triggerNames", res.map(val => val.rule_name))))
+    .then(res => {
+      const uniqueTriggerNames = [...new Set(res.map(val => val.rule_name))]
+      dispatch(set("uiState.triggerNames", uniqueTriggerNames))
+    })
     .catch(ex => console.log(ex))
     .finally(() => dispatch(decrement("pendingRequests")))
   }, [])
@@ -54,7 +57,7 @@ const FilterForm = (props) => {
       visible={props.visible}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
-      cancelButtonProps={{style: {float: "left"}, onClick: () => console.log('here')}}
+      cancelButtonProps={{style: {float: "left"}, onClick: () => {dispatch(reset("uiState.eventFilters"));props.handleCancel()}}}
       cancelText="Reset Filters"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
@@ -73,10 +76,15 @@ const FilterForm = (props) => {
         <FormItemLabel name="Filter by trigger name" />
         <Form.Item>
           {getFieldDecorator('showName', {
-            initialValue: eventFilters.showName ? true : false
+            initialValue: eventFilters.showName
           })
           (
-            <Checkbox>Show logs of specific event triggers</Checkbox>
+            <Checkbox 
+             checked={eventFilters.showName}
+             onChange={e => dispatch(set("uiState.eventFilters.showName", e.target.checked))}
+            >
+              Show logs of specific event triggers
+            </Checkbox>
           )}
         </Form.Item>
         {getFieldValue('showName') && (
@@ -98,10 +106,15 @@ const FilterForm = (props) => {
         <FormItemLabel name="Filter by date" />
         <Form.Item>
           {getFieldDecorator('showDate', {
-            initialValue: eventFilters.showDate ? true : false
+            initialValue: eventFilters.showDate 
           })
           (
-            <Checkbox>Show logs between a specific period</Checkbox>
+            <Checkbox 
+             checked={eventFilters.showDate}
+             onChange={e => dispatch(set("uiState.eventFilters.showDate", e.target.checked))}
+            >
+              Show logs between a specific period
+            </Checkbox>
           )}
         </Form.Item>
         {getFieldValue('showDate') && (
@@ -110,7 +123,7 @@ const FilterForm = (props) => {
           <Form.Item>
             {getFieldDecorator("range-picker", {
               rules: [{ type: "array", required: true, message: "Please enter the duration!" }],
-              initialValue: eventFilters.showDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : undefined
+              initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment(), moment()]
             })(<RangePicker />)}
           </Form.Item>
           </>

@@ -8,7 +8,7 @@ class Eventing {
     this.client = client
   }
 
-  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}){
+  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventID){
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
       if (process.env.NODE_ENV !== "production") {
@@ -20,15 +20,17 @@ class Eventing {
       cache: cache,
       link: link
     });
+
     graphlqlClient.query({
       query: gql`
         query {
           event_logs (
+            limit: 10,
             where: {
               status: {_in: $status},
               ${showName ? "rule_name: {_eq: $name}" : ""}
-              ${showDate ? 
-                "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
+              ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
+              ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
             }
           ) @mysql {
             _id
@@ -47,7 +49,7 @@ class Eventing {
           }
         }
       `,
-      variables: {status, name, startDate, endDate}
+      variables: {status, name, startDate, endDate, lastEventID}
     }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }

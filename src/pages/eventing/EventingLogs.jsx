@@ -11,6 +11,7 @@ import './event.css';
 //redux
 import {useDispatch, useSelector} from "react-redux";
 import {set, increment, decrement} from "automate-redux";
+import InfiniteScroll from 'react-infinite-scroller';
 
 const getIconByStatus = (status) => {
   switch(status){
@@ -48,10 +49,11 @@ const EventingLogs = () => {
   const dispatch = useDispatch();
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
+  const [moreEventLogs, hasMoreEventLogs] = useState(true);
 
   useEffect(() => {
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters)
+    client.eventing.fetchEventLogs(projectID, eventFilters, 0)
     .then(res => dispatch(set("eventLogs", res)))
     .catch(ex => console.log(ex))
     .finally(() => dispatch(decrement("pendingRequests")))
@@ -96,6 +98,18 @@ const EventingLogs = () => {
   const filterTable = (values) => {
      console.log(values)
      dispatch(set("uiState.eventFilters", values))
+     hasMoreEventLogs(true);
+  }
+
+  const loadFunc = () => {
+    client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1]._id : 0)
+    .then(res => {
+      dispatch(set("eventLogs", eventLogs.concat(res)))
+      if(res.length < 10) {
+        hasMoreEventLogs(false);
+      }
+    })
+    .catch(ex => console.log(ex))
   }
 
 	return (
@@ -105,23 +119,33 @@ const EventingLogs = () => {
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="event-logs" projectID={projectID} />
 			<div className="event-tab-content">
-        <Button size="large" style={{marginRight: 16}}>Refresh <Icon type="reload" /></Button>
+        <Button size="large" style={{marginRight: 16}} onClick={() => window.location.reload()}>Refresh <Icon type="reload" /></Button>
         <Button size="large" onClick={() => setModalVisible(true)}>Filters <Icon type="filter" /></Button>
-        <Table
-          className="event-logs-table"
-          columns={columns}
-          dataSource={eventLogs}
-          expandedRowRender={expandedRowRender}
-          bordered
-        />  
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={loadFunc}
+          hasMore={moreEventLogs}
+          loader={<div style={{textAlign: "center"}} key={0}>Loading...</div>}
+        >
+          <Table
+           className="event-logs-table"
+           columns={columns}
+           dataSource={eventLogs}
+           expandedRowRender={expandedRowRender}
+           bordered
+           pagination={false}
+          /> 
+        </InfiniteScroll> 
 			</div>
 			</div>
+      {modalVisible && (
         <FilterForm
-          visible={modalVisible}
-          filterTable={filterTable}
-          handleCancel={() => setModalVisible(false)}
-          projectID={projectID}
+         visible={modalVisible}
+         filterTable={filterTable}
+         handleCancel={() => setModalVisible(false)}
+         projectID={projectID}
         />
+      )}
 		</div>
 	)
 }

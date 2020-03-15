@@ -11,7 +11,9 @@ const initialState = {
         showSidenav: false,
         sideNavActiveKeys: ["1", "2"],
         eventFilters: {
-          status: ["processed", "staged", "failed"]
+          status: ["processed", "staged", "failed"],
+          showName: false,
+          showDate: false
         },
         triggerNames: []
     },
