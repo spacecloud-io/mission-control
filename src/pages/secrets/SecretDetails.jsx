@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { Button, Table, Icon, Row, Col, Popconfirm, Card } from "antd";
+import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
+import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import client from "../../client";
 import store from "../../store";
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "automate-redux";
+import './secretDetail.css';
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -33,7 +36,12 @@ const SecretDetails = () => {
   const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
   const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
   const [secretKeyClicked, setSecretKeyClicked] = useState("");
+  const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/secrets/secretDetails");
+  }, [])
+  
   const handleClickUpdateSecretKey = name => {
     setSecretKeyClicked(name);
     setSecretKeyModalVisible(true);
@@ -79,6 +87,25 @@ const SecretDetails = () => {
     setSecretKeyModalVisible(false);
     setSecretKeyClicked("");
   };
+
+  const handleUpdateRootpath = (path) => {
+    return new Promise((resolve, reject) => {
+      dispatch(increment("pendingRequests"));
+      client.secrets.setRootPath(projectID, secretName, { rootPath : path}).then(() => {
+        const updatedSecret = secrets.map(obj => {
+          if (obj.name !==  secretName) return obj;
+          const newData = Object.assign({}, { rootPath: path });
+          return Object.assign({}, obj, newData);
+        });
+        setProjectConfig(projectID, `modules.secrets`, updatedSecret);
+        notify("success", "Success", "Saved root path successfully")
+        resolve();
+      }).catch((ex) => {
+        notify("error", "Error in saving root path", ex.toString());
+        reject(ex)
+      }).finally(() => dispatch(decrement("pendingRequests")));
+    })
+  }
 
   const envColumns = [
     {
@@ -166,6 +193,21 @@ const SecretDetails = () => {
           <br />
           <Row>
             <Col lg={{ span: 15, offset: 1 }}>
+              {secretType === "file" && (
+                  <React.Fragment>
+                    <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>
+                    <div className="mount-location">
+                      {secret.rootPath}
+                    </div>
+                    {rootPathModalVisible && (
+                      <UpdateRootPathModal
+                        rootPath={secret.rootPath}
+                        handleSubmit={handleUpdateRootpath}
+                        handleCancel={() => setRootPathModalVisible(false)}
+                      />
+                    )}
+                  </React.Fragment>
+                )}
               <h3 style={{ display: "flex", justifyContent: "space-between" }}>
                 {getLabelFromSecretType(secretType)}
                 {secretType !== "docker" && (

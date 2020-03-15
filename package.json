@@ -1,6 +1,6 @@
 {
   "name": "mission-control",
-  "version": "0.15.3",
+  "version": "0.16.0",
   "private": true,
   "dependencies": {
     "antd": "^3.19.2",

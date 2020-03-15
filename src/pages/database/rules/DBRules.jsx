@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set, increment, decrement } from 'automate-redux';
+import ReactGA from 'react-ga'
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -20,6 +21,9 @@ const Rules = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/rules");
+  }, [])
   // Global state
   const projects = useSelector(state => state.projects)
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
@@ -75,7 +79,7 @@ const Rules = () => {
     return <div style={{ marginTop: 24 }}>
       <div className="panel">
         <img src={securitySvg} width="240px" />
-        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules helps you restrict access to your data <a href="https://docs.spaceuptech.com/storage/database/securing-apis">View Docs.</a></p>
       </div>
     </div>
   }

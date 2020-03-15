@@ -38,11 +38,6 @@
     cursor: pointer;
 }
 
-.overview .ant-btn-primary:focus {
-    background: #1890FF;
-    border-color: #1890FF;
-}
-
 .overview .ant-btn-round.ant-btn-lg {
     height: 36px;
     padding: 0 16px;
@@ -141,5 +136,8 @@
     }
     .ant-descriptions-item-content {
         overflow: scroll;
+    }
+    .git-card{
+        margin-top: 3%;
     }
 }

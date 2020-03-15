@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, increment, decrement, set } from 'automate-redux';
+import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -55,6 +56,7 @@ const Overview = () => {
 
 
   useEffect(() => {
+    ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
   }, [projectID, selectedDB])
 
@@ -115,7 +117,8 @@ const Overview = () => {
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    setDBConfig(projectID, selectedDB, true, conn, false)
+    const dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    setDBConfig(projectID, selectedDB, true, conn, dbType, false)
       .then(() => {
         notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)
         setEditConnModalVisible(false);

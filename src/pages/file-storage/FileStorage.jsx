@@ -31,7 +31,7 @@ const Rules = (props) => {
 	let [selectedRuleName, setSelectedRuleName] = useState("")
 
 	useEffect(() => {
-		ReactGA.pageview("/projects/file-storage/rules");
+		ReactGA.pageview("/projects/file-storage");
 	}, [])
 
 	// Derived properties

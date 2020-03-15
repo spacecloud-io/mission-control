@@ -1,0 +1,10 @@
+.projectSetting-page .divider {
+  background: #e4e4e4;
+  height: 1px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.projectSetting-page .ant-form-item {
+  margin-bottom: 16px;
+}

@@ -20,7 +20,7 @@ const Login = () => {
     }).catch(ex => notify("error", "Error logging in", ex))
   }
   useEffect(() => {
-    ReactGA.pageview("/");
+    ReactGA.pageview("/login");
   }, [])
   return (
     <div className="login">

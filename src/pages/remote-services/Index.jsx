@@ -78,12 +78,19 @@ const RemoteServices = () => {
       key: 'actions',
       className: 'column-actions',
       render: (_, { name }) => (
-        <span>
+        <span style={{ display: "flex", justifyContent: "inline" }}>
           <a onClick={() => handleViewClick(name)}>View</a>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
-          <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a style={{ color: "red" }}>Remove</a>
-          </Popconfirm>
+          <a onClick={(e) => {
+            handleEditClick(name)
+            e.stopPropagation()
+          }}>Edit</a>
+          <div onClick={e => e.stopPropagation()}>
+            <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => {
+              handleDelete(name)
+            }}>
+              <a style={{ color: "red" }}>Remove</a>
+            </Popconfirm>
+          </div>
         </span>
       )
     }
@@ -97,14 +104,14 @@ const RemoteServices = () => {
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
           <div className="panel">
             <img src={remoteServicesSvg} />
-            <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access custom business logic via the unified REST and GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/essentials/remote-services">View Docs.</a></p>
+            <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access your RESTful services via the unified GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/microservices/graphql">View Docs.</a></p>
             <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first remote service</Button>
           </div>
         </div>}
         {noOfServices > 0 && (
           <React.Fragment>
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>Remote Services <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-            <Table columns={tableColumns} dataSource={servicesTableData} />
+            <Table columns={tableColumns} dataSource={servicesTableData} onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }} />
           </React.Fragment>
         )}
         {modalVisible && <ServiceForm

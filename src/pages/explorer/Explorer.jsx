@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import client from '../../client';
 import * as templates from './templates.js';
 import { SPACE_CLOUD_USER_ID } from '../../constants';
-
+import ReactGA from 'react-ga';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import Header from '../../components/header/Header';
@@ -32,6 +32,10 @@ const Explorer = props => {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/explorer");
+  }, [])
+  
   const getToken = () => {
     return props.useAdminToken ? generateAdminToken(props.secret) : props.userToken
   }
