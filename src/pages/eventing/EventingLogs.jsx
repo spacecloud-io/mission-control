@@ -24,14 +24,12 @@ const getIconByStatus = (status) => {
   }
 }
 
-function isJson(str) {
+function parseJSONSafely(str) {
   try {
-      JSON.parse(str);
+    return JSON.parse(str);
   } catch (e) {
     return str;
   }
-  const jsonObj = JSON.parse(str)
-  return jsonObj;
 }
 
 const columns = [
@@ -49,27 +47,43 @@ const EventingLogs = () => {
   const dispatch = useDispatch();
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const [moreEventLogs, hasMoreEventLogs] = useState(true);
+  const [hasMoreEventLogs, sethasMoreEventLogs] = useState(true);
+  const projects = useSelector(state => state.projects);
 
   useEffect(() => {
-    dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, 0, "mysql")
-    .then(res => dispatch(set("eventLogs", res)))
-    .catch(ex => console.log(ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
-  }, [eventFilters])
+    if(projects.length > 0){
+      const dbType = projects[0].modules.eventing.dbType;
+      dispatch(increment("pendingRequests"));
+      client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
+      .then(res => dispatch(set("eventLogs", res)))
+      .catch(ex => console.log(ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
+    }
+  }, [eventFilters, projects])
   
   const expandedInvocations = record => {
-    const requestJSON = isJson(record.request_payload);
-    const responseJSON = isJson(record.response_body); 
     return (
       <div>
-        <b>Request payload</b><br/>
-        <pre>{JSON.stringify(requestJSON, null, 2)}</pre><br/><br/>
+        {record.request_payload && (
+          <>
+            <b>Request payload</b><br/>
+            <pre>{JSON.stringify(parseJSONSafely(record.request_payload), null, 2)}</pre><br/><br/>
+          </>
+        )}
         <b>Status Code</b><br/>
         {record.response_status_code}<br/><br/>
-        <b>Response</b><br/>
-        <pre>{JSON.stringify(responseJSON, null, 2)}</pre>
+        {record.response_body && (
+          <>
+            <b>Response</b><br/>
+            <pre>{JSON.stringify(parseJSONSafely(record.response_body), null, 2)}</pre><br/><br/>
+          </>
+        )}
+        {record.error_msg && (
+          <>
+            <b>Error Message</b><br/>
+            <pre>{JSON.stringify(parseJSONSafely(record.error_msg), null, 2)}</pre>
+          </>
+        )}
       </div>
     )
   }
@@ -98,18 +112,29 @@ const EventingLogs = () => {
   const filterTable = (values) => {
      console.log(values)
      dispatch(set("uiState.eventFilters", values))
-     hasMoreEventLogs(true);
+     sethasMoreEventLogs(true);
   }
 
   const loadFunc = () => {
-    client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1]._id : 0)
-    .then(res => {
-      dispatch(set("eventLogs", eventLogs.concat(res)))
-      if(res.length < 10) {
-        hasMoreEventLogs(false);
-      }
-    })
+    if(projects.length > 0){
+      const dbType = projects[0].modules.eventing.dbType;
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1]._id : 0, dbType)
+      .then(res => {
+        dispatch(set("eventLogs", eventLogs.concat(res)))
+        if(res.length < 10) {
+          sethasMoreEventLogs(false);
+        }
+      })
+      .catch(ex => console.log(ex))
+    }
+  }
+
+  const handleRefresh = () => {
+    dispatch(increment("pendingRequests"));
+    client.eventing.fetchEventLogs(projectID, eventFilters, 0, "mysql")
+    .then(res => dispatch(set("eventLogs", res)))
     .catch(ex => console.log(ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
   }
 
 	return (
@@ -119,12 +144,12 @@ const EventingLogs = () => {
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="event-logs" projectID={projectID} />
 			<div className="event-tab-content">
-        <Button size="large" style={{marginRight: 16}} onClick={() => window.location.reload()}>Refresh <Icon type="reload" /></Button>
+        <Button size="large" style={{marginRight: 16}} onClick={handleRefresh}>Refresh <Icon type="reload" /></Button>
         <Button size="large" onClick={() => setModalVisible(true)}>Filters <Icon type="filter" /></Button>
         <InfiniteScroll
           pageStart={0}
           loadMore={loadFunc}
-          hasMore={moreEventLogs}
+          hasMore={hasMoreEventLogs}
           loader={<div style={{textAlign: "center"}} key={0}>Loading...</div>}
         >
           <Table
@@ -142,7 +167,7 @@ const EventingLogs = () => {
         <FilterForm
          visible={modalVisible}
          filterTable={filterTable}
-         handleCancel={() => setModalVisible(false)}
+         handleCancel={() => {setModalVisible(false);sethasMoreEventLogs(false)}}
          projectID={projectID}
         />
       )}

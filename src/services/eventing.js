@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
+import store from '../store';
 
 class Eventing {
   constructor(client) {
@@ -28,7 +29,7 @@ class Eventing {
             limit: 10,
             where: {
               status: {_in: $status},
-              ${showName ? "rule_name: {_eq: $name}" : ""}
+              ${showName ? "rule_name: {_in: $name}" : ""}
               ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
               ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
             }

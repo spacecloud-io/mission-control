@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from "react"
+import React from "react"
 import { Modal, Form, Select, Checkbox, DatePicker, Icon} from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
-import client from "../../client";
 //redux
 import {useDispatch, useSelector} from "react-redux";
-import {set, increment, decrement, reset} from "automate-redux";
+import {set, reset} from "automate-redux";
 
 import moment from 'moment';
 
@@ -37,7 +36,7 @@ const FilterForm = (props) => {
       }
     });
   }
-  const { getFieldDecorator, getFieldValue, resetFields } = props.form;
+  const { getFieldDecorator, getFieldValue } = props.form;
 
   return (
     <Modal
@@ -85,7 +84,7 @@ const FilterForm = (props) => {
               initialValue: eventFilters.name ? eventFilters.name : undefined
             })
             (
-              <Select placeholder="Select event triggers for which you want to see the logs">
+              <Select mode="multiple" placeholder="Select event triggers for which you want to see the logs">
                 {triggerNames.map(val => <Option key={val}>{val}</Option>)}
               </Select>
             )}
@@ -112,7 +111,7 @@ const FilterForm = (props) => {
           <Form.Item>
             {getFieldDecorator("range-picker", {
               rules: [{ type: "array", required: true, message: "Please enter the duration!" }],
-              initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment(), moment()]
+              initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7,'d'), moment()]
             })(<RangePicker />)}
           </Form.Item>
           </>
