@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { set } from 'automate-redux';
 
-
 import { Row, Select } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -14,7 +13,7 @@ import QueryDark from "../../../components/db-query/query-dark";
 import gql from 'graphql-tag';
 import gqlPrettier from 'graphql-prettier';
 import { format } from 'prettier-package-json';
-import { getProjectConfig, getType, getFields, getFieldsValues, getVariables } from '../../../utils';
+import { getProjectConfig, getType, getFields, getFieldsValues, getVariables, getQueryVariable } from '../../../utils';
 
 const Queries = () => {
   var index = [];
@@ -56,50 +55,60 @@ const Queries = () => {
   // sort the index
   index.sort(function (a, b) { return a == b ? 0 : (a > b ? 1 : -1); });
 
-  function removeComma(value) {
+  function removeRegex(value, dataresponse) {
     let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
     let removeClosingComma = /\,(?=\s*?[\}\]])/g;
+    let removeQuotes = /"([^"]+)":/g;
     value = value.replace(removeOpeningComma, '');
     value = value.replace(removeClosingComma, '');
-    value = format(JSON.parse(value))
+    if (dataresponse) value = format(JSON.parse(value))
+    else value = value.replace(removeQuotes, '$1:')
     return value
   }
-
 
   if (selectedRule !== undefined)
     var query = gql(selectedRule)
   if (query !== undefined) {
-    var value1 = gqlPrettier(`query { 
-      ${getType(query)} @mysql {
+
+    console.log(`query { 
+      ${getType(query)} (
+        where: {${getQueryVariable(query, rules, index)}} 
+      ) @${selectedDB} {
         ${getFields(query, rules, index)}  }
-}`)
+}`);
 
-    var value2 = removeComma(`{ 
-    "data": { 
-      "insert_${getType(query)}": {
-        "returning": [
-          { 
-           ${getFieldsValues(query, rules, index)}       
+
+    var value1 = gqlPrettier(removeRegex(`query { 
+      ${getType(query)} (
+        where: {${getQueryVariable(query)}} 
+      ) @${selectedDB} {
+        ${getFields(query, rules, index)}  }
+}`, 0))
+
+    var value2 = removeRegex(`
+    {
+      "data": {
+        "authors": [
+          {
+            ${getFieldsValues(query, rules, index)}       
           }
-        ],
-        "status": 200
+        ]
       }
-    }
-  }`)
+    }`, 1)
 
-    var value3 = gqlPrettier(`mutation { 
+    var value3 = gqlPrettier(removeRegex(`mutation { 
   insert_${getType(query)} ( 
-     docs: [{${getVariables(query, rules, index)}}]   
-  ) @mysql {
+     docs: [{${getFieldsValues(query, rules, index)}}]   
+  ) @${selectedDB} {
     status
     error
     returning {
       ${getFields(query, rules, index)}
     }
   }
-}`)
+}`, 0))
 
-    var value4 = removeComma(`{ 
+    var value4 = removeRegex(`{ 
   "data":{ 
     "insert_${getType(query)}":{ 
       "returning": [{ 
@@ -108,24 +117,25 @@ const Queries = () => {
       "status": 200
     }
   }
-}`)
+}`, 1)
 
-    var value5 = gqlPrettier(`mutation { 
+    var value5 = gqlPrettier(removeRegex(`mutation { 
   delete_${getType(query)} ( 
-     where: {${getVariables(query, rules, index)}}      
-    ) @mysql { 
+     where: {${getFieldsValues(query, rules, index)}}      
+    ) @${selectedDB} { 
        status
+       error
        }
      
-  }`)
+  }`, 0))
 
-    var value6 = removeComma(`{ 
-  "data":{ 
+    var value6 = removeRegex(`{ 
+  "data":{   
     "delete_${getType(query)}":{ 
       "status":200
     }
   }
-}`)
+}`, 1)
   }
 
   return (

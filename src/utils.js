@@ -11,11 +11,14 @@ import history from "./history"
 import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
 import gql from 'graphql-tag';
+import { LoremIpsum } from "lorem-ipsum";
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
+
+const lorem = new LoremIpsum();
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -271,11 +274,19 @@ export const getDBTypeFromAlias = (projectId, alias) => {
   return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
 
+const generateRandom = (value) => {
+  return (value === 'ID') ?
+    `"${Math.floor(Math.random() * 9 + 1)}"` : (value === 'String' ?
+      `"${lorem.generateWords(1)}"` : (value === 'Integer') ?
+        Math.floor(Math.random() * 101 + 51) : (value === 'Float') ?
+          ((Math.random() * 50 + 51).toFixed(1)) : `"${value}"`)
+}
+
 export const getType = (schema) => {
   return schema.definitions[0].name.value;
 }
 
-export const getFields = (schema, rules, index, specificField, argumentValue) => {
+export const getFields = (schema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
   var fields = []
   for (var i in schema.definitions[0].fields) {
     if (specificField === 1)
@@ -284,8 +295,11 @@ export const getFields = (schema, rules, index, specificField, argumentValue) =>
       }
       else
         continue;
-    else
-      fields.push(schema.definitions[0].fields[i].name.value + "\n");
+    else {
+      if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {
+        fields.push(schema.definitions[0].fields[i].name.value + "\n");
+      }
+    }
     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
       continue;
     if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
@@ -293,17 +307,24 @@ export const getFields = (schema, rules, index, specificField, argumentValue) =>
         if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {
           specificField = 1;
           argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        } else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {
+          rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
         }
       }
       for (var j in index)
-        if (typeof (schema.definitions[0].fields[i].type.type != 'undefined')) {
+        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {
+          if (schema.definitions[0].fields[i].type.type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+          }
+          else continue;
+        } else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
           if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
           }
           else continue;
         } else {
           if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
           }
           else continue;
         }
@@ -312,30 +333,34 @@ export const getFields = (schema, rules, index, specificField, argumentValue) =>
   return fields;
 }
 
-export const getFieldsValues = (schema, rules, index, specificField, argumentValue) => {
+export const getFieldsValues = (schema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
   var fieldsValue = []
   var nullType;                                                                      // 0 = NonNullType, 1 = NullType
   for (var i in schema.definitions[0].fields) {
     if (specificField === 1)
       if (schema.definitions[0].fields[i].name.value === argumentValue) {
         if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
+          fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.type.name.value)}`);
           nullType = 1;
         }
         else {
-          fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
+          fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.name.value)}`);
           nullType = 0;
         }
       }
       else continue;
     else {
-      if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-        fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-        nullType = 1;
-      }
-      else {
-        fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-        nullType = 0;
+      if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {
+        if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined' && typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {
+          fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.type.type.name.value)}`);
+          nullType = 1;
+        } else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
+          fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.type.name.value)}`);
+          nullType = 1;
+        } else {
+          fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.name.value)}`);
+          nullType = 0;
+        }
       }
     }
     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
@@ -346,59 +371,48 @@ export const getFieldsValues = (schema, rules, index, specificField, argumentVal
           specificField = 1;
           argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
         }
+        else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {
+          rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        }
       }
-      for (var j in index)
+      for (var j in index) {
         if (nullType === 1)
-          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') 
+          if (!generateRandom(schema.definitions[0].fields[i].type.type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
             fieldsValue.pop();
-            fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+          } else continue;
+        else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') 
+          if (!generateRandom(schema.definitions[0].fields[i].type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
+            fieldsValue.pop();
+            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
           }
-          else continue;
+        else continue;
         else
-          if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+          if (!generateRandom(schema.definitions[0].fields[i].type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
             fieldsValue.pop();
-            fieldsValue.push(`\t\t\t"${schema.definitions[0].fields[i].name.value}": `);
-            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, argumentValue) + "}")
+            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
           }
           else continue;
+      }
     }
   }
   return fieldsValue;
 }
 
 
-export const getVariables = (schema, rules, index) => {
+export const getQueryVariable = (schema) => {
   var fieldsValue = []
-  var nullType;                                                                      // 0 = NonNullType, 1 = NullType
   for (var i in schema.definitions[0].fields) {
-    if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
-      fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.type.name.value))}"\n`);
-      nullType = 1;
-    }
-    else {
-      fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: "${((schema.definitions[0].fields[i].type.name.value))}"\n`);
-      nullType = 0;
-    }
     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
       continue;
-    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
-      for (var j in index)
-        if (nullType === 0)
-          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fieldsValue.pop();
-            fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
-            fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
-          }
-          else
-            if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-              fieldsValue.pop();
-              fieldsValue.push(`\t\t\t${schema.definitions[0].fields[i].name.value}: `);
-              fieldsValue = fieldsValue.concat("{" + getVariables(gql(rules[index[j]]), rules, index) + "}")
-            }
-            else continue;
-    }
+    if (schema.definitions[0].fields[i].directives[0].name.value === 'primary' && typeof (schema.definitions[0].fields[i].type.type) != 'undefined')
+      fieldsValue.push(`${schema.definitions[0].fields[i].name.value}: ${generateRandom(schema.definitions[0].fields[i].type.type.name.value)}`);
   }
   return fieldsValue;
 }
+
 
