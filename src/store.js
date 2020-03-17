@@ -14,8 +14,7 @@ const initialState = {
           status: ["processed", "staged", "failed"],
           showName: false,
           showDate: false
-        },
-        triggerNames: []
+        }
     },
     clusters: [],
     eventLogs: []

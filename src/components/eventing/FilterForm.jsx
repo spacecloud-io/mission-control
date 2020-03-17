@@ -14,19 +14,8 @@ const { RangePicker } = DatePicker;
 const FilterForm = (props) => {
   const dispatch = useDispatch();
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const triggerNames = useSelector(state => state.uiState.triggerNames);
+  const triggerNames = useSelector(state => Object.keys(state.projects[0].modules.eventing.rules));
   
-  useEffect(() => {
-    dispatch(increment("pendingRequests")); 
-    client.eventing.fetchTriggerNames(props.projectID)
-    .then(res => {
-      const uniqueTriggerNames = [...new Set(res.map(val => val.rule_name))]
-      dispatch(set("uiState.triggerNames", uniqueTriggerNames))
-    })
-    .catch(ex => console.log(ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
-  }, [])
-
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, fieldsValue) => {

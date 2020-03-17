@@ -53,7 +53,7 @@ const EventingLogs = () => {
 
   useEffect(() => {
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, 0)
+    client.eventing.fetchEventLogs(projectID, eventFilters, 0, "mysql")
     .then(res => dispatch(set("eventLogs", res)))
     .catch(ex => console.log(ex))
     .finally(() => dispatch(decrement("pendingRequests")))

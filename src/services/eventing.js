@@ -8,7 +8,7 @@ class Eventing {
     this.client = client
   }
 
-  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventID){
+  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventID, dbType){
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
       if (process.env.NODE_ENV !== "production") {
@@ -32,14 +32,14 @@ class Eventing {
               ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
               ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
             }
-          ) @mysql {
+          ) @${dbType} {
             _id
             rule_name
             status
             event_timestamp
             invocation_logs (
               where: {event_id: {_eq: "event_logs._id"}}
-            ) @mysql {
+            ) @${dbType} {
               _id
               response_status_code
               invocation_time
@@ -50,30 +50,6 @@ class Eventing {
         }
       `,
       variables: {status, name, startDate, endDate, lastEventID}
-    }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
-    })
-  }
-
-  fetchTriggerNames(projectId){
-    return new Promise((resolve, reject) => {
-      let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.NODE_ENV !== "production") {
-        uri = "http://localhost:4122" + uri;
-      }
-    const cache = new InMemoryCache({ addTypename: false });
-    const link = new HttpLink({ uri: uri });
-    const graphlqlClient = new ApolloClient({
-      cache: cache,
-      link: link
-    });
-    graphlqlClient.query({
-      query: gql`
-        query {
-          event_logs @mysql {
-            rule_name
-          }
-        }
-      `
     }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }
