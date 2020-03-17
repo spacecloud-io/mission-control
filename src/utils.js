@@ -157,6 +157,7 @@ export const getSecretType = (type, defaultValue) => {
 }
 
 export const openProject = (projectId) => {
+  console.log("Open Project called")
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`
   if (!currentURL.includes(projectURL)) {
@@ -171,7 +172,7 @@ export const openProject = (projectId) => {
 }
 
 
-export const onToken = (token) => {
+export const fetchGlobalEntities = (token) => {
   // Save the new token value
   if (token) {
     storeToken(token)
@@ -181,29 +182,49 @@ export const onToken = (token) => {
   redirectIfNeeded()
 
   // Fetch projects
-  store.dispatch(increment("pendingRequests"))
-  client.projects.getProjects().then(projects => {
-    store.dispatch(set("projects", projects))
-    if (projects.length === 0) {
-      history.push(`/mission-control/welcome`)
-      return
-    }
+  if (shouldFetchProjects()) {
+    store.dispatch(increment("pendingRequests"))
+    client.projects.getProjects().then(projects => {
+      store.dispatch(set("projects", projects))
+      if (projects.length === 0) {
+        history.push(`/mission-control/welcome`)
+        return
+      }
 
-    // Decide which project to open
-    let projectToBeOpened = getProjectToBeOpened()
-    if (!projectToBeOpened) {
-      projectToBeOpened = projects[0].id
-    }
+      // Decide which project to open
+      let projectToBeOpened = getProjectToBeOpened()
+      if (!projectToBeOpened) {
+        projectToBeOpened = projects[0].id
+      }
 
-    openProject(projectToBeOpened)
-  }).catch(ex => notify("error", "Could not fetch projects", ex))
-    .finally(() => store.dispatch(decrement("pendingRequests")))
+      openProject(projectToBeOpened)
+    }).catch(ex => notify("error", "Could not fetch projects", ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+  }
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
   localStorage.setItem("enterprise", enterpriseMode.toString())
   localStorage.setItem("isProd", isProd.toString())
   store.dispatch(set("version", version))
+}
+
+const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
+const isEnterprise = () => localStorage.getItem("enterprise") === "true" ? true : false
+const isEmailVerified = () => localStorage.getItem("isEmailVerified") === "true" ? true : false
+const getToken = () => localStorage.getItem("token")
+export const getFirebaseToken = () => localStorage.getItem("firebase-token")
+export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
+
+const shouldFetchProjects = () => {
+  const prodMode = isProdMode()
+  const enterprise = isEnterprise()
+  const emailVerified = isEmailVerified()
+  const token = getToken()
+
+  if (prodMode && !token) return false
+  if (enterprise && (!emailVerified || !token)) return false
+  return true
 }
 
 const getTokenClaims = (token) => {
@@ -234,11 +255,16 @@ const storeToken = (token) => {
 }
 
 const shouldRedirect = () => {
+  // Check if we are at a public route
+  const path = window.location.pathname.split("/")[2]
+  if (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler") {
+    return { redirect: false, redirectUrl: "" }
+  }
+
   const enterpriseMode = localStorage.getItem("enterprise") === "true"
   const productionMode = localStorage.getItem("isProd") === "true"
   const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
   const token = localStorage.getItem("token")
-
 
   if (enterpriseMode && !token) {
     return { redirect: true, redirectUrl: "/mission-control/signin" }
@@ -282,7 +308,7 @@ export const onAppLoad = () => {
 
     const token = localStorage.getItem("token")
     if (token) {
-      client.refreshToken(token).then(token => onToken(token)).catch(ex => {
+      client.refreshToken(token).then(token => fetchGlobalEntities(token, isProd, enterprise)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
         redirectIfNeeded()
@@ -290,13 +316,19 @@ export const onAppLoad = () => {
       return
     }
 
-    onToken()
+    fetchGlobalEntities(token, enterprise, isProd)
   })
 }
 
 export const enterpriseSignin = (token) => {
-  client.enterpriseSignin(token).then(newToken => onToken(newToken)).catch((error) => {
-    console.log(error)
+  return new Promise((resolve, reject) => {
+    storeFirebaseToken(token)
+    client.enterpriseSignin(token).then(newToken => {
+      fetchGlobalEntities(newToken, true, true)
+      resolve()
+    }).catch((error) => {
+      reject(error)
+    })
   })
 }
 

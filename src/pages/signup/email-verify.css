@@ -9,7 +9,7 @@
 }
 
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 992px) {
    .verify-background{
        background-color: #ffffff;
    }
@@ -18,7 +18,7 @@
    }
 }
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 992px) {
     .verify-background .verify-card{
         position: absolute;
         top: 50%;

@@ -20,7 +20,7 @@
     border-radius: 8px;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 992px) {
     .dark-background{
         background-color: #ffffff;
     }
@@ -32,7 +32,7 @@
     }
 }
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 992px) {
     .dark-background .signup-card{
         position: absolute;
         top: 50%;

@@ -5,7 +5,7 @@ import { Row, Col } from 'antd'
 
 import LoginForm from './LoginForm';
 import client from '../../client';
-import { notify, onToken } from "../../utils"
+import { notify, fetchGlobalEntities } from "../../utils"
 
 import './login.css'
 import logo from '../../assets/logo-black.svg'
@@ -14,7 +14,7 @@ import loginBg from '../../assets/login.svg'
 const Login = () => {
   const isLoading = useSelector(state => state.pendingRequests > 0)
   const handleSubmit = (user, key) => {
-    client.login(user, key).then(newToken => onToken(newToken)).catch(ex => notify("error", "Error logging in", ex))
+    client.login(user, key).then(newToken => fetchGlobalEntities(newToken)).catch(ex => notify("error", "Error logging in", ex))
   }
   useEffect(() => {
     ReactGA.pageview("/login");

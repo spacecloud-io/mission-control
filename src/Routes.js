@@ -3,6 +3,7 @@ import { Router, Route, Redirect, Switch } from "react-router-dom";
 import { PrivateRoute } from "./utils";
 import history from "./history";
 
+import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
@@ -43,11 +44,12 @@ export default () => {
       <Switch>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
+        <Route path="/mission-control/email-action-handler" component={EmailActionHandler} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
-        <Route exact path="/mission-control/signup" component={() => <Signup checkMethod='signup' />} />
+        <Route exact path="/mission-control/signup" component={() => <Signup mode='signup' />} />
         <Route exact path="/mission-control/email-verification" component={EmailVerification} />
-        <Route exact path="/mission-control/signin" component={() => <Signup checkMethod='signin' />} />
+        <Route exact path="/mission-control/signin" component={() => <Signup mode='signin' />} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
         <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
         <PrivateRoute exact path="/mission-control/projects/:projectID"
