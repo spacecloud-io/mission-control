@@ -3,8 +3,11 @@ import { Router, Route, Redirect, Switch } from "react-router-dom";
 import { PrivateRoute } from "./utils";
 import history from "./history";
 
+import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
+import Signup from "./pages/signup/Signup";
+import EmailVerification from "./pages/signup/EmailVerification";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
@@ -23,7 +26,8 @@ import EventingSettings from "./pages/eventing/EventingSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
-import Deployments from "./pages/deployments/Deployments";
+import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
+import DeploymentsRules from "./pages/deployments/rules/DeploymentsRules";
 import Explorer from "./pages/explorer/Explorer";
 import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
@@ -32,6 +36,7 @@ import Teams from './pages/teams/Teams';
 import Billing from './pages/billing/Billing';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import Clusters from './pages/clusters/Clusters'
 
 export default () => {
   return (
@@ -39,8 +44,12 @@ export default () => {
       <Switch>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
+        <Route path="/mission-control/email-action-handler" component={EmailActionHandler} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
+        <Route exact path="/mission-control/signup" component={() => <Signup mode='signup' />} />
+        <Route exact path="/mission-control/email-verification" component={EmailVerification} />
+        <Route exact path="/mission-control/signin" component={() => <Signup mode='signin' />} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
         <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
         <PrivateRoute exact path="/mission-control/projects/:projectID"
@@ -64,7 +73,11 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments" component={Deployments} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/clusters" component={Clusters} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments"
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/rules" component={DeploymentsRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />

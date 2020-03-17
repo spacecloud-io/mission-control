@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import "./add-deployment-form.css";
-import FormItemLabel from "../form-item-label/FormItemLabel";
-import RadioCard from "../radio-card/RadioCard";
-import docker from "../../assets/docker.png";
-import python from "../../assets/python.png";
-import js from "../../assets/js.png";
-import go from "../../assets/go.png";
-import { notify } from "../../utils";
+import FormItemLabel from "../../form-item-label/FormItemLabel";
+import { notify } from "../../../utils";
 
 import {
   Modal,
@@ -19,8 +14,7 @@ import {
   Button,
   Icon,
   Collapse,
-  InputNumber,
-  Alert
+  InputNumber
 } from "antd";
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -34,7 +28,6 @@ const AddDeploymentForm = props => {
   const {
     getFieldDecorator,
     getFieldValue,
-    getFieldsValue,
     setFieldsValue
   } = props.form;
 
@@ -105,7 +98,6 @@ const AddDeploymentForm = props => {
           })(
             <Select style={{ width: 120 }}>
               <Option value="http">HTTP</Option>
-              <Option value="tcp">TCP</Option>
             </Select>
           )}
         </Form.Item>
@@ -396,10 +388,6 @@ const AddDeploymentForm = props => {
     </Row>
   ));
 
-  const doesPortsContainsTCP = getFieldsValue(
-    keys.map(k => `ports[${k}].protocol`)
-  ).ports.some(obj => obj.protocol === "tcp");
-
   const modalProps = {
     className: "edit-item-modal",
     visible: props.visible,
@@ -414,68 +402,6 @@ const AddDeploymentForm = props => {
     <div>
       <Modal {...modalProps}>
         <Form layout="vertical" onSubmit={handleSubmitClick}>
-          {/* {initialValues === undefined && (
-            <React.Fragment>
-              <FormItemLabel name="Types of service" />
-              <Form.Item>
-                {getFieldDecorator("serviceType", {
-                  rules: [
-                    { required: true, message: "Please select a service!" }
-                  ],
-                  initialValue: ""
-                })(
-                  <Radio.Group>
-                    <Row>
-                      <Col span={12}>
-                        <RadioCard value="code" layout="card">
-                          <div>
-                            <div className="title">Non Dockerized</div>
-                            <p className="description">
-                              Space cloud will build and run your app inside
-                              docker containers
-                            </p>
-                            <img
-                              src={python}
-                              className="icon"
-                              alt="python.png"
-                            />
-                            <img
-                              src={js}
-                              style={{ marginLeft: 8 }}
-                              className="icon"
-                              alt="js.png"
-                            />
-                            <img
-                              src={go}
-                              style={{ marginLeft: 8 }}
-                              className="icon"
-                              alt="go.png"
-                            />
-                          </div>
-                        </RadioCard>
-                      </Col>
-                      <Col span={12}>
-                        <RadioCard value="image" layout="card">
-                          <div className="title">
-                            <div>Dockerized</div>
-                            <p className="description">
-                              Space cloud will directly the container image you
-                              provide
-                            </p>
-                            <img
-                              src={docker}
-                              className="icon"
-                              alt="docker.png"
-                            />
-                          </div>
-                        </RadioCard>
-                      </Col>
-                    </Row>
-                  </Radio.Group>
-                )}
-              </Form.Item>
-            </React.Fragment>
-          )} */}
           <React.Fragment>
             <FormItemLabel name="Service ID" />
             <Form.Item>
@@ -487,6 +413,21 @@ const AddDeploymentForm = props => {
               })(
                 <Input
                   placeholder="Unique name for your service"
+                  style={{ width: 288 }}
+                  disabled={initialValues ? true : false}
+                />
+              )}
+            </Form.Item>
+            <FormItemLabel name="Version" />
+            <Form.Item>
+              {getFieldDecorator("version", {
+                rules: [
+                  { required: true, message: "Please input a version!" }
+                ],
+                initialValue: initialValues ? initialValues.version : ""
+              })(
+                <Input
+                  placeholder="Version of your service (example: v1)"
                   style={{ width: 288 }}
                   disabled={initialValues ? true : false}
                 />
@@ -547,24 +488,17 @@ const AddDeploymentForm = props => {
               )}
             </React.Fragment>
             <FormItemLabel name="Ports" />
-            {doesPortsContainsTCP && (
-              <Alert
-                message={<span><b>Note:</b> Tcp services do not autoscale as of now</span>}
-                type="warning"
-                showIcon
-                style={{ marginBottom: 16 }}
-              />
-            )}
             <React.Fragment>{formItemsPorts}</React.Fragment>
             <Collapse className="deployment-collapse" bordered={false}>
               <Panel header="Advanced" key="1">
-              <FormItemLabel name="Image pull policy" />
+                <br />
+                <FormItemLabel name="Image pull policy" />
                 <Form.Item>
                   {getFieldDecorator("imagePullPolicy", {
                     initialValue: initialValues ? initialValues.imagePullPolicy : "always"
-                  })(<Select style={{ width: 175 }}> 
-                  <Select.Option value="always">Always</Select.Option>
-                  <Select.Option value="pull-if-not-exits">If does not exits</Select.Option>
+                  })(<Select style={{ width: 175 }}>
+                    <Select.Option value="always">Always</Select.Option>
+                    <Select.Option value="pull-if-not-exists">If not present</Select.Option>
                   </Select>)}
                 </Form.Item>
                 <FormItemLabel

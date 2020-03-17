@@ -10,6 +10,22 @@
   height: auto;
 }
 
+.radio-card--layout-db-card {
+  padding: 16px 24px;
+  height: auto;
+  width: 100%;
+}
+
+.radio-card--layout-db-card .db-card-content {
+  display: flex;
+}
+
+.radio-card--layout-db-card .title{
+  color: rgba(0, 0, 0, 0.87);
+  margin-left: 5%;
+  font-size: 16px;
+}
+
 .radio-card--layout-card .title {
   font-weight: bold;
   color: rgba(0, 0, 0, 0.87);
