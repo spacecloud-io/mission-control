@@ -3,6 +3,7 @@ import {useParams} from "react-router-dom";
 import {Button, Icon, Table} from "antd";
 import '../../index.css';
 import client from "../../client";
+import {getProjectConfig} from "../../utils";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
@@ -52,7 +53,7 @@ const EventingLogs = () => {
 
   useEffect(() => {
     if(projects.length > 0){
-      const dbType = projects[0].modules.eventing.dbType;
+      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
       dispatch(increment("pendingRequests"));
       client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
       .then(res => dispatch(set("eventLogs", res)))
@@ -117,7 +118,7 @@ const EventingLogs = () => {
 
   const loadFunc = () => {
     if(projects.length > 0){
-      const dbType = projects[0].modules.eventing.dbType;
+      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
       client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1]._id : 0, dbType)
       .then(res => {
         dispatch(set("eventLogs", eventLogs.concat(res)))
@@ -165,6 +166,7 @@ const EventingLogs = () => {
 			</div>
       {modalVisible && (
         <FilterForm
+         projectID={projectID}
          visible={modalVisible}
          filterTable={filterTable}
          handleCancel={() => {setModalVisible(false);sethasMoreEventLogs(false)}}

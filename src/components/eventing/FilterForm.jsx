@@ -4,7 +4,7 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 //redux
 import {useDispatch, useSelector} from "react-redux";
 import {set, reset} from "automate-redux";
-
+import {getProjectConfig} from "../../utils";
 import moment from 'moment';
 
 const {Option} = Select;
@@ -13,7 +13,9 @@ const { RangePicker } = DatePicker;
 const FilterForm = (props) => {
   const dispatch = useDispatch();
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const triggerNames = useSelector(state => Object.keys(state.projects[0].modules.eventing.rules));
+  const projects = useSelector(state => state.projects);
+
+  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.rules"));
   
   const handleSubmit = e => {
     e.preventDefault();
