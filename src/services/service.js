@@ -11,12 +11,15 @@ import Deployments from "./deployments"
 import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
+import firebaseConfig from './firebaseConfig'
 import Clusters from "./clusters"
 
 import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
+import * as firebase from "firebase/app";
+import "firebase/auth";
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -24,6 +27,7 @@ const and = SpaceAPI.and
 
 class Service {
   constructor() {
+    firebase.initializeApp(firebaseConfig);
     this.client = new Client()
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
@@ -37,7 +41,7 @@ class Service {
     this.secrets = new Secrets(this.client)
     this.clusters = new Clusters(this.client)
     const token = localStorage.getItem("token")
-    if(token) this.client.setToken(token);
+    if (token) this.client.setToken(token);
   }
 
   setToken(token) {
@@ -72,6 +76,19 @@ class Service {
   login(user, key) {
     return new Promise((resolve, reject) => {
       this.client.postJSON('/v1/config/login', { user, key }).then(({ status, data }) => {
+        if (status !== 200) {
+          reject(data.error)
+          return
+        }
+
+        resolve(data.token)
+      }).catch(ex => reject(ex.toString()))
+    })
+  }
+
+  enterpriseSignin(token) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON('/v1/config/login', { token: token }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
           return
