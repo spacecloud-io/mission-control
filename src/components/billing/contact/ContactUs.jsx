@@ -5,11 +5,26 @@ import FormItemLabel from "../../form-item-label/FormItemLabel"
 const ContactUs = (props) => {
     const { getFieldDecorator } = props.form;
     const defaultSubject = props.initialvalues
+
+    const handleSubmitClick = e => {
+        e.preventDefault();
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                try {
+                    props.handleContactUs(values.subject, values.message);
+                } catch (ex) {
+                    console.log(ex)
+                }
+            }
+        });
+    };
+
     return(
     <Modal
     title="Contact us"
     okText="Submit"
     visible={true}
+    onOk={handleSubmitClick}
     onCancel={props.handleCancel}
     >
         <Form layout="vertical">

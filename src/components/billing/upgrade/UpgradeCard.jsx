@@ -3,7 +3,7 @@ import { Card, Row, Col, Icon, Button } from 'antd';
 import upgradeSvg from '../../../assets/upgrade.svg';
 import './upgrade.css';
 
-const UpgradeCard = () => {
+const UpgradeCard = (props) => {
 
     return (
         <Card className="upgrade-card">
@@ -18,7 +18,7 @@ const UpgradeCard = () => {
                     <div className="list-content"><Icon type="check" className="check-icon"/><span>Automated devops and canary deployments</span></div>
                     <div className="list-content"><Icon type="check" className="check-icon"/><span>Team access control and audit trails</span></div>
                     <div className="list-content"><Icon type="check" className="check-icon"/><span>2 days priority email support</span></div>
-                    <Button type="primary" className="upgrade-btn">Start using Pro - $199/month </Button>
+                    <Button type="primary" className="upgrade-btn" onClick={props.handleSubscription}>Start using Pro - $199/month </Button>
                 </Col>
             </Row>
         </Card>

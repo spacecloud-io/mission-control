@@ -10,14 +10,25 @@ import { Row, Col } from 'antd';
 import Support from '../../components/billing/support/Support';
 import Invoice from '../../components/billing/invoice/Invoice';
 import ContactUs from '../../components/billing/contact/ContactUs';
+import {Elements} from '@stripe/react-stripe-js';
+import {loadStripe} from '@stripe/stripe-js';
+import CheckoutForm from '../../components/billing/chekout-form/CheckoutForm';
+import client from '../../client';
+import { notify, setProjectConfig } from '../../utils';
+import {increment, decrement, set, get} from 'automate-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import store from '../../store';
+const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 
 const Billing = () => {
     useEffect(() => {
 		ReactGA.pageview("/projects/plans");
     }, [])
-    const [subscribed, setSubscribed] = useState(false) 
+    const subscribed = useSelector(state => state.billing.status)
     const [contactModalVisible, setContactModalVisible] = useState(false)
+    const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)
     const [defaultSubject, setDefaultSubject] = useState("")
+    const dispatch = useDispatch();
 
     const handleContactUs = () => {
         setContactModalVisible(true);
@@ -42,6 +53,37 @@ const Billing = () => {
     const handleCancel = () => {
         setContactModalVisible(false)
     }
+   
+    const handleSubsriptionModalCancel = () =>{
+        setSubscriptionModalVisible(false)
+    }
+
+    const handleStripePaymentMethod = (paymentMethodId) => {
+        dispatch(increment("pendingRequests"));
+        client.billing.setBillingSubscription(paymentMethodId).then(res => {
+            if(res === 200){
+                store.dispatch(set("billing", {status: true, invoices:[{}]}))
+                setSubscriptionModalVisible(false);
+                notify("success", "Success", "Sucessfully subscribed to space cloud pro")
+            }
+        }).catch(ex =>{
+            console.log(ex)
+            notify("error", "Error subcribing to space cloud pro", ex)
+        }).finally(() => dispatch(decrement("pendingRequests")))
+    }
+
+    const handleBillingContact = (subject, message) =>{
+        dispatch(increment("pendingRequests"));
+        client.billing.setBillingContact(subject, message).then(res => {
+            if(res === 200){
+                setContactModalVisible(false)
+                notify("success", "Success", "Sucessfully send message")
+            }
+        }).catch(ex =>{
+            console.log(ex)
+            notify("error", "Error sending message", ex)
+        }).finally(() => dispatch(decrement("pendingRequests")))
+    } 
 
     return (
         <div>
@@ -53,7 +95,7 @@ const Billing = () => {
                     {subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Plan Details & Support</h3>}
                     <Row>
                         <Col lg={{ span:18}}>
-                            {!subscribed && <UpgradeCard />}
+                            {!subscribed && <UpgradeCard handleSubscription={() => setSubscriptionModalVisible(true)}/>}
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
@@ -76,7 +118,12 @@ const Billing = () => {
                 </div>
                 {contactModalVisible && <ContactUs 
                     initialvalues={defaultSubject}
+                    handleContactUs={handleBillingContact}
                     handleCancel={handleCancel} />}
+                {subscriptionModalVisible && <Elements stripe={stripePromise}>
+                    <CheckoutForm handleCancel={handleSubsriptionModalCancel}
+                    handleStripePayment={handleStripePaymentMethod} />
+                </Elements>}
             </div>
         </div>
     )

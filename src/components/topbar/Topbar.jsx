@@ -26,7 +26,7 @@ const Topbar = (props) => {
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
   const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
-  
+  const enterpriseMode = localStorage.getItem('enterprise') === "true"
   const svgIcon = dbIcons(projects, projectID, selectedDB)
   const content = (
     <div className="popContent">
@@ -109,12 +109,12 @@ const Topbar = (props) => {
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
-            <Divider type="vertical" style={{height:"40px"}}/>
-            <Menu.Item>
+            {enterpriseMode && <Divider type="vertical" style={{height:"40px"}}/>}
+            {enterpriseMode && <Menu.Item>
               <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }}>
                 <img src={avatarSvg} />
               </Popover>
-            </Menu.Item>
+            </Menu.Item>}
           </Menu>
         </div>
       </div>
