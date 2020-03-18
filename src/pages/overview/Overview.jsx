@@ -19,6 +19,7 @@ function Overview() {
 
   const protocol = window.location.protocol
   const host = window.location.host
+  const enterpriseMode = localStorage.getItem('enterprise') === 'true'
   return (
     <div className="overview">
       <Topbar showProjectSelector />
@@ -37,9 +38,9 @@ function Overview() {
             <Col lg={{span:11, offset:2}} className="git-card">
               <GithubCard/>
             </Col>
-            <Col lg={{ span:24 }} style={{marginTop:"3%"}}>
+            {enterpriseMode && <Col lg={{ span:24 }} style={{marginTop:"3%"}}>
               <UpgradeCard />
-            </Col>
+            </Col>}
           </Col>
         </Row>
       </div>

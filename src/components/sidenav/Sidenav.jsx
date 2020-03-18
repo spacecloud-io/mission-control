@@ -35,6 +35,7 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const version = useSelector(state => state.version)
+  const enterpriseMode = localStorage.getItem('enterprise') === 'true';
 
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
@@ -48,7 +49,7 @@ const Sidenav = (props) => {
     <div className="sidenav-container">
     <div className={showSidenav?'overlay':'no-overlay'} onClick={()=>store.dispatch(set("uiState.showSidenav", false))}></div>
     <div className={showSidenav?'sidenav':'no-sidenav'}>
-      <div style={{height: "92%", overflowY: "auto"}}>
+      <div style={{height: "86.5%", overflowY: "auto"}}>
         <Link to={`/mission-control/projects/${projectID}/overview`} onClick={closeSidenav}>
           <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
         </Link>
@@ -87,9 +88,9 @@ const Sidenav = (props) => {
         <Link to={`/mission-control/projects/${projectID}/auth`} onClick={closeSidenav}>
           <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
         </Link>
-        <Link to={`/mission-control/projects/${projectID}/clusters`} onClick={closeSidenav}>
+        {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/clusters`} onClick={closeSidenav}>
           <SidenavItem name="Clusters" icon="cloud" active={props.selectedItem === 'clusters'} />
-        </Link>
+        </Link>}
         <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
           <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
         </Link>
@@ -103,16 +104,16 @@ const Sidenav = (props) => {
         </Link>
         {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
-        </Link>
-        <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
-          <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
         </Link> */}
+        {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
+          <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
+        </Link>} 
         </div>
         <div className="sidenav-version">
          <Icon type="info-circle" style={{fontSize:"20px", fontWeight:"700"}} /> 
          <span className="version-no">Version - v{version}</span>
          <p className="plan">Opensource plan</p>
-         <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>
+         {enterpriseMode && <Button className="upgrade-btn" type="primary" ghost>Upgrade</Button>}
       </div>
       </div>
     </div>

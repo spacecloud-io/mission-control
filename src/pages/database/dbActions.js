@@ -78,10 +78,6 @@ export const fetchCollections = (projectId, dbName, setLoading) => {
     client.database.listCollections(projectId, dbName).then((collections = []) => {
       const connected = get(store.getState(), `extraConfig.${projectId}.crud.${dbName}.connected`, false)
       store.dispatch(set(`extraConfig.${projectId}.crud.${dbName}.collections`, collections))
-      if (connected && !collections.includes("event_logs")) {
-        modifyColSchema(projectId, dbName, "event_logs", eventingSchema, setLoading).then(() => resolve()).catch(ex => reject(ex))
-        return
-      }
       resolve()
     })
       .catch(ex => reject(ex))
@@ -184,9 +180,9 @@ const setDefaultEventSecurityRule = (projectId, type, rule) => {
 
 const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
-  client.eventing.setEventingConfig(projectId, { enabled: true, dbType: alias, col: "event_logs" })
+  client.eventing.setEventingConfig(projectId, { enabled: true, dbType: alias })
     .then(() => {
-      setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias, col: 'event_logs' })
+      setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias })
       setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
       notify("success", "Success", "Changed eventing config successfully")
     })

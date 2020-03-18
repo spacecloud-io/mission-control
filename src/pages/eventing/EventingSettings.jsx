@@ -65,7 +65,6 @@ const EventingSettings = () => {
                 <EventingConfigure
                     dbType={eventing.dbType}
                     dbList={dbList}
-                    col={eventing.col}
                     handleSubmit={handleEventingConfig}
                 />
             </div>
