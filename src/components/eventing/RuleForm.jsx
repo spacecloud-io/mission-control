@@ -35,28 +35,21 @@ const RuleForm = (props) => {
 
   const selectedDb = getFieldValue("options.db")
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDb}.collections`, {})
-  const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
-  const data = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
+  const trackedCollections = Object.keys(collections);
+  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs")
 
   const [result, setResult] = useState([]);
 
   const handleSearch = value => {
-    let res = [];
-
-    if (!value) {
-      res = []
-    } else {
-      res = data.map(data => data.name);
-    }
-    setResult(res);
+    const children = data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1))
+    setResult(children);
   };
 
-  const children = result.map(data => (
+  const render = result.map(data => (
     <Option key={data} value={data}>
       {data}
     </Option>
-  ));
-
+  ))
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
@@ -108,7 +101,7 @@ const RuleForm = (props) => {
                 initialValue: options ? options.col : undefined
               })(
                 <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch}>
-                  {children}
+                  {render}
                 </AutoComplete>
               )}
             </Form.Item>
