@@ -204,7 +204,7 @@ export const fetchGlobalEntities = (token) => {
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
-  if (enterPriseMode !== undefined && enterpriseMode !== null) {
+  if (enterpriseMode !== undefined && enterpriseMode !== null) {
     localStorage.setItem("enterprise",  enterpriseMode.toString())
   }
   localStorage.setItem("isProd", isProd.toString())
