@@ -11,7 +11,7 @@ class Projects {
             reject(data.error)
             return
           }
-          resolve(data.projects)
+          resolve(data)
         })
         .catch(ex => reject(ex.toString()))
     })
