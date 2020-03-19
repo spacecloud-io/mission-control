@@ -12,8 +12,6 @@ import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
 import gql from 'graphql-tag';
 import { LoremIpsum } from "lorem-ipsum";
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -151,8 +149,8 @@ export const getSecretType = (type, defaultValue) => {
         secret = "Docker Secret"
         break;
       case "file":
-        secret = "File Secret"
-        break;
+          secret = "File Secret"
+          break;
       default:
         secret = "Environment Variables"
     }
@@ -175,196 +173,59 @@ export const openProject = (projectId) => {
 }
 
 
-export const fetchGlobalEntities = (token) => {
-  // Save the new token value
+export const handleConfigLogin = (token, lastProjectId) => {
   if (token) {
-    storeToken(token)
+    client.setToken(token)
   }
 
-  // Redirect if needed
-  redirectIfNeeded()
+  store.dispatch(increment("pendingRequests"))
 
-  // Fetch projects
-  if (shouldFetchProjects()) {
-    store.dispatch(increment("pendingRequests"))
-    client.projects.getProjects().then(projects => {
-      store.dispatch(set("projects", projects))
-      if (projects.length === 0) {
-        history.push(`/mission-control/welcome`)
-        return
-      }
+  client.projects.getProjects().then(projects => {
+    store.dispatch(set("projects", projects))
+    if (projects.length === 0) {
+      history.push(`/mission-control/welcome`)
+      return
+    }
 
-      // Decide which project to open
-      let projectToBeOpened = getProjectToBeOpened()
-      if (!projectToBeOpened) {
-        projectToBeOpened = projects[0].id
-      }
-
-      openProject(projectToBeOpened)
-    }).catch(ex => notify("error", "Could not fetch projects", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-  }
-}
-
-const storeEnv = (enterpriseMode, isProd, version) => {
-  if (enterpriseMode !== undefined && enterpriseMode !== null) {
-    localStorage.setItem("enterprise",  enterpriseMode.toString())
-  }
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("version", version))
-}
-
-const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
-const isEnterprise = () => localStorage.getItem("enterprise") === "true" ? true : false
-const isEmailVerified = () => localStorage.getItem("isEmailVerified") === "true" ? true : false
-const getToken = () => localStorage.getItem("token")
-export const getFirebaseToken = () => localStorage.getItem("firebase-token")
-export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
-
-const shouldFetchProjects = () => {
-  const prodMode = isProdMode()
-  const enterprise = isEnterprise()
-  const emailVerified = isEmailVerified()
-  const token = getToken()
-
-  if (prodMode && !token) return false
-  if (enterprise && (!emailVerified || !token)) return false
-  return true
-}
-
-const getTokenClaims = (token) => {
-  const temp = token.split(".")
-  const decoded = atob(temp[1])
-  let claims = {}
-  try {
-    const decodedObj = JSON.parse(decoded)
-    claims = decodedObj
-  } catch (error) {
-    console.log("Error decoding token", error)
-  }
-  return claims
-}
-
-const storeToken = (token) => {
-  // Get claims of the token
-  const { email, name, isEmailVerified } = getTokenClaims(token)
-
-  // Save token claims to local storage
-  localStorage.setItem("email", email)
-  localStorage.setItem("name", name)
-  localStorage.setItem("isEmailVerified", isEmailVerified.toString())
-
-  // Save token to local storage and set the token on the API
-  localStorage.setItem("token", token)
-  client.setToken(token)
-}
-
-const shouldRedirect = () => {
-  // Check if we are at a public route
-  const path = window.location.pathname.split("/")[2]
-  if (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler") {
-    return { redirect: false, redirectUrl: "" }
-  }
-
-  const enterpriseMode = localStorage.getItem("enterprise") === "true"
-  const productionMode = localStorage.getItem("isProd") === "true"
-  const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
-  const token = localStorage.getItem("token")
-
-  if (enterpriseMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/signin" }
-  }
-
-  if (enterpriseMode && !isEmailVerified) {
-    return { redirect: true, redirectUrl: "/mission-control/email-verification" }
-  }
-
-  if (productionMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/login" }
-  }
-
-  return { redirect: false, redirectUrl: "" }
-}
-
-const redirectIfNeeded = () => {
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
-}
-
-const getProjectToBeOpened = () => {
-  let projectId = null
-  const urlParams = window.location.pathname.split("/")
-  if (urlParams.length > 3 && urlParams[3]) {
-    projectId = urlParams[3]
-  }
-  return projectId
-}
-
-export const handleInvoices = () => {
-  client.billing.getBillingInvoices().then(res => {
-      if(res.status){
-          store.dispatch(set("billing", res))
-      }
-  }).catch(ex => console.log(ex))
+    // Open last project
+    if (!lastProjectId) {
+      lastProjectId = projects[0].id
+    }
+    openProject(lastProjectId)
+  }).catch(ex => notify("error", "Could not fetch config", ex))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(({ enterprise, isProd, version }) => {
-    // Store env
-    storeEnv(enterprise, isProd, version)
-
-    // Redirect if needed
-    redirectIfNeeded()
-
+  client.fetchEnv().then(({isProd, version}) => {
     const token = localStorage.getItem("token")
-    if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, isProd, enterprise)).catch(ex => {
+    localStorage.getItem("isProd", isProd.toString())
+    store.dispatch(set("version", version))
+    if (isProd && !token) {
+      history.push("/mission-control/login")
+      return
+    }
+
+    let lastProjectId = null
+    const urlParams = window.location.pathname.split("/")
+    if (urlParams.length > 3 && urlParams[3]) {
+      lastProjectId = urlParams[3]
+    }
+
+    if (isProd && token) {
+      client.refreshToken(token).then(token => {
+        localStorage.setItem("token", token)
+        handleConfigLogin(token, lastProjectId)
+      }).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
-        redirectIfNeeded()
+        history.push("/mission-control/login")
       })
       return
     }
 
-    fetchGlobalEntities(token, enterprise, isProd)
-    handleInvoices()
+    handleConfigLogin(token, lastProjectId)
   })
-}
-
-export const enterpriseSignin = (token) => {
-  return new Promise((resolve, reject) => {
-    storeFirebaseToken(token)
-    client.enterpriseSignin(token).then(newToken => {
-      fetchGlobalEntities(newToken, true, true)
-      resolve()
-    }).catch((error) => {
-      reject(error)
-    })
-  })
-}
-
-export const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { redirect, redirectUrl } = shouldRedirect()
-  return (
-    <Route
-      {...rest}
-      render={props =>
-        redirect ? (
-          <Redirect to={redirectUrl} />
-        ) : (
-            <Component {...props} />
-          )
-      }
-    />
-  )
-}
-
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
 
 
@@ -395,12 +256,34 @@ export const dbIcons = (project, projectId, selectedDb) => {
   return svg;
 }
 
+export const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")) ? (
+        <Redirect to={"/mission-control/login"} />
+      ) : (
+          <Component {...props} />
+        )
+    }
+  />
+)
+
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+}
+
 const generateRandom = (value) => {
   return (value === 'ID') ?
     `"${Math.floor(Math.random() * 9 + 1)}"` : (value === 'String' ?
       `"${lorem.generateWords(1)}"` : (value === 'Integer') ?
         Math.floor(Math.random() * 101 + 51) : (value === 'Float') ?
           ((Math.random() * 50 + 51).toFixed(1)) : `"${value}"`)
+}
+
+const getNestedValues = (fields, ruleSchema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
+  fields = fields.concat("{" + getFields(gql(ruleSchema), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
 }
 
 export const getType = (schema) => {
@@ -435,21 +318,23 @@ export const getFields = (schema, rules, index, specificField, rangeField, argum
       for (var j in index)
         if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {
           if (schema.definitions[0].fields[i].type.type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
           }
           else continue;
-        } else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
+        } 
+        else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
           if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
           }
           else continue;
-        } else {
+        } 
+        else {
           if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
           }
           else continue;
         }
-    }
+      }
   }
   return fields;
 }
@@ -535,4 +420,5 @@ export const getQueryVariable = (schema) => {
   }
   return fieldsValue;
 }
+
 

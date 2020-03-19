@@ -101,10 +101,10 @@
 .sidenav-container .ant-collapse-content > .ant-collapse-content-box {
   padding: 0;
 }
-.sidenav-container .ant-divider {
+.ant-divider {
   background: #d9d9d9;
 }
-.sidenav-container .ant-divider-horizontal {
+.ant-divider-horizontal {
   margin: 0;
 }
 

@@ -3,11 +3,8 @@ import { Router, Route, Redirect, Switch } from "react-router-dom";
 import { PrivateRoute } from "./utils";
 import history from "./history";
 
-import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
-import Signup from "./pages/signup/Signup";
-import EmailVerification from "./pages/signup/EmailVerification";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
 import Overview from "./pages/overview/Overview";
@@ -34,7 +31,7 @@ import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
-import Billing from './pages/billing/Billing';
+import Plans from './pages/plans/Plans';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 import Clusters from './pages/clusters/Clusters'
@@ -45,12 +42,8 @@ export default () => {
       <Switch>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
-        <Route path="/mission-control/email-action-handler" component={EmailActionHandler} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
-        <Route exact path="/mission-control/signup" component={() => <Signup mode='signup' />} />
-        <Route exact path="/mission-control/email-verification" component={EmailVerification} />
-        <Route exact path="/mission-control/signin" component={() => <Signup mode='signin' />} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
         <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
         <PrivateRoute exact path="/mission-control/projects/:projectID"
@@ -82,7 +75,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/rules" component={DeploymentsRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
       </Switch>

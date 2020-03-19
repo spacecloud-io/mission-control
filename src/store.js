@@ -11,11 +11,7 @@ const initialState = {
         showSidenav: false,
         sideNavActiveKeys: ["1", "2"]
     },
-    clusters: [],
-    billing: {
-        status: false,
-        invoices: [{}]
-    }
+    clusters: []
 };
 
 // Generate reducers with the initial state and pass it to the redux store

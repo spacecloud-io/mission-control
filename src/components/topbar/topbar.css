@@ -95,13 +95,13 @@
     background-color: initial;
 }
 
-@media screen and (min-width: 992px) {
+@media screen and (min-width: 800px) {
     .topbar .upLogo,
     .hamburger {
         display: none;
     }
 }
-@media screen and (max-width: 992px){
+@media screen and (max-width: 800px){
     .topbar .logo {
         display: none;
     }
