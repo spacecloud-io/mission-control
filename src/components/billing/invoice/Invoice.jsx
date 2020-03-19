@@ -47,29 +47,6 @@ const Invoice = () => {
         }
     ]    
 
-    const data =[
-        {
-            key: "1",
-            period: "25/10/2019 to 25/11/2019",
-            amount: "$199",
-            status: "paid",
-            invoice_pdf: "http://google.com"
-        },
-        {
-            key: "1",
-            period: "25/10/2019 to 25/11/2019",
-            amount: "$199",
-            status: "paid",
-            invoice_pdf: "Download"
-        },
-        {
-            key: "1",
-            period: "25/10/2019 to 25/11/2019",
-            amount: "$199",
-            status: "paid",
-            invoice_pdf: "Download"
-        }
-    ]
     return(
         <Table 
             columns={columns} 

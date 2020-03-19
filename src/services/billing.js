@@ -17,7 +17,7 @@ class Billing {
       })
     }
 
-    setBillingContact(subject, message) {
+    contactUs(subject, message) {
       return new Promise((resolve, reject) => {
         this.client.postJSON(`/v1/billing/contact-us`, {subject: subject, message: message})
           .then(({status, data}) => {

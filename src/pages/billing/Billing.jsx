@@ -72,9 +72,9 @@ const Billing = () => {
         }).finally(() => dispatch(decrement("pendingRequests")))
     }
 
-    const handleBillingContact = (subject, message) =>{
+    const handleContactUs = (subject, message) =>{
         dispatch(increment("pendingRequests"));
-        client.billing.setBillingContact(subject, message).then(res => {
+        client.billing.contactUs(subject, message).then(res => {
             if(res === 200){
                 setContactModalVisible(false)
                 notify("success", "Success", "Sucessfully send message")
@@ -118,7 +118,7 @@ const Billing = () => {
                 </div>
                 {contactModalVisible && <ContactUs 
                     initialvalues={defaultSubject}
-                    handleContactUs={handleBillingContact}
+                    handleContactUs={handleContactUs}
                     handleCancel={handleCancel} />}
                 {subscriptionModalVisible && <Elements stripe={stripePromise}>
                     <CheckoutForm handleCancel={handleSubsriptionModalCancel}
