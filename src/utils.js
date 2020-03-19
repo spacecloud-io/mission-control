@@ -274,6 +274,7 @@ export const getDBTypeFromAlias = (projectId, alias) => {
   return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
 
+// Generate random values when it is an ID, String, Integer or a Float DataType 
 const generateRandom = (value) => {
   return (value === 'ID') ?
     `"${Math.floor(Math.random() * 9 + 1)}"` : (value === 'String' ?
@@ -282,56 +283,51 @@ const generateRandom = (value) => {
           ((Math.random() * 50 + 51).toFixed(1)) : `"${value}"`)
 }
 
-const getNestedValues = (fields, ruleSchema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
-  fields = fields.concat("{" + getFields(gql(ruleSchema), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
-}
-
+// Gets the collection name
 export const getType = (schema) => {
   return schema.definitions[0].name.value;
 }
 
+// Gets all the fields keys in from the given schema
 export const getFields = (schema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
-  var fields = []
+  var fields = [];                     // Will contain all the keys
   for (var i in schema.definitions[0].fields) {
-    if (specificField === 1)
-      if (schema.definitions[0].fields[i].name.value === argumentValue) {
+    if (specificField === 1)                    
+      if (schema.definitions[0].fields[i].name.value === argumentValue) {                                 // Add the argumentValue key to the fields array
         fields.push(schema.definitions[0].fields[i].name.value + "\n");
       }
       else continue;
     else {
-      if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {
+      if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {                            // Not add rangeArgumentValue to the fields array
         fields.push(schema.definitions[0].fields[i].name.value + "\n");
       }
     }
     if (typeof (schema.definitions[0].fields[i].directives[0]) === 'undefined')
       continue;
-    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {
+    if (schema.definitions[0].fields[i].directives[0].name.value === "link") {                            // check if there is any link directive
       for (var j in schema.definitions[0].fields[i].directives[0].arguments) {
-        if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {
-          specificField = 1;
-          argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {          // check if there is 'field' argument 
+          specificField = 1;                                                                              // if yes mark the with flag specificField
+          argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;         // Store the field argument value in argumentValue
         } 
-        else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {
-          rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
+        else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {        // check if there is 'to' argument  
+          rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;    // store the argument value in rangeArgumentValue
         }
       }
       for (var j in index)
-        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {
-          if (schema.definitions[0].fields[i].type.type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
-          }
+        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {                                                    // check if its undefined or no
+          if (schema.definitions[0].fields[i].type.type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {           // check if there is a collection with this value given
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}      // if the is add the keys from other collection.
           else continue;
         } 
         else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
           if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
-          }
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}
           else continue;
         } 
         else {
           if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            getNestedValues(fields, rules[index[j]], rules, index, specificField, rangeField, argumentValue, rangeArgumentValue);
-          }
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}
           else continue;
         }
       }
@@ -341,7 +337,7 @@ export const getFields = (schema, rules, index, specificField, rangeField, argum
 
 export const getFieldsValues = (schema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
   var fieldsValue = []
-  var nullType;                                                                      // 0 = NonNullType, 1 = NullType
+  var nullType;                                                                      // 0 = NonNullType, 1 = NullType  | Null type changes the storage for key-value pairs so we need it 
   for (var i in schema.definitions[0].fields) {
     if (specificField === 1)
       if (schema.definitions[0].fields[i].name.value === argumentValue) {

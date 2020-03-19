@@ -55,6 +55,7 @@ const Queries = () => {
   // sort the index
   index.sort(function (a, b) { return a == b ? 0 : (a > b ? 1 : -1); });
 
+  // Removes all redundant Comma and Quotes
   function removeRegex(value, dataresponse) {
     let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
     let removeClosingComma = /\,(?=\s*?[\}\]])/g;
@@ -70,20 +71,10 @@ const Queries = () => {
     var query = gql(selectedRule)
   if (query !== undefined) {
 
-    console.log(`query { 
-      ${getType(query)} (
-        where: {${getQueryVariable(query, rules, index)}} 
-      ) @${selectedDB} {
-        ${getFields(query, rules, index)}  }
-}`);
-
-
     var value1 = gqlPrettier(removeRegex(`query { 
-      ${getType(query)} (
-        where: {${getQueryVariable(query)}} 
-      ) @${selectedDB} {
+      ${getType(query)} (where: {${getQueryVariable(query)}}) @${selectedDB} {
         ${getFields(query, rules, index)}  }
-}`, 0))
+    }`, 0))
 
     var value2 = removeRegex(`
     {
@@ -97,45 +88,41 @@ const Queries = () => {
     }`, 1)
 
     var value3 = gqlPrettier(removeRegex(`mutation { 
-  insert_${getType(query)} ( 
-     docs: [{${getFieldsValues(query, rules, index)}}]   
-  ) @${selectedDB} {
+    insert_${getType(query)} (docs: [{${getFieldsValues(query, rules, index)}}]) @${selectedDB} {
     status
     error
     returning {
       ${getFields(query, rules, index)}
-    }
-  }
-}`, 0))
+        }
+      }
+    }`, 0))
 
     var value4 = removeRegex(`{ 
-  "data":{ 
-    "insert_${getType(query)}":{ 
-      "returning": [{ 
-        ${getFieldsValues(query, rules, index)}    
-      }],
-      "status": 200
-    }
-  }
-}`, 1)
+    "data":{ 
+      "insert_${getType(query)}":{ 
+        "returning": [{ 
+          ${getFieldsValues(query, rules, index)}    
+          }],
+        "status": 200
+        }
+      }
+    }`, 1)
 
     var value5 = gqlPrettier(removeRegex(`mutation { 
-  delete_${getType(query)} ( 
-     where: {${getFieldsValues(query, rules, index)}}      
-    ) @${selectedDB} { 
+    delete_${getType(query)} ( 
+      where: {${getFieldsValues(query, rules, index)}}) @${selectedDB} { 
        status
        error
        }
-     
-  }`, 0))
+    }`, 0))
 
     var value6 = removeRegex(`{ 
-  "data":{   
-    "delete_${getType(query)}":{ 
-      "status":200
-    }
-  }
-}`, 1)
+    "data":{   
+      "delete_${getType(query)}":{ 
+        "status":200
+        }
+      }
+    }`, 1)
   }
 
   return (
