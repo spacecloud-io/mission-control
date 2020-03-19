@@ -3,6 +3,8 @@
   "version": "0.16.0",
   "private": true,
   "dependencies": {
+    "@stripe/react-stripe-js": "^1.0.3",
+    "@stripe/stripe-js": "^1.0.3",
     "antd": "^3.19.2",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",

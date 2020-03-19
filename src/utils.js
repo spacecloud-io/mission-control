@@ -161,7 +161,6 @@ export const getSecretType = (type, defaultValue) => {
 }
 
 export const openProject = (projectId) => {
-  console.log("Open Project called")
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`
   if (!currentURL.includes(projectURL)) {
@@ -208,7 +207,7 @@ export const fetchGlobalEntities = (token) => {
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
-  if (enterPriseMode !== undefined && enterpriseMode !== null) {
+  if (enterpriseMode !== undefined && enterpriseMode !== null) {
     localStorage.setItem("enterprise",  enterpriseMode.toString())
   }
   localStorage.setItem("isProd", isProd.toString())
@@ -304,6 +303,14 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+export const handleInvoices = () => {
+  client.billing.getBillingInvoices().then(res => {
+      if(res.status){
+          store.dispatch(set("billing", res))
+      }
+  }).catch(ex => console.log(ex))
+}
+
 export const onAppLoad = () => {
   client.fetchEnv().then(({ enterprise, isProd, version }) => {
     // Store env
@@ -323,6 +330,7 @@ export const onAppLoad = () => {
     }
 
     fetchGlobalEntities(token, enterprise, isProd)
+    handleInvoices()
   })
 }
 

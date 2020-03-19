@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useHistory, Link } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils'
-import { Button, Icon, Select, Menu, Popover, Row, Col, Divider } from 'antd';
+import { Button, Icon, Select, Menu, Popover, Row, Col, Divider, Avatar } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -14,7 +14,8 @@ import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
 
 import logo from '../../assets/logo-black.svg';
-import upLogo from '../../logo.png'
+import upLogo from '../../logo.png';
+import avatarSvg from '../../assets/avatar.svg';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -25,7 +26,7 @@ const Topbar = (props) => {
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
   const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
-  
+  const enterpriseMode = localStorage.getItem('enterprise') === "true"
   const svgIcon = dbIcons(projects, projectID, selectedDB)
   const content = (
     <div className="popContent">
@@ -47,6 +48,25 @@ const Topbar = (props) => {
       </Row>
     </div>
   );
+
+  const handleLogout = () =>{
+      localStorage.clear();
+      history.push('/mission-control/signin');  
+  } 
+
+  const avatarContent = (
+    <Row className="popContent">
+      <Col lg={{ span:5 }}>
+        <img src={avatarSvg} /> 
+      </Col>
+      <Col lg={{ span:16, offset:2 }}>
+        <h4>{localStorage.getItem('name')}</h4>
+        <p>{localStorage.getItem('email')}</p>
+        <Button type="primary" onClick={handleLogout}>Logout</Button>
+      </Col>
+    </Row>
+  );
+
   return (
     <div>
       <div className="topbar">
@@ -89,6 +109,12 @@ const Topbar = (props) => {
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
+            {enterpriseMode && <Divider type="vertical" style={{height:"40px"}}/>}
+            {enterpriseMode && <Menu.Item>
+              <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }}>
+                <img src={avatarSvg} />
+              </Popover>
+            </Menu.Item>}
           </Menu>
         </div>
       </div>
