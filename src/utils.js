@@ -293,8 +293,7 @@ export const getFields = (schema, rules, index, specificField, rangeField, argum
       if (schema.definitions[0].fields[i].name.value === argumentValue) {
         fields.push(schema.definitions[0].fields[i].name.value + "\n");
       }
-      else
-        continue;
+      else continue;
     else {
       if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {
         fields.push(schema.definitions[0].fields[i].name.value + "\n");
@@ -307,7 +306,8 @@ export const getFields = (schema, rules, index, specificField, rangeField, argum
         if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {
           specificField = 1;
           argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
-        } else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {
+        } 
+        else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {
           rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;
         }
       }
