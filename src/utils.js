@@ -316,6 +316,13 @@ export const fetchCluster = () => {
   .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
 }
 
+export const fetchCred = () => {
+  client.clusters.getCred().then(data => {
+    store.dispatch(set('cred', data))
+  })
+  .catch(ex => console.log(ex))
+}
+
 export const onAppLoad = () => {
   client.fetchEnv().then(({ enterprise, isProd, version }) => {
     // Store env
@@ -334,6 +341,7 @@ export const onAppLoad = () => {
       return
     }
     fetchCluster()
+    fetchCred()
     fetchGlobalEntities(token, enterprise, isProd)
   })
 }

@@ -42,14 +42,17 @@ const Settings = () => {
   const secret = globalConfig.secret
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
+  const cred = useSelector(state => state.cred)
 
   const copyValue = (e, text) => {
     e.preventDefault();
     if (text === "username") {
       setNameCopy("copied");
+      setKeyCopy("copy")
       setTimeout(() => setNameCopy("copy"), 5000);
     } else {
       setKeyCopy("copied");
+      setNameCopy("copy")
       setTimeout(() => setKeyCopy("copy"), 5000);
     }
   }
@@ -143,10 +146,10 @@ const Settings = () => {
           <Col lg={{ span: 12 }}>
             <h2>Credentials</h2>
             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}><b>username </b>  username <CopyToClipboard text="username">
+              <h3 style={{ wordSpacing: 6 }}><b>username </b> {cred.userName}  <CopyToClipboard text={cred.userName}>
                 <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
               </CopyToClipboard></h3>
-              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text="*************************">
+              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text={cred.accessKey}>
                 <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
               </CopyToClipboard></h3>
             </Card>
