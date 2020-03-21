@@ -1,6 +1,6 @@
 import React from "react"
 
-import { Modal, Form, Input, Radio, Select, Collapse } from 'antd';
+import { Modal, Form, Input, Radio, Select, Collapse, InputNumber } from 'antd';
 import { getEventSourceFromType } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
@@ -134,11 +134,11 @@ const RuleForm = (props) => {
           <Collapse.Panel header="Advanced settings" key="advanced">
             <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item>
-              {getFieldDecorator('retries', { initialValue: retries })(<Input placeholder="Number of retries" />)}
+              {getFieldDecorator('retries', { initialValue: retries })(<InputNumber style={{width: '100%'}} placeholder="Number of retries" />)}
             </Form.Item>
             <FormItemLabel name="Timeout" description="default: 5000" />
             <Form.Item>
-              {getFieldDecorator('timeout', { initialValue: timeout })(<Input placeholder="Timeout in milliseconds" />)}
+              {getFieldDecorator('timeout', { initialValue: timeout })(<InputNumber style={{width: '100%'}} placeholder="Timeout in milliseconds" />)}
             </Form.Item>
           </Collapse.Panel>
         </Collapse>

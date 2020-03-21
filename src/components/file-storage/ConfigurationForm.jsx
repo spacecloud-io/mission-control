@@ -72,7 +72,7 @@ const ConfigurationForm = (props) => {
           </Form.Item>
           <FormItemLabel name="Endpoint" description="Optional" />
           <Form.Item>
-            {getFieldDecorator('ednpoint', {
+            {getFieldDecorator('endpoint', {
               initialValue: endpoint
             })(
               <Input placeholder="Example: https://nyc3.digitaloceanspaces.com" />

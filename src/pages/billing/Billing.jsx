@@ -30,7 +30,7 @@ const Billing = () => {
     const [defaultSubject, setDefaultSubject] = useState("")
     const dispatch = useDispatch();
 
-    const handleContactUs = () => {
+    const handleContactUsClick = () => {
         setContactModalVisible(true);
         setDefaultSubject("");
     }
