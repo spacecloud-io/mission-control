@@ -133,9 +133,10 @@ class Database {
   }
 
   setColRule(projectId, dbName, colName, rule) {
+    console.log(rule)
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/rules`, {
-        isRealtimeEnabled: typeof rule.isRealtimeEnabled === "string" ? false : rule.isRealtimeEnabled, rules: {...rule.rules, id: colName}
+        isRealtimeEnabled: typeof rule.isRealtimeEnabled === "string" ? false : rule.isRealtimeEnabled, ...rule
       })
         .then(({ status, data }) => {
           if (status !== 200) {
