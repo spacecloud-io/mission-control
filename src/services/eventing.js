@@ -32,7 +32,6 @@ class Eventing {
   }
 
   setTriggerRule(projectId, triggerName, triggerRule) {
-    console.log(triggerRule)
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, {id: triggerName, ...triggerRule})
         .then(({ status, data }) => {
@@ -75,7 +74,6 @@ class Eventing {
   }
 
   setSecurityRule(projectId, type, rule) {
-    console.log({id: type, ...rule})
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, {...rule, id: type})
         .then(({ status, data }) => {
