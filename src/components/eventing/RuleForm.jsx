@@ -38,18 +38,12 @@ const RuleForm = (props) => {
   const trackedCollections = Object.keys(collections);
   const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs")
 
-  const [result, setResult] = useState([]);
+  const [value, setValue] = useState("");
 
   const handleSearch = value => {
-    const children = data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1))
-    setResult(children);
+    setValue(value);
   };
 
-  const render = result.map(data => (
-    <Option key={data} value={data}>
-      {data}
-    </Option>
-  ))
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
@@ -101,7 +95,13 @@ const RuleForm = (props) => {
                 initialValue: options ? options.col : undefined
               })(
                 <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch}>
-                  {render}
+                  {
+                    data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                      <Option key={data} value={data}>
+                        {data}
+                      </Option>
+                    ))
+                  }
                 </AutoComplete>
               )}
             </Form.Item>

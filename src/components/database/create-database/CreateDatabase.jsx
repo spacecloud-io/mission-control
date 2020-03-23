@@ -21,7 +21,7 @@ const CreateDatabase = (props) => {
   const projects = useSelector(state => state.projects)
   const dbconfig = getProjectConfig(projects, props.projectId, `modules.crud`)
 
-  const dbAliasNames = dbconfig ? Object.keys(dbconfig) : "";
+  const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
   const { getFieldDecorator, setFieldsValue, getFieldValue, validateFields } = props.form;
 
   const handleMongo = () => {
@@ -53,12 +53,12 @@ const CreateDatabase = (props) => {
   const handleDbSubmit = () => {
     validateFields((err, values) => {
       if (!err) {
-        dbEnable(projects, props.projectId, getFieldValue("alias"), getFieldValue("connectionString"), defaultDBRules, selectedDB, (err) => {
-          if (!err) {
-            if (props.redirect) history.push(`/mission-control/projects/${props.projectId}/database/${selectedDB}/overview`)
-            props.handleSubmit();
-          }
-        })
+        props.handleSubmit(
+          values.alias,
+          values.connectionString,
+          defaultDBRules,
+          selectedDB
+        )
       }
     })
   }
@@ -142,7 +142,7 @@ const CreateDatabase = (props) => {
                     cb("Please input an alias for your database")
                     return
                   }
-                  var check = dbAliasNames.some(data => value === data);
+                  const check = dbAliasNames.some(data => value === data);
                   if (check) {
                     cb("Alias name already taken by another database. Please provide an unique alias name!")
                   }
