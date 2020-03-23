@@ -10,6 +10,7 @@ import { generateProjectConfig, notify } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
 import { Row, Col, Button, Form, Input, Icon, Steps, Card, Select, Alert } from 'antd'
 import './create-project.css'
+import { dbEnable } from '../database/dbActions'
 
 const CreateProject = (props) => {
   const [selectedDB, setSelectedDB] = useState("mongo");
@@ -58,6 +59,14 @@ const CreateProject = (props) => {
       }
     });
   };
+
+  const createProject = (alias, connectionString, defaultDBRules, selectedDB) => {
+    dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, (err) => {
+      if (!err) {
+        history.push(`/mission-control/projects/${projectId}`)
+      }
+    })
+  }
 
   const alertMsg = <div>
     <span style={{ fontWeight: "bold" }}>Help:</span> Can’t find your cluster above?</div>
@@ -127,7 +136,7 @@ const CreateProject = (props) => {
     content: <div>
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <CreateDatabase projectId={projectId} handleSubmit={() => history.push(`/mission-control/projects/${projectId}`)} />
+          <CreateDatabase projectId={projectId} handleSubmit={createProject} />
         </Col>
       </Row>
     </div>
