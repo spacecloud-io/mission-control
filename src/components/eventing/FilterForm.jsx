@@ -1,13 +1,13 @@
 import React from "react"
-import { Modal, Form, Select, Checkbox, DatePicker, Icon} from 'antd';
+import { Modal, Form, Select, Checkbox, DatePicker, Icon } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //redux
-import {useDispatch, useSelector} from "react-redux";
-import {set, reset} from "automate-redux";
-import {getProjectConfig} from "../../utils";
+import { useDispatch, useSelector } from "react-redux";
+import { set, reset } from "automate-redux";
+import { getProjectConfig } from "../../utils";
 import moment from 'moment';
 
-const {Option} = Select;
+const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const FilterForm = (props) => {
@@ -16,13 +16,13 @@ const FilterForm = (props) => {
   const projects = useSelector(state => state.projects);
 
   const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.rules"));
-  
+
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, fieldsValue) => {
       let values = {};
       if (!err) {
-        if(getFieldValue("showDate")){
+        if (getFieldValue("showDate")) {
           const rangeValue = fieldsValue["range-picker"];
           values = {
             ...fieldsValue,
@@ -31,7 +31,7 @@ const FilterForm = (props) => {
           }
         }
         else {
-          values = {...fieldsValue}
+          values = { ...fieldsValue }
         }
         props.filterTable(values);
         props.handleCancel();
@@ -47,7 +47,7 @@ const FilterForm = (props) => {
       visible={props.visible}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
-      cancelButtonProps={{style: {float: "left"}, onClick: () => {dispatch(reset("uiState.eventFilters"));props.handleCancel()}}}
+      cancelButtonProps={{ style: { float: "left" }, onClick: () => { dispatch(reset("uiState.eventFilters")); props.handleCancel() } }}
       cancelText="Reset Filters"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
@@ -57,8 +57,8 @@ const FilterForm = (props) => {
             initialValue: eventFilters.status ? eventFilters.status : ['processed', 'failed', 'staged']
           })(
             <Checkbox.Group>
-              <Checkbox value="processed">Processed <Icon type="check" style={{color: "#00FF00"}}/></Checkbox>
-              <Checkbox value="failed">Failed <Icon type="close" style={{color: "red"}}/></Checkbox>
+              <Checkbox value="processed">Processed <Icon type="check" style={{ color: "#00FF00" }} /></Checkbox>
+              <Checkbox value="failed">Failed <Icon type="close" style={{ color: "red" }} /></Checkbox>
               <Checkbox value="staged">Pending <Icon type="hourglass" /></Checkbox>
             </Checkbox.Group>
           )}
@@ -66,56 +66,52 @@ const FilterForm = (props) => {
         <FormItemLabel name="Filter by trigger name" />
         <Form.Item>
           {getFieldDecorator('showName', {
-            initialValue: eventFilters.showName
+            initialValue: eventFilters.showName,
+            valuePropName: 'checked'
           })
-          (
-            <Checkbox 
-             checked={eventFilters.showName}
-             onChange={e => dispatch(set("uiState.eventFilters.showName", e.target.checked))}
-            >
-              Show logs of specific event triggers
+            (
+              <Checkbox>
+                Show logs of specific event triggers
             </Checkbox>
-          )}
+            )}
         </Form.Item>
         {getFieldValue('showName') && (
           <>
-          <FormItemLabel name="Specify event triggers" />
-          <Form.Item>
-            {getFieldDecorator('name', {
-              rules: [{required: true, message: "Please select an event trigger"}],
-              initialValue: eventFilters.name ? eventFilters.name : undefined
-            })
-            (
-              <Select mode="multiple" placeholder="Select event triggers for which you want to see the logs">
-                {triggerNames.map(val => <Option key={val}>{val}</Option>)}
-              </Select>
-            )}
-          </Form.Item>
+            <FormItemLabel name="Specify event triggers" />
+            <Form.Item>
+              {getFieldDecorator('name', {
+                rules: [{ required: true, message: "Please select atleast one event trigger" }],
+                initialValue: eventFilters.name ? eventFilters.name : undefined
+              })
+                (
+                  <Select mode="multiple" placeholder="Select event triggers for which you want to see the logs">
+                    {triggerNames.map(val => <Option key={val}>{val}</Option>)}
+                  </Select>
+                )}
+            </Form.Item>
           </>
         )}
         <FormItemLabel name="Filter by date" />
         <Form.Item>
           {getFieldDecorator('showDate', {
-            initialValue: eventFilters.showDate 
+            initialValue: eventFilters.showDate,
+            valuePropName: 'checked'
           })
-          (
-            <Checkbox 
-             checked={eventFilters.showDate}
-             onChange={e => dispatch(set("uiState.eventFilters.showDate", e.target.checked))}
-            >
-              Show logs between a specific period
+            (
+              <Checkbox>
+                Show logs between a specific period
             </Checkbox>
-          )}
+            )}
         </Form.Item>
         {getFieldValue('showDate') && (
           <>
-          <FormItemLabel name="Specify period" />
-          <Form.Item>
-            {getFieldDecorator("range-picker", {
-              rules: [{ type: "array", required: true, message: "Please enter the duration!" }],
-              initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7,'d'), moment()]
-            })(<RangePicker />)}
-          </Form.Item>
+            <FormItemLabel name="Specify period" />
+            <Form.Item>
+              {getFieldDecorator("range-picker", {
+                rules: [{ type: "array", required: true, message: "Please enter the duration!" }],
+                initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7, 'd'), moment()]
+              })(<RangePicker />)}
+            </Form.Item>
           </>
         )}
       </Form>
