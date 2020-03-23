@@ -34,7 +34,7 @@ import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
-import Plans from './pages/plans/Plans';
+import Billing from './pages/billing/Billing';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 import Clusters from './pages/clusters/Clusters'
@@ -82,7 +82,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/rules" component={DeploymentsRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Plans} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
       </Switch>

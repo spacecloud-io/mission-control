@@ -57,7 +57,7 @@ class Eventing {
 
   setEventingConfig(projectId, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/config`, config)
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/config/eventing-config`, config)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -85,7 +85,7 @@ class Eventing {
 
   setTriggerRule(projectId, triggerName, triggerRule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, triggerRule)
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, {id: triggerName, ...triggerRule})
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -127,7 +127,7 @@ class Eventing {
 
   setSecurityRule(projectId, type, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, { rule: rule })
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, {...rule, id: type})
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -141,7 +141,7 @@ class Eventing {
 
   setEventSchema(projectId, type, schema) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/schema/${type}`, { schema: schema })
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/schema/${type}`, { id: type, schema: schema })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
