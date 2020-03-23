@@ -44,12 +44,6 @@ const SpaceApi = props => {
         return props.useAdminToken ? generateAdminToken(props.secret) : props.userToken
     }
 
-    const generateToken = (data) => {
-        var generatedToken = jwt.sign(JSON.stringify(data), props.secret)
-        props.setUserToken(generatedToken);
-        props.setPayload(data)
-    }
-
     const applyRequest = () => {
         let code = props.spaceApiQuery;
         if (
@@ -119,7 +113,7 @@ const SpaceApi = props => {
                                     value={props.userToken}
                                     onChange={e => props.setUserToken(e.target.value)}
                                 />
-                                <Button type="primary" style={{ background: "#F8F8F8", color: "black", border: "1px solid #D9D9D9" }} onClick={() => setGenerateTokenModal(true)}>
+                                <Button onClick={() => setGenerateTokenModal(true)}>
                                     Generate Token
                                 </Button>
                             </div>
@@ -189,8 +183,7 @@ const SpaceApi = props => {
                 </div>
                 {generateTokenModal && <GenerateTokenForm
                     handleCancel={() => setGenerateTokenModal(false)}
-                    handleSubmit={generateToken}
-                    payloadObject={props.payload}
+                    handleSubmit={props.setUserToken}
                     initialToken={getToken()}
                     secret={props.secret}
                 />}
@@ -216,8 +209,7 @@ const mapStateToProps = (state, ownProps) => {
             'uiState.explorer.useAdminToken',
             true
         ),
-        userToken: get(state, 'uiState.explorer.userToken'),
-        payload: get(state, 'uiState.explorer.payload', {})
+        userToken: get(state, 'uiState.explorer.userToken')
     };
 };
 
@@ -234,9 +226,6 @@ const mapDispatchToProps = dispatch => {
         },
         setUserToken: (userToken) => {
             dispatch(set('uiState.explorer.userToken', userToken))
-        },
-        setPayload: (payload) => {
-            dispatch(set('uiState.explorer.payload', payload))
         }
     };
 };
