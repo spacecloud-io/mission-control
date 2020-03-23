@@ -118,7 +118,7 @@
   .login .text {
     padding: 0 32px;
   }
-  input {
+  .login input {
     width: 75%;
     background: white !important;
     border: 1px solid lightgrey !important;

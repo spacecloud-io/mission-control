@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { useParams, Link } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux';
+import { useParams } from "react-router-dom";
+import { useSelector } from 'react-redux';
 import { Modal, Form, Input, Radio, Select, Collapse, AutoComplete } from 'antd';
 import { getEventSourceFromType, getProjectConfig } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
@@ -158,11 +158,11 @@ const RuleForm = (props) => {
           <Collapse.Panel header="Advanced settings" key="advanced">
             <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item>
-              {getFieldDecorator('retries', { initialValue: retries })(<Input placeholder="Number of retries" />)}
+              {getFieldDecorator('retries', { initialValue: retries ? retries : 3 })(<InputNumber style={{width: '100%'}} placeholder="Number of retries" />)}
             </Form.Item>
             <FormItemLabel name="Timeout" description="default: 5000" />
             <Form.Item>
-              {getFieldDecorator('timeout', { initialValue: timeout })(<Input placeholder="Timeout in milliseconds" />)}
+              {getFieldDecorator('timeout', { initialValue: timeout ? timeout : 5000 })(<InputNumber style={{width: '100%'}} placeholder="Timeout in milliseconds" />)}
             </Form.Item>
           </Collapse.Panel>
         </Collapse>

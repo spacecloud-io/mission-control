@@ -31,6 +31,7 @@ const EventingRules = () => {
   
     // Derived properties
     const rule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.default`, {})
+    delete rule.id;
     const rules = getProjectConfig(projects, projectID, `modules.eventing.securityRules`, {})
     const eventRules = getProjectConfig(projects, projectID, `modules.eventing.rules`, {})
     const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)

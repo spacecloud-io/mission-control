@@ -13,19 +13,14 @@ import client from '../../client'
 import store from '../../store';
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils'
+import ReactGA from 'react-ga';
 
 const Clusters = () => {
 
     const { projectID } = useParams()
 
     useEffect(() => {
-        store.dispatch(increment("pendingRequests"))
-        client.clusters.getClusters()
-            .then(clusters => {
-                store.dispatch(set(`clusters`, clusters))
-            })
-            .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
-            .finally(()=>store.dispatch(decrement("pendingRequests")))
+        ReactGA.pageview("/clusters");
     }, [])
 
     const clusters = useSelector(state => state.clusters)

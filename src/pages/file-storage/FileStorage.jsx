@@ -40,7 +40,7 @@ const Rules = (props) => {
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {
 		return Object.assign(prev, {
-			[curr.name]: {
+			[curr.id]: {
 				prefix: curr.prefix,
 				rule: curr.rule
 			}
