@@ -3,7 +3,7 @@ import {useParams} from "react-router-dom";
 import {Button, Icon, Table} from "antd";
 import '../../index.css';
 import client from "../../client";
-import {getProjectConfig} from "../../utils";
+import {getProjectConfig, notify} from "../../utils";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
@@ -48,7 +48,7 @@ const EventingLogs = () => {
   const dispatch = useDispatch();
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const [hasMoreEventLogs, sethasMoreEventLogs] = useState(true);
+  const [hasMoreEventLogs, setHasMoreEventLogs] = useState(true);
   const projects = useSelector(state => state.projects);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ const EventingLogs = () => {
       dispatch(increment("pendingRequests"));
       client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
       .then(res => dispatch(set("eventLogs", res)))
-      .catch(ex => console.log(ex))
+      .catch(ex => notify("error", "Error loading event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))
     }
   }, [eventFilters, projects])
@@ -111,9 +111,8 @@ const EventingLogs = () => {
   }
 
   const filterTable = (values) => {
-     console.log(values)
      dispatch(set("uiState.eventFilters", values))
-     sethasMoreEventLogs(true);
+     setHasMoreEventLogs(true);
   }
 
   const loadFunc = () => {
@@ -123,18 +122,19 @@ const EventingLogs = () => {
       .then(res => {
         dispatch(set("eventLogs", eventLogs.concat(res)))
         if(res.length < 10) {
-          sethasMoreEventLogs(false);
+          setHasMoreEventLogs(false);
         }
       })
-      .catch(ex => console.log(ex))
+      .catch(ex => notify("error", "Error loading event logs", ex.toString()))
     }
   }
 
   const handleRefresh = () => {
+    const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, 0, "mysql")
+    client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
     .then(res => dispatch(set("eventLogs", res)))
-    .catch(ex => console.log(ex))
+    .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
     .finally(() => dispatch(decrement("pendingRequests")))
   }
 
@@ -169,7 +169,7 @@ const EventingLogs = () => {
          projectID={projectID}
          visible={modalVisible}
          filterTable={filterTable}
-         handleCancel={() => {setModalVisible(false);sethasMoreEventLogs(false)}}
+         handleCancel={() => {setModalVisible(false);setHasMoreEventLogs(false)}}
          projectID={projectID}
         />
       )}

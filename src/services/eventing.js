@@ -28,7 +28,7 @@ class Eventing {
           event_logs (
             limit: 10,
             where: {
-              status: {_in: $status},
+              status: {_in: $status}
               ${showName ? "rule_name: {_in: $name}" : ""}
               ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
               ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
@@ -42,10 +42,11 @@ class Eventing {
               where: {event_id: {_eq: "event_logs._id"}}
             ) @${dbType} {
               _id
-              response_status_code
               invocation_time
+              response_status_code
               request_payload
               response_body
+              error_msg
             }
           }
         }
