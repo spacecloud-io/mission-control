@@ -59,7 +59,7 @@ const Sidenav = (props) => {
     <div className="sidenav-container">
       <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
       <div className={showSidenav ? 'sidenav' : 'no-sidenav'}>
-        <div style={{ height: "86.5%", overflowY: "auto" }}>
+        <div style={{ overflowY: "auto" }}>
           <Link to={`/mission-control/projects/${projectID}/overview`} onClick={closeSidenav}>
             <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
           </Link>
