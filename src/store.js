@@ -9,9 +9,15 @@ const initialState = {
     uiState: {
         selectedCollection: "",
         showSidenav: false,
-        sideNavActiveKeys: ["1", "2"]
+        sideNavActiveKeys: ["1", "2"],
+        eventFilters: {
+          status: ["processed", "staged", "failed"],
+          showName: false,
+          showDate: false
+        }
     },
     clusters: [],
+    eventLogs: [],
     billing: {
         status: false,
         invoices: [{}]
