@@ -28,8 +28,9 @@ const CreateProject = (props) => {
   const projectName = getFieldValue("projectName");
   const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
   const [projectId, setProjectId] = useState(projectID);
-
+  const enterpriseMode = localStorage.getItem('enterprise') === 'true'
   const projects = useSelector(state => state.projects)
+  const clusters = useSelector(state => state.clusters)
 
   const handleSubmit = e => {
     //e.preventDefault();
@@ -37,12 +38,21 @@ const CreateProject = (props) => {
     validateFields((err, values) => {
       if (!err) {
         const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+
         dispatch(increment("pendingRequests"))
         client.projects.addProject(projectConfig.id, projectConfig).then(() => {
           const updatedProjects = [...store.getState().projects, projectConfig]
           dispatch(set("projects", updatedProjects))
           setCurrent(current + 1);
           notify("success", "Success", "Project created successfully with suitable defaults")
+          const projectClusters = values.cluster
+          if (enterpriseMode) {
+            Promise.all(...projectClusters.map(c => client.clusters.addCluster(projectConfig.id, c))).then(() => {
+              const updatedClusters = store.getState().clusters.map(cluster => projectClusters.some(c => c === cluster.id) ? Object.assign({}, cluster, { projects: [...cluster.projects, projectConfig.id] }) : cluster)
+              dispatch(set("clusters", updatedClusters))
+            })
+              .catch(ex => notify("error", "Error adding clusters to project", ex))
+          }
         }).catch(ex => notify("error", "Error creating project", ex))
           .finally(() => dispatch(decrement("pendingRequests")))
       }
@@ -86,23 +96,24 @@ const CreateProject = (props) => {
                 <br />
                 {projectID && <span className="hint">ProjectID: {projectID}</span>}
               </Form.Item>
-              <p style={{ marginBottom: 0, fontWeight: "bold" }}>Clusters</p>
-              <label style={{ marginTop: 0, fontSize: "12px" }}>Each project requires atleast one Space Cloud cluster to run</label>
-              <Form.Item>
-                {getFieldDecorator('cluster', {
-                  rules: [{ required: true, message: "Please select cluster" }]
-                })(
-                  <Select mode="multiple" placeholder="Select clusters">
-                    <Select.Option value="1">cluster 1</Select.Option>
-                    <Select.Option value="2">cluster 2</Select.Option>
-                    <Select.Option value="3">cluster 3</Select.Option>
-                  </Select>
-                )}
-              </Form.Item>
-              <Alert message={alertMsg}
-                description={alertDes}
-                type="info"
-                showIcon />
+              {enterpriseMode && <div> <p style={{ marginBottom: 0, fontWeight: "bold" }}>Clusters</p>
+                <label style={{ marginTop: 0, fontSize: "12px" }}>Each project requires atleast one Space Cloud cluster to run</label>
+                <Form.Item>
+                  {getFieldDecorator('cluster', {
+                    rules: [{ required: true, message: "Please select cluster" }]
+                  })(
+                    <Select mode="multiple" placeholder="Select clusters">
+                      {clusters.map(data => {
+                        return <Select.Option value={data.id}>{data.id}</Select.Option>
+                      })}
+                    </Select>
+                  )}
+                </Form.Item>
+                <Alert message={alertMsg}
+                  description={alertDes}
+                  type="info"
+                  showIcon />
+              </div>}
             </Form>
             <Button type="primary" onClick={handleSubmit} className="project-btn">Create project</Button>
           </Card><br />
