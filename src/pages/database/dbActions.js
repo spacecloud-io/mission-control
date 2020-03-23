@@ -1,6 +1,6 @@
 import store from "../../store"
 import { getProjectConfig, setProjectConfig } from "../../utils"
-import { defaultDBRules, eventingSchema, defaultEventRule } from "../../constants"
+import { defaultDBRules, defaultEventRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';

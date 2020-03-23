@@ -40,13 +40,12 @@ const EventingSettings = () => {
         };
     });
 
-    const handleEventingConfig = (dbType, col) => {
+    const handleEventingConfig = (dbType) => {
         dispatch(increment("pendingRequests"));
         client.eventing
-          .setEventingConfig(projectID, { enabled: true, dbType, col })
+          .setEventingConfig(projectID, { enabled: true, dbType })
           .then(() => {
             setProjectConfig(projectID, "modules.eventing.dbType", dbType);
-            setProjectConfig(projectID, "modules.eventing.col", col);
             notify("success", "Success", "Changed eventing config successfully");
           })
           .catch(ex => notify("error", "Error", ex))

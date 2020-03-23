@@ -204,7 +204,7 @@ export const fetchGlobalEntities = (token) => {
 
 const storeEnv = (enterpriseMode, isProd, version) => {
   if (enterpriseMode !== undefined && enterpriseMode !== null) {
-    localStorage.setItem("enterprise",  enterpriseMode.toString())
+    localStorage.setItem("enterprise", enterpriseMode.toString())
   }
   localStorage.setItem("isProd", isProd.toString())
   store.dispatch(set("version", version))
@@ -301,25 +301,25 @@ const getProjectToBeOpened = () => {
 
 export const handleInvoices = () => {
   client.billing.getBillingInvoices().then(res => {
-      if(res.status){
-          store.dispatch(set("billing", res))
-      }
+    if (res.status) {
+      store.dispatch(set("billing", res))
+    }
   }).catch(ex => console.log(ex))
 }
 
 export const fetchCluster = () => {
   client.clusters.getClusters()
-  .then(clusters => {
+    .then(clusters => {
       store.dispatch(set(`clusters`, clusters))
-  })
-  .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
+    })
+    .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
 }
 
 export const fetchCred = () => {
   client.clusters.getCred().then(data => {
     store.dispatch(set('cred', data))
   })
-  .catch(ex => console.log(ex))
+    .catch(ex => console.log(ex))
 }
 
 export const onAppLoad = () => {
@@ -339,10 +339,14 @@ export const onAppLoad = () => {
       })
       return
     }
-    fetchCluster()
+    
+    if (enterprise) {
+      fetchCluster()
+      handleInvoices()
+    }
+
     fetchCred()
     fetchGlobalEntities(token, enterprise, isProd)
-    handleInvoices()
   })
 }
 
