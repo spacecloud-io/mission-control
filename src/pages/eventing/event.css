@@ -14,3 +14,11 @@
         margin-bottom: 24px;
     }
 }
+
+.event-logs-table {
+  margin-top: 16px;
+}
+
+.event-logs-table .ant-table-thead>tr>th {
+  background-color: #F2F2F2;;
+}

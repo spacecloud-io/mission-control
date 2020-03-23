@@ -39,7 +39,7 @@ class Deployments {
             reject(data.error)
             return
           }
-          resolve(data.services)
+          resolve(data.result)
         })
         .catch(ex => reject(ex.toString()))
     })

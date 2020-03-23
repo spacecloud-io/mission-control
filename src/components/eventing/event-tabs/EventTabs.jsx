@@ -29,6 +29,13 @@ export default ({ activeKey, projectID }) => {
             }}
           />
         </TabPane>
+        <TabPane tab='Event Logs' key='event-logs'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/eventing/event-logs`
+            }}
+          />
+        </TabPane>
         <TabPane tab='Settings' key='settings'>
           <Redirect
             to={{

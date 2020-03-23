@@ -24,6 +24,7 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   useDeepCompareEffect(() => {
     if (selectedRuleName) {
       let temp = rules[selectedRuleName]
+      delete temp.id;
       if (stringifyRules) {
         temp = JSON.stringify(temp, null, 2)
       }
