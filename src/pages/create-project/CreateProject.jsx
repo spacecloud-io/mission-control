@@ -76,9 +76,9 @@ const CreateProject = (props) => {
 
   const steps = [{
     title: 'Create Project',
-    content: <div>
+    content: <React.Fragment>
       <Row>
-        <Col sm={{ span: 24 }} style={{ marginTop: "3%" }}>
+        <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <Card>
             <Form>
               <p style={{ fontWeight: "bold" }}><b>Name your project</b></p>
@@ -129,24 +129,24 @@ const CreateProject = (props) => {
         </Col>
       </Row>
       <center><Link to="/mission-control/welcome" style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</Link></center>
-    </div>
+    </React.Fragment>
   },
   {
     title: 'Add Database',
-    content: <div>
+    content: <React.Fragment>
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <CreateDatabase projectId={projectId} handleSubmit={createProject} />
         </Col>
       </Row>
-    </div>
+    </React.Fragment>
   }];
 
   return (
     <div className="create-project">
       <div className="create-project--content">
         <Row>
-          <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} >
+          <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
             <Steps current={current} className="step-display" size="small">
               {steps.map(item => (
                 <Step key={item.title} title={item.title} />
@@ -154,7 +154,7 @@ const CreateProject = (props) => {
             </Steps><br />
           </Col>
         </Row>
-        <div>{steps[current].content}</div>
+        {steps[current].content}
       </div>
     </div>
   )
