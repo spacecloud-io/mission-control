@@ -157,7 +157,6 @@ export const getSecretType = (type, defaultValue) => {
 }
 
 export const openProject = (projectId) => {
-  console.log("Open Project called")
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}`
   if (!currentURL.includes(projectURL)) {
@@ -343,6 +342,7 @@ export const onAppLoad = () => {
     fetchCluster()
     fetchCred()
     fetchGlobalEntities(token, enterprise, isProd)
+    handleInvoices()
   })
 }
 
