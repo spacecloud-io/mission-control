@@ -10,13 +10,16 @@ import client from "./client"
 import history from "./history"
 import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 import gql from 'graphql-tag';
-import { LoremIpsum } from "lorem-ipsum";
+import 'firebase/auth'; import { LoremIpsum } from "lorem-ipsum";
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
+const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const lorem = new LoremIpsum();
 
@@ -149,8 +152,8 @@ export const getSecretType = (type, defaultValue) => {
         secret = "Docker Secret"
         break;
       case "file":
-          secret = "File Secret"
-          break;
+        secret = "File Secret"
+        break;
       default:
         secret = "Environment Variables"
     }
@@ -173,61 +176,217 @@ export const openProject = (projectId) => {
 }
 
 
-export const handleConfigLogin = (token, lastProjectId) => {
+export const fetchGlobalEntities = (token) => {
+  // Save the new token value
   if (token) {
-    client.setToken(token)
+    storeToken(token)
   }
 
-  store.dispatch(increment("pendingRequests"))
+  // Redirect if needed
+  redirectIfNeeded()
 
-  client.projects.getProjects().then(projects => {
-    store.dispatch(set("projects", projects))
-    if (projects.length === 0) {
-      history.push(`/mission-control/welcome`)
-      return
-    }
+  // Fetch projects
+  if (shouldFetchProjects()) {
+    store.dispatch(increment("pendingRequests"))
+    client.projects.getProjects().then(projects => {
+      store.dispatch(set("projects", projects))
+      if (projects.length === 0) {
+        history.push(`/mission-control/welcome`)
+        return
+      }
 
-    // Open last project
-    if (!lastProjectId) {
-      lastProjectId = projects[0].id
+      // Decide which project to open
+      let projectToBeOpened = getProjectToBeOpened()
+      if (!projectToBeOpened) {
+        projectToBeOpened = projects[0].id
+      }
+
+      openProject(projectToBeOpened)
+    }).catch(ex => notify("error", "Could not fetch projects", ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+  }
+}
+
+const storeEnv = (enterpriseMode, isProd, version) => {
+  if (enterpriseMode !== undefined && enterpriseMode !== null) {
+    localStorage.setItem("enterprise", enterpriseMode.toString())
+  }
+  localStorage.setItem("isProd", isProd.toString())
+  store.dispatch(set("version", version))
+}
+
+const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
+const isEnterprise = () => localStorage.getItem("enterprise") === "true" ? true : false
+const isEmailVerified = () => localStorage.getItem("isEmailVerified") === "true" ? true : false
+const getToken = () => localStorage.getItem("token")
+export const getFirebaseToken = () => localStorage.getItem("firebase-token")
+export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
+
+const shouldFetchProjects = () => {
+  const prodMode = isProdMode()
+  const enterprise = isEnterprise()
+  const emailVerified = isEmailVerified()
+  const token = getToken()
+
+  if (prodMode && !token) return false
+  if (enterprise && (!emailVerified || !token)) return false
+  return true
+}
+
+const getTokenClaims = (token) => {
+  const temp = token.split(".")
+  const decoded = atob(temp[1])
+  let claims = {}
+  try {
+    const decodedObj = JSON.parse(decoded)
+    claims = decodedObj
+  } catch (error) {
+    console.log("Error decoding token", error)
+  }
+  return claims
+}
+
+const storeToken = (token) => {
+  // Get claims of the token
+  const { email, name, isEmailVerified } = getTokenClaims(token)
+
+  // Save token claims to local storage
+  localStorage.setItem("email", email)
+  localStorage.setItem("name", name)
+  localStorage.setItem("isEmailVerified", isEmailVerified.toString())
+
+  // Save token to local storage and set the token on the API
+  localStorage.setItem("token", token)
+  client.setToken(token)
+}
+
+const shouldRedirect = () => {
+  // Check if we are at a public route
+  const path = window.location.pathname.split("/")[2]
+  if (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler") {
+    return { redirect: false, redirectUrl: "" }
+  }
+
+  const enterpriseMode = localStorage.getItem("enterprise") === "true"
+  const productionMode = localStorage.getItem("isProd") === "true"
+  const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
+  const token = localStorage.getItem("token")
+
+  if (enterpriseMode && !token) {
+    return { redirect: true, redirectUrl: "/mission-control/signin" }
+  }
+
+  if (enterpriseMode && !isEmailVerified) {
+    return { redirect: true, redirectUrl: "/mission-control/email-verification" }
+  }
+
+  if (productionMode && !token) {
+    return { redirect: true, redirectUrl: "/mission-control/login" }
+  }
+
+  return { redirect: false, redirectUrl: "" }
+}
+
+const redirectIfNeeded = () => {
+  const { redirect, redirectUrl } = shouldRedirect()
+  if (redirect) {
+    history.push(redirectUrl)
+    return
+  }
+}
+
+const getProjectToBeOpened = () => {
+  let projectId = null
+  const urlParams = window.location.pathname.split("/")
+  if (urlParams.length > 3 && urlParams[3]) {
+    projectId = urlParams[3]
+  }
+  return projectId
+}
+
+export const handleInvoices = () => {
+  client.billing.getBillingInvoices().then(res => {
+    if (res.status) {
+      store.dispatch(set("billing", res))
     }
-    openProject(lastProjectId)
-  }).catch(ex => notify("error", "Could not fetch config", ex))
-    .finally(() => store.dispatch(decrement("pendingRequests")))
+  }).catch(ex => console.log(ex))
+}
+
+export const fetchCluster = () => {
+  client.clusters.getClusters()
+    .then(clusters => {
+      store.dispatch(set(`clusters`, clusters))
+    })
+    .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
+}
+
+export const fetchCred = () => {
+  client.clusters.getCred().then(data => {
+    store.dispatch(set('cred', data))
+  })
+    .catch(ex => console.log(ex))
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(({isProd, version}) => {
+  client.fetchEnv().then(({ enterprise, isProd, version }) => {
+    // Store env
+    storeEnv(enterprise, isProd, version)
+
+    // Redirect if needed
+    redirectIfNeeded()
+
     const token = localStorage.getItem("token")
-    localStorage.getItem("isProd", isProd.toString())
-    store.dispatch(set("version", version))
-    if (isProd && !token) {
-      history.push("/mission-control/login")
-      return
-    }
-
-    let lastProjectId = null
-    const urlParams = window.location.pathname.split("/")
-    if (urlParams.length > 3 && urlParams[3]) {
-      lastProjectId = urlParams[3]
-    }
-
-    if (isProd && token) {
-      client.refreshToken(token).then(token => {
-        localStorage.setItem("token", token)
-        handleConfigLogin(token, lastProjectId)
-      }).catch(ex => {
+    if (token) {
+      client.refreshToken(token).then(token => fetchGlobalEntities(token, isProd, enterprise)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
-        history.push("/mission-control/login")
+        redirectIfNeeded()
       })
       return
     }
 
-    handleConfigLogin(token, lastProjectId)
+    if (enterprise) {
+      fetchCluster()
+      handleInvoices()
+    }
+
+    fetchCred()
+    fetchGlobalEntities(token, enterprise, isProd)
   })
 }
 
+export const enterpriseSignin = (token) => {
+  return new Promise((resolve, reject) => {
+    storeFirebaseToken(token)
+    client.enterpriseSignin(token).then(newToken => {
+      fetchGlobalEntities(newToken, true, true)
+      resolve()
+    }).catch((error) => {
+      reject(error)
+    })
+  })
+}
+
+export const PrivateRoute = ({ component: Component, ...rest }) => {
+  const { redirect, redirectUrl } = shouldRedirect()
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        redirect ? (
+          <Redirect to={redirectUrl} />
+        ) : (
+            <Component {...props} />
+          )
+      }
+    />
+  )
+}
+
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+}
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
@@ -250,28 +409,13 @@ export const dbIcons = (project, projectId, selectedDb) => {
     case dbTypes.SQLSERVER:
       svg = sqlserverSvg
       break;
+    case dbTypes.EMBEDDED:
+      svg = embeddedSvg
+      break;
     default:
       svg = postgresSvg
   }
   return svg;
-}
-
-export const PrivateRoute = ({ component: Component, ...rest }) => (
-  <Route
-    {...rest}
-    render={props =>
-      (localStorage.getItem("isProd") === "true" && !localStorage.getItem("token")) ? (
-        <Redirect to={"/mission-control/login"} />
-      ) : (
-          <Component {...props} />
-        )
-    }
-  />
-)
-
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
 }
 
 // Generate random values when it is an ID, String, Integer or a Float DataType 
@@ -292,7 +436,7 @@ export const getType = (schema) => {
 export const getFields = (schema, rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) => {
   var fields = [];                     // Will contain all the keys
   for (var i in schema.definitions[0].fields) {
-    if (specificField === 1)                    
+    if (specificField === 1)
       if (schema.definitions[0].fields[i].name.value === argumentValue) {                                 // Add the argumentValue key to the fields array
         fields.push(schema.definitions[0].fields[i].name.value + "\n");
       }
@@ -309,28 +453,31 @@ export const getFields = (schema, rules, index, specificField, rangeField, argum
         if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'field') {          // check if there is 'field' argument 
           specificField = 1;                                                                              // if yes mark the with flag specificField
           argumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;         // Store the field argument value in argumentValue
-        } 
+        }
         else if (schema.definitions[0].fields[i].directives[0].arguments[j].name.value === 'to') {        // check if there is 'to' argument  
           rangeArgumentValue = schema.definitions[0].fields[i].directives[0].arguments[j].value.value;    // store the argument value in rangeArgumentValue
         }
       }
       for (var j in index)
-        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {                                                    // check if its undefined or no
+        if (typeof (schema.definitions[0].fields[i].type.type.type) != 'undefined') {                                                    // check if its undefined or no
           if (schema.definitions[0].fields[i].type.type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {           // check if there is a collection with this value given
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}      // if the is add the keys from other collection.
-          else continue;
-        } 
-        else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
-          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}
-          else continue;
-        } 
-        else {
-          if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
-            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")}
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+          }      // if the is add the keys from other collection.
           else continue;
         }
-      }
+        else if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
+          if (schema.definitions[0].fields[i].type.type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+          }
+          else continue;
+        }
+        else {
+          if (schema.definitions[0].fields[i].type.name.value === gql(rules[index[j]]).definitions[0].name.value) {
+            fields = fields.concat("{" + getFields(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+          }
+          else continue;
+        }
+    }
   }
   return fields;
 }
@@ -353,10 +500,10 @@ export const getFieldsValues = (schema, rules, index, specificField, rangeField,
       else continue;
     else {
       if (schema.definitions[0].fields[i].name.value !== rangeArgumentValue) {
-        if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined' && typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') {
+        if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined' && typeof (schema.definitions[0].fields[i].type.type.type) != 'undefined') {
           fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.type.type.name.value)}`);
           nullType = 1;
-        } else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') {
+        } else if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined') {
           fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": ${generateRandom(schema.definitions[0].fields[i].type.type.name.value)}`);
           nullType = 1;
         } else {
@@ -379,26 +526,26 @@ export const getFieldsValues = (schema, rules, index, specificField, rangeField,
       }
       for (var j in index) {
         if (nullType === 1)
-        if (typeof(schema.definitions[0].fields[i].type.type.type) != 'undefined') 
-          if (!generateRandom(schema.definitions[0].fields[i].type.type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
-            fieldsValue.pop();
-            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
-            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
-          } else continue;
-        else if (typeof(schema.definitions[0].fields[i].type.type) != 'undefined') 
-          if (!generateRandom(schema.definitions[0].fields[i].type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
-            fieldsValue.pop();
-            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
-            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
-          }
-        else continue;
-        else
-          if (!generateRandom(schema.definitions[0].fields[i].type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
-            fieldsValue.pop();
-            fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
-            fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
-          }
-          else continue;
+          if (typeof (schema.definitions[0].fields[i].type.type.type) != 'undefined')
+            if (!generateRandom(schema.definitions[0].fields[i].type.type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
+              fieldsValue.pop();
+              fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+              fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            } else continue;
+          else if (typeof (schema.definitions[0].fields[i].type.type) != 'undefined')
+            if (!generateRandom(schema.definitions[0].fields[i].type.type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
+              fieldsValue.pop();
+              fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+              fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            }
+            else continue;
+          else
+            if (!generateRandom(schema.definitions[0].fields[i].type.name.value).localeCompare(`"${gql(rules[index[j]]).definitions[0].name.value}"`)) {
+              fieldsValue.pop();
+              fieldsValue.push(`"${schema.definitions[0].fields[i].name.value}": `);
+              fieldsValue = fieldsValue.concat("{" + getFieldsValues(gql(rules[index[j]]), rules, index, specificField, rangeField, argumentValue, rangeArgumentValue) + "}")
+            }
+            else continue;
       }
     }
   }
@@ -416,5 +563,3 @@ export const getQueryVariable = (schema) => {
   }
   return fieldsValue;
 }
-
-

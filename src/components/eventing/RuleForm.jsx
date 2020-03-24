@@ -1,12 +1,17 @@
-import React from "react"
-
-import { Modal, Form, Input, Radio, Select, Collapse } from 'antd';
-import { getEventSourceFromType } from "../../utils";
+import React, { useState } from "react"
+import { useParams } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { Modal, Form, Input, Radio, Select, Collapse, AutoComplete, InputNumber } from 'antd';
+import { getEventSourceFromType, getProjectConfig } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //import {dbIcons} from '../../utils';
 
+const { Option } = AutoComplete;
+
 const RuleForm = (props) => {
+  const { projectID } = useParams()
+  const projects = useSelector(state => state.projects)
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
@@ -27,6 +32,17 @@ const RuleForm = (props) => {
   let defaultEventSource = getEventSourceFromType(type, "database")
   const temp = getFieldValue("source")
   const eventSource = temp ? temp : defaultEventSource
+
+  const selectedDb = getFieldValue("options.db")
+  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDb}.collections`, {})
+  const trackedCollections = Object.keys(collections);
+  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs")
+
+  const [value, setValue] = useState("");
+
+  const handleSearch = value => {
+    setValue(value);
+  };
 
   return (
     <Modal
@@ -78,7 +94,15 @@ const RuleForm = (props) => {
               {getFieldDecorator('options.col', {
                 initialValue: options ? options.col : undefined
               })(
-                <Input placeholder="Collection / Table name" />
+                <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch}>
+                  {
+                    data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                      <Option key={data} value={data}>
+                        {data}
+                      </Option>
+                    ))
+                  }
+                </AutoComplete>
               )}
             </Form.Item>
           </div>
@@ -97,7 +121,7 @@ const RuleForm = (props) => {
           </Form.Item>
         </React.Fragment>}
         {(!eventSource || eventSource === 'file storage') && <React.Fragment>
-        <FormItemLabel name="Trigger operation" />
+          <FormItemLabel name="Trigger operation" />
           <Form.Item>
             {getFieldDecorator('type', {
               rules: [{ required: true, message: 'Please select a type!' }],
@@ -109,7 +133,7 @@ const RuleForm = (props) => {
               </Radio.Group>
             )}
           </Form.Item>
-          </React.Fragment>}
+        </React.Fragment>}
         {eventSource === "custom" && <React.Fragment>
           <FormItemLabel name="Type" />
           <Form.Item>
@@ -134,11 +158,11 @@ const RuleForm = (props) => {
           <Collapse.Panel header="Advanced settings" key="advanced">
             <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item>
-              {getFieldDecorator('retries', { initialValue: retries })(<Input placeholder="Number of retries" />)}
+              {getFieldDecorator('retries', { initialValue: retries ? retries : 3 })(<InputNumber style={{width: '100%'}} placeholder="Number of retries" />)}
             </Form.Item>
             <FormItemLabel name="Timeout" description="default: 5000" />
             <Form.Item>
-              {getFieldDecorator('timeout', { initialValue: timeout })(<Input placeholder="Timeout in milliseconds" />)}
+              {getFieldDecorator('timeout', { initialValue: timeout ? timeout : 5000 })(<InputNumber style={{width: '100%'}} placeholder="Timeout in milliseconds" />)}
             </Form.Item>
           </Collapse.Panel>
         </Collapse>

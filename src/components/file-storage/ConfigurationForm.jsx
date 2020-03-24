@@ -16,8 +16,7 @@ const ConfigurationForm = (props) => {
     });
   }
   const { getFieldDecorator, getFieldValue } = props.form;
-  const { storeType = "local", conn, bucket, endpoint } = props.initialValues ? props.initialValues : {}
-  const storeTypeValue = getFieldValue("storeType")
+  const { storeType, bucket, endpoint, conn } = props.initialValues ? props.initialValues : {}
   return (
     <Modal
       title="Configure File Storage"
@@ -40,7 +39,7 @@ const ConfigurationForm = (props) => {
             </Radio.Group>
           )}
         </Form.Item>
-        {(storeTypeValue === "local" || !storeTypeValue) && <React.Fragment>
+        {(getFieldValue("storeType") === "local" || !getFieldValue("storeType")) && <React.Fragment>
           <FormItemLabel name="Directory path" />
           <Form.Item>
             {getFieldDecorator('conn', {
@@ -51,7 +50,7 @@ const ConfigurationForm = (props) => {
             )}
           </Form.Item>
         </React.Fragment>}
-        {storeTypeValue === "amazon-s3" && <React.Fragment>
+        {getFieldValue("storeType") === "amazon-s3" && <React.Fragment>
           <FormItemLabel name="Region" />
           <Form.Item>
             {getFieldDecorator('conn', {
@@ -72,14 +71,14 @@ const ConfigurationForm = (props) => {
           </Form.Item>
           <FormItemLabel name="Endpoint" description="Optional" />
           <Form.Item>
-            {getFieldDecorator('ednpoint', {
+            {getFieldDecorator('endpoint', {
               initialValue: endpoint
             })(
               <Input placeholder="Example: https://nyc3.digitaloceanspaces.com" />
             )}
           </Form.Item>
         </React.Fragment>}
-        {storeTypeValue === "gcp-storage" && <React.Fragment>
+        {getFieldValue("storeType") === "gcp-storage" && <React.Fragment>
           <FormItemLabel name="Bucket" />
           <Form.Item>
             {getFieldDecorator('bucket', {

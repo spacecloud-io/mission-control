@@ -19,7 +19,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   if (!initialValues) {
     initialValues = {
       schema: `type {
-  ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
+  ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
 }`,
       rules: defaultRules,
       isRealtimeEnabled: true
@@ -29,7 +29,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialValues.schema);
-  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ?  rule === "{}" : true);
+  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? rule === "{}" : true);
 
   if (Object.keys(initialValues.rules).length === 0) {
     initialValues.rules = defaultRules
@@ -119,7 +119,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               setSchema(value)
             }}
           />
-          <div style={{paddingTop:20}}>
+          <div style={{ paddingTop: 20 }}>
             <Checkbox
               checked={applyDefaultRules}
               onChange={e =>

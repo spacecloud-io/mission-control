@@ -18,7 +18,7 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
   };
 
   return (
-    <div style={{ width: 800 }}>
+    <div>
       <Alert
         message="Domain setup"
         description="Make sure you have added A/AAA records pointing these domains to the clusters in this environment."

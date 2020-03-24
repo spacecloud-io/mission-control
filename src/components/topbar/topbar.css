@@ -62,9 +62,7 @@
 
 @media screen and (max-width: 600px) {
     .topbar .btn-position {
-        margin-left: 0;
-        position: absolute;
-        right: 0;
+        margin-left: 16px;
     }
     .topbar .hamburger {
         margin-right: 16px;
