@@ -31,7 +31,7 @@ const Rules = (props) => {
 	let [selectedRuleName, setSelectedRuleName] = useState("")
 
 	useEffect(() => {
-		ReactGA.pageview("/projects/file-storage/rules");
+		ReactGA.pageview("/projects/file-storage");
 	}, [])
 
 	// Derived properties
@@ -40,7 +40,7 @@ const Rules = (props) => {
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {
 		return Object.assign(prev, {
-			[curr.name]: {
+			[curr.id]: {
 				prefix: curr.prefix,
 				rule: curr.rule
 			}

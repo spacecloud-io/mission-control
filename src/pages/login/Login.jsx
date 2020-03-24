@@ -5,7 +5,7 @@ import { Row, Col } from 'antd'
 
 import LoginForm from './LoginForm';
 import client from '../../client';
-import { notify, handleConfigLogin } from "../../utils"
+import { notify, fetchGlobalEntities } from "../../utils"
 
 import './login.css'
 import logo from '../../assets/logo-black.svg'
@@ -14,13 +14,10 @@ import loginBg from '../../assets/login.svg'
 const Login = () => {
   const isLoading = useSelector(state => state.pendingRequests > 0)
   const handleSubmit = (user, key) => {
-    client.login(user, key).then(token => {
-      localStorage.setItem("token", token)
-      handleConfigLogin(token)
-    }).catch(ex => notify("error", "Error logging in", ex))
+    client.login(user, key).then(newToken => fetchGlobalEntities(newToken)).catch(ex => notify("error", "Error logging in", ex))
   }
   useEffect(() => {
-    ReactGA.pageview("/");
+    ReactGA.pageview("/login");
   }, [])
   return (
     <div className="login">
@@ -45,10 +42,10 @@ const Login = () => {
 
 
       <div className="mobile-view">
-              <img className="logo" src={logo} alt="logo" /><br />
-              <div className="welcome">Welcome back!</div>
-              <div className="text">Login to configure your Space Cloud cluster.</div><br />
-              <LoginForm isLoading={isLoading} handleSubmit={handleSubmit} />
+        <img className="logo" src={logo} alt="logo" /><br />
+        <div className="welcome">Welcome back!</div>
+        <div className="text">Login to configure your Space Cloud cluster.</div><br />
+        <LoginForm isLoading={isLoading} handleSubmit={handleSubmit} />
       </div>
     </div>
   )

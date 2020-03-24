@@ -10,7 +10,7 @@ import mongodb from '../../assets/mongodb.svg'
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
-import { setDBConfig, setColRule, dbEnable } from "./dbActions"
+import { dbEnable } from "./dbActions"
 
 const Database = () => {
   // Router params
@@ -23,11 +23,12 @@ const Database = () => {
   const [modalVisible, setModalVisible] = useState(false)
 
   // Dervied properties
-  const { enabled } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
+  const { enabled, type, conn } = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}`, {})
+  const dbType = type ? type : selectedDB
 
   // Handlers
-  const handleEnable = (conn, rules, type) => {
-    dbEnable(projectID, selectedDB, conn, rules, type)
+  const handleEnable = (conn, rules) => {
+    dbEnable(projects, projectID, selectedDB, conn, rules, dbType)
   }
 
   if (enabled) {
@@ -38,7 +39,7 @@ const Database = () => {
   let desc = ""
   let dbName = ""
 
-  switch (selectedDB) {
+  switch (dbType) {
     case "mysql":
       desc = "The world's most popular open source database."
       dbName = "MySQL"
@@ -56,20 +57,22 @@ const Database = () => {
       break
   }
 
+  const defaultConnString = conn ? conn : defaultDbConnectionStrings[dbType]
+
   return (
     <div>
       <Topbar showProjectSelector showDbSelector />
       <Sidenav selectedItem="database" />
       <div className="page-content ">
         <div className="panel" style={{ margin: 24 }}>
-          <img src={graphic} width={120} />
+          <img src={graphic} style={{width: 120}} />
           <h2 style={{ marginTop: 24 }}>{dbName}</h2>
           <p className="panel__description" style={{ marginBottom: 0 }}>{desc}</p>
           <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Start using</Button>
         </div>
       </div>
       {modalVisible && <EnableDBForm
-        initialValues={{ conn: defaultDbConnectionStrings[selectedDB], rules: defaultDBRules }}
+        initialValues={{ conn: defaultConnString, rules: defaultDBRules }}
         handleSubmit={handleEnable}
         handleCancel={() => setModalVisible(false)} />}
     </div>

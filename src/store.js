@@ -4,10 +4,23 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
     projects: [],
+    serviceRoutes: {},
     pendingRequests: 0,
     uiState: {
         selectedCollection: "",
-        showSidenav: false
+        showSidenav: false,
+        sideNavActiveKeys: ["1", "2"],
+        eventFilters: {
+          status: ["processed", "staged", "failed"],
+          showName: false,
+          showDate: false
+        }
+    },
+    clusters: [],
+    eventLogs: [],
+    billing: {
+        status: false,
+        invoices: [{}]
     }
 };
 

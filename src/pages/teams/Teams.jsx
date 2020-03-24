@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import construction from "../../assets/construction.svg"
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
+import ReactGA from 'react-ga';
 
 function Teams() {
+    useEffect(() => {
+		ReactGA.pageview("/projects/teams");
+    }, [])
+
     return (
         <div>
             <Topbar showProjectSelector />

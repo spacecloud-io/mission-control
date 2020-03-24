@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
-
+import ReactGA from 'react-ga';
 
 import { Alert } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -17,6 +17,10 @@ import { modifyColSchema } from '../dbActions';
 const Schema = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/schema");
+  }, [])
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -42,7 +46,7 @@ const Schema = () => {
       <div className="panel" style={{ margin: 24 }}>
         <img src={dataModellingSvg} width="240px" />
         <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Schema lets you manage types and relations</p>
-        <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/essentials/data-modelling" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
+        <a style={{ marginTop: 4 }} target="_blank" href="https://docs.spaceuptech.com/storage/database/data-modelling" className="panel__link"><span>View docs</span> <i className="material-icons">launch</i></a>
       </div>
       <Alert message={`You first need to add a ${selectedDB === "mongo" ? "collection" : "table"}`} type="info" banner showIcon={false} style={{ textAlign: "center" }} />
     </div>

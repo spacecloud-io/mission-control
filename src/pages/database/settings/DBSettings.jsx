@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { Button, Divider, Tooltip, Input } from "antd"
+import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -12,6 +13,9 @@ const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/settings");
+  }, [])
   // Global state
   const projects = useSelector(state => state.projects)
 
@@ -24,7 +28,8 @@ const Settings = () => {
   // Handlers
   const handleDisable = () => {
     let conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-    setDBConfig(projectID, selectedDB, false, conn)
+    let dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    setDBConfig(projectID, selectedDB, false, conn, dbType)
       .then(() => {
         notify("success", "Success", "Disabled database successfully")
         history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)

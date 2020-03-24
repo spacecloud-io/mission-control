@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { Button, Table, Icon, Row, Col, Popconfirm, Card } from "antd";
+import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
@@ -37,6 +38,10 @@ const SecretDetails = () => {
   const [secretKeyClicked, setSecretKeyClicked] = useState("");
   const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
+  useEffect(() => {
+		ReactGA.pageview("/projects/secrets/secretDetails");
+  }, [])
+  
   const handleClickUpdateSecretKey = name => {
     setSecretKeyClicked(name);
     setSecretKeyModalVisible(true);
