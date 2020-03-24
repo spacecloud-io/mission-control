@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, increment, decrement, set } from 'automate-redux';
+import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
@@ -14,6 +14,7 @@ import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
+import history from '../../../history';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
 import { defaultDBRules } from '../../../constants';
 
@@ -90,6 +91,10 @@ const Overview = () => {
     }
   }
 
+  const handleViewQueries = () => {
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
+  }
+
   const handleTrackCollections = (collections) => {
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
       .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
@@ -151,6 +156,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={handleViewQueries}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
