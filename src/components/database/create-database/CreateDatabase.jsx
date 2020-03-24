@@ -81,7 +81,7 @@ const CreateDatabase = (props) => {
           })(
             <Radio.Group style={{ width: "100%" }}>
               <Row gutter={16}>
-                <Col lg={{ span: 4 }} >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="mongo" layout="db-card" onClick={handleMongo}>
                     <div className="db-card-content" >
                       <img src={mongoIcon} width="24px" height="24px" />
@@ -89,7 +89,7 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }}>
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="postgres" layout="db-card" onClick={handlePostgres}>
                     <div className="db-card-content" >
                       <img src={postgresIcon} width="24px" height="24px" />
@@ -97,15 +97,15 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }} onClick={handleMysql}>
-                  <RadioCard value="mysql" layout="db-card" >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
+                  <RadioCard value="mysql" layout="db-card" onClick={handleMysql}>
                     <div className="db-card-content">
                       <img src={mysqlIcon} width="24px" height="24px" />
                       <span className="title">MySQL</span>
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }} >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="sqlserver" layout="db-card" onClick={handleSqlServer}>
                     <div className="db-card-content">
                       <img src={sqlserverIcon} width="24px" height="24px" />
@@ -113,11 +113,11 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }} >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="embedded" layout="db-card" onClick={handleEmbedded}>
                     <div className="db-card-content">
                       <img src={embeddedIcon} width="24px" height="24px" />
-                      <span className="title">Embedded DB</span>
+                      <span className="title">Embedded</span>
                     </div>
                   </RadioCard>
                 </Col>
