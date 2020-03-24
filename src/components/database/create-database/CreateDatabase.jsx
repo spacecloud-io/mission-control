@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
 import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
 import { Row, Col, Card, Form, Input, Button, Alert, Radio } from 'antd';
-import StarterTemplate from '../../starter-template/StarterTemplate';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
 import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
-import { dbEnable } from '../../../pages/database/dbActions'
+import embeddedIcon from '../../../assets/embeddedIcon.svg'
 import './create-db.css'
 import { useSelector } from 'react-redux';
-import { Link, useParams, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import RadioCard from '../../radio-card/RadioCard';
-import { getProjectConfig, setProjectConfig } from "../../../utils"
-import { validate } from 'graphql';
+import { getProjectConfig } from "../../../utils"
 
 const CreateDatabase = (props) => {
-  const history = useHistory()
   const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO);
   const [alias, setAlias] = useState("mongo");
   const projects = useSelector(state => state.projects)
   const dbconfig = getProjectConfig(projects, props.projectId, `modules.crud`)
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
-  const { getFieldDecorator, setFieldsValue, getFieldValue, validateFields } = props.form;
+  const { getFieldDecorator, setFieldsValue, validateFields } = props.form;
 
   const handleMongo = () => {
     setSelectedDB(dbTypes.MONGO);
@@ -49,6 +46,12 @@ const CreateDatabase = (props) => {
     setSelectedDB(dbTypes.SQLSERVER);
     setFieldsValue({ connectionString: defaultDbConnectionStrings[dbTypes.SQLSERVER], alias: "sqlserver" });
   }
+
+  const handleEmbedded = () => {
+    setSelectedDB(dbTypes.EMBEDDED);
+    setFieldsValue({ connectionString: defaultDbConnectionStrings[dbTypes.EMBEDDED], alias: "embedded" });
+  }
+
 
   const handleDbSubmit = () => {
     validateFields((err, values) => {
@@ -78,7 +81,7 @@ const CreateDatabase = (props) => {
           })(
             <Radio.Group style={{ width: "100%" }}>
               <Row gutter={16}>
-                <Col lg={{ span: 4 }} >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="mongo" layout="db-card" onClick={handleMongo}>
                     <div className="db-card-content" >
                       <img src={mongoIcon} width="24px" height="24px" />
@@ -86,7 +89,7 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }}>
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="postgres" layout="db-card" onClick={handlePostgres}>
                     <div className="db-card-content" >
                       <img src={postgresIcon} width="24px" height="24px" />
@@ -94,15 +97,15 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }} onClick={handleMysql}>
-                  <RadioCard value="mysql" layout="db-card" >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
+                  <RadioCard value="mysql" layout="db-card" onClick={handleMysql}>
                     <div className="db-card-content">
                       <img src={mysqlIcon} width="24px" height="24px" />
                       <span className="title">MySQL</span>
                     </div>
                   </RadioCard>
                 </Col>
-                <Col lg={{ span: 4 }} >
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
                   <RadioCard value="sqlserver" layout="db-card" onClick={handleSqlServer}>
                     <div className="db-card-content">
                       <img src={sqlserverIcon} width="24px" height="24px" />
@@ -110,8 +113,15 @@ const CreateDatabase = (props) => {
                     </div>
                   </RadioCard>
                 </Col>
+                <Col lg={{ span: 6 }} xl={{ span: 4 }} style={{ marginBottom: 8 }}>
+                  <RadioCard value="embedded" layout="db-card" onClick={handleEmbedded}>
+                    <div className="db-card-content">
+                      <img src={embeddedIcon} width="24px" height="24px" />
+                      <span className="title">Embedded</span>
+                    </div>
+                  </RadioCard>
+                </Col>
               </Row>
-
             </Radio.Group>
           )}
         </Form.Item>

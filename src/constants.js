@@ -2,14 +2,16 @@ export const dbTypes = {
   MONGO: "mongo",
   POSTGRESQL: "postgres",
   MYSQL: "mysql",
-  SQLSERVER: "sqlserver"
+  SQLSERVER: "sqlserver",
+  EMBEDDED: "embedded"
 }
 
 export const defaultDbConnectionStrings = {
   [dbTypes.MONGO]: "mongodb://localhost:27017",
   [dbTypes.POSTGRESQL]: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable",
   [dbTypes.MYSQL]: "root:my-secret-pw@tcp(localhost:3306)/",
-  [dbTypes.SQLSERVER]: "Data Source=localhost,1433;Initial Catalog=master;User ID=yourID;Password=yourPassword@#;"
+  [dbTypes.SQLSERVER]: "Data Source=localhost,1433;Initial Catalog=master;User ID=yourID;Password=yourPassword@#;",
+  [dbTypes.EMBEDDED]: "embedded.db"
 }
 
 export const SPACE_CLOUD_USER_ID = "internal-sc-user"

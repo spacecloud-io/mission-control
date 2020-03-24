@@ -24,12 +24,14 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   useDeepCompareEffect(() => {
     if (selectedRuleName) {
       let temp = rules[selectedRuleName]
-      delete temp.id;
-      if (stringifyRules) {
-        temp = JSON.stringify(temp, null, 2)
+      if (temp) {
+        delete temp.id;
+        if (stringifyRules) {
+          temp = JSON.stringify(temp, null, 2)
+        }
+        setInitialrule(temp)
+        setSelectedRule(temp)
       }
-      setInitialrule(temp)
-      setSelectedRule(temp)
     }
   }, [selectedRuleName, rules])
 
@@ -64,11 +66,11 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
           <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
             {entries.map(([ruleName, obj]) => {
               return <div
-              className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
-              onClick={() => handleSelect(ruleName)}>
-              <span>{ruleName}</span>
-              {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
-            </div>
+                className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
+                onClick={() => handleSelect(ruleName)}>
+                <span>{ruleName}</span>
+                {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
+              </div>
             })}
           </Col>
           <Col xs={24} sm={24} md={24} lg={16} xl={18}>
