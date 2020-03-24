@@ -236,7 +236,7 @@ const Overview = () => {
               )}
               {unTrackedCollectionsToShow.length > 0 && (
                 <Row>
-                  <Col span={12}>
+                  <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
                     <div style={{ marginTop: '32px' }}>
                       <span className='collections'>
                         Untracked {label}s
