@@ -76,16 +76,14 @@ export const generateId = (len = 32) => {
   });
 }
 
-const getConnString = (dbType) => {
-  const connString = defaultDbConnectionStrings[dbType]
-  return connString ? connString : "localhost"
-}
+export const generateJWTSecret = generateId
+export const generateAESKey = () => btoa(generateId())
 
 export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
-  secret: generateId(),
-  aesKey: btoa(generateId()),
+  secret: generateJWTSecret(),
+  aesKey: generateAESKey(),
   contextTime: 5,
   modules: {
     crud: {},

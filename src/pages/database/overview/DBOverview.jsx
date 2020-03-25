@@ -54,7 +54,6 @@ const Overview = () => {
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
 
-
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
