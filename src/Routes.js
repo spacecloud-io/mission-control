@@ -17,6 +17,7 @@ import DBOverview from "./pages/database/overview/DBOverview";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
+import DBQueries from "./pages/database/queries/DBQueries";
 import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventingOverview from "./pages/eventing/EventingOverview";
@@ -64,6 +65,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
