@@ -91,7 +91,8 @@ const Overview = () => {
     }
   }
 
-  const handleViewQueries = () => {
+  const handleViewQueriesClick = (colName) => {
+    dispatch(set("uiState.selectedCollection", colName))
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
   }
 
@@ -156,7 +157,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
-          <a onClick={handleViewQueries}>View Queries</a>
+          <a onClick={() => handleViewQueriesClick(name)}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
