@@ -17,19 +17,19 @@ class Eventing {
       }
     const cache = new InMemoryCache({ addTypename: false });
     const link = new HttpLink({ uri: uri });
-    const graphlqlClient = new ApolloClient({
+    const graphqlClient = new ApolloClient({
       cache: cache,
       link: link
     });
 
-    graphlqlClient.query({
+    graphqlClient.query({
       query: gql`
         query {
           event_logs (
             limit: 10,
             where: {
               status: {_in: $status}
-              ${showName ? "rule_name: {_in: $name}" : ""}
+              ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
               ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
               ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
             }
@@ -51,7 +51,7 @@ class Eventing {
           }
         }
       `,
-      variables: {status, name, startDate, endDate, lastEventID}
+      variables: {status, name, startDate, endDate, lastEventID, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
     }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }

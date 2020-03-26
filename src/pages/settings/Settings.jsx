@@ -16,6 +16,7 @@ import history from "../../history";
 import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
 import AESConfigure from "../../components/configure/AESConfigure";
 import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
+import DockerRegistry from "../../components/configure/DockerRegistry";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const Settings = () => {
@@ -42,6 +43,7 @@ const Settings = () => {
   const secret = globalConfig.secret
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
+  const dockerRegistry = globalConfig.dockerRegistry
   const cred = useSelector(state => state.cred)
 
   const copyValue = (e, text) => {
@@ -83,6 +85,18 @@ const Settings = () => {
       .then(() => {
         setProjectConfig(projectID, "aesKey", aesKey);
         notify("success", "Success", "Changed AES Key successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleDockerRegistry = dockerRegistry => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { dockerRegistry: dockerRegistry }))
+      .then(() => {
+        setProjectConfig(projectID, "dockerRegistry", dockerRegistry);
+        notify("success", "Success", "Configured docker registry successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -154,6 +168,10 @@ const Settings = () => {
               </CopyToClipboard></h3>
             </Card>
             <br />
+            <h2>Docker Registry</h2>
+            <div className="divider" />
+            <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
+            <br/>
             <h2>JWT Secret</h2>
             <div className="divider" />
             <SecretConfigure secret={secret} handleSubmit={handleSecret} />

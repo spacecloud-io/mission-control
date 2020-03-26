@@ -46,12 +46,11 @@ const Overview = () => {
   if (Object.keys(defaultRules).length === 0) {
     defaultRules = defaultDBRules
   }
-  const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
-  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
+  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== "event_logs" && col !== "invocation_logs")
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
   const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
-  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
+  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
 
   useEffect(() => {

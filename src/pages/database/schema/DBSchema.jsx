@@ -30,7 +30,7 @@ const Schema = () => {
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  const schemas = Object.entries(collections).filter(([name]) => name !== "event_logs" && name !== "default").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.schema }), {})
+  const schemas = Object.entries(collections).filter(([name]) => name !== "event_logs" && name !== "invocation_logs" && name !== "default").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.schema }), {})
 
   // Handlers
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))

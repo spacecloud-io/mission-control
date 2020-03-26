@@ -36,7 +36,7 @@ const RuleForm = (props) => {
   const selectedDb = getFieldValue("options.db")
   const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDb}.collections`, {})
   const trackedCollections = Object.keys(collections);
-  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs")
+  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
 
   const [value, setValue] = useState("");
 

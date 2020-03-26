@@ -253,7 +253,7 @@ const storeToken = (token) => {
   // Save token claims to local storage
   localStorage.setItem("email", email)
   localStorage.setItem("name", name)
-  localStorage.setItem("isEmailVerified", isEmailVerified.toString())
+  localStorage.setItem("isEmailVerified", isEmailVerified ? "true" : "false")
 
   // Save token to local storage and set the token on the API
   localStorage.setItem("token", token)
