@@ -14,7 +14,8 @@ import {
   Button,
   Icon,
   Collapse,
-  InputNumber
+  InputNumber,
+  Checkbox
 } from "antd";
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -35,14 +36,20 @@ const AddDeploymentForm = props => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
       if (!err) {
+        const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
         delete values["keys"];
         delete values["envKeys"];
         delete values["whiteKeys"];
         delete values["upstreamsKeys"];
+        delete values["addGPUs"];
+        delete values["gpuType"];
+        delete values["gpuCount"];
         values.cpu = Number(values.cpu);
         values.memory = Number(values.memory);
         values.min = Number(values.min);
         values.max = Number(values.max);
+        values.concurrency = Number(values.concurrency);
+        values.gpu = gpu
         values.serviceType = "image";
         props
           .handleSubmit(values)
@@ -388,6 +395,21 @@ const AddDeploymentForm = props => {
     </Row>
   ));
 
+  const autoscalingModeSelect = (
+    <Form.Item style={{ marginBottom: 0 }}>
+      {getFieldDecorator("autoscalingMode", {
+        initialValue: initialValues ? initialValues.autoscalingMode : "per-second"
+      })(
+        <Select
+          placeholder="Select auto scaling mode"
+          style={{ width: 240, top: 4 }}
+        >
+          <Option value="per-second">Requests per second</Option>
+          <Option value="parallel">Parallel requests</Option>
+        </Select>
+      )}
+    </Form.Item>)
+
   const modalProps = {
     className: "edit-item-modal",
     visible: props.visible,
@@ -443,7 +465,7 @@ const AddDeploymentForm = props => {
                   }
                 ],
                 initialValue: initialValues ? initialValues.dockerImage : ""
-              })(<Input placeholder="eg: spaceuptech/space-cloud:v0.15.0" />)}
+              })(<Input placeholder="eg: spaceuptech/basic-service" />)}
             </Form.Item>
             <FormItemLabel name="Docker registry type" />
             <Form.Item>
@@ -489,7 +511,7 @@ const AddDeploymentForm = props => {
             </React.Fragment>
             <FormItemLabel name="Ports" />
             <React.Fragment>{formItemsPorts}</React.Fragment>
-            <Collapse className="deployment-collapse" bordered={false}>
+            <Collapse className="deployment-collapse" bordered={false} style={{ background: 'white' }}>
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
@@ -508,44 +530,78 @@ const AddDeploymentForm = props => {
                 <Form.Item>
                   {getFieldDecorator("cpu", {
                     initialValue: initialValues ? initialValues.cpu : 0.1
-                  })(<Input addonBefore="vCPUs" style={{ width: 147 }} />)}
+                  })(<Input addonBefore="vCPUs" style={{ width: 160 }} />)}
                   {getFieldDecorator("memory", {
                     initialValue: initialValues ? initialValues.memory : 100
                   })(
                     <Input
                       addonBefore="Memory (in MBs)"
-                      style={{ width: 240, marginLeft: 35 }}
+                      style={{ width: 240, marginLeft: 32 }}
                     />
                   )}
                 </Form.Item>
+                <FormItemLabel name="GPUs" />
+                <Form.Item>
+                  {getFieldDecorator("addGPUs", {
+                    valuePropName: "checked",
+                    initialValue:
+                      initialValues && initialValues.gpuType ? true : false
+                  })(
+                    <Checkbox>
+                      Consume GPUs if available
+                    </Checkbox>
+                  )}
+                </Form.Item>
+                {getFieldValue("addGPUs") === true && <React.Fragment>
+                  <FormItemLabel name="GPU resources" />
+                  <Form.Item>
+                    {getFieldDecorator("gpuType", {
+                      initialValue: initialValues ? initialValues.gpuType : "nvdia"
+                    })(
+                      <Select
+                        placeholder="Select gpu type"
+                        style={{ width: 160 }}
+                      >
+                        <Option value="nvdia">NVDIA</Option>
+                        <Option value="amd">AMD</Option>
+                      </Select>
+                    )}
+                    {getFieldDecorator("gpuCount", {
+                      initialValue: initialValues ? initialValues.gpuCount : 1
+                    })(
+                      <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
+                    )}
+                  </Form.Item>
+                </React.Fragment>}
                 <FormItemLabel
                   name="Auto scaling"
-                  description="Auto scale your container instances between min and max replicas based on the number of requests"
+                  description="Auto scale your container instances between min and max replicas based on the following config"
+                />
+                <Form.Item>
+                  {getFieldDecorator("concurrency", {
+                    initialValue: initialValues ? initialValues.concurrency : 50
+                  })(
+                    <Input addonBefore={autoscalingModeSelect} style={{ width: 400 }} min={1} />
+                  )}
+                </Form.Item>
+                <FormItemLabel
+                  name="Replicas"
                 />
                 <Form.Item>
                   {getFieldDecorator("min", {
                     initialValue: initialValues ? initialValues.min : 1
                   })(
-                    <Input addonBefore="Min" style={{ width: 147 }} min={1} />
+                    <Input addonBefore="Min" style={{ width: 160 }} min={1} />
                   )}
                   {getFieldDecorator("max", {
                     initialValue: initialValues ? initialValues.max : 100
                   })(
                     <Input
                       addonBefore="Max"
-                      style={{ width: 147, marginLeft: 35 }}
+                      style={{ width: 160, marginLeft: 32 }}
                       min={1}
                     />
                   )}
-                </Form.Item>
-                <FormItemLabel
-                  name="Concurrency"
-                  description="Number of requests that your single instance can handle parallely"
-                />
-                <Form.Item>
-                  {getFieldDecorator("concurrency", {
-                    initialValue: initialValues ? initialValues.concurrency : 50
-                  })(<InputNumber style={{ width: 160 }} min={1} />)}
                 </Form.Item>
                 <FormItemLabel name="Environment variables" />
                 {formItemsEnv}
