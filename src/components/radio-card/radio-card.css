@@ -18,6 +18,7 @@
 
 .radio-card--layout-db-card .db-card-content {
   display: flex;
+  align-items: center;
 }
 
 .radio-card--layout-db-card .title{

@@ -153,7 +153,12 @@ body {
 }
 
 .ant-modal-header {
-  background: #002c39;
+  background: #002c39 !important;
+  color: white;
+}
+
+.ant-modal-title {
+  color: white !important;
 }
 
 .ant-modal-title,

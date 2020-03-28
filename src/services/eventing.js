@@ -1,6 +1,59 @@
+import gql from 'graphql-tag';
+import { ApolloClient } from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
+import store from '../store';
+
 class Eventing {
   constructor(client) {
     this.client = client
+  }
+
+  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventID, dbType){
+    return new Promise((resolve, reject) => {
+      let uri = `/v1/api/${projectId}/graphql`
+      if (process.env.NODE_ENV !== "production") {
+        uri = "http://localhost:4122" + uri;
+      }
+    const cache = new InMemoryCache({ addTypename: false });
+    const link = new HttpLink({ uri: uri });
+    const graphqlClient = new ApolloClient({
+      cache: cache,
+      link: link
+    });
+
+    graphqlClient.query({
+      query: gql`
+        query {
+          event_logs (
+            limit: 10,
+            where: {
+              status: {_in: $status}
+              ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
+              ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
+              ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
+            }
+          ) @${dbType} {
+            _id
+            rule_name
+            status
+            event_timestamp
+            invocation_logs (
+              where: {event_id: {_eq: "event_logs._id"}}
+            ) @${dbType} {
+              _id
+              invocation_time
+              response_status_code
+              request_payload
+              response_body
+              error_msg
+            }
+          }
+        }
+      `,
+      variables: {status, name, startDate, endDate, lastEventID, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+    }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
+    })
   }
 
   setEventingConfig(projectId, config) {

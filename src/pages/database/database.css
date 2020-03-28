@@ -79,10 +79,9 @@
 
 .collections {
     font-style: normal;
-    font-weight: bold;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 27px;
-    color: #000000;
+    color: rgba(0,0,0,0.87);
 }
 
 .tablehead {

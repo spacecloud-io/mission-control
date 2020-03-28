@@ -12,11 +12,18 @@ import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+import gql from 'graphql-tag';
+import gqlPrettier from 'graphql-prettier';
+import { format } from 'prettier-package-json';
+import { LoremIpsum } from "lorem-ipsum";
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
+const embeddedSvg = require('./assets/embeddedSmall.svg')
+
+const lorem = new LoremIpsum();
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -61,24 +68,22 @@ export const setProjectConfig = (projectId, path, value) => {
   store.dispatch(set("projects", updatedProjects))
 }
 
-export const generateId = () => {
-  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+export const generateId = (len = 32) => {
+  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".slice(0, len).replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
 
-const getConnString = (dbType) => {
-  const connString = defaultDbConnectionStrings[dbType]
-  return connString ? connString : "localhost"
-}
+export const generateJWTSecret = generateId
+export const generateAESKey = () => btoa(generateId())
 
 export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
-  secret: generateId(),
-  aesKey: btoa(generateId()),
+  secret: generateJWTSecret(),
+  aesKey: generateAESKey(),
   contextTime: 5,
   modules: {
     crud: {},
@@ -204,7 +209,7 @@ export const fetchGlobalEntities = (token) => {
 
 const storeEnv = (enterpriseMode, isProd, version) => {
   if (enterpriseMode !== undefined && enterpriseMode !== null) {
-    localStorage.setItem("enterprise",  enterpriseMode.toString())
+    localStorage.setItem("enterprise", enterpriseMode.toString())
   }
   localStorage.setItem("isProd", isProd.toString())
   store.dispatch(set("version", version))
@@ -248,7 +253,7 @@ const storeToken = (token) => {
   // Save token claims to local storage
   localStorage.setItem("email", email)
   localStorage.setItem("name", name)
-  localStorage.setItem("isEmailVerified", isEmailVerified.toString())
+  localStorage.setItem("isEmailVerified", isEmailVerified ? "true" : "false")
 
   // Save token to local storage and set the token on the API
   localStorage.setItem("token", token)
@@ -301,10 +306,25 @@ const getProjectToBeOpened = () => {
 
 export const handleInvoices = () => {
   client.billing.getBillingInvoices().then(res => {
-      if(res.status){
-          store.dispatch(set("billing", res))
-      }
+    if (res.status) {
+      store.dispatch(set("billing", res))
+    }
   }).catch(ex => console.log(ex))
+}
+
+export const fetchCluster = () => {
+  client.clusters.getClusters()
+    .then(clusters => {
+      store.dispatch(set(`clusters`, clusters))
+    })
+    .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
+}
+
+export const fetchCred = () => {
+  client.clusters.getCred().then(data => {
+    store.dispatch(set('cred', data))
+  })
+    .catch(ex => console.log(ex))
 }
 
 export const onAppLoad = () => {
@@ -325,8 +345,13 @@ export const onAppLoad = () => {
       return
     }
 
+    if (enterprise) {
+      fetchCluster()
+      handleInvoices()
+    }
+
+    fetchCred()
     fetchGlobalEntities(token, enterprise, isProd)
-    handleInvoices()
   })
 }
 
@@ -385,8 +410,239 @@ export const dbIcons = (project, projectId, selectedDb) => {
     case dbTypes.SQLSERVER:
       svg = sqlserverSvg
       break;
+    case dbTypes.EMBEDDED:
+      svg = embeddedSvg
+      break;
     default:
       svg = postgresSvg
   }
   return svg;
+}
+
+const getProjects = state => state.projects
+
+export const getTrackedCollectionNames = (state, projectId, dbName) => {
+  const projects = getProjects(state)
+  const collections = getProjectConfig(projects, projectId, `modules.crud.${dbName}.collections`, {})
+  const trackedCollections = Object.keys(collections)
+    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
+  return trackedCollections
+}
+
+const getDefType = (type, isArray) => {
+  isArray = isArray ? true : type.kind === "ListType"
+  if (type.type) {
+    return getDefType(type.type, isArray)
+  }
+  return { isArray, fieldType: type.name.value }
+}
+
+const getSimplifiedFieldDefinition = (def) => {
+  const { isArray, fieldType } = getDefType(def.type)
+  const directives = def.directives
+  const isPrimaryField = directives.some(dir => dir.name.value === "primary")
+  const hasForeignKey = directives.some(dir => dir.name.value === "foreign")
+  let hasForeignKeyOn = null
+  if (hasForeignKey) {
+    const foreignDirective = directives.find(dir => dir.name.value === "foreign")
+    const tableArgument = foreignDirective.arguments.find(ar => ar.name.value === "table")
+    hasForeignKeyOn = tableArgument.value.value
+  }
+  let hasNestedFields = false
+  if (fieldType !== "ID" && fieldType !== "String" && fieldType !== "Integer" && fieldType !== "Float"
+    && fieldType !== "Boolean" && fieldType !== "DateTime" && fieldType !== "JSON") {
+    hasNestedFields = true
+  }
+  return {
+    name: def.name.value,
+    type: fieldType,
+    isArray: isArray,
+    isPrimaryField: isPrimaryField,
+    hasForeignKey: hasForeignKey,
+    hasForeignKeyOn: hasForeignKeyOn,
+    hasNestedFields: hasNestedFields
+  }
+}
+
+// Removes all redundant commas and quotes
+const removeRegex = (value, dataresponse) => {
+  let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
+  let removeClosingComma = /\,(?=\s*?[\}\]])/g;
+  let removeQuotes = /"([^"]+)":/g;
+  value = value.replace(removeOpeningComma, '');
+  value = value.replace(removeClosingComma, '');
+  if (dataresponse) value = format(JSON.parse(value))
+  else value = value.replace(removeQuotes, '$1:')
+  return value
+}
+
+export const getSchemas = (projectId, dbName) => {
+  const collections = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+  let schemaDefinitions = {}
+  Object.entries(collections).forEach(([_, { schema }]) => {
+    if (schema) {
+      const definitions = gql(schema).definitions.filter(obj => obj.kind === "ObjectTypeDefinition");
+      definitions.forEach(def => {
+        return schemaDefinitions[def.name.value] = def.fields
+          .filter(def => def.kind === "FieldDefinition")
+          .map(obj => getSimplifiedFieldDefinition(obj))
+      })
+    }
+  })
+  return schemaDefinitions
+}
+
+// Returns nested field definitions for a type from flat schema definitions 
+export const getNestedFieldDefinitions = (schemas, schemaName, parentSchemas = []) => {
+  let fields = schemas[schemaName]
+  if (!fields) {
+    return []
+  }
+  fields = fields.filter(field => !field.hasNestedFields || (field.hasNestedFields && !parentSchemas.some(type => type === field.type))).map(field => {
+    // If there are nested fields and there is no circular dependency in fetching the nested fields, fetch the nested fields
+    if (field.hasNestedFields && !parentSchemas.some(type => type === field.type)) {
+      return Object.assign({}, field, { fields: getNestedFieldDefinitions(schemas, field.type, [...parentSchemas, schemaName]) })
+    }
+    return Object.assign({}, field, { hasNestedFields: false })
+  })
+
+  return fields
+}
+const getFieldsQuery = (fields) => {
+  const keys = fields.map(field => {
+    if (!field.hasNestedFields) {
+      return field.name + "\n"
+    }
+    return field.name + " {" + getFieldsQuery(field.fields) + "}"
+  })
+
+  return keys.join(" ")
+}
+
+const generateFieldsValue = (fields, options = {}, parentTypes = []) => {
+  const defaultOptions = {
+    generateNestedValues: true,
+    skipForeignDirectives: false,
+    generateDependentNestedFields: true,
+    generateDependentForeignKeys: true
+  }
+  const { generateNestedValues, skipForeignDirectives, generateDependentNestedFields, generateDependentForeignKeys } = Object.assign({}, defaultOptions, options)
+  let newFields = !generateDependentNestedFields ? fields.filter(field => !(field.hasNestedFields && fields.some(f => f.hasForeignKey && f.hasForeignKeyOn === field.type))) : fields
+  newFields = !generateNestedValues ? fields.filter(field => !field.hasNestedFields) : newFields
+  newFields = skipForeignDirectives ? newFields.filter(field => !field.hasForeignKey) : newFields
+  newFields = !generateDependentForeignKeys ? newFields.filter(field => !(field.hasForeignKey && parentTypes.some(t => t === field.hasForeignKeyOn))) : newFields
+  return newFields.map(field => {
+    if (field.hasNestedFields) {
+      const value = field.isArray ? [
+        generateFieldsValue(field.fields, options, [...parentTypes, field.type])
+      ] : generateFieldsValue(field.fields, options, [...parentTypes, field.type])
+      return { name: field.name, value: value }
+    }
+    return { name: field.name, value: generateRandom(field.type) }
+  }).reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: curr.value }), {})
+}
+
+export const generateGraphQLQueries = (projectId, dbName, colName) => {
+  const queries = {
+    get: { req: '', res: '' },
+    insert: { req: '', res: '' },
+    update: { req: '', res: '' },
+    delete: { req: '', res: '' }
+  }
+  if (!projectId || !dbName || !colName) {
+    return queries
+  }
+
+  const schemas = getSchemas(projectId, dbName)
+  const fields = getNestedFieldDefinitions(schemas, colName)
+  const primaryFields = fields.filter(field => field.isPrimaryField)
+  const nonPrimaryFields = fields.filter(field => !field.isPrimaryField)
+  const whereClause = primaryFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
+  queries.get.req = gqlPrettier(removeRegex(`query { 
+    ${colName}(where: ${JSON.stringify(whereClause)}) @${dbName} {
+      ${getFieldsQuery(fields)}
+    }
+   }`, 0))
+
+  queries.get.res = removeRegex(JSON.stringify({
+    data: {
+      [colName]: [generateFieldsValue(fields)]
+    }
+  }), 1)
+
+  queries.insert.req = gqlPrettier(removeRegex(`mutation { 
+    insert_${colName} (docs: [${JSON.stringify(generateFieldsValue(fields, { generateDependentNestedFields: false, generateDependentForeignKeys: false }, [colName]))}]) @${dbName} {
+      status
+      error
+      returning
+     }
+    }`, 0))
+
+  queries.insert.res = removeRegex(`{ 
+    "data":{ 
+      "insert_${colName}":{ 
+        "status": 200,
+        "returning": [
+          ${JSON.stringify(generateFieldsValue(fields, { generateDependentNestedFields: false }))}
+        ]
+      }
+     }
+    }`, 1)
+
+  // Update clause should contain non primary, non foreign key and non nested fields
+  const setClause = generateFieldsValue(nonPrimaryFields, { generateNestedValues: false, skipForeignDirectives: true })
+  queries.update.req = gqlPrettier(removeRegex(`mutation { 
+    update_${colName} (where: ${JSON.stringify(whereClause)}, set: ${JSON.stringify(setClause)})  @${dbName} {
+      status
+      error
+      returning
+     }
+    }`, 0))
+
+  queries.update.res = removeRegex(`{ 
+      "data":{ 
+        "update_${colName}":{ 
+          "status": 200
+        }
+       }
+      }`, 1)
+
+  queries.delete.req = gqlPrettier(removeRegex(`mutation { 
+    delete_${colName}${primaryFields.length ? `(where: ${JSON.stringify(whereClause)})` : ""} @${dbName} {
+      status
+      error
+     }
+    }`, 0))
+
+  queries.delete.res = removeRegex(`{ 
+      "data":{ 
+        "insert_${colName}":{ 
+          "status": 200
+        }
+       }
+      }`, 1)
+
+  return queries
+}
+
+// Generate random values for different schema types.
+const generateRandom = type => {
+  switch (type) {
+    case "ID":
+      return generateId(6)
+    case "String":
+      return lorem.generateWords(2)
+    case "Integer":
+      return Math.ceil(Math.random() * 100)
+    case "Float":
+      return Number((Math.random() * 100).toFixed(2))
+    case "Boolean":
+      return true
+    case "DateTime":
+      return new Date().toISOString()
+    case "JSON":
+      return { foo: "bar" }
+    default:
+      return type
+  }
 }

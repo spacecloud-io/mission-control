@@ -35,7 +35,7 @@ const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, c
             rules: [{ required: true, message: 'Please provide a connection string!' }],
             initialValue: conn,
           })(
-            <Input placeholder="Enter connection string of your database" />
+            <Input.Password placeholder="Enter connection string of your database" />
           )}
         </Form.Item>
         <Alert message={alertMsg}

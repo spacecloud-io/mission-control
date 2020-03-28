@@ -16,6 +16,7 @@ import history from "../../history";
 import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
 import AESConfigure from "../../components/configure/AESConfigure";
 import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
+import DockerRegistry from "../../components/configure/DockerRegistry";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const Settings = () => {
@@ -42,14 +43,18 @@ const Settings = () => {
   const secret = globalConfig.secret
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
+  const dockerRegistry = globalConfig.dockerRegistry
+  const cred = useSelector(state => state.cred)
 
   const copyValue = (e, text) => {
     e.preventDefault();
     if (text === "username") {
       setNameCopy("copied");
+      setKeyCopy("copy")
       setTimeout(() => setNameCopy("copy"), 5000);
     } else {
       setKeyCopy("copied");
+      setNameCopy("copy")
       setTimeout(() => setKeyCopy("copy"), 5000);
     }
   }
@@ -80,6 +85,18 @@ const Settings = () => {
       .then(() => {
         setProjectConfig(projectID, "aesKey", aesKey);
         notify("success", "Success", "Changed AES Key successfully");
+      })
+      .catch(ex => notify("error", "Error", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
+  };
+
+  const handleDockerRegistry = dockerRegistry => {
+    dispatch(increment("pendingRequests"));
+    client.projects
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { dockerRegistry: dockerRegistry }))
+      .then(() => {
+        setProjectConfig(projectID, "dockerRegistry", dockerRegistry);
+        notify("success", "Success", "Configured docker registry successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -143,14 +160,18 @@ const Settings = () => {
           <Col lg={{ span: 12 }}>
             <h2>Credentials</h2>
             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}><b>username </b>  username <CopyToClipboard text="username">
+              <h3 style={{ wordSpacing: 6 }}><b>username </b> {cred.userName}  <CopyToClipboard text={cred.userName}>
                 <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
               </CopyToClipboard></h3>
-              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text="*************************">
+              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text={cred.accessKey}>
                 <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
               </CopyToClipboard></h3>
             </Card>
             <br />
+            <h2>Docker Registry</h2>
+            <div className="divider" />
+            <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
+            <br/>
             <h2>JWT Secret</h2>
             <div className="divider" />
             <SecretConfigure secret={secret} handleSubmit={handleSecret} />

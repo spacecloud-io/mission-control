@@ -8,7 +8,6 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { defaultDBRules } from '../../../constants';
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
 const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
@@ -19,21 +18,23 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   if (!initialValues) {
     initialValues = {
       schema: `type {
-  ${dbType === 'mongo' ? '_id' : 'id'}: ID! @primary
+  ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
 }`,
       rules: defaultRules,
       isRealtimeEnabled: true
     }
   }
 
-  const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
-  const [schema, setSchema] = useState(initialValues.schema);
-  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ?  rule === "{}" : true);
+  const initialRules = Object.assign({}, initialValues.rules)
 
   if (Object.keys(initialValues.rules).length === 0) {
     initialValues.rules = defaultRules
   }
+
+  const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
+  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
+  const [schema, setSchema] = useState(initialValues.schema);
+  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
   const colName = getFieldValue("name")
   useEffect(() => {
@@ -119,7 +120,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
               setSchema(value)
             }}
           />
-          <div style={{paddingTop:20}}>
+          <div style={{ paddingTop: 20 }}>
             <Checkbox
               checked={applyDefaultRules}
               onChange={e =>

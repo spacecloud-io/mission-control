@@ -192,7 +192,7 @@ const SecretDetails = () => {
           </div>
           <br />
           <Row>
-            <Col lg={{ span: 15, offset: 1 }}>
+            <Col lg={{ span: 15, offset: 1 }} xs={{ span:22, offset:1 }}>
               {secretType === "file" && (
                   <React.Fragment>
                     <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>

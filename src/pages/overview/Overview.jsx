@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useSelector } from "react-redux"
 import ReactGA from 'react-ga';
 import '../../index.css'
 import './overview.css'
@@ -10,6 +11,7 @@ import DiscordCard from '../../components/overview/discord/DiscordCard';
 import GithubCard from '../../components/overview/github/GithubCard';
 import UpgradeCard from '../../components/overview/upgrade/UpgradeCard';
 import { Row, Col } from 'antd';
+import history from "../../history"
 
 function Overview() {
   const { projectID } = useParams()
@@ -19,6 +21,12 @@ function Overview() {
 
   const protocol = window.location.protocol
   const host = window.location.host
+  const enterpriseMode = localStorage.getItem('enterprise') === 'true'
+  const billingEnabled = useSelector(state => state.billing.status ? true : false)
+  const handleClickUpgrade = () => {
+    if (enterpriseMode) history.push(`/mission-control/projects/${projectID}/billing`)
+    else window.open("https://console.spaceuptech.com/mission-control")
+  }
   return (
     <div className="overview">
       <Topbar showProjectSelector />
@@ -37,9 +45,9 @@ function Overview() {
             <Col lg={{span:11, offset:2}} className="git-card">
               <GithubCard/>
             </Col>
-            <Col lg={{ span:24 }} style={{marginTop:"3%"}}>
-              <UpgradeCard />
-            </Col>
+            {!billingEnabled && <Col lg={{ span:24 }} style={{marginTop:"3%"}}>
+              <UpgradeCard handleClickUpgrade={handleClickUpgrade}/>
+            </Col>}
           </Col>
         </Row>
       </div>

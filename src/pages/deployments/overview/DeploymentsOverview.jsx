@@ -107,15 +107,18 @@ const DeploymentsOverview = () => {
       ports: task.ports,
       cpu: task.resources.cpu / 1000,
       memory: task.resources.memory,
+      gpuType: task.resources.gpu ? task.resources.gpu.type : "per-second",
+      gpuCount: task.resources.gpu ? task.resources.gpu.value : 0,
       min: obj.scale.minReplicas,
       max: obj.scale.maxReplicas,
       replicas: obj.scale.replicas,
+      autoscalingMode: obj.scale.mode,
       concurrency: obj.scale.concurrency,
       env: task.env
         ? Object.entries(task.env).map(([key, value]) => ({
-            key: key,
-            value: value
-          }))
+          key: key,
+          value: value
+        }))
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams
@@ -124,10 +127,10 @@ const DeploymentsOverview = () => {
 
   const deploymentClickedInfo = deploymentClicked
     ? data.find(
-        obj =>
-          obj.id === deploymentClicked.serviceId &&
-          obj.version === deploymentClicked.version
-      )
+      obj =>
+        obj.id === deploymentClicked.serviceId &&
+        obj.version === deploymentClicked.version
+    )
     : undefined;
 
   const handleEditDeploymentClick = (serviceId, version) => {
@@ -148,7 +151,8 @@ const DeploymentsOverview = () => {
           replicas: 0,
           minReplicas: values.min,
           maxReplicas: values.max,
-          concurrency: values.concurrency
+          concurrency: values.concurrency,
+          mode: values.autoscalingMode
         },
         tasks: [
           {
@@ -158,7 +162,8 @@ const DeploymentsOverview = () => {
             ),
             resources: {
               cpu: values.cpu * 1000,
-              memory: values.memory
+              memory: values.memory,
+              gpu: values.gpu,
             },
             docker: {
               image: values.dockerImage,
@@ -168,8 +173,8 @@ const DeploymentsOverview = () => {
             secrets: values.secrets,
             env: values.env
               ? values.env.reduce((prev, curr) => {
-                  return Object.assign({}, prev, { [curr.key]: curr.value });
-                }, {})
+                return Object.assign({}, prev, { [curr.key]: curr.value });
+              }, {})
               : {},
             runtime: values.serviceType
           }

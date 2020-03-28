@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, increment, decrement, set } from 'automate-redux';
+import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
@@ -14,6 +14,7 @@ import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
+import history from '../../../history';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
 import { defaultDBRules } from '../../../constants';
 
@@ -45,14 +46,12 @@ const Overview = () => {
   if (Object.keys(defaultRules).length === 0) {
     defaultRules = defaultDBRules
   }
-  const eventingCol = getProjectConfig(projects, projectID, `modules.eventing.col`, "event_logs")
   const { hostName, port } = parseDbConnString(connString);
-  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== eventingCol)
+  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== "event_logs" && col !== "invocation_logs")
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
   const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
-  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs")
+  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
-
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
@@ -88,6 +87,11 @@ const Overview = () => {
     if (clickedCol === colName) {
       setClickedCol("")
     }
+  }
+
+  const handleViewQueriesClick = (colName) => {
+    dispatch(set("uiState.selectedCollection", colName))
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
   }
 
   const handleTrackCollections = (collections) => {
@@ -151,6 +155,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={() => handleViewQueriesClick(name)}>View Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -236,7 +241,7 @@ const Overview = () => {
               )}
               {unTrackedCollectionsToShow.length > 0 && (
                 <Row>
-                  <Col span={12}>
+                  <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
                     <div style={{ marginTop: '32px' }}>
                       <span className='collections'>
                         Untracked {label}s

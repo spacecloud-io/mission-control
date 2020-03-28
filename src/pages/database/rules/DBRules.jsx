@@ -38,7 +38,7 @@ const Rules = () => {
   if (Object.keys(rule).length === 0) {
     rule = defaultDBRules
   }
-  const rules = Object.entries(collections).filter(([name, colValue]) => name !== "event_logs" && Object.keys(colValue.rules).length > 0).reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
+  const rules = Object.entries(collections).filter(([name, colValue]) => name !== "event_logs" && name !== "invocation_logs" && Object.keys(colValue.rules).length > 0).reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.rules }), {})
   // Handlers
   const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
 

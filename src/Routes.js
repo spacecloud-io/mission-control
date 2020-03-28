@@ -18,18 +18,21 @@ import DBBrowse from "./pages/database/browse/DBBrowse";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
+import DBQueries from "./pages/database/queries/DBQueries";
 import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
 import EventingOverview from "./pages/eventing/EventingOverview";
 import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
+import EventingLogs from "./pages/eventing/EventingLogs";
 import EventingSettings from "./pages/eventing/EventingSettings";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRules from "./pages/deployments/rules/DeploymentsRules";
-import Explorer from "./pages/explorer/Explorer";
+import Graphql from "./pages/explorer/graphql/Graphql";
+import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
@@ -64,17 +67,22 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/schema" component={EventingSchema} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/event-logs" component={EventingLogs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/settings" component={EventingSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/explorer" component={Explorer} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/explorer"
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/explorer/graphql" component={Graphql} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/explorer/spaceApi" component={SpaceApi} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/clusters" component={Clusters} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
