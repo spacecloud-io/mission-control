@@ -214,6 +214,10 @@
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
 }
 
+.db-browse-table .ant-table-thead>tr>th {
+  background-color: #F2F2F2;;
+}
+
 @media screen and (max-width:768px) {
     .db-tab-content .reconnect {
         margin-bottom: 24px;
