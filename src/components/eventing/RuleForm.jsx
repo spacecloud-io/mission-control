@@ -1,15 +1,8 @@
-<<<<<<< HEAD
-import React from "react"
-
-import { Modal, Form, Input, Radio, Select, Collapse, InputNumber } from 'antd';
-import { getEventSourceFromType } from "../../utils";
-=======
 import React, { useState } from "react"
 import { useParams } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { Modal, Form, Input, Radio, Select, Collapse, AutoComplete, InputNumber } from 'antd';
 import { getEventSourceFromType, getProjectConfig } from "../../utils";
->>>>>>> ca72708caf1860939547031f6401c3ef0aef60ae
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //import {dbIcons} from '../../utils';

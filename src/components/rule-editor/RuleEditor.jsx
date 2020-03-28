@@ -24,11 +24,6 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
   useDeepCompareEffect(() => {
     if (selectedRuleName) {
       let temp = rules[selectedRuleName]
-<<<<<<< HEAD
-      delete temp.id;
-      if (stringifyRules) {
-        temp = JSON.stringify(temp, null, 2)
-=======
       if (temp) {
         delete temp.id;
         if (stringifyRules) {
@@ -36,7 +31,6 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
         }
         setInitialrule(temp)
         setSelectedRule(temp)
->>>>>>> ca72708caf1860939547031f6401c3ef0aef60ae
       }
     }
   }, [selectedRuleName, rules])
