@@ -49,7 +49,7 @@ const Rules = (props) => {
 
 	useEffect(() => {
 		if (!selectedRuleName && noOfRules > 0) {
-			setSelectedRuleName(rules[0].name)
+			setSelectedRuleName(rules[0].id)
 		}
 	}, [selectedRuleName, noOfRules])
 
@@ -71,7 +71,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, selectedRuleName, rule).then(() => {
 			const newRules = rules.map(r => {
-				if (r.name !== selectedRuleName) return rule
+				if (r.id !== selectedRuleName) return rule
 				return Object.assign({}, r, rule)
 			})
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
@@ -84,7 +84,7 @@ const Rules = (props) => {
 	const handleAddRule = (ruleName, rule) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
-			const newRules = [...rules, { name: ruleName, ...rule }]
+			const newRules = [...rules, { id: ruleName, ...rule }]
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Added rule successfully")
 		})
@@ -95,7 +95,7 @@ const Rules = (props) => {
 	const handleDeleteRule = (ruleName) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.deleteRule(projectID, ruleName).then(() => {
-			const newRules = rules.filter(r => r.name !== ruleName)
+			const newRules = rules.filter(r => r.id !== ruleName)
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Deleted rule successfully")
 		})

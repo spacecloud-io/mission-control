@@ -548,7 +548,7 @@ const AddDeploymentForm = props => {
                       initialValues && initialValues.gpuType ? true : false
                   })(
                     <Checkbox>
-                      Consume GPUs if available
+                      Consume GPUs
                     </Checkbox>
                   )}
                 </Form.Item>

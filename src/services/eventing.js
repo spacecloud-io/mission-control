@@ -9,7 +9,7 @@ class Eventing {
     this.client = client
   }
 
-  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventID, dbType){
+  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastTimestamp, dbType){
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
       if (process.env.NODE_ENV !== "production") {
@@ -26,12 +26,13 @@ class Eventing {
       query: gql`
         query {
           event_logs (
-            limit: 10,
+            sort: ["-event_timestamp"],
+            limit: 100,
             where: {
               status: {_in: $status}
               ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
               ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
-              ${lastEventID ? "_id: {_gt: $lastEventID}": ""}
+              event_timestamp: {_lte: $lastTimestamp}
             }
           ) @${dbType} {
             _id
@@ -51,7 +52,7 @@ class Eventing {
           }
         }
       `,
-      variables: {status, name, startDate, endDate, lastEventID, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+      variables: {status, name, startDate, endDate, lastTimestamp, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
     }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }
@@ -78,7 +79,7 @@ class Eventing {
             reject(data.error)
             return
           }
-          resolve()
+          resolve(data)
         })
         .catch(ex => reject(ex.toString()))
     })

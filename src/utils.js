@@ -8,7 +8,6 @@ import { dbTypes } from './constants';
 import store from "./store"
 import client from "./client"
 import history from "./history"
-import { defaultDbConnectionStrings } from "./constants"
 import { Redirect, Route } from "react-router-dom"
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
@@ -442,6 +441,7 @@ const getSimplifiedFieldDefinition = (def) => {
   const directives = def.directives
   const isPrimaryField = directives.some(dir => dir.name.value === "primary")
   const hasForeignKey = directives.some(dir => dir.name.value === "foreign")
+  const hasUniqueKey = directives.some(dir => dir.name.value === "unique")
   let hasForeignKeyOn = null
   if (hasForeignKey) {
     const foreignDirective = directives.find(dir => dir.name.value === "foreign")
@@ -458,6 +458,7 @@ const getSimplifiedFieldDefinition = (def) => {
     type: fieldType,
     isArray: isArray,
     isPrimaryField: isPrimaryField,
+    hasUniqueKey: hasUniqueKey,
     hasForeignKey: hasForeignKey,
     hasForeignKeyOn: hasForeignKeyOn,
     hasNestedFields: hasNestedFields
@@ -490,6 +491,10 @@ export const getSchemas = (projectId, dbName) => {
     }
   })
   return schemaDefinitions
+}
+
+export const getSchema = (projectId, dbName, colName) => {
+  return getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.schema`, "")
 }
 
 // Returns nested field definitions for a type from flat schema definitions 
@@ -549,15 +554,17 @@ export const generateGraphQLQueries = (projectId, dbName, colName) => {
     update: { req: '', res: '' },
     delete: { req: '', res: '' }
   }
-  if (!projectId || !dbName || !colName) {
+  if (!projectId || !dbName || !colName || !getSchema(projectId, dbName, colName)) {
     return queries
   }
 
   const schemas = getSchemas(projectId, dbName)
   const fields = getNestedFieldDefinitions(schemas, colName)
   const primaryFields = fields.filter(field => field.isPrimaryField)
-  const nonPrimaryFields = fields.filter(field => !field.isPrimaryField)
-  const whereClause = primaryFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
+  const uniqueFields = fields.filter(field => field.hasUniqueKey)
+  const identifyingFields = primaryFields.length ? primaryFields : uniqueFields
+  const nonIdentifyingFields = fields.filter(field => !field.isPrimaryField && !field.hasUniqueKey)
+  const whereClause = identifyingFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
   queries.get.req = gqlPrettier(removeRegex(`query { 
     ${colName}(where: ${JSON.stringify(whereClause)}) @${dbName} {
       ${getFieldsQuery(fields)}
@@ -590,7 +597,7 @@ export const generateGraphQLQueries = (projectId, dbName, colName) => {
     }`, 1)
 
   // Update clause should contain non primary, non foreign key and non nested fields
-  const setClause = generateFieldsValue(nonPrimaryFields, { generateNestedValues: false, skipForeignDirectives: true })
+  const setClause = generateFieldsValue(nonIdentifyingFields, { generateNestedValues: false, skipForeignDirectives: true })
   queries.update.req = gqlPrettier(removeRegex(`mutation { 
     update_${colName} (where: ${JSON.stringify(whereClause)}, set: ${JSON.stringify(setClause)})  @${dbName} {
       status
@@ -608,7 +615,7 @@ export const generateGraphQLQueries = (projectId, dbName, colName) => {
       }`, 1)
 
   queries.delete.req = gqlPrettier(removeRegex(`mutation { 
-    delete_${colName}${primaryFields.length ? `(where: ${JSON.stringify(whereClause)})` : ""} @${dbName} {
+    delete_${colName}${identifyingFields.length ? `(where: ${JSON.stringify(whereClause)})` : ""} @${dbName} {
       status
       error
      }
@@ -644,5 +651,13 @@ const generateRandom = type => {
       return { foo: "bar" }
     default:
       return type
+  }
+}
+
+export const parseJSONSafely = (str) => {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return str;
   }
 }

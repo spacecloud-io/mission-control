@@ -154,15 +154,15 @@ const RuleForm = (props) => {
             <Input placeholder="eg: https://myapp.com/endpoint1" />
           )}
         </Form.Item>
-        <Collapse bordered={false} >
+        <Collapse style={{ background: "white" }} bordered={false} >
           <Collapse.Panel header="Advanced settings" key="advanced">
             <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item>
-              {getFieldDecorator('retries', { initialValue: retries ? retries : 3 })(<InputNumber style={{width: '100%'}} placeholder="Number of retries" />)}
+              {getFieldDecorator('retries', { initialValue: retries ? retries : 3 })(<InputNumber style={{ width: '100%' }} placeholder="Number of retries" />)}
             </Form.Item>
             <FormItemLabel name="Timeout" description="default: 5000" />
             <Form.Item>
-              {getFieldDecorator('timeout', { initialValue: timeout ? timeout : 5000 })(<InputNumber style={{width: '100%'}} placeholder="Timeout in milliseconds" />)}
+              {getFieldDecorator('timeout', { initialValue: timeout ? timeout : 5000 })(<InputNumber style={{ width: '100%' }} placeholder="Timeout in milliseconds" />)}
             </Form.Item>
           </Collapse.Panel>
         </Collapse>

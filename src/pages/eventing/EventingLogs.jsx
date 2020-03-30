@@ -3,7 +3,7 @@ import {useParams} from "react-router-dom";
 import {Button, Icon, Table} from "antd";
 import '../../index.css';
 import client from "../../client";
-import {getProjectConfig, notify} from "../../utils";
+import {getProjectConfig, notify, parseJSONSafely } from "../../utils";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
@@ -22,14 +22,6 @@ const getIconByStatus = (status) => {
       return <Icon type="close" style={{color: "red"}}/>
     default:
       return <Icon type="hourglass" />
-  }
-}
-
-function parseJSONSafely(str) {
-  try {
-    return JSON.parse(str);
-  } catch (e) {
-    return str;
   }
 }
 
@@ -55,7 +47,7 @@ const EventingLogs = () => {
     if(projects.length > 0){
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
       dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().getTime(), dbType)
       .then(res => dispatch(set("eventLogs", res)))
       .catch(ex => notify("error", "Error loading event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))
@@ -92,7 +84,7 @@ const EventingLogs = () => {
   const expandedRowRender = record => {
     const columns = [
       { title: 'Status', key: 'status', render: record => {
-        if(record.response_status_code === 200) return <Icon type="check" style={{color: "#00FF00"}}/>
+        if(!record.error_msg) return <Icon type="check" style={{color: "#00FF00"}}/>
         else return  <Icon type="close" style={{color: "red"}}/>
       } },
       { title: 'ID', dataIndex: '_id', key: '_id' },
@@ -118,12 +110,13 @@ const EventingLogs = () => {
   const loadFunc = () => {
     if(projects.length > 0){
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1]._id : 0, dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1].event_timestamp : new Date().getTime(), dbType)
       .then(res => {
-        dispatch(set("eventLogs", eventLogs.concat(res)))
-        if(res.length < 10) {
+        if(res.length < 100) {
           setHasMoreEventLogs(false);
         }
+        const eventLogsIDMap = [...new Set(eventLogs.map(obj => obj._id))].reduce((prev, curr) => Object.assign({}, prev, {[curr]: true}), {})
+        dispatch(set("eventLogs", eventLogs.concat(res.filter(obj => !eventLogsIDMap[obj._id]))))
       })
       .catch(ex => notify("error", "Error loading event logs", ex.toString()))
     }
@@ -132,7 +125,7 @@ const EventingLogs = () => {
   const handleRefresh = () => {
     const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, 0, dbType)
+    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().getTime(), dbType)
     .then(res => dispatch(set("eventLogs", res)))
     .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
     .finally(() => dispatch(decrement("pendingRequests")))
