@@ -52,8 +52,10 @@ const Browse = () => {
 
   useEffect(() => {
     if(selectedCol){
+
       let hasUniqueKey = false;
       let uniqueKey = "";
+
       getSchemas(projectID, selectedDB)[selectedCol]
       .forEach(val => {
         if (val.isPrimaryField) {
@@ -63,6 +65,17 @@ const Browse = () => {
         }
       })
 
+      if(!hasUniqueKey){
+        getSchemas(projectID, selectedDB)[selectedCol]
+        .forEach(val => {
+          if (val.hasUniqueKey) {
+            hasUniqueKey = true;
+            uniqueKey = val.name;
+            return;
+          }
+        })
+      }
+      
       let filtersCond = [];
       let sortersCond = [];
 
