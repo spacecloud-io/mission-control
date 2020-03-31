@@ -27,6 +27,9 @@ const Browse = () => {
   const projects = useSelector(state => state.projects)
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
 
+  const filters = useSelector(state => state.uiState.explorer.filters);
+  const sorters = useSelector(state => state.uiState.explorer.sorters);
+
   const collections = Object.keys(getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {}));
   const dbAlias = getProjectConfig(projects, projectID, `modules.eventing.dbType`);
   const api = new API(projectID, "http://localhost:4122");
@@ -48,11 +51,26 @@ const Browse = () => {
 
   useEffect(() => {
     if(selectedCol){
+      let filtersCond = [];
+      let sortersCond = [];
+
+      for(let el of filters){
+        filtersCond.push(cond(el.column, el.operation, el.value))
+      }
+      
+      for(let el of sorters){
+        if (el.order === "descending") sortersCond.push(`-${el.column}`)
+        else sortersCond.push(el.column)
+      }
+
       dispatch(increment("pendingRequests"));
-      db.get(selectedCol).where().apply()
+      db.get(selectedCol)
+      .where(...filtersCond)
+      .sort(...sortersCond)
+      .apply()
       .then(({status, data}) => {
         if(status !== 200){
-          console.log(status, data)
+          notify("error", "Error", data.error, 5);
           setData([]);
           return
         }
@@ -72,7 +90,7 @@ const Browse = () => {
       })
      .finally(() => dispatch(decrement("pendingRequests")));
     }
-  }, [selectedCol])
+  }, [filters, sorters, selectedCol])
 
   // Handlers
   const handleTableChange = col => {
@@ -80,13 +98,20 @@ const Browse = () => {
   }
 
   const filterTable = ({filters, sorters}) => {
-    
+    console.log(filters)
+    console.log()
+    console.log(sorters)
+
+    dispatch(set("uiState.explorer.filters", filters))
+    dispatch(set("uiState.explorer.sorters", sorters))
+
+    setFilterSorterFormVisibility(false)
   }
 
   const insertRow = values => {
     let docs = {};
     for(let row of values){
-      docs[row.field] = row.value;
+      docs[row.column] = row.value;
     }
     db.insert(selectedCol).doc(docs).apply()
     .then(res => {
@@ -96,6 +121,8 @@ const Browse = () => {
       }
       notify("success", "Successfully inserted a row!", "", 3);
     })
+
+    setInsertRowFormVisibility(false);
   }
 
   return (
