@@ -10,8 +10,8 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import FilterSorterForm from "../../../components/database/filter-sorter-form/FilterSorterForm";
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 
-import { getProjectConfig, notify } from '../../../utils';
-import { Button, Select, Icon, Table } from "antd";
+import { getProjectConfig, notify, getSchemas } from '../../../utils';
+import { Button, Select, Icon, Table, Tooltip } from "antd";
 import {API, cond} from "space-api";
 
 const Browse = () => {
@@ -20,6 +20,7 @@ const Browse = () => {
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
   const [column, setColumn] = useState([]);
   const [data, setData] = useState([]);
+  const [counter, setCounter] = useState(0);
 
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
@@ -51,6 +52,17 @@ const Browse = () => {
 
   useEffect(() => {
     if(selectedCol){
+      let hasUniqueKey = false;
+      let uniqueKey = "";
+      getSchemas(projectID, selectedDB)[selectedCol]
+      .forEach(val => {
+        if (val.isPrimaryField) {
+          hasUniqueKey = true;
+          uniqueKey = val.name;
+          return;
+        }
+      })
+
       let filtersCond = [];
       let sortersCond = [];
 
@@ -74,15 +86,16 @@ const Browse = () => {
           setData([]);
           return
         }
+
         let columnNames = getColumnNames(data.result);
         columnNames.unshift({
           key: 'action', 
           title: '', 
-          render: () => (
+          render: (record) => (
             <span>
-						 <a style={{color: 'black', marginRight:16}}>Edit</a>
-						 <a style={{ color: "red" }} >Delete</a>
-					  </span>
+						 <Button type="link" disabled={!hasUniqueKey} style={{color: 'black'}}>Edit</Button>
+						 <Button type="link" disabled={!hasUniqueKey} style={{ color: "red" }} onClick={() => deleteRow(uniqueKey, record[uniqueKey])}>Delete</Button>
+            </span>
           )})
 
         setColumn(columnNames)
@@ -90,7 +103,7 @@ const Browse = () => {
       })
      .finally(() => dispatch(decrement("pendingRequests")));
     }
-  }, [filters, sorters, selectedCol])
+  }, [filters, sorters, selectedCol, counter])
 
   // Handlers
   const handleTableChange = col => {
@@ -123,6 +136,21 @@ const Browse = () => {
     })
 
     setInsertRowFormVisibility(false);
+  }
+
+  const deleteRow = (uniqueKey, value) => {
+    const whereClause = cond(uniqueKey, "==", value)
+    db.delete(selectedCol)
+    .where(whereClause)
+    .apply()
+    .then(({status}) => {
+      if(status !== 200) {
+        notify("error", "There was some error in deleting the row", "", 5)
+        return;
+      }
+      notify("success", "Row deleted successfully", "", 5)
+      setCounter(counter+1);
+    })
   }
 
   return (
