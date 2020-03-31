@@ -13,7 +13,6 @@ import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
 import client from '../../client';
 import eventingSvg from "../../assets/eventing.svg"
-import history from '../../history'
 import { dbIcons } from '../../utils';
 import './event.css'
 
@@ -87,14 +86,18 @@ const EventingOverview = () => {
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
 
-	const handleTriggerEvent = (type, payload) => {
-		dispatch(increment("pendingRequests"))
-		const eventBody = { type, delay: 0, timestamp: new Date().getTime(), payload, options: {} }
-		client.eventing.queueEvent(projectID, eventBody).then(() => {
-			notify("success", "Success", "Event successfully queued to Space Cloud")
+	const handleTriggerEvent = (type, payload, isSynchronous) => {
+		return new Promise((resolve, reject) => {
+			dispatch(increment("pendingRequests"))
+			const eventBody = { type, delay: 0, timestamp: new Date().getTime(), payload, options: {}, isSynchronous }
+			client.eventing.queueEvent(projectID, eventBody).then(data => {
+				resolve(data)
+			})
+				.catch(err => {
+					reject(err)
+				})
+				.finally(() => dispatch(decrement("pendingRequests")))
 		})
-			.catch(err => notify("error", "Error", err))
-			.finally(() => dispatch(decrement("pendingRequests")))
 	}
 
 	const columns = [
@@ -156,30 +159,30 @@ const EventingOverview = () => {
 			<Sidenav selectedItem="eventing" />
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="overview" projectID={projectID} />
-			<div className="event-tab-content">
-				{noOfRules === 0 && <div>
-					<div className="panel">
-						<img src={eventingSvg} />
-						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/microservices/eventing">View Docs.</a></p>
-						<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
-						{dbAlert()}
-					</div>
-				</div>}
-				{noOfRules > 0 && (
-					<React.Fragment>
-						<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
-						<Table columns={columns} dataSource={rulesTableData} />
-					</React.Fragment>
-				)}
-				{ruleModalVisible && <RuleForm
-					handleCancel={handleRuleModalCancel}
-					handleSubmit={handleSetRule}
-					dbList={dbList}
-					initialValues={ruleClickedInfo} />}
-				{triggerModalVisible && <TriggerForm
-					handleCancel={handleTriggerModalCancel}
-					handleSubmit={(payload) => handleTriggerEvent(ruleClickedInfo.type, payload)} />}
-			</div>
+				<div className="event-tab-content">
+					{noOfRules === 0 && <div>
+						<div className="panel">
+							<img src={eventingSvg} />
+							<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/microservices/eventing">View Docs.</a></p>
+							<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
+							{dbAlert()}
+						</div>
+					</div>}
+					{noOfRules > 0 && (
+						<React.Fragment>
+							<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
+							<Table columns={columns} dataSource={rulesTableData} />
+						</React.Fragment>
+					)}
+					{ruleModalVisible && <RuleForm
+						handleCancel={handleRuleModalCancel}
+						handleSubmit={handleSetRule}
+						dbList={dbList}
+						initialValues={ruleClickedInfo} />}
+					{triggerModalVisible && <TriggerForm
+						handleCancel={handleTriggerModalCancel}
+						handleSubmit={(...args) => handleTriggerEvent(ruleClickedInfo.type, ...args)} />}
+				</div>
 			</div>
 		</div>
 	)
