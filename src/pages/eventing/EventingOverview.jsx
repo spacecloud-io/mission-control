@@ -7,7 +7,6 @@ import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/eventing/RuleForm";
-import TriggerForm from "../../components/eventing/TriggerForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { increment, decrement } from "automate-redux";
 import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
@@ -15,6 +14,7 @@ import client from '../../client';
 import eventingSvg from "../../assets/eventing.svg"
 import { dbIcons } from '../../utils';
 import './event.css'
+import history from "../../history"
 
 
 const EventingOverview = () => {
@@ -28,7 +28,6 @@ const EventingOverview = () => {
 
 	// Component state
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
-	const [triggerModalVisible, setTriggerModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived properties
@@ -52,19 +51,13 @@ const EventingOverview = () => {
 		setRuleModalVisibile(true)
 	}
 
-	const handleTriggerRuleClick = (name) => {
-		setRuleClicked(name)
-		setTriggerModalVisibile(true)
+	const handleTriggerRuleClick = (eventType) => {
+		history.push(`/mission-control/projects/${projectID}/eventing/queue-event`, { eventType })
 	}
 
 	const handleRuleModalCancel = () => {
 		setRuleClicked("")
 		setRuleModalVisibile(false)
-	}
-
-	const handleTriggerModalCancel = () => {
-		setRuleClicked("")
-		setTriggerModalVisibile(false)
 	}
 
 	const handleSetRule = (name, type, url, retries, timeout, options = {}) => {
@@ -86,19 +79,6 @@ const EventingOverview = () => {
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
 
-	const handleTriggerEvent = (type, payload, isSynchronous) => {
-		return new Promise((resolve, reject) => {
-			dispatch(increment("pendingRequests"))
-			const eventBody = { type, delay: 0, timestamp: new Date().getTime(), payload, options: {}, isSynchronous }
-			client.eventing.queueEvent(projectID, eventBody).then(data => {
-				resolve(data)
-			})
-				.catch(err => {
-					reject(err)
-				})
-				.finally(() => dispatch(decrement("pendingRequests")))
-		})
-	}
 
 	const columns = [
 		{
@@ -118,7 +98,7 @@ const EventingOverview = () => {
 				return (
 					<span>
 						<a onClick={() => handleEditRuleClick(record.name)}>Edit</a>
-						{source === "custom" && <a onClick={() => handleTriggerRuleClick(record.name)}>Trigger</a>}
+						{source === "custom" && <a onClick={() => handleTriggerRuleClick(record.type)}>Trigger</a>}
 						<a style={{ color: "red" }} onClick={() => handleDeleteRule(record.name)}>Delete</a>
 					</span>
 				)
@@ -179,9 +159,6 @@ const EventingOverview = () => {
 						handleSubmit={handleSetRule}
 						dbList={dbList}
 						initialValues={ruleClickedInfo} />}
-					{triggerModalVisible && <TriggerForm
-						handleCancel={handleTriggerModalCancel}
-						handleSubmit={(...args) => handleTriggerEvent(ruleClickedInfo.type, ...args)} />}
 				</div>
 			</div>
 		</div>

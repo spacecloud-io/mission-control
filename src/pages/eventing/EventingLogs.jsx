@@ -30,7 +30,7 @@ const columns = [
   { title: 'Trigger name', dataIndex: 'rule_name', key: 'rule_name' },
   { title: 'Invocations', key: 'invocations', render: record => <p>{record.invocation_logs.length}</p> },
   { title: 'Status', key: 'status', render: record => getIconByStatus(record.status) },
-  { title: 'Created at', key: 'date', render:(record) => <p>{new Date(record.event_timestamp).toISOString()}</p> },
+  { title: 'Created at', key: 'date', render:(record) => <p>{record.event_ts}</p> },
 ];
 
 const EventingLogs = () => {
@@ -47,7 +47,7 @@ const EventingLogs = () => {
     if(projects.length > 0){
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
       dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().getTime(), dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toLocaleString(), dbType)
       .then(res => dispatch(set("eventLogs", res)))
       .catch(ex => notify("error", "Error loading event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))
@@ -88,7 +88,7 @@ const EventingLogs = () => {
         else return  <Icon type="close" style={{color: "red"}}/>
       } },
       { title: 'ID', dataIndex: '_id', key: '_id' },
-      { title: 'Date', key: "invocation", render: (record) => <p>{record.invocation_time.toString()}</p>}
+      { title: 'Date', key: "invocation", render: (record) => <p>{record.invocation_time}</p>}
     ];
 
     return (
@@ -110,7 +110,7 @@ const EventingLogs = () => {
   const loadFunc = () => {
     if(projects.length > 0){
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1].event_timestamp : new Date().getTime(), dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1].event_ts : new Date().toISOString(), dbType)
       .then(res => {
         if(res.length < 100) {
           setHasMoreEventLogs(false);
@@ -125,7 +125,7 @@ const EventingLogs = () => {
   const handleRefresh = () => {
     const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().getTime(), dbType)
+    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType)
     .then(res => dispatch(set("eventLogs", res)))
     .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
     .finally(() => dispatch(decrement("pendingRequests")))

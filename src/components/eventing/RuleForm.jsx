@@ -138,7 +138,20 @@ const RuleForm = (props) => {
           <FormItemLabel name="Type" />
           <Form.Item>
             {getFieldDecorator('type', {
-              rules: [{ required: true, message: 'Please provide a type!' }],
+              rules: [
+                {
+                  validator: (_, value, cb) => {
+                    if (!value) {
+                      cb("Please provide event type!")
+                      return
+                    }
+                    if (value.includes("-") || value.includes(" ")) {
+                      cb("Event type cannot contain hiphens or spaces!")
+                    }
+                    cb()
+                  }
+                }
+              ],
               initialValue: type
             })(
               <Input placeholder="Custom event type (Example: my-custom-event-type)" />

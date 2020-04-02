@@ -167,7 +167,7 @@ const CreateDatabase = (props) => {
         </Form>
         <Button type="primary" className="db-btn" onClick={handleDbSubmit}>Add database</Button>
       </Card><br />
-      <center className="skip-link"><Link to={`/mission-control/projects/${props.projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
+      <center><Link to={`/mission-control/projects/${props.projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID } from './constants';
 
 import store from "./store"
 import client from "./client"
@@ -15,6 +15,7 @@ import gql from 'graphql-tag';
 import gqlPrettier from 'graphql-prettier';
 import { format } from 'prettier-package-json';
 import { LoremIpsum } from "lorem-ipsum";
+import jwt from 'jsonwebtoken';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -23,6 +24,21 @@ const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const lorem = new LoremIpsum();
+
+export const getJWTSecret = (state, projectId) => {
+  return getProjectConfig(state.projects, projectId, "secret", "")
+}
+
+export const generateToken = (state, projectId, claims) => {
+  const secret = getJWTSecret(state, projectId)
+  if (!secret) return ""
+  return jwt.sign(claims, secret);
+}
+
+export const generateInternalToken = (state, projectId) => {
+  const claims = { id: SPACE_CLOUD_USER_ID }
+  return generateToken(state, projectId, claims)
+};
 
 export const parseDbConnString = conn => {
   if (!conn) return {}

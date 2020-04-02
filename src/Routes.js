@@ -25,6 +25,7 @@ import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
 import EventingLogs from "./pages/eventing/EventingLogs";
 import EventingSettings from "./pages/eventing/EventingSettings";
+import QueueEvent from "./pages/eventing/queue-event/QueueEvent";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
@@ -74,6 +75,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/schema" component={EventingSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/event-logs" component={EventingLogs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/settings" component={EventingSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/queue-event" component={QueueEvent} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />

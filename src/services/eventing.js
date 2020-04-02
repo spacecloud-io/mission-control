@@ -2,14 +2,14 @@ import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
-import store from '../store';
+import Client from "./client"
 
 class Eventing {
   constructor(client) {
     this.client = client
   }
 
-  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastTimestamp, dbType){
+  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventDate, dbType){
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
       if (process.env.NODE_ENV !== "production") {
@@ -26,19 +26,19 @@ class Eventing {
       query: gql`
         query {
           event_logs (
-            sort: ["-event_timestamp"],
+            sort: ["-event_ts"],
             limit: 100,
             where: {
               status: {_in: $status}
               ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
-              ${showDate ? "event_timestamp: {_gte: $startDate, _lte: $endDate}" : ""}
-              event_timestamp: {_lte: $lastTimestamp}
+              ${showDate ? "event_ts: {_gte: $startDate, _lte: $endDate}" : ""}
+              event_ts: {_lte: $lastEventDate}
             }
           ) @${dbType} {
             _id
             rule_name
             status
-            event_timestamp
+            event_ts
             invocation_logs (
               where: {event_id: {_eq: "event_logs._id"}}
             ) @${dbType} {
@@ -52,7 +52,7 @@ class Eventing {
           }
         }
       `,
-      variables: {status, name, startDate, endDate, lastTimestamp, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+      variables: {status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
     }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }
@@ -71,9 +71,11 @@ class Eventing {
     })
   }
 
-  queueEvent(projectId, event) {
+  queueEvent(projectId, event, token) {
+    const client = new Client()
+    if (token) client.setToken(token)
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
+      client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
