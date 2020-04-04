@@ -517,7 +517,7 @@ const AddDeploymentForm = props => {
                 <FormItemLabel name="Image pull policy" />
                 <Form.Item>
                   {getFieldDecorator("imagePullPolicy", {
-                    initialValue: initialValues ? initialValues.imagePullPolicy : "always"
+                    initialValue: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists"
                   })(<Select style={{ width: 175 }}>
                     <Select.Option value="always">Always</Select.Option>
                     <Select.Option value="pull-if-not-exists">If not present</Select.Option>

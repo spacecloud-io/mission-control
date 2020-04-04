@@ -74,10 +74,12 @@ const Billing = () => {
 
     const handleContactUs = (subject, message) =>{
         dispatch(increment("pendingRequests"));
-        client.billing.contactUs(subject, message).then(res => {
+        const email = localStorage.getItem('email')
+        const name = localStorage.getItem('name')
+        client.billing.contactUs(email, name, subject, message).then(res => {
             if(res === 200){
                 setContactModalVisible(false)
-                notify("success", "Success", "Sucessfully send message")
+                notify("success", "Successfully sent message", "Our team will reach out to you shortly:)")
             }
         }).catch(ex =>{
             console.log(ex)
@@ -102,7 +104,7 @@ const Billing = () => {
                                     <PlanDetails handleIncreaseLimit={handleIncreaseLimit} />
                                 </Col>
                                 <Col lg={{ span:11, offset:2 }}>
-                                    <Support handleContactUs={handleContactUs} />
+                                    <Support handleContactUs={handleContactUsClick} />
                                 </Col>
                             </Row>}
                         </Col>
