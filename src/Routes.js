@@ -30,7 +30,7 @@ import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
-import DeploymentsRules from "./pages/deployments/rules/DeploymentsRules";
+import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
 import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import Settings from "./pages/settings/Settings";
@@ -87,12 +87,12 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/rules" component={DeploymentsRules} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretName" component={SecretDetails} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
       </Switch>
     </Router>
   );

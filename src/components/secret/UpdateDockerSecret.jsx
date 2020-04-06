@@ -32,7 +32,7 @@ const UpdateDockerSecret = props => {
       <Form>
         <p>Secret name</p>
         <Form.Item>
-          {getFieldDecorator(`name`, {
+          {getFieldDecorator(`id`, {
             initialValue: initialValue
           })(<Input disabled={true} />)}
         </Form.Item>

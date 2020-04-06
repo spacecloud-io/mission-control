@@ -23,7 +23,7 @@ const Secrets = () => {
   const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(
     false
   );
-  const [secretNameClicked, setSecretNameClicked] = useState("");
+  const [secretIdClicked, setSecretIdClicked] = useState("");
 
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const Secrets = () => {
       client.secrets
         .addSecret(projectID, secretConfig)
         .then(() => {
-          const newSecrets = [...secrets.filter(obj => obj.name !== secretConfig.name), secretConfig];
+          const newSecrets = [...secrets.filter(obj => obj.id !== secretConfig.id), secretConfig];
           setProjectConfig(projectID, "modules.secrets", newSecrets);
           resolve();
         })
@@ -48,36 +48,36 @@ const Secrets = () => {
     });
   };
 
-  const handleDeleteSecret = secretName => {
+  const handleDeleteSecret = secretId => {
     dispatch(increment("pendingRequests"));
     client.secrets
-      .deleteSecret(projectID, secretName)
+      .deleteSecret(projectID, secretId)
       .then(() => {
-        const newSecrets = secrets.filter(obj => obj.name !== secretName);
+        const newSecrets = secrets.filter(obj => obj.id !== secretId);
         setProjectConfig(projectID, "modules.secrets", newSecrets);
       })
       .catch(ex => notify("error", "Error adding secret", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleSecretView = name => {
-    history.push(`/mission-control/projects/${projectID}/secrets/${name}`);
+  const handleSecretView = secretId => {
+    history.push(`/mission-control/projects/${projectID}/secrets/${secretId}`);
   };
 
-  const handleClickUpdateDockerSecret = name => {
-    setSecretNameClicked(name);
+  const handleClickUpdateDockerSecret = id => {
+    setSecretIdClicked(id);
     setDockerSecretModalVisible(true);
   };
 
   const handleDockerModalCancel = () => {
     setDockerSecretModalVisible(false);
-    setSecretNameClicked("");
+    setSecretIdClicked("");
   };
 
   const columns = [
     {
       title: "Name",
-      dataIndex: "name"
+      dataIndex: "id"
     },
     {
       title: "Type",
@@ -93,7 +93,7 @@ const Secrets = () => {
             {record.type === "docker" && (
               <a onClick={(e) => {
                 e.stopPropagation()
-                handleClickUpdateDockerSecret(record.name)
+                handleClickUpdateDockerSecret(record.id)
               }}>
                 Update
               </a>
@@ -101,13 +101,13 @@ const Secrets = () => {
             {record.type !== "docker" && (
               <a onClick={(e) => {
                 e.stopPropagation()
-                handleSecretView(record.name)
+                handleSecretView(record.id)
               }}>View</a>
             )}
             <div onClick={e => e.stopPropagation()}>
               <Popconfirm
                 title={`This will delete the secrets. Are you sure?`}
-                onConfirm={() => handleDeleteSecret(record.name)}
+                onConfirm={() => handleDeleteSecret(record.id)}
               >
                 <a style={{ color: "red" }}>Delete</a>
               </Popconfirm>
@@ -155,7 +155,7 @@ const Secrets = () => {
             </Button>
           </h3>
           {secrets.length > 0 && (
-            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.name) } } }} />
+            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }} />
           )}
           {secrets.length === 0 && <EmptyState />}
           {secretModalVisible && (
@@ -168,7 +168,7 @@ const Secrets = () => {
             <UpdateDockerSecret
               handleCancel={handleDockerModalCancel}
               handleSubmit={handleAddSecret}
-              initialValue={secretNameClicked}
+              initialValue={secretIdClicked}
             />
           )}
         </div>

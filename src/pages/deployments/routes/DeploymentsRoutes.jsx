@@ -13,7 +13,7 @@ import { getProjectConfig, notify } from "../../../utils";
 import { increment, decrement, set } from "automate-redux";
 const { Panel } = Collapse;
 
-const DeploymentsRules = () => {
+const DeploymentsRoutes = () => {
   const { projectID } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
@@ -29,7 +29,17 @@ const DeploymentsRules = () => {
 
   const getRoutes = () => {
     dispatch(increment("pendingRequests"))
-    client.deployments.fetchDeploymentRoutes(projectID).then(res => dispatch(set("serviceRoutes", res)))
+    client.deployments.fetchDeploymentRoutes(projectID).then((res = []) => {
+      const serviceRoutes = res.reduce((prev, curr) => {
+        if (!prev[curr.id]) {
+          return Object.assign({}, prev, { [curr.id]: [curr] })
+        }
+        const oldRoutes = prev[curr.id]
+        const newRoutes = [...oldRoutes, curr]
+        return Object.assign({}, prev, { [curr.id]: newRoutes })
+      }, {})
+      dispatch(set("serviceRoutes", serviceRoutes))
+    })
       .catch(ex => notify("error", "Error fetching routes. This page is only available for Kubernetes cluster", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -136,7 +146,7 @@ const DeploymentsRules = () => {
       <Topbar showProjectSelector />
       <Sidenav selectedItem="deployments" />
       <div className="page-content page-content--no-padding">
-        <DeploymentTabs activeKey='rules' projectID={projectID} />
+        <DeploymentTabs activeKey='routes' projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           {
             noOfServices === 0 && <div className="panel">
@@ -162,7 +172,7 @@ const DeploymentsRules = () => {
                       Add
                     </Button>
                   </div>
-                  <Table pagination={false} style={{ marginTop: 8 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
+                  <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
                 </div>
               </Panel>))}
 
@@ -181,4 +191,4 @@ const DeploymentsRules = () => {
   );
 };
 
-export default DeploymentsRules;
+export default DeploymentsRoutes;

@@ -107,7 +107,7 @@ const DeploymentsOverview = () => {
       ports: task.ports,
       cpu: task.resources.cpu / 1000,
       memory: task.resources.memory,
-      gpuType: task.resources.gpu ? task.resources.gpu.type : "per-second",
+      gpuType: task.resources.gpu ? task.resources.gpu.type : "",
       gpuCount: task.resources.gpu ? task.resources.gpu.value : 0,
       min: obj.scale.minReplicas,
       max: obj.scale.maxReplicas,
