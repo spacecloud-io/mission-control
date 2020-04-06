@@ -9,6 +9,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import FilterSorterForm from "../../../components/database/filter-sorter-form/FilterSorterForm";
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
+import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
 import { getProjectConfig, notify, getSchemas } from '../../../utils';
 import { Button, Select, Icon, Table, Tooltip } from "antd";
@@ -18,6 +19,8 @@ const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
+  const [isEditRowFormVisible, setEditRowFormVisibility] = useState(false);
+  const [primaryKey, setPrimaryKey] = useState({name: "", value: ""});
   const [column, setColumn] = useState([]);
   const [data, setData] = useState([]);
   const [counter, setCounter] = useState(0);
@@ -106,7 +109,7 @@ const Browse = () => {
           title: '', 
           render: (record) => (
             <span>
-						 <Button type="link" disabled={!hasUniqueKey} style={{color: 'black'}}>Edit</Button>
+						 <Button type="link" disabled={!hasUniqueKey} style={{color: 'black'}} onClick={() => {setEditRowFormVisibility(true);setPrimaryKey({name: uniqueKey, value: record[uniqueKey]})}}>Edit</Button>
 						 <Button type="link" disabled={!hasUniqueKey} style={{ color: "red" }} onClick={() => deleteRow(uniqueKey, record[uniqueKey])}>Delete</Button>
             </span>
           )})
@@ -164,6 +167,76 @@ const Browse = () => {
       notify("success", "Row deleted successfully", "", 5)
       setCounter(counter+1);
     })
+  }
+
+  const notifyMessage = (status, data, column) => {
+    if(status !== 200) {
+      notify("error", data.error, "", 5);
+      return;
+    }
+    notify("success", `field ${column} successfully updated!`, "", 5);
+  }
+
+  const  EditRow = values => {
+    console.log(values);
+    const whereClause = cond(primaryKey.name, "==", primaryKey.value)
+
+    for(let row of values){
+      switch(row.operation){
+        case "set":
+          db.update(selectedCol).where(whereClause).set({[row.column] : row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "unset":
+          db.update(selectedCol).where(whereClause).remove({[row.column]: ""}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "rename":
+          db.update(selectedCol).where(whereClause).rename({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "inc":
+          db.update(selectedCol).where(whereClause).inc({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "multiply":
+          db.update(selectedCol).where(whereClause).mul({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "min":
+          db.update(selectedCol).where(whereClause).min({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+        
+        case "max":
+          db.update(selectedCol).where(whereClause).max({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "currentDate":
+          db.update(selectedCol).where(whereClause).currentDate(row.column).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "currentTimestamp":
+          db.update(selectedCol).where(whereClause).currentTimestamp(row.column).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+
+        case "push":
+          db.update(selectedCol).where(whereClause).push({[row.column]: row.value}).apply()
+          .then(({status, data}) => notifyMessage(status, data, row.column))
+          break;
+      }
+    }
+    
+    setEditRowFormVisibility(false);
+    setCounter(counter+1);
   }
 
   return (
@@ -226,6 +299,16 @@ const Browse = () => {
            handleCancel={() => setInsertRowFormVisibility(false)}
            insertRow={insertRow}
           />
+        )
+      }
+      {
+        isEditRowFormVisible && (
+          <EditRowForm 
+          visible={isEditRowFormVisible}
+          handleCancel={() => setEditRowFormVisibility(false)}
+          EditRow={EditRow}
+          selectedDB={selectedDB}
+         />
         )
       }
     </React.Fragment>

@@ -367,7 +367,7 @@ const FilterSorterForm = props => {
                 getFieldDecorator(`filters[${k}].value`, {
                   initialValue: initialFilters[k]
                     ? initialFilters[k].value
-                    : moment,
+                    : moment(),
                   rules: [defaultRules]
                 })(<DatePicker showTime />)}
               {getFieldValue(`filters[${k}].datatype`) === 'json' && (
