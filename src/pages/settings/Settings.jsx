@@ -8,7 +8,7 @@ import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import SecretConfigure from "../../components/configure/SecretConfigure";
 import "./settings.css";
-import { getProjectConfig, notify, setProjectConfig } from "../../utils";
+import { getProjectConfig, notify, setProjectConfig, openProject } from "../../utils";
 import client from "../../client";
 import { Button, Row, Col, Card } from "antd";
 import store from "../../store";
@@ -128,7 +128,10 @@ const Settings = () => {
           project => project.id !== projectID
         );
         store.dispatch(set(`projects`, projectList));
-        history.push(`/mission-control/welcome`);
+        if (projectList.length === 0) {
+          history.push(`/mission-control/welcome`);
+        }
+        openProject(projectList[0].id)
       })
       .catch(ex => {
         notify("error", "Error removing project config", ex.toString());

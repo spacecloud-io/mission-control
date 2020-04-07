@@ -134,6 +134,7 @@ const RoutingRule = props => {
                     }
                     if (!Number.isInteger(Number(value))) {
                       cb("Not a valid port value")
+                      return
                     }
                     cb()
                   }
@@ -164,6 +165,7 @@ const RoutingRule = props => {
                     const weightVal = Number(value)
                     if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
                       cb("Weight should be a number between 1 to 100")
+                      return
                     }
                     cb()
                   }
@@ -223,6 +225,7 @@ const RoutingRule = props => {
                     }
                     if (!Number.isInteger(Number(value))) {
                       cb("Not a valid port value")
+                      return
                     }
                     cb()
                   }

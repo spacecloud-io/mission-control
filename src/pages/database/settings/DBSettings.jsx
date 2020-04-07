@@ -85,9 +85,14 @@ const Settings = () => {
             <Divider style={{ margin: "16px 0px" }} />
             <h3>Remove Config</h3>
             <p>Removes the config (schema, rules, etc.) of this database without dropping any tables or database</p>
-            {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
-              <Button type="danger" disabled>Remove</Button>
-            </Tooltip>}
+            {!canDisableDB && <React.Fragment>
+              <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
+                <Button type="danger" disabled>Remove</Button>
+              </Tooltip>
+              <div style={{ marginTop: 8 }}>
+                <span style={{ color: "red", cursor: "pointer" }} onClick={handleRemoveDb}>Force remove database</span> <span>(This will disable the eventing module)</span>
+              </div>
+            </React.Fragment>}
             {canDisableDB && <Button type="danger" onClick={handleRemoveDb} >Remove</Button>}
           </div>
         </div>

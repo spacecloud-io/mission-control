@@ -56,7 +56,21 @@ const RuleForm = (props) => {
         <FormItemLabel name="Trigger name" />
         <Form.Item>
           {getFieldDecorator('name', {
-            rules: [{ required: true, message: 'Please provide a name to trigger!' }],
+            rules: [
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please provide a trigger name!")
+                    return
+                  }
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb("Trigger name can only contain alphanumeric characters and underscores!")
+                    return
+                  }
+                  cb()
+                }
+              }
+            ],
             initialValue: name
           })(
             <Input placeholder="Trigger Name" />
@@ -145,8 +159,9 @@ const RuleForm = (props) => {
                       cb("Please provide event type!")
                       return
                     }
-                    if (value.includes("-") || value.includes(" ")) {
-                      cb("Event type cannot contain hiphens or spaces!")
+                    if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                      cb("Event type can only contain alphanumeric characters and underscores!")
+                      return
                     }
                     cb()
                   }
@@ -154,7 +169,7 @@ const RuleForm = (props) => {
               ],
               initialValue: type
             })(
-              <Input placeholder="Custom event type (Example: my-custom-event-type)" />
+              <Input placeholder="Custom event type (Example: my_custom_event_type)" />
             )}
           </Form.Item>
         </React.Fragment>}

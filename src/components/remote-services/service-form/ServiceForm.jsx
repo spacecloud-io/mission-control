@@ -35,8 +35,9 @@ const ServiceForm = (props) => {
                     cb("Please provide a service name!")
                     return
                   }
-                  if (value.includes("-") || value.includes(" ")) {
-                    cb("Service name cannot contain hiphens or spaces!")
+                  if (!(/^[0-9a-zA-Z]+$/.test(value))) {
+                    cb("Service name can only contain alphanumeric characters!")
+                    return
                   }
                   cb()
                 }

@@ -54,8 +54,9 @@ const EndpointForm = (props) => {
                     cb("Please provide a endpoint name!")
                     return
                   }
-                  if (value.includes("-") || value.includes(" ")) {
-                    cb("Endpoint name cannot contain hiphens or spaces!")
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb("Endpoint name can only contain alphanumeric characters and underscores!")
+                    return
                   }
                   cb()
                 }

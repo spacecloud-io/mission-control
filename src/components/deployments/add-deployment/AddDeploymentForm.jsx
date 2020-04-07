@@ -398,7 +398,7 @@ const AddDeploymentForm = props => {
   const autoscalingModeSelect = (
     <Form.Item style={{ marginBottom: 0 }}>
       {getFieldDecorator("autoscalingMode", {
-        initialValue: initialValues ? initialValues.autoscalingMode : "per-second"
+        initialValue: initialValues ? initialValues.autoscalingMode : "parallel"
       })(
         <Select
           placeholder="Select auto scaling mode"
@@ -429,7 +429,19 @@ const AddDeploymentForm = props => {
             <Form.Item>
               {getFieldDecorator("id", {
                 rules: [
-                  { required: true, message: "Please name your service!" }
+                  {
+                    validator: (_, value, cb) => {
+                      if (!value) {
+                        cb("Please provide a service id!")
+                        return
+                      }
+                      if (!(/^[0-9a-zA-Z]+$/.test(value))) {
+                        cb("Service ID can only contain alphanumeric characters!")
+                        return
+                      }
+                      cb()
+                    }
+                  }
                 ],
                 initialValue: initialValues ? initialValues.id : ""
               })(
@@ -444,7 +456,19 @@ const AddDeploymentForm = props => {
             <Form.Item>
               {getFieldDecorator("version", {
                 rules: [
-                  { required: true, message: "Please input a version!" }
+                  {
+                    validator: (_, value, cb) => {
+                      if (!value) {
+                        cb("Please provide a version!")
+                        return
+                      }
+                      if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
+                        cb("Version can only contain alphanumeric characters, dots and underscores!")
+                        return
+                      }
+                      cb()
+                    }
+                  }
                 ],
                 initialValue: initialValues ? initialValues.version : ""
               })(

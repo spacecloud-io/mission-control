@@ -85,7 +85,19 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
           <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />
           <Form.Item>
             {getFieldDecorator("name", {
-              rules: [{ required: true, message: `${dbType === 'mongo' ? 'Collection' : 'Table'} name is required` }],
+              rules: [{
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name is required`)
+                    return
+                  }
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name can only contain alphanumeric characters and underscores!`)
+                    return
+                  }
+                  cb()
+                }
+              }],
               initialValue: initialValues.name
             })(
               <Input

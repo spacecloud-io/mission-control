@@ -152,9 +152,14 @@ const CreateDatabase = (props) => {
                     cb("Please input an alias for your database")
                     return
                   }
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb("Alias name can only contain alphanumeric characters and underscores!")
+                    return
+                  }
                   const check = dbAliasNames.some(data => value === data);
                   if (check) {
                     cb("Alias name already taken by another database. Please provide an unique alias name!")
+                    return
                   }
                   cb()
                 }

@@ -177,16 +177,16 @@ export const getSecretType = (type, defaultValue) => {
 }
 
 export const openProject = (projectId) => {
-  const currentURL = window.location.pathname
-  const projectURL = `/mission-control/projects/${projectId}`
-  if (!currentURL.includes(projectURL)) {
-    history.push(projectURL)
-  }
   const projects = get(store.getState(), "projects", [])
   const config = projects.find(project => project.id === projectId)
   if (!config) {
     notify("error", "Error", "Project does not exist")
     return
+  }
+  const currentURL = window.location.pathname
+  const projectURL = `/mission-control/projects/${projectId}/`
+  if (!currentURL.includes(projectURL)) {
+    history.push(projectURL)
   }
 }
 

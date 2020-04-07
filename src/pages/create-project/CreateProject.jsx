@@ -23,11 +23,11 @@ const CreateProject = (props) => {
   }, [])
 
 
-  const { getFieldDecorator, validateFields, getFieldValue, setFieldsValue } = props.form;
+  const { getFieldDecorator, validateFields, getFieldValue } = props.form;
   const { Step } = Steps;
 
   const projectName = getFieldValue("projectName");
-  const projectID = projectName ? projectName.toLowerCase().replace(/\s+|-/g, '_') : "";
+  const projectID = projectName ? projectName.toLowerCase(): "";
   const [projectId, setProjectId] = useState(projectID);
   const enterpriseMode = localStorage.getItem('enterprise') === 'true'
   const projects = useSelector(state => state.projects)
@@ -60,7 +60,7 @@ const CreateProject = (props) => {
     });
   };
 
-  const createProject = (alias, connectionString, defaultDBRules, selectedDB) => {
+  const addDatabase = (alias, connectionString, defaultDBRules, selectedDB) => {
     dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, (err) => {
       if (!err) {
         history.push(`/mission-control/projects/${projectId}`)
@@ -91,8 +91,13 @@ const CreateProject = (props) => {
                           cb("Please input a project name")
                           return
                         }
-                        if (value.includes("-") || value.includes(" ") || value.includes("_")) {
-                          cb("Project name cannot contain hiphens, spaces or underscores!")
+                        if (!(/^[0-9a-zA-Z]+$/.test(value))) {
+                          cb("Project name can only contain alphanumeric characters!")
+                          return
+                        }
+                        if (projects.some(p => p.id === value.toLowerCase())) {
+                          cb("Project name already taken. Please provide a unique project name!")
+                          return
                         }
                         cb()
                       }
@@ -136,7 +141,7 @@ const CreateProject = (props) => {
     content: <React.Fragment>
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <CreateDatabase projectId={projectId} handleSubmit={createProject} />
+          <CreateDatabase projectId={projectId} handleSubmit={addDatabase} />
         </Col>
       </Row>
     </React.Fragment>

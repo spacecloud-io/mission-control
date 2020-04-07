@@ -53,6 +53,7 @@ const SignupForm = (props) => {
                                   }
                                   if (value.length < 6 ) {
                                     cb("Password should be atleast 6 characters long")
+                                    return
                                   }
                                   cb()
                             }
