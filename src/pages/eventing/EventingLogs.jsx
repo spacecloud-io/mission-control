@@ -45,7 +45,7 @@ const EventingLogs = () => {
 
   useEffect(() => {
     if(projects.length > 0){
-      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
+      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
       dispatch(increment("pendingRequests"));
       client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toLocaleString(), dbType)
       .then(res => dispatch(set("eventLogs", res)))
@@ -109,7 +109,7 @@ const EventingLogs = () => {
 
   const loadFunc = () => {
     if(projects.length > 0){
-      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
+      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
       client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length-1].event_ts : new Date().toISOString(), dbType)
       .then(res => {
         if(res.length < 100) {
@@ -123,7 +123,7 @@ const EventingLogs = () => {
   }
 
   const handleRefresh = () => {
-    const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbType");
+    const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
     dispatch(increment("pendingRequests"));
     client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType)
     .then(res => dispatch(set("eventLogs", res)))

@@ -1,5 +1,5 @@
 import store from "../../store"
-import { getProjectConfig, setProjectConfig } from "../../utils"
+import { getProjectConfig, setProjectConfig, getEventingDB } from "../../utils"
 import { defaultDBRules, defaultEventRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
@@ -159,6 +159,12 @@ export const removeDBConfig = (projectId, aliasName) => {
       const dbList = delete dbconfig[aliasName]
       store.dispatch(set(`extraConfig.${projectId}.crud`, dbList))
       history.push(`/mission-control/projects/${projectId}/database`)
+      const eventingDB = getEventingDB(projectId)
+      if (aliasName === eventingDB) {
+        client.eventing.setEventingConfig(projectId, { enabled: false, dbAlias: "" }).then(() => {
+          notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
+        })
+      }
       resolve()
     })
       .catch(ex => {
@@ -180,9 +186,9 @@ const setDefaultEventSecurityRule = (projectId, type, rule) => {
 
 const handleEventingConfig = (projects, projectId, alias) => {
   store.dispatch(increment("pendingRequests"))
-  client.eventing.setEventingConfig(projectId, { enabled: true, dbType: alias })
+  client.eventing.setEventingConfig(projectId, { enabled: true, dbAlias: alias })
     .then(() => {
-      setProjectConfig(projectId, "modules.eventing", { enabled: true, dbType: alias })
+      setProjectConfig(projectId, "modules.eventing", { enabled: true, dbAlias: alias })
       setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
       notify("success", "Success", "Changed eventing config successfully")
     })

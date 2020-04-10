@@ -14,6 +14,7 @@ const GraphQLTimeout = ({ form, contextTime, handleSubmit }) => {
   }
   return (
     <div>
+      <h2>GraphQL Timeout (in seconds)</h2>
       <p>The timeout of GraphQL requests in seconds</p>
       <Form>
         <Form.Item>

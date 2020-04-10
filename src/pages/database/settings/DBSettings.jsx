@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { Button, Divider, Tooltip, Input } from "antd"
+import { Button, Divider, Tooltip, Popconfirm } from "antd"
 import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -20,7 +20,7 @@ const Settings = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbType")
+  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbAlias")
   const canDisableDB = eventingDB !== selectedDB
 
   const history = useHistory()
@@ -90,7 +90,13 @@ const Settings = () => {
                 <Button type="danger" disabled>Remove</Button>
               </Tooltip>
               <div style={{ marginTop: 8 }}>
-                <span style={{ color: "red", cursor: "pointer" }} onClick={handleRemoveDb}>Force remove database</span> <span>(This will disable the eventing module)</span>
+                <Popconfirm
+                  title="All event triggers and realtime functionality will come to a halt since this is an eventing db"
+                  onConfirm={handleRemoveDb}
+                >
+                  <span style={{ color: "red", cursor: "pointer" }}>Force remove database</span>
+                </Popconfirm>
+                <span>(This will disable the eventing module)</span>
               </div>
             </React.Fragment>}
             {canDisableDB && <Button type="danger" onClick={handleRemoveDb} >Remove</Button>}

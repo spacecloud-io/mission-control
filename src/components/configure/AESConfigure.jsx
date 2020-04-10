@@ -20,10 +20,11 @@ const AESConfigure = ({ form, aesKey, handleSubmit }) => {
   }
 
   const currentAESKey = getFieldValue("aesKey")
-  const isKeyChanged = currentAESKey !== undefined && aesKey !== currentAESKey 
+  const isKeyChanged = currentAESKey !== undefined && aesKey !== currentAESKey
 
   return (
     <div>
+      <h2>AES Key</h2>
       <p>This key is used by the security rules in Space Cloud to encrypt/decrypt certain fields</p>
       <Form>
         <div style={{ display: "flex" }}>

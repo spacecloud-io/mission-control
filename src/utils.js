@@ -26,7 +26,9 @@ const embeddedSvg = require('./assets/embeddedSmall.svg')
 const lorem = new LoremIpsum();
 
 export const getJWTSecret = (state, projectId) => {
-  return getProjectConfig(state.projects, projectId, "secret", "")
+  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
+  if (secrets.length === 0) return ""
+  return secrets[0].secret
 }
 
 export const generateToken = (state, projectId, claims) => {
@@ -97,7 +99,7 @@ export const generateAESKey = () => btoa(generateId())
 export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
-  secret: generateJWTSecret(),
+  secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
   contextTime: 5,
   modules: {
@@ -176,6 +178,10 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
+export const getEventingDB = (projectId) => {
+  return getProjectConfig(store.getState().projects, projectId, "modules.eventing.dbAlias", "")
+}
+
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
   const config = projects.find(project => project.id === projectId)
@@ -223,7 +229,7 @@ export const fetchGlobalEntities = (token) => {
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
-  enterpriseMode = (enterpriseMode === undefined || enterpriseMode === null) ? false: enterpriseMode 
+  enterpriseMode = (enterpriseMode === undefined || enterpriseMode === null) ? false : enterpriseMode
   localStorage.setItem("enterprise", enterpriseMode.toString())
   localStorage.setItem("isProd", isProd.toString())
   store.dispatch(set("version", version))

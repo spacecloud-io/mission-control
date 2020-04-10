@@ -217,6 +217,7 @@ const DockerRegistry = ({ dockerRegistry, handleSubmit }) => {
 
   return (
     <div>
+      <h2>Docker Registry</h2>
       <p>The docker registry to store images of your services</p>
       {!dockerRegistry && <Button type="ghost" onClick={handleClick}>
         Add Docker Registry

@@ -40,7 +40,7 @@ const Settings = () => {
 
   // Derived properties
   const projectName = globalConfig.name;
-  const secret = globalConfig.secret
+  const secrets = globalConfig.secrets ? globalConfig.secrets : []
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
@@ -66,16 +66,18 @@ const Settings = () => {
     []
   );
   // Handlers
-  const handleSecret = secret => {
-    dispatch(increment("pendingRequests"));
-    client.projects
-      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { secret: secret }))
-      .then(() => {
-        setProjectConfig(projectID, "secret", secret);
-        notify("success", "Success", "Changed JWT secret successfully");
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+  const handleSetSecrets = newSecrets => {
+    return new Promise((resolve, reject) => {
+      dispatch(increment("pendingRequests"));
+      client.projects
+        .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { secrets: newSecrets }))
+        .then(() => {
+          setProjectConfig(projectID, "secrets", newSecrets);
+          resolve()
+        })
+        .catch(ex => reject(ex))
+        .finally(() => dispatch(decrement("pendingRequests")));
+    })
   };
 
   const handleAES = aesKey => {
@@ -170,29 +172,18 @@ const Settings = () => {
                 <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
               </CopyToClipboard></h3>
             </Card>
-            <br />
-            <h2>Docker Registry</h2>
             <div className="divider" />
             <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
-            <br/>
-            <h2>JWT Secret</h2>
             <div className="divider" />
-            <SecretConfigure secret={secret} handleSubmit={handleSecret} />
-            <h2>AES Key</h2>
+            <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
             <div className="divider" />
             <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
-            <h2>GraphQL Timeout (in seconds)</h2>
             <div className="divider" />
             <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
-            <h2>Whitelisted Domains</h2>
             <div className="divider" />
-            <p>
-              Add domains you want to whitelist for this project. Space cloud will
-            automatically add and renew SSL certificates for these domains{" "}
-            </p>
             <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
-            <h2>Delete Project</h2>
             <div className="divider" />
+            <h2>Delete Project</h2>
             <p>
               Delete this project config. All services running in this project
               will be stopped and deleted.

@@ -40,12 +40,12 @@ const EventingSettings = () => {
         };
     });
 
-    const handleEventingConfig = (dbType) => {
+    const handleEventingConfig = (dbAlias) => {
         dispatch(increment("pendingRequests"));
         client.eventing
-          .setEventingConfig(projectID, { enabled: true, dbType })
+          .setEventingConfig(projectID, { enabled: true, dbAlias })
           .then(() => {
-            setProjectConfig(projectID, "modules.eventing.dbType", dbType);
+            setProjectConfig(projectID, "modules.eventing.dbAlias", dbAlias);
             notify("success", "Success", "Changed eventing config successfully");
           })
           .catch(ex => notify("error", "Error", ex))
@@ -62,7 +62,7 @@ const EventingSettings = () => {
             <h2>Eventing Config</h2>
             <div className="divider" />
                 <EventingConfigure
-                    dbType={eventing.dbType}
+                    dbType={eventing.dbAlias}
                     dbList={dbList}
                     handleSubmit={handleEventingConfig}
                 />
