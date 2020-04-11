@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import construction from "../../assets/construction.svg"
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
@@ -24,7 +23,9 @@ const Billing = () => {
     useEffect(() => {
 		ReactGA.pageview("/projects/plans");
     }, [])
-    const subscribed = useSelector(state => state.billing.status)
+    // const subscribed = useSelector(state => state.billing.status)
+    const subscribed = true
+    const quotas = useSelector(state => state.quotas)
     const [contactModalVisible, setContactModalVisible] = useState(false)
     const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)
     const [defaultSubject, setDefaultSubject] = useState("")
@@ -101,7 +102,7 @@ const Billing = () => {
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
-                                    <PlanDetails handleIncreaseLimit={handleIncreaseLimit} />
+                                    <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas}/>
                                 </Col>
                                 <Col lg={{ span:11, offset:2 }}>
                                     <Support handleContactUs={handleContactUsClick} />

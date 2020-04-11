@@ -44,7 +44,7 @@ const Settings = () => {
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
-  const cred = useSelector(state => state.cred)
+  const credentials = useSelector(state => state.credentials)
 
   const copyValue = (e, text) => {
     e.preventDefault();
@@ -165,10 +165,10 @@ const Settings = () => {
           <Col lg={{ span: 12 }}>
             <h2>Credentials</h2>
             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}><b>username </b> {cred.userName}  <CopyToClipboard text={cred.userName}>
+              <h3 style={{ wordSpacing: 6 }}><b>Username </b> {credentials.user}  <CopyToClipboard text={credentials.user}>
                 <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
               </CopyToClipboard></h3>
-              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text={cred.accessKey}>
+              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text={credentials.pass}>
                 <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
               </CopyToClipboard></h3>
             </Card>

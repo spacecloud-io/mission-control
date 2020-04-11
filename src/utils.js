@@ -226,6 +226,18 @@ export const fetchGlobalEntities = (token) => {
     }).catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
   }
+
+  store.dispatch(increment("pendingRequests"))
+  client.fetchCredentials()
+  .then(data => store.dispatch(set("credentials", data)))
+  .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
+  .finally(() => store.dispatch(decrement("pendingRequests")))
+  
+  store.dispatch(increment("pendingRequests"))
+  client.fetchQuotas()
+  .then(data => store.dispatch(set("quotas", data)))
+  .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
+  .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {

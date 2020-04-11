@@ -18,10 +18,11 @@ const initialState = {
 	},
 	clusters: [],
 	eventLogs: [],
-	cred: {},
+	credentials: {},
+	quotas: {},
 	billing: {
 		status: false,
-		invoices: [{}]
+		invoices: []
 	}
 };
 
