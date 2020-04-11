@@ -27,7 +27,7 @@ const RemoteServices = () => {
   const [serviceClicked, setServiceClicked] = useState("")
 
   // Derived state
-  const services = getProjectConfig(projects, projectID, "modules.services.externalServices", {})
+  const services = getProjectConfig(projects, projectID, "modules.remoteServices.externalServices", {})
   const servicesTableData = Object.entries(services).map(([name, { url }]) => ({ name, url }))
   const noOfServices = servicesTableData.length
   const serviceClickedInfo = serviceClicked ? { name: serviceClicked, url: services[serviceClicked].url } : undefined
@@ -48,7 +48,7 @@ const RemoteServices = () => {
     const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${name}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.remoteServices.externalServices.${name}`, newServiceConfig)
       notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -62,7 +62,7 @@ const RemoteServices = () => {
     client.remoteServices.deleteServiceConfig(projectID, name).then(() => {
       const newServices = Object.assign({}, services)
       delete newServices[name]
-      setProjectConfig(projectID, "modules.services.externalServices", newServices)
+      setProjectConfig(projectID, "modules.remoteServices.externalServices", newServices)
       notify("success", "Success", "Removed service successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }

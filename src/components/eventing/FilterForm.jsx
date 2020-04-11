@@ -15,7 +15,7 @@ const FilterForm = (props) => {
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const projects = useSelector(state => state.projects);
 
-  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.rules"));
+  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers"));
 
   const handleSubmit = e => {
     e.preventDefault();

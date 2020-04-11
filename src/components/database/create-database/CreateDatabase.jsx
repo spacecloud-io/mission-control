@@ -16,7 +16,7 @@ const CreateDatabase = (props) => {
   const [selectedDB, setSelectedDB] = useState(dbTypes.MONGO);
   const [alias, setAlias] = useState("mongo");
   const projects = useSelector(state => state.projects)
-  const dbconfig = getProjectConfig(projects, props.projectId, `modules.crud`)
+  const dbconfig = getProjectConfig(projects, props.projectId, `modules.db`)
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
   const { getFieldDecorator, setFieldsValue, validateFields } = props.form;

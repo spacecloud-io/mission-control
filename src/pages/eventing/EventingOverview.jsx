@@ -31,10 +31,10 @@ const EventingOverview = () => {
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived properties
-	const rules = getProjectConfig(projects, projectID, "modules.eventing.rules", {})
+	const rules = getProjectConfig(projects, projectID, "modules.eventing.triggers", {})
 	// changes
-	const crudModuleFetch = getProjectConfig(projects, projectID, "modules.crud", {})
-	const dbList = Object.entries(crudModuleFetch).map(([alias, obj]) => {
+	const dbModuleFetch = getProjectConfig(projects, projectID, "modules.db", {})
+	const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
 	})
@@ -65,7 +65,7 @@ const EventingOverview = () => {
 		const isRulePresent = rules[name] ? true : false
 		dispatch(increment("pendingRequests"))
 		client.eventing.setTriggerRule(projectID, name, triggerRule).then(() => {
-			setProjectConfig(projectID, `modules.eventing.rules.${name}`, triggerRule)
+			setProjectConfig(projectID, `modules.eventing.triggers.${name}`, triggerRule)
 			notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
@@ -74,7 +74,7 @@ const EventingOverview = () => {
 		const newRules = Object.assign({}, rules)
 		delete newRules[name]
 		client.eventing.deleteTriggerRule(projectID, name).then(() => {
-			setProjectConfig(projectID, `modules.eventing.rules`, newRules)
+			setProjectConfig(projectID, `modules.eventing.triggers`, newRules)
 			notify("success", "Success", "Deleted trigger rule successfully")
 		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
 	}
@@ -106,9 +106,9 @@ const EventingOverview = () => {
 		}
 	]
 
-	const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
-	const activeDB = Object.keys(crudModule).find(db => {
-		return crudModule[db].enabled
+	const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
+	const activeDB = Object.keys(dbModule).find(db => {
+		return dbModule[db].enabled
 	})
 
 	const alertMsg = <div>

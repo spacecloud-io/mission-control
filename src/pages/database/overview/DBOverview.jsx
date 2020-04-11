@@ -28,8 +28,8 @@ const Overview = () => {
 
   // Global state
   const projects = useSelector(state => state.projects)
-  const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.collections`, []))
-  const connected = useSelector(state => get(state, `extraConfig.${projectID}.crud.${selectedDB}.connected`))
+  const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.db.${selectedDB}.collections`, []))
+  const connected = useSelector(state => get(state, `extraConfig.${projectID}.db.${selectedDB}.connected`))
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
@@ -40,9 +40,9 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
-  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
-  const connString = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-  let defaultRules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.default.rules`, {})
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
+  const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
+  let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
   if (Object.keys(defaultRules).length === 0) {
     defaultRules = defaultDBRules
   }
@@ -60,7 +60,7 @@ const Overview = () => {
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
-    const rules = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections.${colName}.rules`)
+    const rules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.${colName}.rules`)
     setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
   }
 
@@ -116,7 +116,7 @@ const Overview = () => {
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    const dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    const dbType = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
     setDBConfig(projectID, selectedDB, true, conn, dbType, false)
       .then(() => {
         notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)

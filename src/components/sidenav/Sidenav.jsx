@@ -90,13 +90,13 @@ const Sidenav = (props) => {
               <Link to={`/mission-control/projects/${projectID}/secrets`} onClick={closeSidenav}>
                 <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/routing`} onClick={closeSidenav}>
+              <Link to={`/mission-control/projects/${projectID}/ingress-routes`} onClick={closeSidenav}>
                 <PanelItem name="Routing" active={props.selectedItem === 'routing'} />
               </Link>
             </Panel>
           </Collapse>
-          <Link to={`/mission-control/projects/${projectID}/auth`} onClick={closeSidenav}>
-            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
+          <Link to={`/mission-control/projects/${projectID}/userman`} onClick={closeSidenav}>
+            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'userman'} />
           </Link>
           {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/clusters`} onClick={closeSidenav}>
             <SidenavItem name="Clusters" icon="cloud" active={props.selectedItem === 'clusters'} />

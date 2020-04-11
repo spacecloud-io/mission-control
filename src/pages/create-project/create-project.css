@@ -6,6 +6,7 @@
     bottom: 0;
     background-color: #002c39;
     position: fixed;
+    overflow-y: auto;
 }
 
 .create-project--content {

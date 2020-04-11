@@ -29,9 +29,9 @@ const EventingSettings = () => {
         {}
     );
 
-    const crudModule = getProjectConfig(projects, projectID, "modules.crud", {});
+    const dbModule = getProjectConfig(projects, projectID, "modules.db", {});
 
-    const dbList = Object.entries(crudModule).map(([alias, obj]) => {
+    const dbList = Object.entries(dbModule).map(([alias, obj]) => {
         if (!obj.type) obj.type = alias;
         return {
         alias: alias,

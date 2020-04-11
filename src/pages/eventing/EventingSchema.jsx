@@ -33,7 +33,7 @@ const EventingSchema = () => {
   const eventRules = getProjectConfig(
     projects,
     projectID,
-    `modules.eventing.rules`,
+    `modules.eventing.triggers`,
     {}
   );
 

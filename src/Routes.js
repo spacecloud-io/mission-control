@@ -69,7 +69,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/routing" component={Routing} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/schema" component={EventingSchema} />
@@ -78,7 +78,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/queue-event" component={QueueEvent} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/auth" component={UserManagement} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/userman" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer/graphql" component={Graphql} />

@@ -45,7 +45,7 @@ const DeploymentsRoutes = () => {
   }
 
   useEffect(() => {
-    ReactGA.pageview("/projects/deployments/rules");
+    ReactGA.pageview("/projects/deployments/ingress-routes");
     getRoutes()
   }, [])
 

@@ -47,7 +47,7 @@ const EventingLogs = () => {
     if(projects.length > 0){
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
       dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toLocaleString(), dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType)
       .then(res => dispatch(set("eventLogs", res)))
       .catch(ex => notify("error", "Error loading event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))

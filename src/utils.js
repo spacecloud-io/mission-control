@@ -103,10 +103,10 @@ export const generateProjectConfig = (projectId, name) => ({
   aesKey: generateAESKey(),
   contextTime: 5,
   modules: {
-    crud: {},
+    db: {},
     eventing: {},
-    auth: {},
-    services: {
+    userMan: {},
+    remoteServices: {
       externalServices: {}
     },
     fileStore: {
@@ -405,16 +405,16 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
 
 export const getDBTypeFromAlias = (projectId, alias) => {
   const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+  return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
 }
 
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
-  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+  const dbModule = getProjectConfig(project, projectId, "modules.db", {})
 
   let checkDB = ''
-  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
+  if (dbModule[selectedDb]) checkDB = dbModule[selectedDb].type
 
   var svg = mongoSvg
   switch (checkDB) {
@@ -443,7 +443,7 @@ const getProjects = state => state.projects
 
 export const getTrackedCollectionNames = (state, projectId, dbName) => {
   const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.crud.${dbName}.collections`, {})
+  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
   const trackedCollections = Object.keys(collections)
     .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
   return trackedCollections
@@ -499,7 +499,7 @@ const removeRegex = (value, dataresponse) => {
 }
 
 export const getSchemas = (projectId, dbName) => {
-  const collections = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+  const collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
   let schemaDefinitions = {}
   Object.entries(collections).forEach(([_, { schema }]) => {
     if (schema) {
@@ -515,7 +515,7 @@ export const getSchemas = (projectId, dbName) => {
 }
 
 export const getSchema = (projectId, dbName, colName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.schema`, "")
+  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections.${colName}.schema`, "")
 }
 
 // Returns nested field definitions for a type from flat schema definitions 

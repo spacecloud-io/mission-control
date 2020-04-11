@@ -34,7 +34,7 @@ const RuleForm = (props) => {
   const eventSource = temp ? temp : defaultEventSource
 
   const selectedDb = getFieldValue("options.db")
-  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDb}.collections`, {})
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
   const trackedCollections = Object.keys(collections);
   const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
 

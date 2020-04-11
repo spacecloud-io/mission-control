@@ -15,9 +15,9 @@ import { getProjectConfig, notify } from "../../utils"
 const Database = () => {
   const { projectID } = useParams()
   const projects = useSelector(state => state.projects)
-  const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
-  const activeDB = Object.keys(crudModule).find(db => {
-    return crudModule[db].enabled
+  const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
+  const activeDB = Object.keys(dbModule).find(db => {
+    return dbModule[db].enabled
   })
 
   useEffect(() => {

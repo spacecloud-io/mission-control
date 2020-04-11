@@ -28,10 +28,10 @@ function Routing() {
   const [routeClicked, setRouteClicked] = useState("");
 
   useEffect(() => {
-    ReactGA.pageview("/projects/routing");
+    ReactGA.pageview("/projects/ingress-routes");
   }, [])
 
-  let routes = getProjectConfig(projects, projectID, "modules.routes", []);
+  let routes = getProjectConfig(projects, projectID, "modules.ingressRoutes", []);
   if (!routes) routes = []
   const deployments = getProjectConfig(
     projects,
@@ -85,10 +85,10 @@ function Routing() {
         .then(() => {
           if (routeId) {
             const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.routes", newRoutes)
+            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
           } else {
             const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.routes", newRoutes)
+            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
           }
           resolve()
         })
@@ -109,7 +109,7 @@ function Routing() {
       .deleteRoutingConfig(projectID, id)
       .then(() => {
         const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.routes`, newRoutes);
+        setProjectConfig(projectID, `modules.ingressRoutes`, newRoutes);
         notify("success", "Success", "Deleted rule successfully");
       })
       .catch(ex => notify("error", "Error", ex.toString()))

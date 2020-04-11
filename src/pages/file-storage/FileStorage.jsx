@@ -120,7 +120,7 @@ const Rules = (props) => {
 		return <div style={{ marginTop: 24 }}>
 			<div className="panel">
 				<img src={securitySvg} width="240px" />
-				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/storage/filestore/securing-apis/">View Docs.</a></p>
 				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
 			</div>
 		</div>

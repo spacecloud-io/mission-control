@@ -1,14 +1,14 @@
 import React from 'react'
 import { Form, Input, Button } from 'antd';
 
-const GraphQLTimeout = ({ form, contextTime, handleSubmit }) => {
+const GraphQLTimeout = ({ form, contextTimeGraphQL, handleSubmit }) => {
   const { getFieldDecorator } = form;
 
   const handleSubmitClick = e => {
     e.preventDefault();
     form.validateFields((err, values) => {
       if (!err) {
-        handleSubmit(Number(values.contextTime));
+        handleSubmit(Number(values.contextTimeGraphQL));
       }
     });
   }
@@ -18,9 +18,9 @@ const GraphQLTimeout = ({ form, contextTime, handleSubmit }) => {
       <p>The timeout of GraphQL requests in seconds</p>
       <Form>
         <Form.Item>
-          {getFieldDecorator('contextTime', {
+          {getFieldDecorator('contextTimeGraphQL', {
             rules: [{ required: true, message: 'Please input a time in seconds!' }],
-            initialValue: contextTime
+            initialValue: contextTimeGraphQL
           })(
             <Input placeholder="Enter time in seconds" />
           )}
