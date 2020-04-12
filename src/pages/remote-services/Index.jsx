@@ -46,9 +46,10 @@ const RemoteServices = () => {
   const handleSubmit = (name, url) => {
     const serviceConfig = services[name]
     const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
+    const newServices = Object.assign({}, services, { [name]: newServiceConfig })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.remoteServices.externalServices.${name}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.remoteServices.externalServices`, newServices)
       notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }

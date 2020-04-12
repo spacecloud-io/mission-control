@@ -117,7 +117,7 @@ export const generateProjectConfig = (projectId, name) => ({
 })
 
 export const notify = (type, title, msg, duration) => {
-  notification[type]({ message: title, description: msg, duration: duration });
+  notification[type]({ message: title, description: msg.toString(), duration: duration });
 }
 
 export const getEventSourceFromType = (type, defaultValue) => {
@@ -352,13 +352,6 @@ export const fetchCluster = () => {
     .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
 }
 
-export const fetchCred = () => {
-  client.clusters.getCred().then(data => {
-    store.dispatch(set('cred', data))
-  })
-    .catch(ex => console.log(ex))
-}
-
 export const onAppLoad = () => {
   client.fetchEnv().then(({ enterprise, isProd, version }) => {
     // Store env
@@ -382,7 +375,6 @@ export const onAppLoad = () => {
       handleInvoices()
     }
 
-    fetchCred()
     fetchGlobalEntities(token, enterprise, isProd)
   })
 }

@@ -132,6 +132,7 @@ const Settings = () => {
         store.dispatch(set(`projects`, projectList));
         if (projectList.length === 0) {
           history.push(`/mission-control/welcome`);
+          return
         }
         openProject(projectList[0].id)
       })
