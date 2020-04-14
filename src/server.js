@@ -1,4 +1,7 @@
-import { Server, Model, Factory } from "miragejs";
+import { Server, Model, RestSerializer, Response } from "miragejs";
+function respondOk() {
+  return new Response(200, {}, {})
+}
 
 export function makeServer({ environment = "development" } = {}) {
   let server = new Server({
@@ -8,53 +11,28 @@ export function makeServer({ environment = "development" } = {}) {
       project: Model
     },
 
-    // factories: {
-    //   todo: Factory.extend({
-    //     text(i) {
-    //       return `Todo ${i + 1}`;
-    //     },
-
-    //     isDone: false
-    //   })
-    // },
-
     seeds(server) {
-      // server.create("todo", { text: "Buy groceries", isDone: false });
-      // server.create("todo", { text: "Walk the dog", isDone: false });
-      // server.create("todo", { text: "Do laundry", isDone: false });
+
+    },
+
+    serializers: {
+      project: RestSerializer.extend({ keyForCollection() { return "result" } })
     },
 
     routes() {
       this.namespace = "v1";
       this.timing = 500;
 
-      console.log("Routes")
-      this.get("/config/env", () => {
-        console.log("Here")
-        return { version: "0.17.0", enterprise: false, isProd: false }
-      })
+      // Global endpoints
+      this.get("/config/env", () => ({ isProd: false, enterprise: false, version: "0.17.0" }));
 
-      this.get("/config/projects", schema => {
-        return schema.projects.all();
-      });
+      // Projects Endpoint
+      this.get("/config/projects", (schema) => schema.projects.all());
+      this.post("/config/projects/:projectId", () => respondOk());
+      this.delete("/projects/:projectId", () => respondOk());
 
-
-      this.patch("/todos/:id", (schema, request) => {
-        let attrs = JSON.parse(request.requestBody).todo;
-
-        return schema.todos.find(request.params.id).update(attrs);
-      });
-
-      this.post("/config/projects/:id", (schema, request) => {
-        const projectConfig = JSON.parse(request.requestBody);
-        console.log("Mirage Post Project", projectConfig, request.params.id)
-
-        return schema.projects.create(projectConfig);
-      });
-
-      // this.delete("/config/projects/:id", (schema, request) => {
-      //   return schema.todos.find(request.params.id).destroy();
-      // });
+      // Database endpoints
+      this.post("/config/projects/:projectId/database/:db/config/database-config", () => respondOk());
     }
   });
 

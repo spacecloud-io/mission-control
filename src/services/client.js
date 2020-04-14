@@ -1,5 +1,5 @@
 const fetchJSON = (url, options) => {
-  if (process.env.NODE_ENV !== "production")  {
+  if (process.env.DISABLE_MOCK_SERVER)  {
     url = "http://localhost:4122" + url
   }
   return new Promise((resolve, reject) => {

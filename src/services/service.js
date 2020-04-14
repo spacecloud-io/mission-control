@@ -127,7 +127,7 @@ class Service {
 
   execSpaceAPI(projectId, code, token) {
     return new Promise((resolve, reject) => {
-      const url = process.env.NODE_ENV !== "production" ? "http://localhost:4122" : undefined
+      const url = process.env.DISABLE_MOCK_SERVER ? "http://localhost:4122" : undefined
       const api = new API(projectId, url)
       if (token) {
         api.setToken(token)
@@ -150,8 +150,8 @@ class Service {
   execGraphQLQuery(projectId, graphqlQuery, variables, token) {
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.NODE_ENV !== "production") {
-        uri = "http://localhost:4122" + uri;
+      if (process.env.DISABLE_MOCK_SERVER)  {
+        uri = "http://localhost:4122" + uri
       }
       const cache = new InMemoryCache({ addTypename: false });
       const link = new HttpLink({ uri: uri, headers: { "Authorization": `Bearer ${token}` } });
