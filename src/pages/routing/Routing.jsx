@@ -202,7 +202,7 @@ function Routing() {
                   justifyContent: "space-between"
                 }}
               >
-                Routing rules{" "}
+                Ingress Routing rules
                 <Button type="primary" onClick={() => setModalVisible(true)}>
                   Add
                 </Button>

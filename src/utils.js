@@ -229,15 +229,15 @@ export const fetchGlobalEntities = (token) => {
 
   store.dispatch(increment("pendingRequests"))
   client.fetchCredentials()
-  .then(data => store.dispatch(set("credentials", data)))
-  .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-  .finally(() => store.dispatch(decrement("pendingRequests")))
-  
+    .then(data => store.dispatch(set("credentials", data)))
+    .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+
   store.dispatch(increment("pendingRequests"))
   client.fetchQuotas()
-  .then(data => store.dispatch(set("quotas", data)))
-  .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
-  .finally(() => store.dispatch(decrement("pendingRequests")))
+    .then(data => store.dispatch(set("quotas", data)))
+    .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
@@ -543,6 +543,11 @@ const getFieldsQuery = (fields) => {
     if (!field.hasNestedFields) {
       return field.name + "\n"
     }
+    const fieldsQuery = getFieldsQuery(field.fields)
+    if (!fieldsQuery) {
+      return field.name + "\n"
+    }
+
     return field.name + " {" + getFieldsQuery(field.fields) + "}"
   })
 

@@ -91,7 +91,7 @@ const Sidenav = (props) => {
                 <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
               </Link>
               <Link to={`/mission-control/projects/${projectID}/ingress-routes`} onClick={closeSidenav}>
-                <PanelItem name="Routing" active={props.selectedItem === 'routing'} />
+                <PanelItem name="Ingress Routing" active={props.selectedItem === 'routing'} />
               </Link>
             </Panel>
           </Collapse>

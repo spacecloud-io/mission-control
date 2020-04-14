@@ -162,6 +162,8 @@ export const removeDBConfig = (projectId, aliasName) => {
       const eventingDB = getEventingDB(projectId)
       if (aliasName === eventingDB) {
         client.eventing.setEventingConfig(projectId, { enabled: false, dbAlias: "" }).then(() => {
+          setProjectConfig(projectId, "modules.eventing.enabled", false)
+          setProjectConfig(projectId, "modules.eventing.dbAlias", "")
           notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
         })
       }
