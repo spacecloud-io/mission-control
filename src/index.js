@@ -4,15 +4,28 @@ import { Provider } from "react-redux";
 import store from "./store";
 import { onAppLoad } from './utils';
 import App from './App';
+// import { makeServer } from "./server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
+import { Server } from "miragejs"
 
 import ReactGA from 'react-ga';
-import { defaultDbConnectionStrings } from './constants';
-if (process.env.NODE_ENV === "production")  {
+if (process.env.NODE_ENV === "production") {
   ReactGA.initialize('UA-104521884-3');
 }
 
+new Server({
+  routes() {
+    this.namespace = "/v1"
+    this.pretender.handledRequest = function(verb, path, request) {
+      console.log("Handled Request", verb, path, request)
+    }
+    this.pretender.handledRequest = function(verb, path, request) {
+      console.log("Unhandled Request", verb, path, request)
+    }
+    this.get("/config/env", () => ({ isProd: false, enterprise: false, version: "0.16.0" }))
+  }
+})
 ReactDOM.render(
   <Provider store={store}>
     <App />
