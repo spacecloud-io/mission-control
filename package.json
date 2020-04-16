@@ -6,7 +6,7 @@
     "@stripe/react-stripe-js": "^1.0.3",
     "@stripe/stripe-js": "^1.0.3",
     "antd": "^4.0.0",
-    "@ant-design/icons": "^4.0.0",
+    "@ant-design/icons": "^4.0.0-rc.0",
     "@ant-design/compatible": "^1.0.0",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",
