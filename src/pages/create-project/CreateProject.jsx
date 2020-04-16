@@ -8,7 +8,10 @@ import store from "../../store"
 import history from "../../history"
 import { generateProjectConfig, notify } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
-import { Row, Col, Button, Form, Input, Icon, Steps, Card, Select, Alert } from 'antd'
+import { EditOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Row, Col, Button, Input, Steps, Card, Select, Alert } from 'antd';
 import './create-project.css'
 import { dbEnable } from '../database/dbActions'
 
@@ -104,7 +107,7 @@ const CreateProject = (props) => {
                     }],
                 })(
                   <Input
-                    prefix={<Icon type="edit" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                    prefix={<EditOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
                     placeholder="Project name" />,
                 )}
                 <br />

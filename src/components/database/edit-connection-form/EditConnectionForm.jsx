@@ -1,6 +1,9 @@
 import React from "react"
 
-import { Modal, Form, Input, Alert } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
+import { Modal, Input, Alert } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 
 const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, conformLoading }) => {

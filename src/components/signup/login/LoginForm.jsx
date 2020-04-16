@@ -1,5 +1,7 @@
 import React from 'react';
-import { Row, Col, Form, Input, Button, Divider } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Row, Col, Input, Button, Divider } from 'antd';
 import googleIcon from '../../../assets/googleIcon.svg';
 import githubIcon from '../../../assets/githubIcon.svg';
 import twitterIcon from '../../../assets/twitter1.svg';

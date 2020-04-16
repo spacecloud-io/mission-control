@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Form, Input, Button, Modal, Select, Radio } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Input, Button, Modal, Select, Radio } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import RadioCard from "../radio-card/RadioCard";
 

@@ -1,15 +1,8 @@
 import React from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Button,
-  Icon,
-  Radio,
-  Row,
-  Col,
-  message
-} from "antd";
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Input, Button, Radio, Row, Col, message } from "antd";
 import RadioCard from "../radio-card/RadioCard";
 import "./add-secret.css";
 
@@ -119,7 +112,7 @@ const AddSecret = props => {
               onClick={() => envRemove(k)}
               style={{ marginRight: "2%", float: "left" }}
             >
-              <Icon type="delete" />
+              <DeleteOutlined />
             </Button>
           ) : null}
         </Col>
@@ -129,7 +122,7 @@ const AddSecret = props => {
           onClick={() => envAdd(index)}
           style={{ marginRight: "2%", float: "left" }}
         >
-          <Icon type="plus" />
+          <PlusOutlined />
           Add another pair
         </Button>
       )}
@@ -201,7 +194,7 @@ const AddSecret = props => {
               onClick={() => fileRemove(k)}
               style={{ marginRight: "2%", float: "left" }}
             >
-              <Icon type="delete" />
+              <DeleteOutlined />
             </Button>
           ) : null}
         </Col>
@@ -211,7 +204,7 @@ const AddSecret = props => {
           onClick={() => fileAdd(index)}
           style={{ marginRight: "2%", float: "left" }}
         >
-          <Icon type="plus" />
+          <PlusOutlined />
           Add another file
         </Button>
       )}

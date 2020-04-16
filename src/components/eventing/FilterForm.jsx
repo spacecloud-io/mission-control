@@ -1,5 +1,8 @@
 import React from "react"
-import { Modal, Form, Select, Checkbox, DatePicker, Icon } from 'antd';
+import { CheckOutlined, CloseOutlined, HourglassOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Select, Checkbox, DatePicker } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -57,9 +60,9 @@ const FilterForm = (props) => {
             initialValue: eventFilters.status ? eventFilters.status : ['processed', 'failed', 'staged']
           })(
             <Checkbox.Group>
-              <Checkbox value="processed">Processed <Icon type="check" style={{ color: "#00FF00" }} /></Checkbox>
-              <Checkbox value="failed">Failed <Icon type="close" style={{ color: "red" }} /></Checkbox>
-              <Checkbox value="staged">Pending <Icon type="hourglass" /></Checkbox>
+              <Checkbox value="processed">Processed <CheckOutlined style={{ color: "#00FF00" }} /></Checkbox>
+              <Checkbox value="failed">Failed <CloseOutlined style={{ color: "red" }} /></Checkbox>
+              <Checkbox value="staged">Pending <HourglassOutlined /></Checkbox>
             </Checkbox.Group>
           )}
         </Form.Item>

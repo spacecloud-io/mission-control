@@ -5,7 +5,9 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^1.0.3",
     "@stripe/stripe-js": "^1.0.3",
-    "antd": "^3.19.2",
+    "antd": "^4.0.0",
+    "@ant-design/icons": "^4.0.0",
+    "@ant-design/compatible": "^1.0.0",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",
     "babel-plugin-import": "^1.12.0",
