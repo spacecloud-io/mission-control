@@ -15,12 +15,14 @@ const Content = () => {
             <Col lg={{ span: 22, offset: 1 }}>
                 <h1 className="content-title">Space Cloud</h1>
                 <p className="content-tagline">Open source Firebase + Heroku on Kubernetes! ❤️ </p>
-                <Col lg={{ span: 16, offset: 4 }} style={{ marginBottom: "10%" }}>
-                    <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Instant GraphQL APIs for databases and microservices</span></div>
-                    <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Secure service mesh with end to end encryption</span></div>
-                    <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Auto scaling, devops and canary deployments</span></div>
-                    <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Unified control plane for all your clusters and projects</span></div>
-                </Col>
+                <Row>
+                    <Col lg={{ span: 16, offset: 4 }} style={{ marginBottom: "10%" }}>
+                        <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Instant GraphQL APIs for databases and microservices</span></div>
+                        <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Secure service mesh with end to end encryption</span></div>
+                        <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Auto scaling, devops and canary deployments</span></div>
+                        <div className="list-content"><CheckOutlined className="tools-icon" /> <span>Unified control plane for all your clusters and projects</span></div>
+                    </Col>
+                </Row>
                 <Divider style={{ marginBottom: "10%", color: "#002C39" }}>Supported integrations</Divider>
                 <div style={{ display: "flex", justifyContent: "space-evenly" }}>
                     <img src={KubernetesIcon} width="48px" height="48px" />

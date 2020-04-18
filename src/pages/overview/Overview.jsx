@@ -39,12 +39,14 @@ function Overview() {
               <EndpointCard host={host} protocol={protocol} projectId={projectID} />
             </Col>
             <h3>Community</h3>
-            <Col lg={{span:11, offset:0}}>
-            <DiscordCard/>
-            </Col>
-            <Col lg={{span:11, offset:2}} className="git-card">
-              <GithubCard/>
-            </Col>
+            <Row>
+              <Col lg={{span:11, offset:0}}>
+              <DiscordCard/>
+              </Col>
+              <Col lg={{span:11, offset:2}} className="git-card">
+                <GithubCard/>
+              </Col>
+            </Row>
             {!billingEnabled && <Col lg={{ span:24 }} style={{marginTop:"3%"}}>
               <UpgradeCard handleClickUpgrade={handleClickUpgrade}/>
             </Col>}

@@ -23,7 +23,7 @@ const EmailVerification = () => {
     }
     return (
         <Row className="verify-background">
-            <Col lg={{ span:10, offset:7 }} className="verify-card">
+            <Col lg={{ span:10, offset:8}} className="verify-card">
                 <Card style={{ padding:"32px" }}>
                     <MailOutlined style={{ fontSize:"30px", fontWeight:"bold", marginBottom:"2%" }} />
                     <h2><b>Email verification pending</b></h2>
