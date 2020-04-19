@@ -127,7 +127,7 @@ class Service {
 
   execSpaceAPI(projectId, code, token) {
     return new Promise((resolve, reject) => {
-      const url = process.env.DISABLE_MOCK_SERVER ? "http://localhost:4122" : undefined
+      const url = process.env.REACT_APP_DISABLE_MOCK ? "http://localhost:4122" : undefined
       const api = new API(projectId, url)
       if (token) {
         api.setToken(token)
@@ -150,7 +150,7 @@ class Service {
   execGraphQLQuery(projectId, graphqlQuery, variables, token) {
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.DISABLE_MOCK_SERVER)  {
+      if (process.env.REACT_APP_DISABLE_MOCK)  {
         uri = "http://localhost:4122" + uri
       }
       const cache = new InMemoryCache({ addTypename: false });

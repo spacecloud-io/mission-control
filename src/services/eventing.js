@@ -12,7 +12,7 @@ class Eventing {
   fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType) {
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.DISABLE_MOCK_SERVER) {
+      if (process.env.REACT_APP_DISABLE_MOCK) {
         uri = "http://localhost:4122" + uri
       }
       const cache = new InMemoryCache({ addTypename: false });
