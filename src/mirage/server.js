@@ -1,5 +1,5 @@
 import { Server, Model, RestSerializer, Response, ActiveModelSerializer } from "miragejs";
-import { project, serviceRoutes, eventLogs } from './schemas' 
+import { project, serviceRoute, eventLog } from './schemas' 
 
 function respondOk() {
   return new Response(200, {}, {})
@@ -21,10 +21,10 @@ export function makeServer({ environment = "development" } = {}) {
       eventLog: Model,
     },
 
-    seeds(server) {
-      server.create("project", project)
-      server.create("serviceRoute", serviceRoutes)
-      server.create("eventLog", eventLogs)
+    fixtures: {
+      projects: project,
+      serviceRoutes: serviceRoute,
+      eventLogs: eventLog,
     },
 
     serializers: {
