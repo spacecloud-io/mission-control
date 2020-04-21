@@ -1,5 +1,5 @@
 const fetchJSON = (url, options) => {
-  if (process.env.DISABLE_MOCK_SERVER)  {
+  if (process.env.REACT_APP_DISABLE_MOCK)  {
     url = "http://localhost:4122" + url
   }
   return new Promise((resolve, reject) => {

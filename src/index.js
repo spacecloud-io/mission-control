@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import store from "./store";
 import { onAppLoad } from './utils';
 import App from './App';
-import { makeServer } from "./server";
+import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
 
@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === "production") {
   ReactGA.initialize('UA-104521884-3');
 }
 
-if (!process.env.DISABLE_MOCK_SERVER) {
+if (!process.env.REACT_APP_DISABLE_MOCK) {
   makeServer();
 }
 
