@@ -1,7 +1,5 @@
 import { Server, Model, RestSerializer, Response } from "miragejs";
 import fixtures from './fixtures'
-import { graphql } from "graphql"
-import gql from "graphql-tag"
 
 function respondOk() {
   return new Response(200, {}, {})
