@@ -43,6 +43,7 @@
   "homepage": "https://spaceuptech.com/mission-control",
   "scripts": {
     "start": "react-app-rewired start",
+    "start:no-mock": "REACT_APP_DISABLE_MOCK='true' react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
@@ -61,5 +62,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "miragejs": "^0.1.37"
   }
 }
