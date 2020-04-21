@@ -41,6 +41,8 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Global endpoints
       this.get("/config/env", () => ({ isProd: false, enterprise: false, version: "0.17.0" }));
+      this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
+      this.get("/config/quotas", () => respondOk());
 
       // Projects Endpoint
       this.get("/config/projects", (schema) => schema.projects.all());
@@ -57,6 +59,12 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
 
+      // FileStore endpoints
+      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk());
+      this.post("/config/projects/:projectId/file-storage/config/file-storage-config", () => respondOk());
+      this.post("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
+      this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
+
       // Eventing endpoints
       this.post("/config/projects/:projectId/eventing/config/eventing-config", () => respondOk());
       this.post("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
@@ -66,16 +74,6 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId/eventing/triggers/:triggerName", () => respondOk())
       this.delete("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
       this.delete("/config/projects/:projectId/eventing/schema/:type", () => respondOk());
-
-      // Global endpoints
-      this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
-      this.get("/config/quotas", () => respondOk());
-
-      // FileStore endpoints
-      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk());
-      this.post("/config/projects/:projectId/file-storage/config/file-storage-config", () => respondOk());
-      this.post("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
-      this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
 
       // RemoteServices enpoints
       this.post("/config/projects/:projectId/remote-service/service/:serviceName", () => respondOk());
