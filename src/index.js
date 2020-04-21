@@ -14,7 +14,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 if (!process.env.REACT_APP_DISABLE_MOCK) {
-  console.log(process.env.REACT_APP_DISABLE_MOCK);
   makeServer();
 }
 
