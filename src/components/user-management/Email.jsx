@@ -1,5 +1,7 @@
 import React from 'react'
-import { Form, Switch, Button } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Switch, Button } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const Email = ({ form, initialValues, handleSubmit }) => {

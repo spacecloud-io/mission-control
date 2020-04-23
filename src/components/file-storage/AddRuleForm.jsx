@@ -1,7 +1,9 @@
 import React, { useState } from "react"
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Modal, Form, Input } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Input } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';

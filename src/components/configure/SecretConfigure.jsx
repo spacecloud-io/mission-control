@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
-import { Form, Icon, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
+import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
 import FormItemLabel from "../../components/form-item-label/FormItemLabel";
 import { generateJWTSecret, notify } from '../../utils';
 
@@ -51,18 +54,20 @@ const WrappedAddSecretModal = Form.create({})(AddSecretModal)
 
 const SecretValue = ({ secret }) => {
   const [showSecret, setShowSecret] = useState(false)
-  return <span style={{ display: "flex", alignItems: "center" }}>
-    <span style={{
-      marginRight: 8,
-      background: "#f5f5f5",
-      minWidth: 320,
-      height: "32px",
-      lineHeight: "32px",
-      borderRadius: 5,
-      padding: "0 16px"
-    }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
-    {showSecret ? <Icon type="eye-invisible" onClick={() => setShowSecret(false)} /> : <Icon type="eye" onClick={() => setShowSecret(true)} />}
-  </span>
+  return (
+    <span style={{ display: "flex", alignItems: "center" }}>
+      <span style={{
+        marginRight: 8,
+        background: "#f5f5f5",
+        minWidth: 320,
+        height: "32px",
+        lineHeight: "32px",
+        borderRadius: 5,
+        padding: "0 16px"
+      }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
+      {showSecret ? <EyeInvisibleOutlined onClick={() => setShowSecret(false)} /> : <EyeOutlined onClick={() => setShowSecret(true)} />}
+    </span>
+  );
 }
 
 const SecretConfigure = ({ secrets, handleSetSecrets }) => {
@@ -110,7 +115,7 @@ const SecretConfigure = ({ secrets, handleSetSecrets }) => {
     },
     {
       title: <span>Primary secret  <Tooltip placement="bottomLeft" title="Primary secret is used by the user management module of API gateway to sign tokens on successful signup/signin requests.">
-        <Icon type="question-circle-o" />
+        <QuestionCircleOutlined />
       </Tooltip></span>,
       render: (_, record) => {
         return <Radio

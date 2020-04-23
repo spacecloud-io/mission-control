@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
-import { Row, Col, Card, Form, Input, Button, Alert, Radio } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Row, Col, Card, Input, Button, Alert, Radio } from 'antd';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'

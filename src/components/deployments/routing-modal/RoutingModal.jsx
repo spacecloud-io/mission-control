@@ -1,5 +1,8 @@
 import React from "react";
-import { Modal, Form, Input, Select, Checkbox, Row, Col, Icon, Button, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Input, Select, Checkbox, Row, Col, Button, message } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
 const { Option } = Select;
@@ -186,7 +189,7 @@ const RoutingRule = props => {
         <Col span={4}>
           {index > 0 && (
             <Button onClick={() => removeTarget(k)}>
-              <Icon type="delete" />
+              <DeleteOutlined />
             </Button>
           )}
         </Col>
@@ -195,7 +198,7 @@ const RoutingRule = props => {
         <Button
           onClick={() => addTarget(index)}
         >
-          <Icon type="plus" />
+          <PlusOutlined />
           Add another target
         </Button>
       )}

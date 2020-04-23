@@ -1,7 +1,9 @@
 import React from 'react';
 import {useStripe, useElements, CardElement} from '@stripe/react-stripe-js';
 import CardSection from '../card-section/CardSection';
-import { Form, Button, Modal } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Button, Modal } from 'antd';
 
 const CheckoutForm = (props) => {
   const stripe = useStripe();

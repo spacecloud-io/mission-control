@@ -1,7 +1,8 @@
 import React, { useState,useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import { Button, Table, Icon, Row, Col, Popconfirm, Card } from "antd";
+import { LeftOutlined } from '@ant-design/icons';
+import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
 import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
@@ -184,7 +185,7 @@ const SecretDetails = () => {
             }}
           >
             <Button type="link" onClick={() => history.goBack()}>
-              <Icon type="left" />
+              <LeftOutlined />
               Go back
             </Button>
             <span style={{ marginLeft: "35%" }}>{secretId}</span>

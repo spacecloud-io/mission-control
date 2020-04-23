@@ -93,8 +93,10 @@ const Signup = (props) => {
 
     return (
         <Row className="dark-background">
-            <img src={logo} className="logo" />
-            <Col lg={{ span: 20, offset: 2 }} className="signup-card">
+            <Col lg={{ span:20, offset:2 }}>
+                <img src={logo} className="logo" />
+            </Col> 
+            <Col lg={{ span: 20, offset: 2 }} xs={{ span:24 }}>
                 <Card className="card-content">
                     <Row type="flex" align="middle">
                         <Col lg={{ span: 12, offset: 0 }} xs={{ span: 0 }} style={{ alignSelf: "stretch" }}>

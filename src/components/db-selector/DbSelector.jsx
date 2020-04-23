@@ -1,5 +1,6 @@
 import React from 'react'
-import { Modal, Table, Icon, Button } from 'antd';
+import { CheckOutlined } from '@ant-design/icons';
+import { Modal, Table, Button } from 'antd';
 import './db-selector.css'
 import { useHistory } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
@@ -27,9 +28,9 @@ function DbSelector(props) {
       render: (_, record) => {
         return (
           <div>
-            {record.dbtype && <Icon type="check" className="checked" />}
+            {record.dbtype && <CheckOutlined className="checked" />}
           </div>
-        )
+        );
       },
 
       onCell: (record, _) => {

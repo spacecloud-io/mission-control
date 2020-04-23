@@ -2,7 +2,8 @@ import React, { useEffect } from 'react'
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux'
-import { Collapse, Icon } from 'antd';
+import { RightOutlined } from '@ant-design/icons';
+import { Collapse } from 'antd';
 import Email from '../../components/user-management/Email'
 import Sidenav from '../../components/sidenav/Sidenav'
 import Topbar from '../../components/topbar/Topbar'
@@ -50,7 +51,7 @@ const UserManagement = () => {
         <Sidenav selectedItem="userman" />
         <div className="page-content">
           <h2>Auth Providers</h2>
-          <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
+          <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>
             <Panel header={(<div style={{ padding: "8px 0px 8px 16px" }}><CollapseHeader icon={mailIcon} desc="Mail" /></div>)} key="1">
               <div style={{ paddingLeft: 16 }}>
                 <Email initialValues={emailConfig} handleSubmit={(config) => handleProviderConfig("email", config)} />
@@ -60,7 +61,7 @@ const UserManagement = () => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default UserManagement;

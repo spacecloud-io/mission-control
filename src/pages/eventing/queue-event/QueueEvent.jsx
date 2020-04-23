@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga'
 import { useSelector, useDispatch } from 'react-redux';
-import { Icon, Row, Col, Button } from 'antd';
+import { LeftOutlined } from '@ant-design/icons';
+import { Row, Col, Button } from 'antd';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -59,7 +60,7 @@ const QueueEvent = () => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/eventing/overview`)}>
-              <Icon type="left" />
+              <LeftOutlined />
               Go back
             </Button>
             <span style={{ marginLeft: 16 }}>

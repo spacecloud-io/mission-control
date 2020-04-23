@@ -1,5 +1,7 @@
 import React from 'react';
-import { Row, Col, Form, Input, Button, Divider } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Row, Col, Input, Button, Divider } from 'antd';
 import googleIcon from '../../../assets/googleIcon.svg';
 import githubIcon from '../../../assets/githubIcon.svg';
 import twitterIcon from '../../../assets/twitter1.svg';
@@ -22,15 +24,17 @@ const LoginForm = (props) => {
         <Row className="login-content">
             <Col lg={{ span:16, offset:4 }} >
                 <h2 className="title">Login</h2>
-                <Col xs={{ span:5, offset:5 }} style={{ marginBottom:"5%" }}>
-                    <img src={googleIcon} width="48px" height="48px" onClick={props.google} />
-                </Col>
-                <Col xs={{ span:5 }}>
-                    <img src={githubIcon} width="48px" height="48px" onClick={props.github} />
-                </Col>
-                <Col xs={{ span:5 }}>
-                    <img src={twitterIcon} width="48px" height="48px" onClick={props.twitter} />
-                </Col>
+                <Row>
+                    <Col xs={{ span:5, offset:5 }} style={{ marginBottom:"5%" }}>
+                        <img src={googleIcon} width="48px" height="48px" onClick={props.google} />
+                    </Col>
+                    <Col xs={{ span:5 }}>
+                        <img src={githubIcon} width="48px" height="48px" onClick={props.github} />
+                    </Col>
+                    <Col xs={{ span:5 }}>
+                        <img src={twitterIcon} width="48px" height="48px" onClick={props.twitter} />
+                    </Col>
+                </Row>
                 <Divider className="divider">OR</Divider><br/>
                 <Form>
                     <Form.Item>

@@ -1,5 +1,7 @@
 import React from "react";
-import { Form, Select, Button, Alert } from "antd";
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Select, Button, Alert } from "antd";
 import { notify } from "../../utils";
 
 const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
