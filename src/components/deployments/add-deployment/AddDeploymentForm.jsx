@@ -3,19 +3,22 @@ import "./add-deployment-form.css";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
 
+import { DeleteOutlined, RightOutlined } from '@ant-design/icons';
+
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 import {
   Modal,
-  Form,
   Radio,
   Input,
   Row,
   Col,
   Select,
   Button,
-  Icon,
   Collapse,
   InputNumber,
-  Checkbox
+  Checkbox,
 } from "antd";
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -139,7 +142,7 @@ const AddDeploymentForm = props => {
       <Col span={5}>
         {index > 0 && (
           <Button onClick={() => remove(k)}>
-            <Icon type="delete" />
+            <DeleteOutlined />
           </Button>
         )}
       </Col>
@@ -204,7 +207,7 @@ const AddDeploymentForm = props => {
       </Col>
       <Col span={5}>
         <Button onClick={() => envRemove(k)}>
-          <Icon type="delete" />
+          <DeleteOutlined />
         </Button>
       </Col>
     </Row>
@@ -261,10 +264,7 @@ const AddDeploymentForm = props => {
             />
           )}
         </Form.Item>
-        <Icon
-          type="right"
-          style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }}
-        />
+        <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
         <br />
         {index === whiteKeys.length - 1 && (
           <Button onClick={() => whiteAdd()} style={{ marginTop: -10 }}>
@@ -295,7 +295,7 @@ const AddDeploymentForm = props => {
       </Col>
       <Col span={3}>
         <Button onClick={() => whiteRemove(k)}>
-          <Icon type="delete" />
+          <DeleteOutlined />
         </Button>
       </Col>
     </Row>
@@ -352,10 +352,7 @@ const AddDeploymentForm = props => {
             />
           )}
         </Form.Item>
-        <Icon
-          type="right"
-          style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }}
-        />
+        <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
         <br />
         {index === upstreamsKeys.length - 1 && (
           <Button
@@ -389,7 +386,7 @@ const AddDeploymentForm = props => {
       </Col>
       <Col span={5}>
         <Button onClick={() => upstreamsRemove(k)}>
-          <Icon type="delete" />
+          <DeleteOutlined />
         </Button>
       </Col>
     </Row>

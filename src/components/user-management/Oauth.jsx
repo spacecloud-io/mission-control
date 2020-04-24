@@ -1,5 +1,7 @@
 import React from 'react'
-import { Form, Switch, Input } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Switch, Input } from 'antd';
 import { createFormField } from 'rc-form';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 

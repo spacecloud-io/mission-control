@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Form, Select, Input, Button } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Select, Input, Button } from 'antd';
 
 const Cluster = ({ form }) => {
     const { getFieldDecorator } = form;

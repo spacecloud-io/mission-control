@@ -5,7 +5,8 @@ import { increment, decrement } from "automate-redux"
 import client from "../../client"
 import { getProjectConfig, setProjectConfig, notify } from "../../utils"
 import ReactGA from 'react-ga';
-import { Button, Table, Popconfirm, Icon } from "antd"
+import { LeftOutlined } from '@ant-design/icons';
+import { Button, Table, Popconfirm } from "antd";
 import EndpointForm from "../../components/remote-services/endpoint-form/EndpointForm"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -15,23 +16,25 @@ const ServiceTopBar = ({ projectID, serviceName }) => {
 
   const history = useHistory()
 
-  return <div style={{
-    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
-    height: 48,
-    lineHeight: 48,
-    zIndex: 98,
-    display: "flex",
-    alignItems: "center",
-    padding: "0 16px"
-  }}>
-    <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services`)}>
-      <Icon type="left" />
-      Go back
-      </Button>
-    <span style={{ marginLeft: 16 }}>
-      {serviceName}
-    </span>
-  </div>
+  return (
+    <div style={{
+      boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
+      height: 48,
+      lineHeight: 48,
+      zIndex: 98,
+      display: "flex",
+      alignItems: "center",
+      padding: "0 16px"
+    }}>
+      <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services`)}>
+        <LeftOutlined />
+        Go back
+        </Button>
+      <span style={{ marginLeft: 16 }}>
+        {serviceName}
+      </span>
+    </div>
+  );
 }
 
 const RemoteService = () => {

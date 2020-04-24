@@ -1,6 +1,9 @@
 import React from "react"
 
-import { Modal, Form, Input, Radio } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
+import { Modal, Input, Radio } from 'antd';
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
 

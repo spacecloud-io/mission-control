@@ -1,6 +1,8 @@
 import React from 'react'
-import { Upload, message, Form, Select, Input, Button } from 'antd';
-import { Icon } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Upload, message, Select, Input, Button } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { setProjectConfig, getProjectConfig, notify } from '../../utils';
 import { useParams } from "react-router-dom";
@@ -58,13 +60,13 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
                 <Form.Item>
                     <Button onClick={(e) => download(e, "yaml")}>
                         Yaml
-                        <Icon type="download" />
+                        <DownloadOutlined />
                     </Button>
                 </Form.Item>
                 <Form.Item>
                     <Button onClick={(e) => download(e, "json")}>
                         Json
-                        <Icon type="download" />
+                        <DownloadOutlined />
                     </Button>
                 </Form.Item>
             </Form>
@@ -73,21 +75,21 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
                 <Form.Item>
                     <Upload onChange={(info) => importFiles(info, "yaml")} accept=".yaml" beforeUpload={file => false}>
                         <Button>
-                            <Icon type="upload" /> Yaml
+                            <UploadOutlined /> Yaml
                     </Button>
                     </Upload>
                 </Form.Item>
                 <Form.Item>
                     <Upload onChange={(info) => importFiles(info, "json")} accept=".json" beforeUpload={file => false}>
                         <Button>
-                            <Icon type="upload" /> Json
+                            <UploadOutlined /> Json
                     </Button>
                     </Upload>
                     <div></div>
                 </Form.Item>
             </Form>
         </div>
-    )
+    );
 }
 
 export default Form.create({})(ExportImport);

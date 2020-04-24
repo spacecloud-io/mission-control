@@ -1,5 +1,7 @@
 import React, { useState } from "react"
-import { Modal, Form, Input, Select } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Input, Select } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
 

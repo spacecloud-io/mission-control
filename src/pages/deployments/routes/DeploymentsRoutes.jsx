@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from 'react-ga';
-import { Button, Table, Popconfirm, Collapse, Icon } from "antd";
+import { RightOutlined } from '@ant-design/icons';
+import { Button, Table, Popconfirm, Collapse } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
@@ -155,7 +156,7 @@ const DeploymentsRoutes = () => {
             </div>
           }
           {
-            noOfServices > 0 && <Collapse expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>
+            noOfServices > 0 && <Collapse expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>
               {Object.entries(serviceRoutes).map(([serviceId, routes]) => (<Panel header={servicePanelHeader(serviceId, routes)} key={serviceId}>
                 <div>
                   <div>

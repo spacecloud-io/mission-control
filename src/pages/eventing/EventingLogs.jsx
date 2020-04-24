@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {useParams} from "react-router-dom";
-import {Button, Icon, Table} from "antd";
+
+import {
+  CheckOutlined,
+  CloseOutlined,
+  FilterOutlined,
+  HourglassOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
+
+import { Button, Table } from "antd";
 import '../../index.css';
 import client from "../../client";
 import {getProjectConfig, notify, parseJSONSafely } from "../../utils";
@@ -17,11 +26,11 @@ import InfiniteScroll from 'react-infinite-scroller';
 const getIconByStatus = (status) => {
   switch(status){
     case "processed":
-      return <Icon type="check" style={{color: "#00FF00"}}/>
+      return <CheckOutlined style={{color: "#00FF00"}} />;
     case "failed":
-      return <Icon type="close" style={{color: "red"}}/>
+      return <CloseOutlined style={{color: "red"}} />;
     default:
-      return <Icon type="hourglass" />
+      return <HourglassOutlined />;
   }
 }
 
@@ -84,8 +93,8 @@ const EventingLogs = () => {
   const expandedRowRender = record => {
     const columns = [
       { title: 'Status', key: 'status', render: record => {
-        if(!record.error_msg) return <Icon type="check" style={{color: "#00FF00"}}/>
-        else return  <Icon type="close" style={{color: "red"}}/>
+        if(!record.error_msg) return <CheckOutlined style={{color: "#00FF00"}} />;
+        else return <CloseOutlined style={{color: "red"}} />;
       } },
       { title: 'ID', dataIndex: '_id', key: '_id' },
       { title: 'Date', key: "invocation", render: (record) => <p>{record.invocation_time}</p>}
@@ -132,42 +141,42 @@ const EventingLogs = () => {
   }
 
 	return (
-		<div>
-			<Topbar showProjectSelector />
-			<Sidenav selectedItem="eventing" />
-			<div className='page-content page-content--no-padding'>
-				<EventTabs activeKey="event-logs" projectID={projectID} />
-			<div className="event-tab-content">
-        <Button size="large" style={{marginRight: 16}} onClick={handleRefresh}>Refresh <Icon type="reload" /></Button>
-        <Button size="large" onClick={() => setModalVisible(true)}>Filters <Icon type="filter" /></Button>
-        <InfiniteScroll
-          pageStart={0}
-          loadMore={loadFunc}
-          hasMore={hasMoreEventLogs}
-          loader={<div style={{textAlign: "center"}} key={0}>Loading...</div>}
-        >
-          <Table
-           className="event-logs-table"
-           columns={columns}
-           dataSource={eventLogs}
-           expandedRowRender={expandedRowRender}
-           bordered
-           pagination={false}
-          /> 
-        </InfiniteScroll> 
-			</div>
-			</div>
-      {modalVisible && (
-        <FilterForm
-         projectID={projectID}
-         visible={modalVisible}
-         filterTable={filterTable}
-         handleCancel={() => {setModalVisible(false);setHasMoreEventLogs(false)}}
-         projectID={projectID}
-        />
-      )}
-		</div>
-	)
+      <div>
+          <Topbar showProjectSelector />
+          <Sidenav selectedItem="eventing" />
+          <div className='page-content page-content--no-padding'>
+              <EventTabs activeKey="event-logs" projectID={projectID} />
+          <div className="event-tab-content">
+      <Button size="large" style={{marginRight: 16}} onClick={handleRefresh}>Refresh <ReloadOutlined /></Button>
+      <Button size="large" onClick={() => setModalVisible(true)}>Filters <FilterOutlined /></Button>
+      <InfiniteScroll
+        pageStart={0}
+        loadMore={loadFunc}
+        hasMore={hasMoreEventLogs}
+        loader={<div style={{textAlign: "center"}} key={0}>Loading...</div>}
+      >
+        <Table
+         className="event-logs-table"
+         columns={columns}
+         dataSource={eventLogs}
+         expandedRowRender={expandedRowRender}
+         bordered
+         pagination={false}
+        /> 
+      </InfiniteScroll> 
+          </div>
+          </div>
+    {modalVisible && (
+      <FilterForm
+       projectID={projectID}
+       visible={modalVisible}
+       filterTable={filterTable}
+       handleCancel={() => {setModalVisible(false);setHasMoreEventLogs(false)}}
+       projectID={projectID}
+      />
+    )}
+      </div>
+    );
 }
 
 export default EventingLogs;

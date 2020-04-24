@@ -1,7 +1,9 @@
 import React, { useState } from "react"
 import { useParams } from "react-router-dom";
 import { useSelector } from 'react-redux';
-import { Modal, Form, Input, Radio, Select, Collapse, AutoComplete, InputNumber } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber } from 'antd';
 import { getEventSourceFromType, getProjectConfig } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"

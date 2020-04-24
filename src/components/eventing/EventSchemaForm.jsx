@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, AutoComplete, Row, Col } from 'antd';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Modal, AutoComplete, Row, Col } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
