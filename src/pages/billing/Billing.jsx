@@ -5,6 +5,7 @@ import ReactGA from 'react-ga';
 import UpgradeCard from '../../components/billing/upgrade/UpgradeCard';
 import FAQ from '../../components/billing/faq/FAQ';
 import PlanDetails from '../../components/billing/plan/PlanDetails';
+import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import { Row, Col } from 'antd';
 import Support from '../../components/billing/support/Support';
 import Invoice from '../../components/billing/invoice/Invoice';
@@ -94,15 +95,18 @@ const Billing = () => {
             <div>
                 <Sidenav selectedItem="billing" />
                 <div className="page-content">
-                    {!subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Upgrade <span style={{fontSize:"14px"}}>(currently using free plan)</span></h3>}
+                    {!subscribed && <div>
+                    <h3 style={{ marginBottom:"0", fontSize:"21px"}}>Upgrade cluster</h3>
+                        <p style={{ marginBottom:"1%"}}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
+                    </div>}
                     {subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Plan Details & Support</h3>}
                     <Row>
-                        <Col lg={{ span:18}}>
+                        <Col lg={{ span:24}}>
                             {!subscribed && <UpgradeCard handleSubscription={() => setSubscriptionModalVisible(true)}/>}
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
-                                    <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas}/>
+                                    <BillingDetails />
                                 </Col>
                                 <Col lg={{ span:11, offset:2 }}>
                                     <Support handleContactUs={handleContactUsClick} />
@@ -110,12 +114,14 @@ const Billing = () => {
                             </Row>}
                         </Col>
                     </Row>
-                    {!subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Frequently asked questions</h3>}
-                    {subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Invoices</h3>}
+                    {!subscribed && <h3 style={{marginTop:"2%", marginBottom:"1%", fontSize:"21px"}}>Frequently asked questions</h3>}
+                    {subscribed && <h3 style={{marginTop:"2%", marginBottom:"1%", fontSize:"21px"}}>Cluster details</h3>}
                     <Row>
                         <Col lg={{ span:18 }}>
                             {!subscribed && <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />}
-                            {subscribed && <Invoice />}
+                        </Col>
+                        <Col lg={{ span:11 }}>
+                            {subscribed && <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas}/>}
                         </Col>
                     </Row>
                 </div>

@@ -8,13 +8,12 @@ const PlanDetails = ({ databases, projects, clusters, handleIncreaseLimit }) => 
     if (clusters === undefined || clusters === null) clusters = 1
     return (
         <Card>
-            <h1 style={{ marginBottom: 0 }}><b>Space Cloud Pro</b> <img src={crown} style={{ marginLeft: "5%" }} /></h1>
-            <p style={{ marginTop: 0 }}>$199/month</p>
+            <h1 style={{ marginBottom: 0 }}><b> Pro plan</b> <img src={crown} /></h1>
+            <p style={{ marginTop: 0 }}>$99/month</p>
             <p style={{ marginTop: "5%" }}><b>Details:</b></p>
-            <p>Database limits: {databases} {databases === 1 ? "database" : "databases"}</p>
             <p>Project limits: {projects} {projects === 1 ? "project" : "projects"}</p>
-            <p style={{ marginBottom: "10%" }}>Cluster limits: {clusters} {clusters === 1 ? "cluster" : "clusters"}</p>
-            <Button type='primary' style={{ width: "100%" }} onClick={handleIncreaseLimit}>Increase limits</Button>
+            <p style={{ marginBottom: "10%" }}>Database limits: {databases} {databases === 1 ? "database" : "databases"}</p>
+            <Button type='primary' style={{ width: "100%" }} onClick={handleIncreaseLimit}>Increase cluster limits</Button>
         </Card>
     );
 }

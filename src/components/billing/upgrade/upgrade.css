@@ -1,33 +1,56 @@
-.upgrade-card{
+.upgrade .upgrade-card {
+    text-align: center;
+    padding: 0px;
     background-color: #ffffff;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
 }
 
-.check-icon{
-    color: #15CD72;
-    margin-right: 3%;
-    margin-top: 3px;
+.upgrade .upgrade-button{
+    width: 80%;
+    margin-top: 15%;
 }
 
-.upgrade-btn{
-    width: 50%;
-    margin-top: 3%;
+.upgrade .upgrade-plan{
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 16px;
 }
 
-.upgrade-content{
-    margin-bottom: 3%;
+.upgrade .upgrade-amount{
+    margin-bottom: 0;
+    margin-top: 0;
+    font-weight: bold;
+    font-size: 48px;
 }
 
-.list-content{
-    display: flex;
-    margin-top: 1%;
+.upgrade .upgrade-time{
+    margin-bottom: 10%;
+    font-weight: 500;
+    font-size: 14px;
 }
 
-@media screen and (max-width: 500px) {
-    .upgrade-content{
-        margin-bottom: 3%;
-        text-align: center;
-    }
-    .upgrade-title{
-        text-align: center;
-    }
+.upgrade .green{
+    color: #34A853;
+}
+
+.upgrade .blue{
+    color: #40A9FF;
+}
+
+.upgrade .purple{
+    color: #8761C4;
+}
+
+.upgrade .blue-button{
+    background-color: #40A9FF;
+    color: #ffffff;
+    border-color: #40A9FF;
+}
+
+.upgrade .purple-button{
+    background-color: #ffffff;
+    color: #8761C4;
+    border-color: #8761C4;
 }

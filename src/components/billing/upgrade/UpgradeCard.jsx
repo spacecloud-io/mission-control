@@ -6,22 +6,41 @@ import './upgrade.css';
 const UpgradeCard = (props) => {
 
     return (
-        <Card className="upgrade-card">
-            <Row>
-                <Col lg={{ span:6 }} style={{padding:"32px"}} md={{ span:12, offset:0 }}>
-                    <img src={upgradeSvg} />
-                </Col>
-                <Col lg={{ span:17, offset:1 }} md={{ span: 12 }}>
-                    <h2 className="upgrade-title" style={{ marginBottom:"0px" }}><b>Space Cloud Pro</b></h2>
-                    <p className="upgrade-content" >Avail all the exclusive features of Space Cloud for as low as $199/month</p>
-                    <div className="list-content"><Icon type="check" className="check-icon"/><span>2 clusters, 3 projects and 5 databases</span></div>
-                    <div className="list-content"><Icon type="check" className="check-icon"/><span>Automated devops and canary deployments</span></div>
-                    <div className="list-content"><Icon type="check" className="check-icon"/><span>Team access control and audit trails</span></div>
-                    <div className="list-content"><Icon type="check" className="check-icon"/><span>2 days priority email support</span></div>
-                    <Button type="primary" className="upgrade-btn" onClick={props.handleSubscription}>Start using Pro - $199/month </Button>
-                </Col>
-            </Row>
-        </Card>
+        <Row className="upgrade">
+            <Col lg={{ span: 7, offset:0 }}>
+                <Card className="upgrade-card">
+                    <h3 className="upgrade-plan green">OPENSOURCE</h3>
+                    <h1 className="upgrade-amount green">$0</h1>
+                    <p className="upgrade-time green">per month</p>
+                    <span>1 Project</span><br />
+                    <span>1 Database</span><br />
+                    <span>Community support</span><br />
+                    <Button className="upgrade-button">Currently used</Button>
+                </Card>
+            </Col>
+            <Col lg={{ span: 7, offset:1 }}>
+                <Card className="upgrade-card">
+                    <h3 className="upgrade-plan blue">PRO</h3>
+                    <h1 className="upgrade-amount blue">$99</h1>
+                    <p className="upgrade-time blue">per month</p>
+                    <span>2 Projects</span><br />
+                    <span>3 Databases/project</span><br />
+                    <span>2 day priority email support</span><br />
+                    <Button className="upgrade-button blue-button">Use this plan</Button>
+                </Card>
+            </Col>
+            <Col lg={{ span: 7, offset:1 }}>
+                <Card className="upgrade-card">
+                    <h3 className="upgrade-plan purple">ENTERPRISE</h3>
+                    <h1 className="upgrade-amount purple">$$$</h1>
+                    <p className="upgrade-time purple">per month</p>
+                    <span>Customize number of projects</span><br />
+                    <span>Customize number of databases</span><br />
+                    <span>Enterprise support </span><br />
+                    <Button className="upgrade-button purple-button">Contact us</Button>
+                </Card>
+            </Col>
+        </Row>
     );
 }
 
