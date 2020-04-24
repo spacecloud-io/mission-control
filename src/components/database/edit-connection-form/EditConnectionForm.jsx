@@ -1,21 +1,15 @@
 import React from "react"
-
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-
-import { Modal, Input, Alert } from 'antd';
+import { Modal, Input, Alert, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 
-const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit(values.conn)
-      }
+    form.validateFields().then(values => {
+      handleSubmit(values.conn)
     });
   }
-  const { getFieldDecorator } = form;
+
+  const [form] = Form.useForm();
   const { conn } = initialValues ? initialValues : {}
 
   const alertMsg = <div>
@@ -33,22 +27,17 @@ const EditConnectionForm = ({ form, handleSubmit, handleCancel, initialValues, c
     >
       <Form layout="vertical" onSubmit={handleSubmitClick}>
         <FormItemLabel name="Connection string" />
-        <Form.Item>
-          {getFieldDecorator("conn", {
-            rules: [{ required: true, message: 'Please provide a connection string!' }],
-            initialValue: conn,
-          })(
+        <Form.Item name="name" rules={[{ required: true, message: 'Please provide a connection string!' }]} initialValue={conn}>
             <Input.Password placeholder="Enter connection string of your database" />
-          )}
         </Form.Item>
         <Alert message={alertMsg}
-            description=" "
-            type="info"
-            showIcon />
+          description=" "
+          type="info"
+          showIcon />
       </Form>
     </Modal>
   );
 }
 
-export default Form.create({})(EditConnectionForm);
+export default EditConnectionForm;
 
