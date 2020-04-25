@@ -37,7 +37,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   const [schema, setSchema] = useState(initialValues.schema);
   const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
-  const colName = form.getFieldValue("name")
+  const colName = form.getFieldValue('name')
   useEffect(() => {
     if (schema) {
       const temp = schema.trim().slice(4).trim()
@@ -53,7 +53,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(colName);
       try {
         handleSubmit(
           values.name,

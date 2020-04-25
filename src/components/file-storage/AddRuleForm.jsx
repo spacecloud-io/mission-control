@@ -1,9 +1,7 @@
 import React, { useState } from "react"
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input } from 'antd';
+import { Modal, Input, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -16,22 +14,20 @@ import { defaultFileRootPathRule } from "../../constants";
 
 const defaultRule = JSON.stringify(defaultFileRootPathRule, null, 2)
 const AddRuleForm = (props) => {
+  const [form] = Form.useForm()
   const [data, setData] = useState(defaultRule)
+
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          props.handleSubmit(values.name, JSON.parse(data));
-          props.handleCancel();
-          props.form.resetFields();
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
+    form.validateFields().then(values => {
+      try {
+        props.handleSubmit(values.name, JSON.parse(data));
+        props.handleCancel();
+        form.resetFields();
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
       }
     });
   }
-  const { getFieldDecorator } = props.form;
 
   return (
     <Modal
@@ -41,14 +37,10 @@ const AddRuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" onSubmit={handleSubmit}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit}>
         <FormItemLabel name="Name" />
-        <Form.Item>
-          {getFieldDecorator('name', {
-            rules: [{ required: true, message: 'Please provide a name to your rule!' }]
-          })(
-            <Input placeholder="Example: profile-files" />
-          )}
+        <Form.Item name="name" rules={[{ required: true, message: 'Please provide a name to your rule!' }]}>
+          <Input placeholder="Example: profile-files" />
         </Form.Item>
         <FormItemLabel name="Rule" />
         <CodeMirror
@@ -71,4 +63,5 @@ const AddRuleForm = (props) => {
   );
 }
 
-export default Form.create({})(AddRuleForm)
+
+export default AddRuleForm;
