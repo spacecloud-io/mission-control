@@ -5,6 +5,7 @@ const {Panel} = Collapse;
 const FAQ = (props) => {
     return(
         <div className="faq">
+            <h3 style={{marginTop:"48px", marginBottom:"32px", fontSize:"21px"}}>Frequently asked questions</h3>
             <Collapse accordion>
                 <Panel header="Is there a free trial?" key='1'>
                     <p>The pro version does not have a free trial as of now. 

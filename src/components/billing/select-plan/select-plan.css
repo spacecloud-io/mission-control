@@ -1,4 +1,4 @@
-.upgrade .upgrade-card {
+.select-plan .select-plan-card {
     text-align: center;
     padding: 0px;
     background-color: #ffffff;
@@ -7,49 +7,61 @@
     border-radius: 10px;
 }
 
-.upgrade .upgrade-button{
+.select-plan .selected{
+    border: 1px solid #34A853;
+}
+
+.select-plan .select-plan-button{
     width: 80%;
     margin-top: 15%;
 }
 
-.upgrade .upgrade-plan{
+.select-plan .selected-button{
+    background-color: #FAFAFA;
+    color: rgba(0, 0, 0, 0.6);
+    border-color: #D9D9D9;
+    box-sizing: border-box;
+    cursor: not-allowed;
+}
+
+.select-plan .select-plan-plan{
     margin-bottom: 0;
     font-weight: bold;
     font-size: 16px;
 }
 
-.upgrade .upgrade-amount{
+.select-plan .select-plan-amount{
     margin-bottom: 0;
     margin-top: 0;
     font-weight: bold;
     font-size: 48px;
 }
 
-.upgrade .upgrade-time{
+.select-plan .select-plan-time{
     margin-bottom: 10%;
     font-weight: 500;
     font-size: 14px;
 }
 
-.upgrade .green{
+.select-plan .green{
     color: #34A853;
 }
 
-.upgrade .blue{
+.select-plan .blue{
     color: #40A9FF;
 }
 
-.upgrade .purple{
+.select-plan .purple{
     color: #8761C4;
 }
 
-.upgrade .blue-button{
+.select-plan .blue-button{
     background-color: #40A9FF;
     color: #ffffff;
     border-color: #40A9FF;
 }
 
-.upgrade .purple-button{
+.select-plan .purple-button{
     background-color: #ffffff;
     color: #8761C4;
     border-color: #8761C4;

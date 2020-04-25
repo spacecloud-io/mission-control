@@ -4,7 +4,39 @@ import { useSelector } from 'react-redux';
 
 const Invoice = () => {
 
-    const invoiceData = useSelector(state => state.billing.invoices)
+    //const invoiceData = useSelector(state => state.billing.invoices)
+    const invoiceData = [
+      {
+        key: "1",
+        period: {
+          start: '1487370220',
+          end: '1487370220'
+        },
+        amount: '$99',
+        status: 'paid',
+        invoice_pdf: 'download'
+      },
+      {
+        key: "2",
+        period: {
+          start: '1487370220',
+          end: '1487370220'
+        },
+        amount: '$99',
+        status: 'uncollectible',
+        invoice_pdf: 'download'
+      },
+      {
+        key: "3",
+        period: {
+          start: '1487370220',
+          end: '1487370220'
+        },
+        amount: '$99',
+        status: 'open',
+        invoice_pdf: 'download'
+      }
+    ]
     const columns = [
         {
           title: "Period",
@@ -51,7 +83,6 @@ const Invoice = () => {
         <Table 
             columns={columns} 
             dataSource={invoiceData} 
-            bordered={true} 
         />
     );
 }

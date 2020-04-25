@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react'
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
-import UpgradeCard from '../../components/billing/upgrade/UpgradeCard';
+import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
+import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import FAQ from '../../components/billing/faq/FAQ';
 import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import { Row, Col } from 'antd';
 import Support from '../../components/billing/support/Support';
-import Invoice from '../../components/billing/invoice/Invoice';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import {Elements} from '@stripe/react-stripe-js';
 import {loadStripe} from '@stripe/stripe-js';
@@ -18,14 +18,18 @@ import { notify, setProjectConfig } from '../../utils';
 import {increment, decrement, set, get} from 'automate-redux';
 import {useDispatch, useSelector} from 'react-redux';
 import store from '../../store';
+import { useParams } from 'react-router-dom';
+import './billing.css'
 const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 
-const Billing = () => {
+const BillingOverview = () => {
     useEffect(() => {
 		ReactGA.pageview("/projects/plans");
     }, [])
+
+    const { projectID } = useParams();
     // const subscribed = useSelector(state => state.billing.status)
-    const subscribed = true
+    const subscribed = false
     const quotas = useSelector(state => state.quotas)
     const [contactModalVisible, setContactModalVisible] = useState(false)
     const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)
@@ -91,18 +95,14 @@ const Billing = () => {
 
     return (
         <div>
-            <Topbar showProjectSelector />
-            <div>
-                <Sidenav selectedItem="billing" />
-                <div className="page-content">
-                    {!subscribed && <div>
-                    <h3 style={{ marginBottom:"0", fontSize:"21px"}}>Upgrade cluster</h3>
-                        <p style={{ marginBottom:"1%"}}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
-                    </div>}
-                    {subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Plan Details & Support</h3>}
+			<Topbar showProjectSelector />
+			<Sidenav selectedItem="billing" />
+			<div className='page-content page-content--no-padding'>
+                <BillingTabs activeKey="overview" projectID={projectID} />
+                <div className="billing-tab-content">
                     <Row>
                         <Col lg={{ span:24}}>
-                            {!subscribed && <UpgradeCard handleSubscription={() => setSubscriptionModalVisible(true)}/>}
+                            {!subscribed && <SelectPlan handleSubscription={() => setSubscriptionModalVisible(true)}/>}
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
@@ -114,8 +114,6 @@ const Billing = () => {
                             </Row>}
                         </Col>
                     </Row>
-                    {!subscribed && <h3 style={{marginTop:"2%", marginBottom:"1%", fontSize:"21px"}}>Frequently asked questions</h3>}
-                    {subscribed && <h3 style={{marginTop:"2%", marginBottom:"1%", fontSize:"21px"}}>Cluster details</h3>}
                     <Row>
                         <Col lg={{ span:18 }}>
                             {!subscribed && <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />}
@@ -138,4 +136,4 @@ const Billing = () => {
     )
 }
 
-export default Billing;
+export default BillingOverview;
