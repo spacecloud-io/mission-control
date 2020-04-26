@@ -10,17 +10,13 @@ import BillingDetails from '../../components/billing/billing-details/BillingDeta
 import { Row, Col } from 'antd';
 import Support from '../../components/billing/support/Support';
 import ContactUs from '../../components/billing/contact/ContactUs';
-import {Elements} from '@stripe/react-stripe-js';
-import {loadStripe} from '@stripe/stripe-js';
-import CheckoutForm from '../../components/billing/chekout-form/CheckoutForm';
 import client from '../../client';
 import { notify, setProjectConfig } from '../../utils';
 import {increment, decrement, set, get} from 'automate-redux';
 import {useDispatch, useSelector} from 'react-redux';
 import store from '../../store';
-import { useParams } from 'react-router-dom';
-import './billing.css'
-const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
+import { useParams, useHistory } from 'react-router-dom';
+import './billing.css';
 
 const BillingOverview = () => {
     useEffect(() => {
@@ -32,9 +28,9 @@ const BillingOverview = () => {
     const subscribed = false
     const quotas = useSelector(state => state.quotas)
     const [contactModalVisible, setContactModalVisible] = useState(false)
-    const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)
     const [defaultSubject, setDefaultSubject] = useState("")
     const dispatch = useDispatch();
+    const history = useHistory();
 
     const handleContactUsClick = () => {
         setContactModalVisible(true);
@@ -58,24 +54,6 @@ const BillingOverview = () => {
 
     const handleCancel = () => {
         setContactModalVisible(false)
-    }
-   
-    const handleSubsriptionModalCancel = () =>{
-        setSubscriptionModalVisible(false)
-    }
-
-    const handleStripePaymentMethod = (paymentMethodId) => {
-        dispatch(increment("pendingRequests"));
-        client.billing.setBillingSubscription(paymentMethodId).then(res => {
-            if(res === 200){
-                store.dispatch(set("billing", {status: true, invoices:[{}]}))
-                setSubscriptionModalVisible(false);
-                notify("success", "Success", "Sucessfully subscribed to space cloud pro")
-            }
-        }).catch(ex =>{
-            console.log(ex)
-            notify("error", "Error subcribing to space cloud pro", ex)
-        }).finally(() => dispatch(decrement("pendingRequests")))
     }
 
     const handleContactUs = (subject, message) =>{
@@ -102,7 +80,7 @@ const BillingOverview = () => {
                 <div className="billing-tab-content">
                     <Row>
                         <Col lg={{ span:24}}>
-                            {!subscribed && <SelectPlan handleSubscription={() => setSubscriptionModalVisible(true)}/>}
+                            {!subscribed && <SelectPlan handleProPlan={() => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`)}/>}
                             {subscribed && 
                             <Row>
                                 <Col lg={{ span:11 }}>
@@ -127,10 +105,6 @@ const BillingOverview = () => {
                     initialvalues={defaultSubject}
                     handleContactUs={handleContactUs}
                     handleCancel={handleCancel} />}
-                {subscriptionModalVisible && <Elements stripe={stripePromise}>
-                    <CheckoutForm handleCancel={handleSubsriptionModalCancel}
-                    handleStripePayment={handleStripePaymentMethod} />
-                </Elements>}
             </div>
         </div>
     )

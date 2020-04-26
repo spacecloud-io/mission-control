@@ -15,3 +15,8 @@
 .invoices .ant-table-thead > tr > th{
     font-weight: bold;
 }
+
+.upgrade-steps{
+    margin-top: 64px;
+    margin-bottom: 48px;
+}

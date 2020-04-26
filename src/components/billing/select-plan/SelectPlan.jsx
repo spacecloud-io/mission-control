@@ -27,7 +27,7 @@ const SelectPlan = (props) => {
                     <span>2 Projects</span><br />
                     <span>3 Databases/project</span><br />
                     <span>2 day priority email support</span><br />
-                    <Button className="select-plan-button blue-button">Use this plan</Button>
+                    <Button className="select-plan-button blue-button" onClick={props.handleProPlan}>Use this plan</Button>
                 </Card>
             </Col>
             <Col lg={{ span: 7, offset:1 }}>
