@@ -1,38 +1,28 @@
 import React from 'react'
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Select, Input, Button } from 'antd';
+import { Select, Input, Button, Form } from 'antd';
 
 
 const { Option } = Select;
 
-const EventingConfigure = ({ form, dbType, handleSubmit, dbList }) => {
-	const { getFieldDecorator } = form;
-
+const EventingConfigure = ({ dbType, handleSubmit, dbList }) => {
+	const [form] = Form.useForm()
 	const handleSubmitClick = e => {
-		e.preventDefault();
-		form.validateFields((err, values) => {
-			if (!err) {
-				handleSubmit(values.dbType);
-			}
-		});
+		form.validateFields().then(values => {
+			handleSubmit(values.dbType);
+		})
 	}
+
 
 	return (
 		<div>
 			<p>The database and table/collection used by Space Cloud to store event logs</p>
-			<Form layout="inline">
-				<Form.Item>
-					{getFieldDecorator('dbType', {
-						rules: [{ required: true, message: 'Database is required!' }],
-						initialValue: dbType
-					})(
+			<Form layout="inline" form={form} initialValues={{ 'dbType': dbType }}>
+				<Form.Item name="dbType" rules={[{ required: true, message: 'Database is required!' }]}>					
 						<Select placeholder="Database" style={{ minWidth: 200 }}>
 							{dbList.map((db) => (
 								<Select.Option value={db.alias} ><img src={db.svgIconSet} style={{ marginRight: 10 }} />{db.alias}</Select.Option>
 							))}
 						</Select>
-					)}
 				</Form.Item>
 				<br />
 				<Form.Item>
@@ -45,4 +35,4 @@ const EventingConfigure = ({ form, dbType, handleSubmit, dbList }) => {
 	)
 }
 
-export default Form.create({})(EventingConfigure);
+export default EventingConfigure;

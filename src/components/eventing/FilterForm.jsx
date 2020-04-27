@@ -1,8 +1,6 @@
 import React from "react"
 import { CheckOutlined, CloseOutlined, HourglassOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Select, Checkbox, DatePicker } from 'antd';
+import { Modal, Select, Checkbox, DatePicker, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +12,7 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const FilterForm = (props) => {
+  const [form] = Form.useForm();
   const dispatch = useDispatch();
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const projects = useSelector(state => state.projects);
@@ -21,27 +20,24 @@ const FilterForm = (props) => {
   const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers"));
 
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, fieldsValue) => {
+    form.validateFields().then(fieldsValue => {
+      // console.log(fieldsValue);
       let values = {};
-      if (!err) {
-        if (getFieldValue("showDate")) {
-          const rangeValue = fieldsValue["range-picker"];
-          values = {
-            ...fieldsValue,
-            startDate: rangeValue[0].unix(),
-            endDate: rangeValue[1].unix()
-          }
+      if (form.getFieldValue("showDate")) {
+        const rangeValue = fieldsValue["range-picker"];
+        values = {
+          ...fieldsValue,
+          startDate: rangeValue[0].unix(),
+          endDate: rangeValue[1].unix()
         }
-        else {
-          values = { ...fieldsValue }
-        }
-        props.filterTable(values);
-        props.handleCancel();
       }
+      else {
+        values = { ...fieldsValue }
+      }
+      props.filterTable(values);
+      props.handleCancel();
     });
   }
-  const { getFieldDecorator, getFieldValue } = props.form;
 
   return (
     <Modal
@@ -53,67 +49,45 @@ const FilterForm = (props) => {
       cancelButtonProps={{ style: { float: "left" }, onClick: () => { dispatch(reset("uiState.eventFilters")); props.handleCancel() } }}
       cancelText="Reset Filters"
     >
-      <Form layout="vertical" onSubmit={handleSubmit}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} 
+      initialValues={{ 'status': eventFilters.status ? eventFilters.status : ['processed', 'failed', 'staged'],
+       'name': eventFilters.name ? eventFilters.name : undefined, 'showDate': eventFilters.showDate,
+       'range-picker': eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7, 'd'), moment()] }}>
         <FormItemLabel name="Filter by status" />
-        <Form.Item>
-          {getFieldDecorator('status', {
-            initialValue: eventFilters.status ? eventFilters.status : ['processed', 'failed', 'staged']
-          })(
+        <Form.Item name="status">
             <Checkbox.Group>
               <Checkbox value="processed">Processed <CheckOutlined style={{ color: "#00FF00" }} /></Checkbox>
               <Checkbox value="failed">Failed <CloseOutlined style={{ color: "red" }} /></Checkbox>
               <Checkbox value="staged">Pending <HourglassOutlined /></Checkbox>
             </Checkbox.Group>
-          )}
         </Form.Item>
         <FormItemLabel name="Filter by trigger name" />
-        <Form.Item>
-          {getFieldDecorator('showName', {
-            initialValue: eventFilters.showName,
-            valuePropName: 'checked'
-          })
-            (
+        <Form.Item name="showName" valuePropName="checked">
               <Checkbox>
                 Show logs of specific event triggers
             </Checkbox>
-            )}
         </Form.Item>
-        {getFieldValue('showName') && (
+        {form.getFieldValue('showName') && (
           <>
             <FormItemLabel name="Specify event triggers" />
-            <Form.Item>
-              {getFieldDecorator('name', {
-                rules: [{ required: true, message: "Please select atleast one event trigger" }],
-                initialValue: eventFilters.name ? eventFilters.name : undefined
-              })
-                (
+            <Form.Item name="name" rules={[{ required: true, message: "Please select atleast one event trigger" }]}>
                   <Select mode="multiple" placeholder="Select event triggers for which you want to see the logs">
                     {triggerNames.map(val => <Option key={val}>{val}</Option>)}
                   </Select>
-                )}
             </Form.Item>
           </>
         )}
         <FormItemLabel name="Filter by date" />
-        <Form.Item>
-          {getFieldDecorator('showDate', {
-            initialValue: eventFilters.showDate,
-            valuePropName: 'checked'
-          })
-            (
+        <Form.Item name="showDate" valuePropName="checked">
               <Checkbox>
                 Show logs between a specific period
             </Checkbox>
-            )}
         </Form.Item>
-        {getFieldValue('showDate') && (
+        {form.getFieldValue('showDate') && (
           <>
             <FormItemLabel name="Specify period" />
-            <Form.Item>
-              {getFieldDecorator("range-picker", {
-                rules: [{ type: "array", required: true, message: "Please enter the duration!" }],
-                initialValue: eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7, 'd'), moment()]
-              })(<RangePicker />)}
+            <Form.Item name="range-picker" rules={[{ type: "array", required: true, message: "Please enter the duration!" }]}>
+              (<RangePicker />)}
             </Form.Item>
           </>
         )}
@@ -122,7 +96,5 @@ const FilterForm = (props) => {
   );
 }
 
-const WrappedFilterForm = Form.create({})(FilterForm);
-
-export default WrappedFilterForm
+export default FilterForm
 

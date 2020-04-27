@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Input, Button, Modal, Select, Radio } from 'antd';
+import { Input, Button, Modal, Select, Radio, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import RadioCard from "../radio-card/RadioCard";
 
@@ -91,33 +89,31 @@ const awsRegions = [
 const gcrRegionOptions = gcpRegions.map(region => <Option key={region} value={region}>{region}</Option>)
 const ecrRegionOptions = awsRegions.map(region => <Option key={region.id} value={region.id}>{region.name}</Option>)
 
-const DockerRegistryModal = ({ form, handleSubmit, handleCancel }) => {
+const DockerRegistryModal = ({ handleSubmit, handleCancel }) => {
 
-  const { getFieldDecorator, getFieldValue } = form
+  const [form] = Form.useForm()
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        const registryType = values["registryType"]
-        let registryValue = ""
-        switch (registryType) {
-          case "gcr":
-            registryValue = `${values["gcrRegion"]}.gcr.io/${values["gcrProject"]}`
-            break
-          case "ecr":
-            registryValue = `https://${values["awsAccountId"]}.dkr.ecr.${values["ecrRegion"]}.amazonaws.com`
-            break
-          case "acr":
-            registryValue = `${values["acrRegistryName"]}.azurecr.io`
-            break
-          default:
-            registryValue = values["registryValue"]
-        }
-        handleSubmit(registryValue)
-        handleCancel()
+    form.validateFields().then(values => {
+      console.log(values);
+      const registryType = values["registryType"]
+      let registryValue = ""
+      switch (registryType) {
+        case "gcr":
+          registryValue = `${values["gcrRegion"]}.gcr.io/${values["gcrProject"]}`
+          break
+        case "ecr":
+          registryValue = `https://${values["awsAccountId"]}.dkr.ecr.${values["ecrRegion"]}.amazonaws.com`
+          break
+        case "acr":
+          registryValue = `${values["acrRegistryName"]}.azurecr.io`
+          break
+        default:
+          registryValue = values["registryValue"]
       }
-    });
+      handleSubmit(registryValue)
+      handleCancel()
+    })
   };
 
 
@@ -129,87 +125,70 @@ const DockerRegistryModal = ({ form, handleSubmit, handleCancel }) => {
       onOk={handleSubmitClick}
       onCancel={handleCancel}
     >
-      <Form layout="vertical" onSubmit={handleSubmit}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{ 'registryType': 'gcr' }}>
         <FormItemLabel name="Choose Registry Service" />
-        <Form.Item>
-          {getFieldDecorator('registryType', {
-            rules: [{ required: true, message: 'Please select a registry service!' }],
-            initialValue: "gcr"
-          })(
+        <Form.Item name="registryType" rules={[{ required: true, message: 'Please select a registry service!' }]}>
+          (
             <Radio.Group>
               <RadioCard value="gcr">Google GCR</RadioCard>
               <RadioCard value="ecr">AWS ECR</RadioCard>
               <RadioCard value="acr">Azure ACR</RadioCard>
               <RadioCard value="others">Others</RadioCard>
             </Radio.Group>
-          )}
+          )
         </Form.Item>
-        {(getFieldValue("registryType") === "gcr" || !getFieldValue("registryType")) && <React.Fragment>
+        {(form.getFieldValue("registryType") === "gcr" || !form.getFieldValue("registryType")) && <React.Fragment>
           <FormItemLabel name="GCP Region" />
-          <Form.Item>
-            {getFieldDecorator('gcrRegion', {
-              rules: [{ required: true, message: 'Please provide a region!' }]
-            })(
+          <Form.Item name="gcrRegion" rules={[{ required: true, message: 'Please provide a region!' }]}>
+            (
               <Select placeholder="Select a region" >
                 {gcrRegionOptions}
               </Select>
-            )}
+            )
           </Form.Item>
           <FormItemLabel name="GCP Project" />
-          <Form.Item>
-            {getFieldDecorator('gcrProject', {
-              rules: [{ required: true, message: 'Please provide project id of your gcp project!' }]
-            })(
+          <Form.Item name="gcrProject" rules={[{ required: true, message: 'Please provide project id of your gcp project!' }]}>
+            (
               <Input placeholder="Example: my-project-123456" />
-            )}
+            )
           </Form.Item>
         </React.Fragment>}
-        {getFieldValue("registryType") === "ecr" && <React.Fragment>
+        {form.getFieldValue("registryType") === "ecr" && <React.Fragment>
           <FormItemLabel name="AWS Region" />
-          <Form.Item>
-            {getFieldDecorator('ecrRegion', {
-              rules: [{ required: true, message: 'Please provide a region!' }]
-            })(
+          <Form.Item name="ecrRegion" rules={[{ required: true, message: 'Please provide a region!' }]}>
+            (
               <Select placeholder="Select a region" >
                 {ecrRegionOptions}
               </Select>
-            )}
+            )
           </Form.Item>
           <FormItemLabel name="AWS Account ID" />
-          <Form.Item>
-            {getFieldDecorator('awsAccountId', {
-              rules: [{ required: true, message: 'Please provide your aws account id' }]
-            })(
+          <Form.Item name="awsAccountId" rules={[{ required: true, message: 'Please provide your aws account id' }]}>
+            (
               <Input placeholder="Example: 563789405948" />
-            )}
+            )
           </Form.Item>
         </React.Fragment>}
-        {getFieldValue("registryType") === "acr" && <React.Fragment>
+        {form.getFieldValue("registryType") === "acr" && <React.Fragment>
           <FormItemLabel name="ACR Registry name" />
-          <Form.Item>
-            {getFieldDecorator('acrRegistryName', {
-              rules: [{ required: true, message: 'Please provide your registry name' }]
-            })(
+          <Form.Item name="acrRegistryName" rules={[{ required: true, message: 'Please provide your registry name' }]}>
+            (
               <Input placeholder="Example: mycontainerregistry007" />
-            )}
+            )
           </Form.Item>
         </React.Fragment>}
-        {getFieldValue("registryType") === "others" && <React.Fragment>
+        {form.getFieldValue("registryType") === "others" && <React.Fragment>
           <FormItemLabel name="Docker Registry" />
-          <Form.Item>
-            {getFieldDecorator('registryValue', {
-              rules: [{ required: true, message: 'Please provide your registry' }]
-            })(
+          <Form.Item name="registryValue" rules={[{ required: true, message: 'Please provide your registry' }]}>
+            (
               <Input placeholder="Provide registry" />
-            )}
+            )
           </Form.Item>
         </React.Fragment>}
       </Form>
     </Modal>
   )
 }
-
-const WrappedDockerRegistryModal = Form.create({})(DockerRegistryModal)
 
 const DockerRegistry = ({ dockerRegistry, handleSubmit }) => {
 
@@ -230,7 +209,7 @@ const DockerRegistry = ({ dockerRegistry, handleSubmit }) => {
           Change Registry
       </Button>
       </React.Fragment>}
-      {modalVisible && <WrappedDockerRegistryModal
+      {modalVisible && <DockerRegistryModal
         handleSubmit={handleSubmit}
         handleCancel={handleCancel} />}
     </div>
