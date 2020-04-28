@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input, Select, Checkbox, Row, Col, Button, message } from "antd";
+import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form } from "antd";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import { notify } from "../../utils";
 const { Option } = Select;
@@ -10,31 +8,29 @@ const { Option } = Select;
 let target = 1;
 
 const RoutingRule = props => {
-  const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
+  // const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
+  const [form] = Form.useForm();
   const initialValues = props.initialValues;
   const children = [];
   const handleSubmitClick = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        delete values["allowSpecificHosts"];
-        delete values["allowSpecificMethods"];
-        delete values["performRewrite"];
-        delete values["targetKeys"];
-        if (!values.allowedHosts) values.allowedHosts = ["*"]
-        if (!values.allowedMethods) values.allowedMethods = ["*"]
-        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
-        const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
-        if (weightSum !== 100) {
-          message.error("Sum of all the target weights should be 100")
-          return
-        }
-        props.handleSubmit(values).then(() => {
-          notify("success", "Success", "Saved routing config successfully");
-          props.handleCancel();
-        });
+    form.validateFields().then(values => {
+      delete values["allowSpecificHosts"];
+      delete values["allowSpecificMethods"];
+      delete values["performRewrite"];
+      delete values["targetKeys"];
+      if (!values.allowedHosts) values.allowedHosts = ["*"]
+      if (!values.allowedMethods) values.allowedMethods = ["*"]
+      values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
+      const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
+      if (weightSum !== 100) {
+        message.error("Sum of all the target weights should be 100")
+        return
       }
-    });
+      props.handleSubmit(values).then(() => {
+        notify("success", "Success", "Saved routing config successfully");
+        props.handleCancel();
+      });
+    })
   };
 
   const checkHost = (host) => {
@@ -54,12 +50,12 @@ const RoutingRule = props => {
   }
 
   const removeTarget = k => {
-    const targetKeys = getFieldValue("targetKeys");
+    const targetKeys = form.getFieldValue("targetKeys");
     if (targetKeys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       targetKeys: targetKeys.filter(key => key !== k)
     });
   };
@@ -69,63 +65,58 @@ const RoutingRule = props => {
     const hostFields = targetKeys.map((k) => `targets[${k}].host`)
     const portFields = targetKeys.map((k) => `targets[${k}].port`)
     const weightFields = targetKeys.map((k) => `targets[${k}].weight`)
-    validateFields([...schemeFields, ...hostFields, ...portFields, ...weightFields], (error) => {
+    form.validateFields([...schemeFields, ...hostFields, ...portFields, ...weightFields], (error) => {
       if (!error) {
-        const targetKeys = getFieldValue("targetKeys");
+        const targetKeys = form.getFieldValue("targetKeys");
         const nextKeys = targetKeys.concat(target++);
-        setFieldsValue({
+        form.setFieldsValue({
           targetKeys: nextKeys
         });
       }
     })
   };
 
-  getFieldDecorator("targetKeys", { initialValue: initialValues ? initialValues.targets.map((_, i) => i) : [0] });
-  const targetKeys = getFieldValue("targetKeys");
+  form.getFieldDecorator("targetKeys", { initialValue: initialValues ? initialValues.targets.map((_, i) => i) : [0] });
+  const targetKeys = form.getFieldValue("targetKeys");
   const targetsFormItems = targetKeys.map((k, index) => (
     <div>
       <Row key={k} gutter={8}>
         <Col span={3}>
-          <Form.Item style={{ marginBottom: 0 }} >
-            {getFieldDecorator(`targets[${k}].scheme`, {
-              initialValue:
+          <Form.Item name={`targets[${k}].scheme`} style={{ marginBottom: 0 }} >
+              {/* initialValue:
                 initialValues && initialValues.targets[k]
                   ? initialValues.targets[k].scheme
-                  : "http"
-            })(
+                  : "http" */}
+            (
               <Select style={{ width: "100%" }}>
                 <Option value="http">HTTP</Option>
                 <Option value="https">HTTPS</Option>
               </Select>
-            )}
+            )
           </Form.Item>
           <br />
         </Col>
         <Col span={8}>
-          <Form.Item style={{ marginBottom: 0 }}>
-            {getFieldDecorator(`targets[${k}].host`, {
-              rules: [
+          <Form.Item name={`targets[${k}].host`} style={{ marginBottom: 0 }} rules={[
                 {
                   required: true,
                   message: "Host is required!"
                 }
-              ],
-              initialValue:
+              ]}>
+              {/* initialValue:
                 initialValues && initialValues.targets[k]
                   ? initialValues.targets[k].host
-                  : ""
-            })(
+                  : "" */}
+            (
               <Input
                 placeholder="Service Host"
                 style={{ width: "100%" }}
               />
-            )}
+            )
           </Form.Item>
         </Col>
         <Col span={4}>
-          <Form.Item style={{ marginBottom: 0 }}>
-            {getFieldDecorator(`targets[${k}].port`, {
-              rules: [
+          <Form.Item name={`targets[${k}].port`} style={{ marginBottom: 0 }} rules={[
                 {
                   validator: (_, value, cb) => {
                     if (!value) {
@@ -139,23 +130,21 @@ const RoutingRule = props => {
                     cb()
                   }
                 }
-              ],
-              initialValue:
+              ]}>
+              {/* initialValue:
                 initialValues && initialValues.targets[k]
                   ? initialValues.targets[k].port
-                  : ""
-            })(
+                  : "" */}
+            (
               <Input
                 placeholder="Port"
                 style={{ width: "100%" }}
               />
-            )}
+            )
           </Form.Item>
         </Col>
         <Col span={5}>
-          <Form.Item style={{ marginBottom: 0 }}>
-            {getFieldDecorator(`targets[${k}].weight`, {
-              rules: [
+          <Form.Item name={`targets[${k}].weight`} style={{ marginBottom: 0 }} rules={[
                 {
                   validator: (_, value, cb) => {
                     if (!value) {
@@ -170,17 +159,17 @@ const RoutingRule = props => {
                     cb()
                   }
                 }
-              ],
-              initialValue:
+              ]}>
+              {/* initialValue:
                 initialValues && initialValues.targets[k]
                   ? initialValues.targets[k].weight
-                  : ""
-            })(
+                  : "" */}
+            (
               <Input
                 placeholder="Weight between 1 to 100"
                 style={{ width: "100%" }}
               />
-            )}
+            )
           </Form.Item>
         </Col>
         <Col span={4}>
@@ -212,95 +201,75 @@ const RoutingRule = props => {
         onCancel={props.handleCancel}
         onOk={handleSubmitClick}
       >
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} 
+        initialValues={{ "routeType": initialValues ? initialValues.routeType : "prefix", "url": initialValues ? initialValues.url : "", 
+        "url": initialValues ? initialValues.url : "", "performRewrite": initialValues && initialValues.rewrite ? true : false,
+        "rewrite": initialValues ? initialValues.rewrite : "", "allowSpecificHosts": initialValues && checkHost(initialValues.allowedHosts)
+        ? true : false, "allowedHosts": initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
+        "allowSpecificMethods": initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
+        "allowedMethods": initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : []}}>
           <FormItemLabel name="Route matching type" />
-          <Form.Item>
-            {getFieldDecorator("routeType", {
-              rules: [{ required: true, message: "Route type is required" }],
-              initialValue: initialValues ? initialValues.routeType : "prefix"
-            })(
+          <Form.Item name="routeType" rules={[{ required: true, message: "Route type is required" }]}>
+            (
               <Select style={{ width: 200 }}>
                 <Select.Option value="prefix">Prefix Match</Select.Option>
                 <Select.Option value="exact">Exact Match</Select.Option>
               </Select>
-            )}
+            )
           </Form.Item>
-          {getFieldValue("routeType") === "exact" ? (
+          {form.getFieldValue("routeType") === "exact" ? (
             <div>
               <FormItemLabel name="URL" />
-              <Form.Item>
-                {getFieldDecorator("url", {
-                  rules: [{ required: true, message: "Please provide URL" }],
-                  initialValue: initialValues ? initialValues.url : ""
-                })(
+              <Form.Item name="url" rules={[{ required: true, message: "Please provide URL" }]}>
+                (
                   <Input placeholder="The exact URL of incoming request (eg:/v1/foo/bar)" />
-                )}
+                )
               </Form.Item>
             </div>
           ) : (
               <div>
                 <FormItemLabel name="Prefix" />
-                <Form.Item>
-                  {getFieldDecorator("url", {
-                    rules: [{ required: true, message: "Please provide prefix" }],
-                    initialValue: initialValues ? initialValues.url : ""
-                  })(
+                <Form.Item name="url" rules={[{ required: true, message: "Please provide prefix" }]}>
+                  (
                     <Input placeholder="Prefix for incoming request (eg:/v1/)" />
-                  )}
+                  )
                 </Form.Item>
               </div>
             )}
           <FormItemLabel name="Rewrite" />
-          <Form.Item>
-            {getFieldDecorator("performRewrite", {
-              valuePropName: "checked",
-              initialValue:
-                initialValues && initialValues.rewrite ? true : false
-            })(
+          <Form.Item name="performRewrite" valuePropName="checked">
+            (
               <Checkbox>
                 Rewrite incoming request URL to target service
               </Checkbox>
-            )}
+            )
           </Form.Item>
-          {getFieldValue("performRewrite") ? (
+          {form.getFieldValue("performRewrite") ? (
             <div>
               <FormItemLabel name="Rewrite URL" />
-              <Form.Item>
-                {getFieldDecorator("rewrite", {
-                  rules: [{ required: true, message: "Please provide URL" }],
-                  initialValue: initialValues ? initialValues.rewrite : ""
-                })(
+              <Form.Item name="rewrite" rules={[{ required: true, message: "Please provide URL" }]}> 
+                (
                   <Input placeholder="New Request URL that will override the incoming request " />
-                )}
+                )
               </Form.Item>
             </div>
           ) : (
               ""
             )}
           <FormItemLabel name="Hosts" />
-          <Form.Item>
-            {getFieldDecorator("allowSpecificHosts", {
-              valuePropName: "checked",
-              initialValue:
-                initialValues && checkHost(initialValues.allowedHosts)
-                  ? true
-                  : false
-            })(<Checkbox>Allow traffic with specified hosts only</Checkbox>)}
+          <Form.Item name="allowSpecificHosts" valuePropName="checked">
+            (<Checkbox>Allow traffic with specified hosts only</Checkbox>)
           </Form.Item>
-          {getFieldValue("allowSpecificHosts") ? (
+          {form.getFieldValue("allowSpecificHosts") ? (
             <div>
               <FormItemLabel name="Allowed hosts " />
-              <Form.Item>
-                {getFieldDecorator("allowedHosts", {
-                  rules: [
+              <Form.Item name="allowedHosts" rules={[
                     {
                       required: true,
                       message: "Please enter the domain for the project"
                     }
-                  ],
-                  initialValue: initialValues && checkHost(initialValues.allowedHosts) ?
-                    initialValues.allowedHosts : []
-                })(
+                  ]}>
+                (
                   <Select
                     mode="tags"
                     placeholder="Add hosts that you want to allow for this route"
@@ -309,36 +278,26 @@ const RoutingRule = props => {
                   >
                     {children}
                   </Select>
-                )}
+                )
               </Form.Item>
             </div>
           ) : (
               ""
             )}
           <FormItemLabel name="Methods" />
-          <Form.Item>
-            {getFieldDecorator("allowSpecificMethods", {
-              valuePropName: "checked",
-              initialValue:
-                initialValues && checkMethod(initialValues.allowedMethods)
-                  ? true
-                  : false
-            })(<Checkbox>Allow traffic with specified methods only</Checkbox>)}
+          <Form.Item name="allowSpecificMethods" valuePropName="checked">                
+            (<Checkbox>Allow traffic with specified methods only</Checkbox>)
           </Form.Item>
-          {getFieldValue("allowSpecificMethods") ? (
+          {form.getFieldValue("allowSpecificMethods") ? (
             <div>
               <FormItemLabel name="Allowed methods " />
-              <Form.Item>
-                {getFieldDecorator("allowedMethods", {
-                  rules: [
+              <Form.Item name="allowedMethods" rules={[
                     {
                       required: true,
                       message: "Please enter the domain for the project"
                     }
-                  ],
-                  initialValue: initialValues && checkMethod(initialValues.allowedMethods) ?
-                    initialValues.allowedMethods : []
-                })(
+                  ]}>
+                (
                   <Select
                     mode="tags"
                     placeholder="Add hosts that you want to allow for this route"
@@ -355,7 +314,7 @@ const RoutingRule = props => {
                     <Option key="CONNECT">CONNECT</Option>
                     <Option key="TRACE">TRACE</Option>
                   </Select>
-                )}
+                )
               </Form.Item>
             </div>
           ) : (
@@ -369,4 +328,4 @@ const RoutingRule = props => {
   );
 };
 
-export default Form.create({})(RoutingRule);
+export default RoutingRule;

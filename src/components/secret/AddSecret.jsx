@@ -1,60 +1,56 @@
 import React from "react";
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input, Button, Radio, Row, Col, message } from "antd";
+import { Modal, Input, Button, Radio, Row, Col, message, Form } from "antd";
 import RadioCard from "../radio-card/RadioCard";
 import "./add-secret.css";
 
 let env = 1;
 
 const AddSecret = props => {
-  const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
-  let secretType = getFieldValue("type");
+  const [form] = Form.useForm();
+  let secretType = form.getFieldValue("type");
   if (!secretType) secretType = "env";
 
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, formValues) => {
-      if (!err) {
-        const values = {
-          id: formValues.id,
-          type: formValues.type
-        };
-        switch (values.type) {
-          case "env":
-            values.data = formValues.env.reduce((prev, curr) => {
-              return Object.assign({}, prev, { [curr.name]: curr.value });
-            }, {});
-            break;
-          case "docker":
-            values.data = formValues.data;
-            break;
-          case "file":
-            values.rootPath = formValues.rootPath
-            values.data = formValues.file.reduce((prev, curr) => {
-              return Object.assign({}, prev, { [curr.name]: curr.value });
-            }, {});
-            break;
-        }
-
-        props.handleSubmit(values).then(() => {
-          props.handleCancel();
-          props.form.resetFields();
-        })
+    form.validateFields().then(formValues => {
+      // console.log(formValues);
+      const values = {
+        id: formValues.id,
+        type: formValues.type
+      };
+      switch (values.type) {
+        case "env":
+          values.data = formValues.env.reduce((prev, curr) => {
+            return Object.assign({}, prev, { [curr.name]: curr.value });
+          }, {});
+          break;
+        case "docker":
+          values.data = formValues.data;
+          break;
+        case "file":
+          values.rootPath = formValues.rootPath
+          values.data = formValues.file.reduce((prev, curr) => {
+            return Object.assign({}, prev, { [curr.name]: curr.value });
+          }, {});
+          break;
       }
+
+      props.handleSubmit(values).then(() => {
+        props.handleCancel();
+        form.resetFields();
+      })
     });
   };
 
   const initialKeys = [0];
   // ENVIRONMENT VARIABLES
   const envRemove = k => {
-    const envKeys = getFieldValue("envKeys");
+    const envKeys = form.getFieldValue("envKeys");
     if (envKeys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       envKeys: envKeys.filter(key => key !== k)
     });
   };
@@ -62,47 +58,43 @@ const AddSecret = props => {
   const envAdd = () => {
     const nameFields = envKeys.map((k) => `env[${k}].name`)
     const valueFields = envKeys.map((k) => `env[${k}].value`)
-    validateFields([...nameFields, ...valueFields], (error) => {
+    form.validateFields([...nameFields, ...valueFields], (error) => {
       if (!error) {
-        const envKeys = getFieldValue("envKeys");
+        const envKeys = form.getFieldValue("envKeys");
         const nextKeys = envKeys.concat(env++);
-        setFieldsValue({
+        form.setFieldsValue({
           envKeys: nextKeys
         });
       }
     })
   };
 
-  getFieldDecorator("envKeys", { initialValue: initialKeys });
-  const envKeys = getFieldValue("envKeys");
+  // form.getFieldDecorator("envKeys", { initialValue: initialKeys });
+  const envKeys = form.getFieldValue("envKeys");
   const formItemsEnv = envKeys.map((k, index) => (
     <div>
       <Row key={k}>
         <Col span={10}>
           {secretType === "env" && (
-            <Form.Item>
-              {getFieldDecorator(`env[${k}].name`, {
-                rules: [{ required: true, message: "Please input key" }]
-              })(
+            <Form.Item name={`env[${k}].name`} rules={[{ required: true, message: "Please input key" }]}>
+              (
                 <Input
                   style={{ width: "90%", marginRight: "6%", float: "left" }}
                   placeholder="Key"
                 />
-              )}
+              )
             </Form.Item>
           )}
         </Col>
         <Col span={10}>
           {secretType === "env" && (
-            <Form.Item>
-              {getFieldDecorator(`env[${k}].value`, {
-                rules: [{ required: true, message: "Please input value" }]
-              })(
+            <Form.Item name={`env[${k}].value`} rules={[{ required: true, message: "Please input value" }]}>
+              (
                 <Input
                   placeholder="Value"
                   style={{ width: "90%", marginRight: "6%", float: "left" }}
                 />
-              )}
+              )
             </Form.Item>
           )}
         </Col>
@@ -130,12 +122,12 @@ const AddSecret = props => {
   ));
 
   const fileRemove = k => {
-    const fileKeys = getFieldValue("fileKeys");
+    const fileKeys = form.getFieldValue("fileKeys");
     if (fileKeys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       fileKeys: fileKeys.filter(key => key !== k)
     });
   };
@@ -143,48 +135,44 @@ const AddSecret = props => {
   const fileAdd = () => {
     const nameFields = fileKeys.map((k) => `file[${k}].name`)
     const valueFields = fileKeys.map((k) => `file[${k}].value`)
-    validateFields([...nameFields, ...valueFields], (error) => {
+    form.validateFields([...nameFields, ...valueFields], (error) => {
       if (!error) {
-        const fileKeys = getFieldValue("fileKeys");
+        const fileKeys = form.getFieldValue("fileKeys");
         const nextKeys = fileKeys.concat(env++);
-        setFieldsValue({
+        form.setFieldsValue({
           fileKeys: nextKeys
         });
       }
     })
   };
 
-  getFieldDecorator("fileKeys", { initialValue: initialKeys });
-  const fileKeys = getFieldValue("fileKeys");
+  // form.getFieldDecorator("fileKeys", { initialValue: initialKeys });
+  const fileKeys = form.getFieldValue("fileKeys");
   const formItemsFile = fileKeys.map((k, index) => (
     <div>
       <Row key={k}>
         <Col span={8}>
           {secretType === "file" && (
-            <Form.Item>
-              {getFieldDecorator(`file[${k}].name`, {
-                rules: [{ required: true, message: "Please input file name" }]
-              })(
+            <Form.Item name={`file[${k}].name`} rules={[{ required: true, message: "Please input file name" }]}>
+              (
                 <Input
                   style={{ width: "98%", marginRight: "6%", float: "left" }}
                   placeholder="File name (eg: credentials.json)"
                 />
-              )}
+              )
             </Form.Item>
           )}
         </Col>
         <Col span={12}>
           {secretType === "file" && (
-            <Form.Item>
-              {getFieldDecorator(`file[${k}].value`, {
-                rules: [{ required: true, message: "Please input file contents" }]
-              })(
+            <Form.Item name={`file[${k}].value`} rules={[{ required: true, message: "Please input file contents" }]}>
+              (
                 <Input.TextArea
                   rows={4}
                   placeholder="File contents"
                   style={{ width: "90%", marginLeft: "6%", float: "left" }}
                 />
-              )}
+              )
             </Form.Item>
           )}
         </Col>
@@ -220,29 +208,24 @@ const AddSecret = props => {
       onOk={handleSubmit}
       width="800px"
     >
-      <Form>
+      <Form form={form} onFinish={handleSubmit}>
         <p>Secret type</p>
-        <Form.Item>
-          {getFieldDecorator("type", {
-            rules: [{ required: true, message: "Please select a type!" }],
-            initialValue: "env"
-          })(
+        <Form.Item name="type" rules={[{ required: true, message: "Please select a type!" }]}>
+          (
             <Radio.Group>
               <RadioCard value="env">Environment Variables</RadioCard>
               <RadioCard value="file">File Secret</RadioCard>
               <RadioCard value="docker">Docker Secret</RadioCard>
             </Radio.Group>
-          )}
+          )
         </Form.Item>
         {secretType === "env" && (
           <React.Fragment>
             <p>Name your secret</p>
-            <Form.Item>
-              {getFieldDecorator("id", {
-                rules: [
+            <Form.Item name="id" rules={[
                   { required: true, message: "Please input a secret name" }
-                ]
-              })(<Input placeholder="Example: DB Secret" />)}
+                ]}>
+              (<Input placeholder="Example: DB Secret" />)
             </Form.Item>
             <p>Environment variable pairs</p>
             <Form.Item>{formItemsEnv}</Form.Item>
@@ -251,72 +234,60 @@ const AddSecret = props => {
         {secretType === "docker" && (
           <React.Fragment>
             <p>Name your secret</p>
-            <Form.Item>
-              {getFieldDecorator("id", {
-                rules: [
+            <Form.Item name="id" rules={[
                   { required: true, message: "Please input a secret name" }
-                ]
-              })(<Input placeholder="Example: DB Secret" />)}
+                ]}>
+              (<Input placeholder="Example: DB Secret" />)
             </Form.Item>
             <p>Docker Username</p>
-            <Form.Item>
-              {getFieldDecorator("data.username", {
-                rules: [
+            <Form.Item name="data.username" rules={[
                   {
                     required: true,
                     message: "Please input your docker username"
                   }
-                ]
-              })(<Input placeholder="Username of your docker registry" />)}
+                ]}>
+              (<Input placeholder="Username of your docker registry" />)
             </Form.Item>
             <p>Docker Password</p>
-            <Form.Item>
-              {getFieldDecorator("data.password", {
-                rules: [
+            <Form.Item name="data.password" rules={[
                   {
                     required: true,
                     message: "Please input your docker password"
                   }
-                ]
-              })(<Input.Password type="password" placeholder="Password of your docker registry" />)}
+                ]}>
+              (<Input.Password type="password" placeholder="Password of your docker registry" />)
             </Form.Item>
             <p>Docker Registry URL</p>
-            <Form.Item>
-              {getFieldDecorator("data.url", {
-                rules: [
+            <Form.Item name="data.url" rules={[
                   {
                     required: true,
                     message: "Please input your docker registry url"
                   }
-                ]
-              })(
+                ]}>
+              (
                 <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />
-              )}
+              )
             </Form.Item>
           </React.Fragment>
         )}
         {secretType === "file" && (
           <React.Fragment>
             <p>Name your secret</p>
-            <Form.Item>
-              {getFieldDecorator("id", {
-                rules: [
+            <Form.Item name="id" rules={[
                   { required: true, message: "Please input a secret name" }
-                ]
-              })(<Input placeholder="Example: DB Secret" />)}
+                ]}>
+              (<Input placeholder="Example: DB Secret" />)
             </Form.Item>
             <p>Root path</p>
-            <Form.Item>
-              {getFieldDecorator("rootPath", {
-                rules: [
+            <Form.Item name="rootPath" rules={[
                   {
                     required: true,
                     message: "Please input a root path"
                   }
-                ]
-              })(
+                ]}>
+              (
                 <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
-              )}
+              )
             </Form.Item>
             <p>Files</p>
             <Form.Item>{formItemsFile}</Form.Item>
@@ -327,6 +298,4 @@ const AddSecret = props => {
   );
 };
 
-const WrappedRuleForm = Form.create({})(AddSecret);
-
-export default WrappedRuleForm;
+export default AddSecret;

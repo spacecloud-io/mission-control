@@ -1,24 +1,20 @@
 import React from "react";
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input } from "antd";
+import { Modal, Input, Form } from "antd";
 import "./add-secret.css";
 
 const UpdateDockerSecret = props => {
-  const { getFieldDecorator } = props.form;
-  const { initialValue } = props;
+  // const { getFieldDecorator } = props.form;
+  // const { initialValue } = props;
+  const [form] = Form.useForm();
 
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        props
-          .handleSubmit(Object.assign({}, values, { type: "docker" }))
-          .then(() => {
-            props.handleCancel();
-            props.form.resetFields();
-          });
-      }
+    form.validateFields().then(values => {
+      props
+        .handleSubmit(Object.assign({}, values, { type: "docker" }))
+        .then(() => {
+          props.handleCancel();
+          form.resetFields();
+        });
     });
   };
 
@@ -31,51 +27,41 @@ const UpdateDockerSecret = props => {
       onOk={handleSubmit}
       width="600px"
     >
-      <Form>
+      <Form form={form} initialValues={{ 'id': props.initialValue, }}>
         <p>Secret name</p>
-        <Form.Item>
-          {getFieldDecorator(`id`, {
-            initialValue: initialValue
-          })(<Input disabled={true} />)}
+        <Form.Item name="id">
+          (<Input disabled={true} />)
         </Form.Item>
         <p>Docker Username</p>
-        <Form.Item>
-          {getFieldDecorator(`data.username`, {
-            rules: [
+        <Form.Item name="data.username" rules={[
               {
                 required: true,
                 message: `Please input your docker username`
               }
-            ]
-          })(<Input placeholder="Username of your docker registry" />)}
+            ]}>
+          (<Input placeholder="Username of your docker registry" />)
         </Form.Item>
         <p>Docker Password</p>
-        <Form.Item>
-          {getFieldDecorator(`data.password`, {
-            rules: [
+        <Form.Item name="data.password" rules={[
               {
                 required: true,
                 message: `Please input your docker password`
               }
-            ]
-          })(<Input.Password type="password" placeholder="Password of your docker registry" />)}
+            ]}>
+          (<Input.Password type="password" placeholder="Password of your docker registry" />)
         </Form.Item>
         <p>Docker Registry URL</p>
-        <Form.Item>
-          {getFieldDecorator(`data.url`, {
-            rules: [
+        <Form.Item name="data.url" rules={[
               {
                 required: true,
                 message: `Please input your docker registry url`
               }
-            ]
-          })(<Input placeholder="https://foo.bar.com/my-private-registry" />)}
+            ]}>
+          (<Input placeholder="https://foo.bar.com/my-private-registry" />)
         </Form.Item>
       </Form>
     </Modal>
   );
 };
 
-const WrappedRuleForm = Form.create({})(UpdateDockerSecret);
-
-export default WrappedRuleForm;
+export default UpdateDockerSecret;
