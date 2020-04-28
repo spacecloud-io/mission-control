@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useHistory, Link } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils'
-import { Button, Icon, Select, Menu, Popover, Row, Col, Divider, Avatar } from 'antd';
+import { Button, Icon, Select, Menu, Popover, Row, Col, Divider, Avatar, Modal } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -12,7 +12,7 @@ import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
-
+import SigninCard from '../../components/signup/signin-card/SigninCard';
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import avatarSvg from '../../assets/avatar.svg';
@@ -22,6 +22,7 @@ const Topbar = (props) => {
   const { projectID, selectedDB } = useParams()
   const [modalVisible, setModalVisible] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
   const projects = useSelector(state => state.projects)
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
@@ -54,15 +55,20 @@ const Topbar = (props) => {
       history.push('/mission-control/signin');  
   } 
 
+  const login = false;
   const avatarContent = (
-    <Row className="popContent">
+    <Row>
       <Col lg={{ span:5 }}>
-        <img src={avatarSvg} /> 
+        {login === "true" &&  <img src={avatarSvg} /> }
       </Col>
       <Col lg={{ span:16, offset:2 }}>
-        <h4>{localStorage.getItem('name')}</h4>
+      {login && <div><h4>{localStorage.getItem('name')}</h4>
         <p>{localStorage.getItem('email')}</p>
         <Button type="primary" onClick={handleLogout}>Logout</Button>
+        </div>}
+      </Col>
+      <Col lg={{ span:24, offset:0 }}>
+        {!login && <SigninCard />}
       </Col>
     </Row>
   );
@@ -110,11 +116,11 @@ const Topbar = (props) => {
               </Popover>
             </Menu.Item>
             {enterpriseMode && <Divider type="vertical" style={{height:"40px"}}/>}
-            {enterpriseMode && <Menu.Item>
-              <Popover content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }}>
+            <Menu.Item>
+              <Popover className="signin-popover" content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }} >
                 <img src={avatarSvg} />
               </Popover>
-            </Menu.Item>}
+            </Menu.Item>
           </Menu>
         </div>
       </div>

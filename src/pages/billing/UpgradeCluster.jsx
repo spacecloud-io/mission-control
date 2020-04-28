@@ -6,6 +6,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { Button, Icon, Steps, Col, Row } from 'antd';
 import SigninCard from '../../components/signup/signin-card/SigninCard';
 import AddBillingDetail from '../../components/billing/upgrade/AddBillingDetail';
+import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import {loadStripe} from '@stripe/stripe-js';
 import store from '../../store';
 import client from '../../client';
@@ -44,11 +45,15 @@ const UpgradeCluster = () => {
     const steps = [{
         title: 'Create account',
         content: <React.Fragment>
-            <SigninCard 
-                handleGoogle={()=> setCurrent(current + 1)}
-                handleTwitter={()=> setCurrent(current + 1)}
-                handleGithub={()=> setCurrent(current + 1)}
-             />
+            <Row>
+                <Col xl={{ span: 10, offset:7 }} lg={{ span: 18, offset: 3}}>
+                    <SigninCard 
+                        handleGoogle={()=> setCurrent(current + 1)}
+                        handleTwitter={()=> setCurrent(current + 1)}
+                        handleGithub={()=> setCurrent(current + 1)}
+                    />
+              </Col>
+            </Row>
         </React.Fragment>
     },
     {
@@ -57,13 +62,14 @@ const UpgradeCluster = () => {
             <AddBillingDetail 
                 stripePromise={stripePromise} 
                 handleStripePaymentMethod={handleStripePaymentMethod}
+                saveBillingDetails={()=> setCurrent(current + 1)}
             />
         </React.Fragment>
     },
     {
         title: 'Register cluster',
         content: <React.Fragment>
-            <SigninCard />
+            <RegisterCluster />
         </React.Fragment>
     }]
 
@@ -92,7 +98,7 @@ const UpgradeCluster = () => {
                     </div><br />
                     <div>
                     <Row>
-                        <Col lg={{ span: 12, offset: 6 }} xs={{ span: 24 }} >
+                        <Col xl={{ span: 14, offset: 5 }} lg={{ span: 20, offset: 2}} xs={{ span: 24 }} >
                             <Steps current={current} className="upgrade-steps" size="small">
                             {steps.map(item => (
                                 <Step key={item.title} title={item.title} />

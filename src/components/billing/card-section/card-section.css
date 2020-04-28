@@ -12,6 +12,10 @@
     transition: box-shadow 150ms ease;
   }
   
+  .StripeElement:hover {
+    border: 1px solid #ff6700;
+  }
+  
   .StripeElement--focus {
     box-shadow: 0 1px 3px 0 #cfd7df;
     border: 1px solid #ff6700;

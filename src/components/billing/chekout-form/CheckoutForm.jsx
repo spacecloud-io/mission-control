@@ -56,7 +56,7 @@ const CheckoutForm = (props) => {
               <Input placeholder="Street" />
           )}
         </Form.Item>
-        <Button type="primary" style={{ width:'100%', marginTop:'24px' }}>Save your Billing details</Button>
+        <Button type="primary" style={{ width:'100%', marginTop:'24px' }} onClick={props.saveBillingDetails}>Save your Billing details</Button>
       </Form>
     </div>
   );

@@ -7,12 +7,11 @@ import './signin-card.css';
 
 const SigninCard = (props) => {
     return (
-        <Row>
-            <Col lg={{ span: 8, offset:8 }}>
+        
                 <Card className="signin-card">
                     <p style={{ fontSize: '16px' }}>Continue with one of your favourite accounts</p>
                     <Row>
-                        <Col xs={{ span: 16, offset:4  }}>
+                        <Col xs={{ span: 18, offset:3  }}>
                             <Card className="vendor-card google" onClick={props.handleGoogle}>
                                 <img src={googleIcon} height="32px" width="32px"/>
                                 <span className="vendor-text">Sign in with Google</span>
@@ -20,7 +19,7 @@ const SigninCard = (props) => {
                         </Col>
                     </Row>
                     <Row>
-                        <Col xs={{ span: 16, offset:4  }}>
+                        <Col xs={{ span: 18, offset:3  }}>
                             <Card className="vendor-card twitter" onClick={props.handleTwitter}>
                                 <img src={twitterIcon} height="32px" width="32px"/>
                                 <span className="vendor-text">Sign in with Twitter</span>
@@ -28,7 +27,7 @@ const SigninCard = (props) => {
                         </Col>
                     </Row>
                     <Row>
-                        <Col xs={{ span: 16, offset:4  }}>
+                        <Col xs={{ span: 18, offset:3  }}>
                             <Card className="vendor-card github" onClick={props.handleGithub}>
                                 <img src={githubIcon} height="32px" width="32px"/>
                                 <span className="vendor-text">Sign in with Github</span>
@@ -36,8 +35,7 @@ const SigninCard = (props) => {
                         </Col>
                     </Row>
                 </Card>
-            </Col>
-        </Row>
+           
     );
 }
 
