@@ -414,6 +414,26 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   )
 }
 
+export const isBillingEnabled = () => {
+  return true
+}
+
+export const BillingRoute = ({ component: Component, ...rest }) => {
+  const billingEnabled = isBillingEnabled()
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        !billingEnabled ? (
+          <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
+        ) : (
+            <PrivateRoute {...props} component={Component}/>
+          )
+      }
+    />
+  )
+}
+
 export const getDBTypeFromAlias = (projectId, alias) => {
   const projects = get(store.getState(), "projects", [])
   return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)

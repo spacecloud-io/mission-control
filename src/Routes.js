@@ -1,6 +1,6 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute } from "./utils";
+import { PrivateRoute, BillingRoute } from "./utils";
 import history from "./history";
 
 import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
@@ -37,6 +37,7 @@ import Settings from "./pages/settings/Settings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
+import Billing from './pages/billing/Billing';
 import BillingOverview from './pages/billing/BillingOverview';
 import BillingInvoices from './pages/billing/BillingInvoices';
 import UpgradeCluster from './pages/billing/UpgradeCluster';
@@ -92,8 +93,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />

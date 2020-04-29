@@ -115,9 +115,9 @@ const Sidenav = (props) => {
           {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link> */}
-          {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
+          <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
             <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link>}
+          </Link>
         </div>
         <div className="sidenav-version">
           <Icon type="info-circle" style={{ fontSize: "20px", fontWeight: "700" }} />

@@ -2,39 +2,43 @@ import React, { useEffect, useState } from 'react'
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
-import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
-import PlanDetails from '../../components/billing/plan/PlanDetails';
-import BillingDetails from '../../components/billing/billing-details/BillingDetails';
+import SelectPlan from '../../components/billing/select-plan/SelectPlan';
+import FAQ from '../../components/billing/faq/FAQ';
 import { Row, Col } from 'antd';
-import Support from '../../components/billing/support/Support';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import client from '../../client';
 import { notify } from '../../utils';
 import { increment, decrement } from 'automate-redux';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
 
-const BillingOverview = () => {
+const Billing = () => {
+
   useEffect(() => {
-    ReactGA.pageview("/projects/billing/overview");
+    ReactGA.pageview("/projects/billing");
+  }, [])
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/billing");
   }, [])
 
   const { projectID } = useParams();
-  // const subscribed = useSelector(state => state.billing.status)
-  const quotas = useSelector(state => state.quotas)
+  const history = useHistory();
   const [contactModalVisible, setContactModalVisible] = useState(false)
   const [defaultSubject, setDefaultSubject] = useState("")
   const dispatch = useDispatch();
 
-  const handleContactUsClick = () => {
+
+
+  const handleRequestFreeTrial = () => {
     setContactModalVisible(true);
-    setDefaultSubject("");
+    setDefaultSubject("Free trial for Space Cloud Pro");
   }
 
-  const handleIncreaseLimit = () => {
+  const handleDiscount = () => {
     setContactModalVisible(true);
-    setDefaultSubject("Increase Space Cloud Pro limits");
+    setDefaultSubject("Request discount for Space Cloud Pro");
   }
 
   const handleCancel = () => {
@@ -60,27 +64,17 @@ const BillingOverview = () => {
     <div>
       <Topbar showProjectSelector />
       <Sidenav selectedItem="billing" />
-      <div className='page-content page-content--no-padding'>
-        <BillingTabs activeKey="overview" projectID={projectID} />
-        <div className="billing-tab-content">
-          <Row>
-            <Col lg={{ span: 24 }}>
-              <Row>
-                <Col lg={{ span: 11 }}>
-                  <BillingDetails />
-                </Col>
-                <Col lg={{ span: 11, offset: 2 }}>
-                  <Support handleContactUs={handleContactUsClick} />
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-          <Row>
-            <Col lg={{ span: 11 }}>
-              <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas} />
-            </Col>
-          </Row>
-        </div>
+      <div className='page-content'>
+        <Row>
+          <Col lg={{ span: 24 }}>
+            <SelectPlan handleProPlan={() => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`)} />
+          </Col>
+        </Row>
+        <Row>
+          <Col lg={{ span: 18 }}>
+            <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />
+          </Col>
+        </Row>
         {contactModalVisible && <ContactUs
           initialvalues={defaultSubject}
           handleContactUs={handleContactUs}
@@ -90,4 +84,4 @@ const BillingOverview = () => {
   )
 }
 
-export default BillingOverview;
+export default Billing;

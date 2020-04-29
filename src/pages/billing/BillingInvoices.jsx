@@ -9,7 +9,7 @@ import './billing.css'
 
 const BillingInvoices = () => {
     useEffect(() => {
-		ReactGA.pageview("/projects/invoices");
+		ReactGA.pageview("/projects/billing/invoices");
     }, [])
 
     const { projectID } = useParams();
