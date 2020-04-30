@@ -5,6 +5,7 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^1.0.3",
     "@stripe/stripe-js": "^1.0.3",
+    "@use-it/event-listener": "^0.1.3",
     "antd": "^3.19.2",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",
@@ -13,7 +14,6 @@
     "codemirror-graphql": "^0.11.2",
     "customize-cra": "^0.2.13",
     "dot-prop-immutable": "^1.5.0",
-    "firebase": "^7.9.3",
     "graphiql": "^0.14.2",
     "graphql": "^14.5.4",
     "graphql-prettier": "^1.0.6",

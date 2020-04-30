@@ -3,19 +3,111 @@ class Billing {
     this.client = client
   }
 
-  setBillingSubscription(paymentMethodId) {
+  signIn(token) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/billing/basic-plan`, { paymentMethodId: paymentMethodId })
+      this.client.postJSON("/v1/login", { token })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
             return
           }
-          resolve(status)
+          if (!data.token) {
+            reject(new Error("Token not provided"))
+            return
+          }
+          resolve(data.token)
         })
         .catch(ex => reject(ex.toString()))
     })
   }
+
+  setBillingDetails(name, address, paymentMethodId, invoiceId) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON("/v1/billing/subscription/create", { name, address, paymentMethodId, invoiceId })
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+
+          const subscriptionId = data.id
+          const invoiceId = data.latest_invoice.id
+
+          if (data.status === "active" && data.latest_invoice.payment_intent.status === "succeeded") {
+            resolve(false)
+            return
+          }
+
+          if (data.latest_invoice.payment_intent.status === "requires_action") {
+            resolve(true, subscriptionId, invoiceId)
+            return
+          }
+
+          reject("Card rejected", subscriptionId, invoiceId)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  handle3DSecureSuccess(subscriptionId) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON("/v1/billing/subscription/create-failed", { subscriptionId })
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve()
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  registerCluster(clusterId, doesExist = false) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/register-cluster?doesExist=${doesExist}`, { clusterId })
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve()
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+
+  setPlan(clusterId, plan) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON("/v1/billing/subscription/update", { clusterId, plan })
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve()
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchBillingDetails() {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON("/v1/billing/details")
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          const { country, card_number, card_type, card_expiry_date, amount, invoices } = data
+          const result = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices }
+          resolve(result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
 
   contactUs(email, name, subject, msg) {
     return new Promise((resolve, reject) => {
@@ -32,19 +124,6 @@ class Billing {
     })
   }
 
-  getBillingInvoices() {
-    return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/billing/invoices`)
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            reject(data.error)
-            return
-          }
-          resolve(data)
-        })
-        .catch(ex => reject(ex.toString()))
-    })
-  }
 }
 
 export default Billing

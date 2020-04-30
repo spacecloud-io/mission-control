@@ -1,6 +1,6 @@
-const fetchJSON = (url, options) => {
-  if (process.env.NODE_ENV !== "production")  {
-    url = "http://localhost:4122" + url
+const fetchJSON = (origin, url, options) => {
+  if (origin) {
+    url = origin + url
   }
   return new Promise((resolve, reject) => {
     fetch(url, options).then(res => {
@@ -18,7 +18,8 @@ const fetchJSON = (url, options) => {
 
 
 class Client {
-  constructor() {
+  constructor(origin) {
+    this.origin = origin
     this.options = {
       credentials: "include",
       headers: {
@@ -32,18 +33,18 @@ class Client {
   }
 
   getJSON(url) {
-    return fetchJSON(url, Object.assign({}, this.options, { method: 'GET' }))
+    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'GET' }))
   }
 
   postJSON(url, obj) {
-    return fetchJSON(url, Object.assign({}, this.options, { method: 'POST', body: JSON.stringify(obj) }))
+    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'POST', body: JSON.stringify(obj) }))
   }
 
   delete(url) {
-    return fetchJSON(url, Object.assign({}, this.options, { method: 'DELETE' }))
+    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'DELETE' }))
   }
   putJSON(url, obj){
-    return fetchJSON(url, Object.assign({}, this.options, { method: 'PUT', body: JSON.stringify(obj) }))
+    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'PUT', body: JSON.stringify(obj) }))
   }
 }
 

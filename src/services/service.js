@@ -11,7 +11,6 @@ import Deployments from "./deployments"
 import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
-import firebaseConfig from './firebaseConfig'
 import Clusters from "./clusters"
 import Billing from "./billing";
 
@@ -19,17 +18,18 @@ import gql from 'graphql-tag';
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
-import * as firebase from "firebase/app";
-import "firebase/auth";
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
 const and = SpaceAPI.and
 
 class Service {
-  constructor() {
-    firebase.initializeApp(firebaseConfig);
-    this.client = new Client()
+  constructor(token, spaceUpToken) {
+    // Set Space Cloud Cluster origin if development mode
+    const spaceCloudClusterOrigin = process.env.NODE_ENV !== "production" ? "http://localhost:4122": undefined
+
+    this.client = new Client(spaceCloudClusterOrigin)
+    this.enterpriseClient = new Client("http://localhost:8000")
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
     this.eventing = new Eventing(this.client)
@@ -41,13 +41,17 @@ class Service {
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
     this.clusters = new Clusters(this.client)
-    this.billing = new Billing(this.client)
-    const token = localStorage.getItem("token")
+    this.billing = new Billing(this.enterpriseClient)
     if (token) this.client.setToken(token);
+    if (spaceUpToken) this.enterpriseClient.setToken(spaceUpToken);
   }
 
   setToken(token) {
     this.client.setToken(token)
+  }
+
+  setSpaceUpToken(token) {
+    this.enterpriseClient.setToken(token)
   }
 
   refreshToken(token) {

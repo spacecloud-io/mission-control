@@ -9,8 +9,6 @@ import store from "./store"
 import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
 import gql from 'graphql-tag';
 import gqlPrettier from 'graphql-prettier';
 import { format } from 'prettier-package-json';
@@ -196,11 +194,23 @@ export const openProject = (projectId) => {
   }
 }
 
+export const fetchBillingDetails = () => {
+  store.dispatch(increment("pendingRequests"))
+  client.billing.fetchBillingDetails().then(({ invoices, details }) => {
+    store.dispatch(set("billing", { status: true, details, invoices }))
+  })
+    .catch(ex => notify("error", "Error fetching billing details", ex))
+    .finally(() => store.dispatch(decrement("pendingRequests")))
+}
 
-export const fetchGlobalEntities = (token) => {
+export const fetchGlobalEntities = (token, spaceUpToken) => {
   // Save the new token value
   if (token) {
-    storeToken(token)
+    saveToken(token)
+  }
+
+  if (spaceUpToken) {
+    saveSpaceUpToken(spaceUpToken)
   }
 
   // Redirect if needed
@@ -236,36 +246,31 @@ export const fetchGlobalEntities = (token) => {
       .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
       .finally(() => store.dispatch(decrement("pendingRequests")))
 
-    store.dispatch(increment("pendingRequests"))
-    client.fetchQuotas()
-      .then(data => store.dispatch(set("quotas", data)))
-      .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
+    fetchBillingDetails()
   }
 }
 
-const storeEnv = (enterpriseMode, isProd, version) => {
-  enterpriseMode = (enterpriseMode === undefined || enterpriseMode === null) ? false : enterpriseMode
-  localStorage.setItem("enterprise", enterpriseMode.toString())
+const storeEnv = (isProd, version, clusterId, plan, quotas) => {
   localStorage.setItem("isProd", isProd.toString())
   store.dispatch(set("version", version))
+  store.dispatch(set("clusterId", clusterId))
+  store.dispatch(set("plan", plan))
+  store.dispatch(set("quotas", quotas))
 }
 
 const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
-const isEnterprise = () => localStorage.getItem("enterprise") === "true" ? true : false
-const isEmailVerified = () => localStorage.getItem("isEmailVerified") === "true" ? true : false
-const getToken = () => localStorage.getItem("token")
-export const getFirebaseToken = () => localStorage.getItem("firebase-token")
-export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
+export function getToken() {
+  localStorage.getItem("token")
+}
+export function getSpaceUpToken() {
+  localStorage.getItem("spaceUpToken")
+}
 
 const shouldFetchGlobalEntities = () => {
   const prodMode = isProdMode()
-  const enterprise = isEnterprise()
-  const emailVerified = isEmailVerified()
   const token = getToken()
 
   if (prodMode && !token) return false
-  if (enterprise && (!emailVerified || !token)) return false
   return true
 }
 
@@ -282,23 +287,30 @@ const getTokenClaims = (token) => {
   return claims
 }
 
-const storeToken = (token) => {
+const storeToken = (token) => localStorage.setItem("token", token)
+const storeSpaceUpToken = (token) => localStorage.setItem("spaceUpToken", token)
+const saveToken = (token) => {
+  // Save token to local storage and set the token on the API
+  storeToken(token)
+  client.setToken(token)
+}
+
+const saveSpaceUpToken = (token) => {
   // Get claims of the token
-  const { email, name, isEmailVerified } = getTokenClaims(token)
+  const { email, name } = getTokenClaims(token)
 
   // Save token claims to local storage
   localStorage.setItem("email", email)
   localStorage.setItem("name", name)
-  localStorage.setItem("isEmailVerified", isEmailVerified ? "true" : "false")
 
   // Save token to local storage and set the token on the API
-  localStorage.setItem("token", token)
-  client.setToken(token)
+  storeSpaceUpToken(token)
+  client.setSpaceUpToken(token)
 }
 
 const isCurrentRoutePublic = () => {
   const path = window.location.pathname.split("/")[2]
-  return (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler")
+  return (path === "login")
 }
 const shouldRedirect = () => {
   // Check if we are at a public route
@@ -306,18 +318,8 @@ const shouldRedirect = () => {
     return { redirect: false, redirectUrl: "" }
   }
 
-  const enterpriseMode = localStorage.getItem("enterprise") === "true"
   const productionMode = localStorage.getItem("isProd") === "true"
-  const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
-  const token = localStorage.getItem("token")
-
-  if (enterpriseMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/signin" }
-  }
-
-  if (enterpriseMode && !isEmailVerified) {
-    return { redirect: true, redirectUrl: "/mission-control/email-verification" }
-  }
+  const token = getToken()
 
   if (productionMode && !token) {
     return { redirect: true, redirectUrl: "/mission-control/login" }
@@ -343,33 +345,18 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
-export const handleInvoices = () => {
-  client.billing.getBillingInvoices().then(res => {
-    if (res.status) {
-      store.dispatch(set("billing", res))
-    }
-  }).catch(ex => console.log(ex))
-}
-
-export const fetchCluster = () => {
-  client.clusters.getClusters()
-    .then(clusters => {
-      store.dispatch(set(`clusters`, clusters))
-    })
-    .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
-}
-
 export const onAppLoad = () => {
-  client.fetchEnv().then(({ enterprise, isProd, version }) => {
+  client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
     // Store env
-    storeEnv(enterprise, isProd, version)
+    storeEnv(isProd, version, clusterId, plan, quotas)
 
     // Redirect if needed
     redirectIfNeeded()
 
-    const token = localStorage.getItem("token")
+    const token = getToken()
+    const spaceUpToken = getSpaceUpToken()
     if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, isProd, enterprise)).catch(ex => {
+      client.refreshToken(token).then(token => fetchGlobalEntities(token, spaceUpToken)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
         redirectIfNeeded()
@@ -377,20 +364,14 @@ export const onAppLoad = () => {
       return
     }
 
-    if (enterprise) {
-      fetchCluster()
-      handleInvoices()
-    }
-
-    fetchGlobalEntities(token, enterprise, isProd)
+    fetchGlobalEntities(token, spaceUpToken)
   })
 }
 
 export const enterpriseSignin = (token) => {
   return new Promise((resolve, reject) => {
-    storeFirebaseToken(token)
-    client.enterpriseSignin(token).then(newToken => {
-      fetchGlobalEntities(newToken, true, true)
+    client.billing.signIn(token).then(newToken => {
+      fetchGlobalEntities(newToken, getSpaceUpToken())
       resolve()
     }).catch((error) => {
       reject(error)
@@ -414,9 +395,7 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const isBillingEnabled = () => {
-  return true
-}
+export const isBillingEnabled = () => get(store.getState(), "billing.status", false)
 
 export const BillingRoute = ({ component: Component, ...rest }) => {
   const billingEnabled = isBillingEnabled()
@@ -427,7 +406,7 @@ export const BillingRoute = ({ component: Component, ...rest }) => {
         !billingEnabled ? (
           <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
         ) : (
-            <PrivateRoute {...props} component={Component}/>
+            <PrivateRoute {...props} component={Component} />
           )
       }
     />
