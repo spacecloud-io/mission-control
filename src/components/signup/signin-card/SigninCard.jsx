@@ -7,7 +7,6 @@ import './signin-card.css';
 import useEventListener from "@use-it/event-listener"
 
 const SigninCard = (props) => {
-  useEventListener("message", messageHandler)
   const messageHandler = (event) => {
     console.log("Event", event)
     if (event.origin !== "http://localhost:5000") {
@@ -17,6 +16,8 @@ const SigninCard = (props) => {
     props.handleSignin(event.data.token)
   }
 
+  useEventListener("message", messageHandler)
+  
   const openSigninPage = (provider) => {
     const signinPageURL = `http://localhost:5000/${provider}` 
     window.open(signinPageURL)
