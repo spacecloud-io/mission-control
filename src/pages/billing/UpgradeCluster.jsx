@@ -8,6 +8,7 @@ import SigninCard from '../../components/signup/signin-card/SigninCard';
 import AddBillingDetail from '../../components/billing/upgrade/AddBillingDetail';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import ExistingClusterName from '../../components/billing/upgrade/ExistingClusterName';
+import SubscriptionDetail from '../../components/billing/upgrade/SubscriptionDetail';
 import { loadStripe } from '@stripe/stripe-js';
 import store from '../../store';
 import client from '../../client';
@@ -73,6 +74,12 @@ const UpgradeCluster = () => {
     content: <React.Fragment>
       <RegisterCluster handleRegisterCluster={() => setClusterModalVisible(true)}  />
     </React.Fragment>
+  },
+  {
+    title: 'Start subscription',
+    content: <React.Fragment>
+      <SubscriptionDetail />
+    </React.Fragment>
   }]
 
   return (
@@ -115,7 +122,8 @@ const UpgradeCluster = () => {
       {clusterModalVisible && <ExistingClusterName 
       modalVisible={clusterModalVisible} 
       handleChangeName={() => setClusterModalVisible(false)}
-      handleContinueName={setCurrent(current + 1)}
+      handleContinueName={() => { setCurrent(current + 1)
+        setClusterModalVisible(false)}}
        /> }
     </React.Fragment>
   );

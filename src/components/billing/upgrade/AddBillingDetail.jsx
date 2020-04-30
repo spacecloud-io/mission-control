@@ -7,7 +7,7 @@ const AddBillingDetail = (props) => {
     return(
         <Row>
             <Col xl={{ span: 10, offset:7 }} lg={{ span: 18, offset: 3}}>
-                <Card style={{ padding:'48px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
+                <Card style={{ padding:'24px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
                     <Elements stripe={props.stripePromise}>
                         <CheckoutForm handleStripePayment={props.handleStripePaymentMethod}
                         saveBillingDetails={props.saveBillingDetails} />

@@ -45,7 +45,7 @@ const SelectPlan = (props) => {
             <Col lg={{ span:23 }}>
                 <Card className="select-plan-card" style={{ marginTop:"32px" }}>
                     <span style={{ fontSize:"14px", marginRight:"24px" }}>Want a customized plan to suit your needs? Don’t worry we have got you covered!</span>
-                    <Button type="primary" ghost style={{ width:"10%" }} onClick={props.handleContactUs}>Contact us</Button>
+                    <Button type="primary" ghost style={{ width:"188px" }} onClick={props.handleContactUs}>Contact us</Button>
                 </Card>
             </Col>
         </Row>
