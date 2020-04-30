@@ -6,6 +6,7 @@ import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import FAQ from '../../components/billing/faq/FAQ';
 import { Row, Col } from 'antd';
 import ContactUs from '../../components/billing/contact/ContactUs';
+import Signin from '../../components/billing/setup-card/Signin';
 import client from '../../client';
 import { notify } from '../../utils';
 import { increment, decrement } from 'automate-redux';
@@ -65,6 +66,11 @@ const Billing = () => {
       <Topbar showProjectSelector />
       <Sidenav selectedItem="billing" />
       <div className='page-content'>
+        <Row style={{marginBottom:"48px"}}>
+          <Col lg={{ span: 10 }}>
+            <Signin handleSignin={() => console.log("signin")} />
+          </Col>
+        </Row>
         <Row>
           <Col lg={{ span: 24 }}>
             <h3 style={{ marginBottom:"0", fontSize:"21px"}}>Upgrade cluster</h3>

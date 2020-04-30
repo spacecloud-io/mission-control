@@ -7,6 +7,7 @@ import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import { Row, Col } from 'antd';
 import Support from '../../components/billing/support/Support';
+import SetupBilling from '../../components/billing/setup-card/SetupBilling';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import client from '../../client';
 import { notify } from '../../utils';
@@ -64,14 +65,17 @@ const BillingOverview = () => {
         <BillingTabs activeKey="overview" projectID={projectID} />
         <div className="billing-tab-content">
           <Row>
+            <Col lg={{ span: 12 }}>
+              <SetupBilling handleSetupBilling={() => console.log("setup billing")} />
+            </Col>
             <Col lg={{ span: 24 }}>
               <Row>
-                <Col lg={{ span: 11 }}>
+                {/* <Col lg={{ span: 11 }}>
                   <BillingDetails />
                 </Col>
                 <Col lg={{ span: 11, offset: 2 }}>
                   <Support handleContactUs={handleContactUsClick} />
-                </Col>
+                </Col> */}
               </Row>
             </Col>
           </Row>
