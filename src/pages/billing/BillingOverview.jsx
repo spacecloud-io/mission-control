@@ -6,7 +6,7 @@ import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
 import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import { Row, Col } from 'antd';
-import Support from '../../components/billing/support/Support';
+import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
 import SetupBilling from '../../components/billing/setup-card/SetupBilling';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import client from '../../client';
@@ -70,12 +70,12 @@ const BillingOverview = () => {
             </Col>
             <Col lg={{ span: 24 }}>
               <Row>
-                {/* <Col lg={{ span: 11 }}>
+                <Col lg={{ span: 11 }}>
                   <BillingDetails />
                 </Col>
                 <Col lg={{ span: 11, offset: 2 }}>
-                  <Support handleContactUs={handleContactUsClick} />
-                </Col> */}
+                  <BalanceCredit />
+                </Col>
               </Row>
             </Col>
           </Row>

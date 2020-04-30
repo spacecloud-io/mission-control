@@ -4,7 +4,7 @@ import { Card, Row, Col } from 'antd';
 const BillingDetails = () => {
     return (
         <Card>
-            <h1>Billing details</h1>
+            <h1 style={{ textAlign:'center' }}>Billing details</h1>
             <Row>
                 <Col xs={{ span: 12 }}>
                     <p style={{ marginTop: '24px' }}><b>Name</b></p>
@@ -18,13 +18,9 @@ const BillingDetails = () => {
                     <p><b>Country</b></p>
                     <p style={{ marginBottom: '24px' }}>India</p>
                 </Col>
-                <Col xs={{ span: 12 }}>
-                    <p><b>Card details</b></p>
-                    <p style={{ marginBottom: '24px' }}>Visa card ending in 4172. valid till 08/25</p>
-                </Col>
                 <Col xs={{ span: 24 }}>
-                    <p><b>Balance credits</b></p>
-                    <p style={{ fontSize:'24px', color:'#34A853' }}>$15</p>
+                    <p><b>Card details</b></p>
+                    <p>Visa card ending in 4172. valid till 08/25</p>
                 </Col>
             </Row>
         </Card>
