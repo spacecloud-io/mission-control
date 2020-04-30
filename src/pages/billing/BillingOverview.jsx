@@ -7,7 +7,6 @@ import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import { Row, Col } from 'antd';
 import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
-import SetupBilling from '../../components/billing/setup-card/SetupBilling';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import client from '../../client';
 import { notify } from '../../utils';
@@ -22,16 +21,10 @@ const BillingOverview = () => {
   }, [])
 
   const { projectID } = useParams();
-  // const subscribed = useSelector(state => state.billing.status)
   const quotas = useSelector(state => state.quotas)
   const [contactModalVisible, setContactModalVisible] = useState(false)
   const [defaultSubject, setDefaultSubject] = useState("")
   const dispatch = useDispatch();
-
-  const handleContactUsClick = () => {
-    setContactModalVisible(true);
-    setDefaultSubject("");
-  }
 
   const handleIncreaseLimit = () => {
     setContactModalVisible(true);
@@ -65,18 +58,11 @@ const BillingOverview = () => {
         <BillingTabs activeKey="overview" projectID={projectID} />
         <div className="billing-tab-content">
           <Row>
-            <Col lg={{ span: 12 }}>
-              <SetupBilling handleSetupBilling={() => console.log("setup billing")} />
+            <Col lg={{ span: 11 }}>
+              <BillingDetails />
             </Col>
-            <Col lg={{ span: 24 }}>
-              <Row>
-                <Col lg={{ span: 11 }}>
-                  <BillingDetails />
-                </Col>
-                <Col lg={{ span: 11, offset: 2 }}>
-                  <BalanceCredit />
-                </Col>
-              </Row>
+            <Col lg={{ span: 11, offset: 2 }}>
+              <BalanceCredit />
             </Col>
           </Row>
           <Row>

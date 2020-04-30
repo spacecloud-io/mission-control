@@ -14,8 +14,8 @@ const SelectPlan = (props) => {
                     <span>1 Project</span><br />
                     <span>1 Database</span><br />
                     <span>Community support</span><br />
-                    {props.selectedPlan === "opensource" && <Button className="select-plan-button selected-button">Current plan</Button>}
-                    {props.selectedPlan !== "opensource" && <Button className="select-plan-button green-button" onClick={props.handleChangePlan}>Use this plan</Button>}
+                    {props.selectedPlan === "open" && <Button className="select-plan-button selected-button">Current plan</Button>}
+                    {props.selectedPlan !== "open" && <Button className="select-plan-button green-button" onClick={props.handleChangePlan}>Use this plan</Button>}
                 </Card>
             </Col>
             <Col lg={{ span: 7, offset:1 }}>

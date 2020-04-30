@@ -7,10 +7,11 @@ import FAQ from '../../components/billing/faq/FAQ';
 import { Row, Col } from 'antd';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import Signin from '../../components/billing/setup-card/Signin';
+import SetupBilling from '../../components/billing/setup-card/SetupBilling';
 import client from '../../client';
-import { notify } from '../../utils';
+import { notify, isSignedIn } from '../../utils';
 import { increment, decrement } from 'automate-redux';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
 
@@ -20,17 +21,13 @@ const Billing = () => {
     ReactGA.pageview("/projects/billing");
   }, [])
 
-  useEffect(() => {
-    ReactGA.pageview("/projects/billing");
-  }, [])
-
   const { projectID } = useParams();
   const history = useHistory();
   const [contactModalVisible, setContactModalVisible] = useState(false)
   const [defaultSubject, setDefaultSubject] = useState("")
+  const signedIn = isSignedIn()
+  const selectedPlan = useSelector(state => state.plan)
   const dispatch = useDispatch();
-
-
 
   const handleRequestFreeTrial = () => {
     setContactModalVisible(true);
@@ -66,16 +63,17 @@ const Billing = () => {
       <Topbar showProjectSelector />
       <Sidenav selectedItem="billing" />
       <div className='page-content'>
-        <Row style={{marginBottom:"48px"}}>
-          <Col lg={{ span: 10 }}>
-            <Signin handleSignin={() => console.log("signin")} />
+        <Row style={{ marginBottom: "48px" }}>
+          <Col lg={{ span: 12 }}>
+            {signedIn && <SetupBilling handleSetupBilling={() => console.log("setup billing")} />}
+            {!signedIn && <Signin handleSignin={() => console.log("signin")} />}
           </Col>
         </Row>
         <Row>
           <Col lg={{ span: 24 }}>
-            <h3 style={{ marginBottom:"0", fontSize:"21px"}}>Upgrade cluster</h3>
-            <p style={{ marginBottom:"24px"}}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
-            <SelectPlan selectedPlan="team" handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`)} />
+            <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Upgrade cluster</h3>
+            <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
+            <SelectPlan selectedPlan={selectedPlan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`)} />
           </Col>
         </Row>
         <Row>

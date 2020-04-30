@@ -20,7 +20,7 @@ const initialState = {
 	eventLogs: [],
 	credentials: {},
 	quotas: {},
-	plam: "open",
+	plan: "open",
 	billing: {
 		status: false,
 		details: {},

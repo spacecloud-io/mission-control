@@ -250,23 +250,7 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
   }
 }
 
-const storeEnv = (isProd, version, clusterId, plan, quotas) => {
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("version", version))
-  store.dispatch(set("clusterId", clusterId))
-  store.dispatch(set("plan", plan))
-  store.dispatch(set("quotas", quotas))
-}
-
-const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
-export function getToken() {
-  localStorage.getItem("token")
-}
-export function getSpaceUpToken() {
-  localStorage.getItem("spaceUpToken")
-}
-
-const shouldFetchGlobalEntities = () => {
+function shouldFetchGlobalEntities() {
   const prodMode = isProdMode()
   const token = getToken()
 
@@ -274,7 +258,7 @@ const shouldFetchGlobalEntities = () => {
   return true
 }
 
-const getTokenClaims = (token) => {
+function getTokenClaims(token) {
   const temp = token.split(".")
   const decoded = atob(temp[1])
   let claims = {}
@@ -287,15 +271,40 @@ const getTokenClaims = (token) => {
   return claims
 }
 
-const storeToken = (token) => localStorage.setItem("token", token)
-const storeSpaceUpToken = (token) => localStorage.setItem("spaceUpToken", token)
-const saveToken = (token) => {
-  // Save token to local storage and set the token on the API
+export function isProdMode() {
+  return localStorage.getItem("isProd") === "true" ? true : false
+}
+
+export function isBillingEnabled(state) {
+  return get(state, "billing.status", false)
+}
+
+export function isSignedIn() {
+  const spaceUpToken = getSpaceUpToken()
+  return spaceUpToken ? true : false
+}
+
+export function getToken() {
+  return localStorage.getItem("token")
+}
+export function getSpaceUpToken() {
+  return localStorage.getItem("spaceUpToken")
+}
+
+function storeToken(token) {
+  localStorage.setItem("token", token)
+}
+
+function storeSpaceUpToken(token) {
+  localStorage.setItem("spaceUpToken", token)
+}
+
+function saveToken(token) {
   storeToken(token)
   client.setToken(token)
 }
 
-const saveSpaceUpToken = (token) => {
+function saveSpaceUpToken(token) {
   // Get claims of the token
   const { email, name } = getTokenClaims(token)
 
@@ -308,11 +317,20 @@ const saveSpaceUpToken = (token) => {
   client.setSpaceUpToken(token)
 }
 
-const isCurrentRoutePublic = () => {
+function saveEnv(isProd, version, clusterId, plan, quotas) {
+  localStorage.setItem("isProd", isProd.toString())
+  store.dispatch(set("version", version))
+  store.dispatch(set("clusterId", clusterId))
+  store.dispatch(set("plan", plan))
+  store.dispatch(set("quotas", quotas))
+}
+
+function isCurrentRoutePublic() {
   const path = window.location.pathname.split("/")[2]
   return (path === "login")
 }
-const shouldRedirect = () => {
+
+function shouldRedirect() {
   // Check if we are at a public route
   if (isCurrentRoutePublic()) {
     return { redirect: false, redirectUrl: "" }
@@ -328,7 +346,7 @@ const shouldRedirect = () => {
   return { redirect: false, redirectUrl: "" }
 }
 
-const redirectIfNeeded = () => {
+function redirectIfNeeded() {
   const { redirect, redirectUrl } = shouldRedirect()
   if (redirect) {
     history.push(redirectUrl)
@@ -348,7 +366,7 @@ const getProjectToBeOpened = () => {
 export const onAppLoad = () => {
   client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
     // Store env
-    storeEnv(isProd, version, clusterId, plan, quotas)
+    saveEnv(isProd, version, clusterId, plan, quotas)
 
     // Redirect if needed
     redirectIfNeeded()
@@ -395,7 +413,6 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const isBillingEnabled = () => get(store.getState(), "billing.status", false)
 
 export const BillingRoute = ({ component: Component, ...rest }) => {
   const billingEnabled = isBillingEnabled()
