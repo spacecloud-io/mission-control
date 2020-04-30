@@ -1,16 +1,11 @@
-import React, {useState} from 'react';
-import { Row, Col, Card, Form, Input, Button, Alert, Modal, Icon } from 'antd';
+import React from 'react';
+import { Row, Col, Card, Form, Input, Button } from 'antd';
 import './register-cluster.css';
 
 const RegisterCluster = (props) => {
 
     const { getFieldDecorator } = props.form;
-    const [modalVisisble, setModalVisible] = useState(false)
-    const alertMsg = <div>
-         You have already registered a cluster with the Testing Cluster name in the past. <br /><br/>
-Continuing with this name for this cluster will cause any previously running cluster with the same name to be switched back to the open source plan.
-        </div>
-
+    
     return(
         <Row className="register-cluster">
             <Col xl={{ span: 10, offset:7 }} lg={{ span: 18, offset: 3}}>
@@ -25,25 +20,9 @@ Continuing with this name for this cluster will cause any previously running clu
                                 <Input placeholder="e.g. Testing Cluster" />
                             )}
                         </Form.Item>
-                        <Button type="primary" style={{ width:'100%', marginTop:'24px' }} onClick={() => setModalVisible(true)}>Start subscription</Button>
+                        <Button type="primary" style={{ width:'100%', marginTop:'24px' }} onClick={props.handleRegisterCluster}>Register cluster</Button>
                     </Form> 
                 </Card>
-                <Modal 
-                    visible={modalVisisble} 
-                    cancelText="Change name" 
-                    okText="Continue with the name"
-                    onOk={()=> setModalVisible(false)}
-                    onCancel={()=> setModalVisible(false)}
-                    className="cluster-name-modal"
-                    style={{ padding: "32px 28px 0px 28px" }}>
-                        <Icon type="info-circle" style={{fontSize:"24px", color: '#F9AE3A' }} /> 
-                        <span style={{ fontSize:'16px', marginLeft:'16px'  }}>Cluster name already in use</span><br />
-                        <Alert 
-                            message=" " 
-                            description={alertMsg} 
-                            type="warning" 
-                            style={{ marginLeft:'40px', marginTop:'12px'  }} />
-                </Modal>
             </Col>
         </Row>
     );

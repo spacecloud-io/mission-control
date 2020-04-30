@@ -41,6 +41,7 @@ import Billing from './pages/billing/Billing';
 import BillingOverview from './pages/billing/BillingOverview';
 import BillingInvoices from './pages/billing/BillingInvoices';
 import UpgradeCluster from './pages/billing/UpgradeCluster';
+import ChangePlan from './pages/billing/ChangePlan';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 import Clusters from './pages/clusters/Clusters'
@@ -97,6 +98,7 @@ export default () => {
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
       </Switch>

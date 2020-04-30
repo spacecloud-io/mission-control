@@ -7,10 +7,6 @@
     border-radius: 10px;
 }
 
-.select-plan .selected{
-    border: 1px solid #34A853;
-}
-
 .select-plan .select-plan-button{
     width: 80%;
     margin-top: 15%;
@@ -55,6 +51,18 @@
     color: #8761C4;
 }
 
+.select-plan .green-card{
+    border: 1px solid #34A853;
+}
+
+.select-plan .blue-card{
+    border: 1px solid #40A9FF;
+}
+
+.select-plan .purple-card{
+    border: 1px solid #8761C4;
+}
+
 .select-plan .blue-button{
     background-color: #40A9FF;
     color: #ffffff;
@@ -62,7 +70,13 @@
 }
 
 .select-plan .purple-button{
-    background-color: #ffffff;
-    color: #8761C4;
+    background-color: #8761C4;
+    color: #ffffff;
     border-color: #8761C4;
+}
+
+.select-plan .green-button{
+    background-color: #34A853;
+    color: #ffffff;
+    border-color: #34A853;
 }
