@@ -12,7 +12,7 @@ import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
-import SigninCard from '../../components/signup/signin-card/SigninCard';
+import SigninModal from '../../components/signup/signin-modal/SigninModal';
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import avatarSvg from '../../assets/avatar.svg';
@@ -22,7 +22,7 @@ const Topbar = (props) => {
   const { projectID, selectedDB } = useParams()
   const [modalVisible, setModalVisible] = useState(false)
   const [visible, setVisible] = useState(false)
-  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [signinModalVisible, setSigninModalVisible] = useState(false);
   const projects = useSelector(state => state.projects)
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
@@ -68,7 +68,10 @@ const Topbar = (props) => {
         </div>}
       </Col>
       <Col lg={{ span:24, offset:0 }}>
-        {!login && <SigninCard />}
+        {!login && <div style={{ padding:"32px" }}>
+          <p>You are not logged in</p>
+          <Button type="primary" onClick={() => setSigninModalVisible(true)}>Login</Button>
+          </div>}
       </Col>
     </Row>
   );
@@ -122,6 +125,7 @@ const Topbar = (props) => {
               </Popover>
             </Menu.Item>
           </Menu>
+          {signinModalVisible && <SigninModal handleCancel={() => setSigninModalVisible(false)}/>}
         </div>
       </div>
     </div>
