@@ -400,6 +400,15 @@ export function enterpriseSignin(token) {
   })
 }
 
+export function registerCluster(clusterId, doesExist = false) {
+  return new Promise((resolve, reject) => {
+    client.billing.registerCluster(clusterId, doesExist)
+      .then(() => {
+        resolve()
+        // TODO: Notify space cloud cluster about cluster identity and set the cluster id in redux
+      }).catch(ex => reject(ex))
+  })
+}
 export const PrivateRoute = ({ component: Component, ...rest }) => {
   const { redirect, redirectUrl } = shouldRedirect()
   return (

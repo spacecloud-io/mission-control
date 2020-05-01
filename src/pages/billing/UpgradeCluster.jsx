@@ -32,7 +32,7 @@ const UpgradeCluster = () => {
   const clusterId = useSelector(state => state.clusterId)
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
-  const [current, setCurrent] = useState(initialStep);
+  const [current, setCurrent] = useState(2);
   const [clusterModalVisible, setClusterModalVisible] = useState(false)
   const { Step } = Steps;
 

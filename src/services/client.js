@@ -1,4 +1,9 @@
-const fetchJSON = (origin, url, options) => {
+import { ApolloClient } from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
+import { setContext } from 'apollo-link-context';
+
+function fetchJSON(origin, url, options) {
   if (origin) {
     url = origin + url
   }
@@ -48,4 +53,46 @@ class Client {
   }
 }
 
-export default Client
+export function createRESTClient(origin) {
+  return new Client(origin)
+}
+
+
+export function createGraphQLClient(uri, getToken) {
+  // Create an http link for GraphQL client:
+  const httpLink = new HttpLink({
+    uri: uri
+  });
+
+  const httpAuthLink = setContext((_, { headers }) => {
+    // get the authentication token from local storage if it exists
+    const token = getToken ? getToken(): undefined
+    // return the headers to the context so httpLink can read them
+    return {
+      headers: {
+        ...headers,
+        Authorization: token ? `Bearer ${token}` : ""
+      }
+    }
+  });
+
+  const defaultOptions = {
+    watchQuery: {
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'ignore'
+    },
+    query: {
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'all'
+    }
+  }
+
+  // Create a GraphQL client:
+  const graphQLClient = new ApolloClient({
+    cache: new InMemoryCache({ addTypename: false }),
+    link: httpAuthLink.concat(httpLink),
+    defaultOptions: defaultOptions
+  });
+
+  return graphQLClient
+}

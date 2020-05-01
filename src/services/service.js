@@ -1,4 +1,4 @@
-import Client from "./client";
+import { createRESTClient, createGraphQLClient } from "./client";
 import SpaceAPI from 'space-api';
 
 import Database from "./database"
@@ -15,9 +15,9 @@ import Clusters from "./clusters"
 import Billing from "./billing";
 
 import gql from 'graphql-tag';
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { HttpLink } from 'apollo-link-http';
+
+import { spaceCloudClusterOrigin, enterpriseServerGraphQLURL } from "../constants"
+import { getSpaceUpToken } from "../utils"
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -25,11 +25,8 @@ const and = SpaceAPI.and
 
 class Service {
   constructor(token, spaceUpToken) {
-    // Set Space Cloud Cluster origin if development mode
-    const spaceCloudClusterOrigin = process.env.NODE_ENV !== "production" ? "http://localhost:4122": undefined
-
-    this.client = new Client(spaceCloudClusterOrigin)
-    this.enterpriseClient = new Client("http://localhost:8000")
+    this.client = createRESTClient(spaceCloudClusterOrigin)
+    this.enterpriseClient = createGraphQLClient(enterpriseServerGraphQLURL, getSpaceUpToken)
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
     this.eventing = new Eventing(this.client)
@@ -152,17 +149,12 @@ class Service {
   }
 
   execGraphQLQuery(projectId, graphqlQuery, variables, token) {
+    let uri = `/v1/api/${projectId}/graphql`
+    if (spaceCloudClusterOrigin) {
+      uri = "http://localhost:4122" + uri;
+    }
+    const client = createGraphQLClient(uri, () => token)
     return new Promise((resolve, reject) => {
-      let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.NODE_ENV !== "production") {
-        uri = "http://localhost:4122" + uri;
-      }
-      const cache = new InMemoryCache({ addTypename: false });
-      const link = new HttpLink({ uri: uri, headers: { "Authorization": `Bearer ${token}` } });
-      const client = new ApolloClient({
-        cache: cache,
-        link: link
-      });
       if (graphqlQuery.includes("mutation")) {
         client.mutate({
           mutation: gql`${graphqlQuery}`,
