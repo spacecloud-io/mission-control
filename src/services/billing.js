@@ -102,17 +102,18 @@ class Billing {
           register_cluster(clusterId: $clusterId, doesExist: $doesExist) {
             status
             error
+            key
           }
         }`,
         variables: { clusterId, doesExist }
       })
         .then(result => {
-          const { status, error } = result.data.login
+          const { status, key } = result.data.login
           if (status !== 200) {
-            reject(error)
+            resolve(false)
             return
           }
-          resolve()
+          resolve(true, key)
         })
         .catch(ex => reject(ex))
     })
@@ -201,7 +202,6 @@ class Billing {
         .catch(ex => reject(ex))
     })
   }
-
 }
 
 export default Billing

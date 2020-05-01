@@ -16,11 +16,14 @@ const initialState = {
 			showDate: false
 		}
 	},
-	clusters: [],
 	eventLogs: [],
 	credentials: {},
-	quotas: {},
-	plan: "open",
+	env: {
+		version: "",
+		clusterId: null,
+		plan: "open",
+		quotas: { maxDatabases: 1, maxProjects: 1 }
+	},
 	billing: {
 		status: false,
 		details: {},

@@ -289,12 +289,17 @@ export function isSignedIn() {
   return spaceUpToken ? true : false
 }
 
+export function getClusterId(state) {
+  return get(state, "env.clusterId", undefined)
+}
+
 export function getToken() {
   return localStorage.getItem("token")
 }
 export function getSpaceUpToken() {
   return localStorage.getItem("spaceUpToken")
 }
+
 
 function storeToken(token) {
   localStorage.setItem("token", token)
@@ -324,10 +329,7 @@ function saveSpaceUpToken(token) {
 
 function saveEnv(isProd, version, clusterId, plan, quotas) {
   localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("version", version))
-  store.dispatch(set("clusterId", clusterId))
-  store.dispatch(set("plan", plan))
-  store.dispatch(set("quotas", quotas))
+  store.dispatch(set("env", { version, clusterId, plan, quotas }))
 }
 
 function isCurrentRoutePublic() {
@@ -402,13 +404,43 @@ export function enterpriseSignin(token) {
 
 export function registerCluster(clusterId, doesExist = false) {
   return new Promise((resolve, reject) => {
+    const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
+    if (isClusterIdAlreadySet) {
+      reject(new Error("This space cloud cluster is already registered"))
+      return
+    }
+
     client.billing.registerCluster(clusterId, doesExist)
-      .then(() => {
-        resolve()
-        // TODO: Notify space cloud cluster about cluster identity and set the cluster id in redux
-      }).catch(ex => reject(ex))
+      .then((registered, key) => {
+        if (!registered) {
+          resolve(false)
+          return
+        }
+
+        client.setClusterIdentity(clusterId, key)
+          .then(() => {
+            resolve(true, true)
+            store.dispatch(set("env.clusterId", clusterId))
+          })
+          .catch(ex => resolve(true, false, ex))
+      })
+      .catch(ex => reject(ex))
   })
 }
+
+export function setClusterPlan(plan) {
+  return new Promise((resolve, reject) => {
+    const clusterId = getClusterId(store.getState())
+    client.billing.setPlan(clusterId, plan)
+      .then(() => {
+        client.renewClusterLicense()
+          .then(() => resolve())
+          .catch(ex => reject(ex))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const PrivateRoute = ({ component: Component, ...rest }) => {
   const { redirect, redirectUrl } = shouldRedirect()
   return (

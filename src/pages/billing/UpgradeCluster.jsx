@@ -7,11 +7,10 @@ import { Button, Icon, Steps, Col, Row } from 'antd';
 import SigninCard from '../../components/signup/signin-card/SigninCard';
 import AddBillingDetails from '../../components/billing/add-billing-details/AddBillingDetails';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
-import ExistingClusterName from '../../components/billing/upgrade/ExistingClusterName';
+import ConflictedClusterIdModal from '../../components/billing/upgrade/ConflictedClusterIdModal';
 import SubscriptionDetail from '../../components/billing/upgrade/SubscriptionDetail';
 import { loadStripe } from '@stripe/stripe-js';
-import store from '../../store';
-import { notify, isSignedIn, isBillingEnabled, enterpriseSignin } from '../../utils';
+import { notify, isSignedIn, isBillingEnabled, enterpriseSignin, getClusterId, registerCluster } from '../../utils';
 import { set, increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -29,24 +28,44 @@ const UpgradeCluster = () => {
   const dispatch = useDispatch();
   const signedIn = isSignedIn()
   const billingEnabled = useSelector(state => isBillingEnabled(state))
-  const clusterId = useSelector(state => state.clusterId)
+  const clusterId = useSelector(state => getClusterId(state))
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
   const [current, setCurrent] = useState(2);
-  const [clusterModalVisible, setClusterModalVisible] = useState(false)
+  const [conflictedClusterId, setConflictedClusterId] = useState(null)
   const { Step } = Steps;
 
   const handleSignin = (firebaseToken) => {
-    store.dispatch(increment("pendingRequests"))
+    dispatch(increment("pendingRequests"))
     enterpriseSignin(firebaseToken)
       .then(() => setCurrent(1))
       .catch(ex => notify("error", "Error in signin", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleBillingSuccess = () => {
     notify("success", "Success", "Saved billing details successfully")
     setCurrent(2)
+  }
+
+  const handleRegisterCluster = (clusterId, doesExist, onRegisteredCallback) => {
+    dispatch(increment("pendingRequests"))
+    registerCluster(clusterId, doesExist)
+      .then((registered, notifiedToCluster, exceptionNotifyingToCluster) => {
+        if (!registered) {
+          setConflictedClusterId(clusterId)
+          return
+        }
+        if (onRegisteredCallback) onRegisteredCallback()
+        if (!notifiedToCluster) {
+          notify("error", "Error registering cluster", exceptionNotifyingToCluster)
+          return
+        }
+        notify("success", "Success", "Successfully registered cluster")
+        setCurrent(3)
+      })
+      .catch(ex => notify("error", "Error registering cluster", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const steps = [{
@@ -73,7 +92,7 @@ const UpgradeCluster = () => {
   {
     title: 'Register cluster',
     content: <React.Fragment>
-      <RegisterCluster handleRegisterCluster={() => setClusterModalVisible(true)} />
+      <RegisterCluster handleRegisterCluster={(clusterId) => handleRegisterCluster(clusterId, false)} />
     </React.Fragment>
   },
   {
@@ -120,13 +139,10 @@ const UpgradeCluster = () => {
           </div>
         </div>
       </div>
-      {clusterModalVisible && <ExistingClusterName
-        modalVisible={clusterModalVisible}
-        handleChangeName={() => setClusterModalVisible(false)}
-        handleContinueName={() => {
-          setCurrent(current + 1)
-          setClusterModalVisible(false)
-        }}
+      {conflictedClusterId && <ConflictedClusterIdModal
+        clusterId={conflictedClusterId}
+        handleCancel={() => setConflictedClusterId(null)}
+        handleContinue={() => handleRegisterCluster(conflictedClusterId, true, () => setConflictedClusterId(null))}
       />}
     </React.Fragment>
   );

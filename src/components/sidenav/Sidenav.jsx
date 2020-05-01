@@ -35,7 +35,7 @@ const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const version = useSelector(state => state.version)
+  const version = useSelector(state => state.env.version)
   const enterpriseMode = localStorage.getItem('enterprise') === 'true';
   const billingEnabled = useSelector(state => state.billing.status ? true : false)
 

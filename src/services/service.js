@@ -1,5 +1,8 @@
-import { createRESTClient, createGraphQLClient } from "./client";
 import SpaceAPI from 'space-api';
+import gql from 'graphql-tag';
+import { spaceCloudClusterOrigin, enterpriseServerGraphQLURL } from "../constants"
+import { getSpaceUpToken } from "../utils"
+import { createRESTClient, createGraphQLClient } from "./client";
 
 import Database from "./database"
 import FileStore from "./fileStore"
@@ -13,11 +16,6 @@ import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
 import Clusters from "./clusters"
 import Billing from "./billing";
-
-import gql from 'graphql-tag';
-
-import { spaceCloudClusterOrigin, enterpriseServerGraphQLURL } from "../constants"
-import { getSpaceUpToken } from "../utils"
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -88,18 +86,6 @@ class Service {
     })
   }
 
-  fetchQuotas() {
-    return new Promise((resolve, reject) => {
-      this.client.getJSON("/v1/config/quotas").then(({ status, data }) => {
-        if (status !== 200) {
-          reject("Internal server error")
-          return
-        }
-        resolve(data.result)
-      }).catch(ex => reject(ex.toString()))
-    })
-  }
-
   login(user, key) {
     return new Promise((resolve, reject) => {
       this.client.postJSON('/v1/config/login', { user, key }).then(({ status, data }) => {
@@ -113,16 +99,31 @@ class Service {
     })
   }
 
-  enterpriseSignin(token) {
+  setClusterIdentity(clusterId, key) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON('/v1/config/login', { token: token }).then(({ status, data }) => {
-        if (status !== 200) {
-          reject(data.error)
-          return
-        }
+      this.client.postJSON("/v1/config/upgrade", { clusterId, key })
+        .then(({ status, data }) => {
+          if (status != 200) {
+            reject(data.error)
+            return
+          }
+          resolve()
+        })
+        .catch(ex => reject(ex))
+    })
+  }
 
-        resolve(data.token)
-      }).catch(ex => reject(ex.toString()))
+  renewClusterLicense() {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON("/v1/config/renew-license", {})
+        .then(({ status, data }) => {
+          if (status != 200) {
+            reject(data.error)
+            return
+          }
+          resolve()
+        })
+        .catch(ex => reject(ex))
     })
   }
 

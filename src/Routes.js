@@ -42,7 +42,6 @@ import ChangePlan from './pages/billing/ChangePlan';
 import ContactUs from './pages/billing/ContactUs';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
-import Clusters from './pages/clusters/Clusters'
 
 export default () => {
   return (
@@ -81,7 +80,6 @@ export default () => {
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer/graphql" component={Graphql} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer/spaceApi" component={SpaceApi} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/clusters" component={Clusters} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
