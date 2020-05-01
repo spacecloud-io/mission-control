@@ -32,18 +32,16 @@ class Billing {
 
           const subscriptionId = data.id
           const invoiceId = data.latest_invoice.id
+          const paymentIntentSecret = data.latest_invoice.client_secret
 
-          if (data.status === "active" && data.latest_invoice.payment_intent.status === "succeeded") {
-            resolve(false)
-            return
+          const ack = data.status === "active" && data.latest_invoice.payment_intent.status === "succeeded"
+          const requiresAction = data.status === "incomplete" && data.latest_invoice.payment_intent.status === "requires_action" 
+
+          if (requiresAction) {
+            resolve(ack, requiresAction, invoiceId, subscriptionId, paymentIntentSecret)
+          } else {
+            resolve(ack, requiresAction, invoiceId)
           }
-
-          if (data.latest_invoice.payment_intent.status === "requires_action") {
-            resolve(true, subscriptionId, invoiceId)
-            return
-          }
-
-          reject("Card rejected", subscriptionId, invoiceId)
         })
         .catch(ex => reject(ex.toString()))
     })

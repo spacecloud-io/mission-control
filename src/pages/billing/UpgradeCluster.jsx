@@ -5,13 +5,12 @@ import ReactGA from 'react-ga';
 import { useParams, useHistory } from 'react-router-dom';
 import { Button, Icon, Steps, Col, Row } from 'antd';
 import SigninCard from '../../components/signup/signin-card/SigninCard';
-import AddBillingDetail from '../../components/billing/add-billing-details/AddBillingDetail';
+import AddBillingDetails from '../../components/billing/add-billing-details/AddBillingDetails';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import ExistingClusterName from '../../components/billing/upgrade/ExistingClusterName';
 import SubscriptionDetail from '../../components/billing/upgrade/SubscriptionDetail';
 import { loadStripe } from '@stripe/stripe-js';
 import store from '../../store';
-import client from '../../client';
 import { notify, isSignedIn, isBillingEnabled, enterpriseSignin } from '../../utils';
 import { set, increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,7 +32,7 @@ const UpgradeCluster = () => {
   const clusterId = useSelector(state => state.clusterId)
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
-  const [current, setCurrent] = useState(1);
+  const [current, setCurrent] = useState(initialStep);
   const [clusterModalVisible, setClusterModalVisible] = useState(false)
   const { Step } = Steps;
 
@@ -45,17 +44,9 @@ const UpgradeCluster = () => {
       .finally(() => store.dispatch(decrement("pendingRequests")))
   }
 
-  const handleStripePaymentMethod = (paymentMethodId) => {
-    dispatch(increment("pendingRequests"));
-    client.billing.setBillingSubscription(paymentMethodId).then(res => {
-      if (res === 200) {
-        store.dispatch(set("billing", { status: true, invoices: [{}] }))
-        notify("success", "Success", "Sucessfully subscribed to space cloud pro")
-      }
-    }).catch(ex => {
-      console.log(ex)
-      notify("error", "Error subcribing to space cloud pro", ex)
-    }).finally(() => dispatch(decrement("pendingRequests")))
+  const handleBillingSuccess = () => {
+    notify("success", "Success", "Saved billing details successfully")
+    setCurrent(2)
   }
 
   const steps = [{
@@ -72,10 +63,9 @@ const UpgradeCluster = () => {
     title: 'Add billing details',
     content: <Row>
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
-        <AddBillingDetail
-          stripePromise={stripePromise}
-          handleStripePaymentMethod={handleStripePaymentMethod}
-          saveBillingDetails={() => setCurrent(current + 1)}
+        <AddBillingDetails
+          stripe={stripePromise}
+          handleSuccess={handleBillingSuccess}
         />
       </Col>
     </Row>
