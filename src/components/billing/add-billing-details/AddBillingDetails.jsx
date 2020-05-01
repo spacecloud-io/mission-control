@@ -84,7 +84,7 @@ const AddBillingDetails = ({ stripe, handleSuccess }) => {
     const name = localStorage.getItem("name")
     store.dispatch(increment("pendingRequests"))
     client.billing.setBillingDetails(name, address, paymentMethodId, invoiceId)
-      .then((subscriptionStarted, requiresAction, invoiceId, subscriptionId, paymentIntentSecret) => {
+      .then(({ subscriptionStarted, requiresAction, invoiceId, subscriptionId, paymentIntentSecret }) => {
         if (subscriptionStarted) {
           fetchBillingDetails()
           handleSuccess()

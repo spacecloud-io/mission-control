@@ -8,17 +8,16 @@ import SigninCard from '../../components/signup/signin-card/SigninCard';
 import AddBillingDetails from '../../components/billing/add-billing-details/AddBillingDetails';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import ConflictedClusterIdModal from '../../components/billing/upgrade/ConflictedClusterIdModal';
-import SubscriptionDetail from '../../components/billing/upgrade/SubscriptionDetail';
+import StartSubscription from '../../components/billing/upgrade/StartSubscription';
 import { loadStripe } from '@stripe/stripe-js';
 import { notify, isSignedIn, isBillingEnabled, enterpriseSignin, getClusterId, registerCluster } from '../../utils';
-import { set, increment, decrement } from 'automate-redux';
+import { increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
 
 import './billing.css';
 const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 
-const UpgradeCluster = () => {
-
+const UpgradeCluster = (props) => {
   useEffect(() => {
     ReactGA.pageview("/projects/upgrade");
   }, [])
@@ -31,9 +30,10 @@ const UpgradeCluster = () => {
   const clusterId = useSelector(state => getClusterId(state))
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
-  const [current, setCurrent] = useState(2);
+  const [current, setCurrent] = useState(3);
   const [conflictedClusterId, setConflictedClusterId] = useState(null)
   const { Step } = Steps;
+  const plan = props.location.state.plan
 
   const handleSignin = (firebaseToken) => {
     dispatch(increment("pendingRequests"))
@@ -51,7 +51,7 @@ const UpgradeCluster = () => {
   const handleRegisterCluster = (clusterId, doesExist, onRegisteredCallback) => {
     dispatch(increment("pendingRequests"))
     registerCluster(clusterId, doesExist)
-      .then((registered, notifiedToCluster, exceptionNotifyingToCluster) => {
+      .then(({ registered, notifiedToCluster, exceptionNotifyingToCluster }) => {
         if (!registered) {
           setConflictedClusterId(clusterId)
           return
@@ -98,7 +98,7 @@ const UpgradeCluster = () => {
   {
     title: 'Start subscription',
     content: <React.Fragment>
-      <SubscriptionDetail />
+      <StartSubscription plan={plan} handleSuccess={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)} />
     </React.Fragment>
   }]
 

@@ -61,9 +61,9 @@ class Billing {
           const requiresAction = data.status === "incomplete" && data.latest_invoice.payment_intent.status === "requires_action"
 
           if (requiresAction) {
-            resolve(ack, requiresAction, invoiceId, subscriptionId, paymentIntentSecret)
+            resolve({ ack, requiresAction, invoiceId, subscriptionId, paymentIntentSecret })
           } else {
-            resolve(ack, requiresAction, invoiceId)
+            resolve({ ack, requiresAction, invoiceId })
           }
         })
         .catch(ex => reject(ex))
@@ -110,10 +110,10 @@ class Billing {
         .then(result => {
           const { status, key } = result.data.login
           if (status !== 200) {
-            resolve(false)
+            resolve({ ack: false })
             return
           }
-          resolve(true, key)
+          resolve({ ack: true, key })
         })
         .catch(ex => reject(ex))
     })
@@ -144,6 +144,31 @@ class Billing {
     })
   }
 
+  applyCoupon(couponCode) {
+    return new Promise((resolve, reject) => {
+      this.client.query({
+        query: gql`
+        query {
+          apply_coupon(couponCode: $couponCode) {
+            status
+            error
+            value
+          }
+        }`,
+        variables: { couponCode }
+      })
+        .then(result => {
+          const { status, error, value } = result.data.login
+          if (status !== 200) {
+            reject(error)
+            return
+          }
+          resolve(value)
+        })
+        .catch(ex => reject(ex))
+    })
+  }
+
   fetchBillingDetails() {
     return new Promise((resolve, reject) => {
       this.client.query({
@@ -168,13 +193,38 @@ class Billing {
           if (!card_number) {
             reject(new Error("Billing is not enabled"))
           }
-          const obj = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices }
+          const obj = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices, amount }
           resolve(obj)
           resolve()
         })
         .catch(ex => reject(ex))
     })
   }
+
+  fetchPlanDetails(plan) {
+    return new Promise((resolve, reject) => {
+      this.client.query({
+        query: gql`
+        query {
+          plans(id: $plan) @db{
+            amount
+            quotas
+          }
+        }`,
+        variables: { plan }
+      })
+        .then(result => {
+          if (!result.data.plans || !result.data.plans.length) {
+            reject("No such plan")
+          }
+
+          const plan = result.data.plans[0]
+          resolve(plan)
+        })
+        .catch(ex => reject(ex))
+    })
+  }
+
 
 
   contactUs(email, name, subject, msg) {

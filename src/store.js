@@ -26,6 +26,7 @@ const initialState = {
 	},
 	billing: {
 		status: false,
+		balanceCredits: 0,
 		details: {},
 		invoices: []
 	}

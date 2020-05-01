@@ -196,8 +196,8 @@ export const openProject = (projectId) => {
 
 export const fetchBillingDetails = () => {
   return new Promise((resolve, reject) => {
-    client.billing.fetchBillingDetails().then(({ invoices, details }) => {
-      store.dispatch(set("billing", { status: true, details, invoices }))
+    client.billing.fetchBillingDetails().then(({ invoices, details, amount }) => {
+      store.dispatch(set("billing", { status: true, details, invoices, balanceCredits: amount }))
       resolve()
     }).catch(ex => reject(ex))
   })
@@ -324,7 +324,6 @@ function saveSpaceUpToken(token) {
 
   // Save token to local storage and set the token on the API
   storeSpaceUpToken(token)
-  client.setSpaceUpToken(token)
 }
 
 function saveEnv(isProd, version, clusterId, plan, quotas) {
@@ -411,18 +410,18 @@ export function registerCluster(clusterId, doesExist = false) {
     }
 
     client.billing.registerCluster(clusterId, doesExist)
-      .then((registered, key) => {
-        if (!registered) {
-          resolve(false)
+      .then(({ ack, key }) => {
+        if (!ack) {
+          resolve({ registered: false })
           return
         }
 
         client.setClusterIdentity(clusterId, key)
           .then(() => {
-            resolve(true, true)
+            resolve({ registered: true, notifiedToCluster: true })
             store.dispatch(set("env.clusterId", clusterId))
           })
-          .catch(ex => resolve(true, false, ex))
+          .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
       })
       .catch(ex => reject(ex))
   })
@@ -436,6 +435,17 @@ export function setClusterPlan(plan) {
         client.renewClusterLicense()
           .then(() => resolve())
           .catch(ex => reject(ex))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function applyCoupon(couponCode) {
+  return new Promise((resolve, reject) => {
+    client.billing.applyCoupon(couponCode)
+      .then((couponValue) => {
+        store.dispatch(increment("billing.balanceCredits", couponValue))
+        resolve(couponValue)
       })
       .catch(ex => reject(ex))
   })
