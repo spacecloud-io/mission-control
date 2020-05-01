@@ -101,6 +101,9 @@ class Billing {
             return
           }
           const { country, card_number, card_type, card_expiry_date, amount, invoices } = data
+          if (!card_number) {
+            reject(new Error("Billing is not enabled"))
+          }
           const result = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices }
           resolve(result)
         })

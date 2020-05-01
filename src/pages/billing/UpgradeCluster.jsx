@@ -5,16 +5,16 @@ import ReactGA from 'react-ga';
 import { useParams, useHistory } from 'react-router-dom';
 import { Button, Icon, Steps, Col, Row } from 'antd';
 import SigninCard from '../../components/signup/signin-card/SigninCard';
-import AddBillingDetail from '../../components/billing/upgrade/AddBillingDetail';
+import AddBillingDetail from '../../components/billing/add-billing-details/AddBillingDetail';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import ExistingClusterName from '../../components/billing/upgrade/ExistingClusterName';
 import SubscriptionDetail from '../../components/billing/upgrade/SubscriptionDetail';
 import { loadStripe } from '@stripe/stripe-js';
 import store from '../../store';
 import client from '../../client';
-import { notify } from '../../utils';
+import { notify, isSignedIn, isBillingEnabled, enterpriseSignin } from '../../utils';
 import { set, increment, decrement } from 'automate-redux';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import './billing.css';
 const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
@@ -28,9 +28,22 @@ const UpgradeCluster = () => {
   const { projectID } = useParams();
   const history = useHistory();
   const dispatch = useDispatch();
-  const [current, setCurrent] = useState(0);
+  const signedIn = isSignedIn()
+  const billingEnabled = useSelector(state => isBillingEnabled(state))
+  const clusterId = useSelector(state => state.clusterId)
+  const clusterRegistered = clusterId ? true : false
+  const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
+  const [current, setCurrent] = useState(1);
   const [clusterModalVisible, setClusterModalVisible] = useState(false)
   const { Step } = Steps;
+
+  const handleSignin = (firebaseToken) => {
+    store.dispatch(increment("pendingRequests"))
+    enterpriseSignin(firebaseToken)
+      .then(() => setCurrent(1))
+      .catch(ex => notify("error", "Error in signin", ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+  }
 
   const handleStripePaymentMethod = (paymentMethodId) => {
     dispatch(increment("pendingRequests"));
@@ -50,29 +63,27 @@ const UpgradeCluster = () => {
     content: <React.Fragment>
       <Row>
         <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
-          <SigninCard
-            handleGoogle={() => setCurrent(current + 1)}
-            handleTwitter={() => setCurrent(current + 1)}
-            handleGithub={() => setCurrent(current + 1)}
-          />
+          <SigninCard handleSignin={handleSignin} />
         </Col>
       </Row>
     </React.Fragment>
   },
   {
     title: 'Add billing details',
-    content: <React.Fragment>
-      <AddBillingDetail
-        stripePromise={stripePromise}
-        handleStripePaymentMethod={handleStripePaymentMethod}
-        saveBillingDetails={() => setCurrent(current + 1)}
-      />
-    </React.Fragment>
+    content: <Row>
+      <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
+        <AddBillingDetail
+          stripePromise={stripePromise}
+          handleStripePaymentMethod={handleStripePaymentMethod}
+          saveBillingDetails={() => setCurrent(current + 1)}
+        />
+      </Col>
+    </Row>
   },
   {
     title: 'Register cluster',
     content: <React.Fragment>
-      <RegisterCluster handleRegisterCluster={() => setClusterModalVisible(true)}  />
+      <RegisterCluster handleRegisterCluster={() => setClusterModalVisible(true)} />
     </React.Fragment>
   },
   {
@@ -119,12 +130,14 @@ const UpgradeCluster = () => {
           </div>
         </div>
       </div>
-      {clusterModalVisible && <ExistingClusterName 
-      modalVisible={clusterModalVisible} 
-      handleChangeName={() => setClusterModalVisible(false)}
-      handleContinueName={() => { setCurrent(current + 1)
-        setClusterModalVisible(false)}}
-       /> }
+      {clusterModalVisible && <ExistingClusterName
+        modalVisible={clusterModalVisible}
+        handleChangeName={() => setClusterModalVisible(false)}
+        handleContinueName={() => {
+          setCurrent(current + 1)
+          setClusterModalVisible(false)
+        }}
+      />}
     </React.Fragment>
   );
 }

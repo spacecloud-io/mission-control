@@ -195,12 +195,12 @@ export const openProject = (projectId) => {
 }
 
 export const fetchBillingDetails = () => {
-  store.dispatch(increment("pendingRequests"))
-  client.billing.fetchBillingDetails().then(({ invoices, details }) => {
-    store.dispatch(set("billing", { status: true, details, invoices }))
+  return new Promise((resolve, reject) => {
+    client.billing.fetchBillingDetails().then(({ invoices, details }) => {
+      store.dispatch(set("billing", { status: true, details, invoices }))
+      resolve()
+    }).catch(ex => reject(ex))
   })
-    .catch(ex => notify("error", "Error fetching billing details", ex))
-    .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
 export const fetchGlobalEntities = (token, spaceUpToken) => {
@@ -246,7 +246,12 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
       .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
       .finally(() => store.dispatch(decrement("pendingRequests")))
 
-    fetchBillingDetails()
+    if (spaceUpToken) {
+      store.dispatch(increment("pendingRequests"))
+      fetchBillingDetails()
+        .catch(ex => notify("error", "Error fetching billing details", ex))
+        .finally(() => store.dispatch(decrement("pendingRequests")))
+    }
   }
 }
 
@@ -386,14 +391,12 @@ export const onAppLoad = () => {
   })
 }
 
-export const enterpriseSignin = (token) => {
+export function enterpriseSignin(token) {
   return new Promise((resolve, reject) => {
     client.billing.signIn(token).then(newToken => {
-      fetchGlobalEntities(newToken, getSpaceUpToken())
-      resolve()
-    }).catch((error) => {
-      reject(error)
-    })
+      saveSpaceUpToken(newToken)
+      fetchBillingDetails().finally(() => resolve())
+    }).catch((error) => reject(error))
   })
 }
 
