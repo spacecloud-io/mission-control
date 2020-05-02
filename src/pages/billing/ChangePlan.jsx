@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import ReactGA from 'react-ga';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Icon, Col, Row } from 'antd';
 import './billing.css';
@@ -13,10 +13,11 @@ import { increment, decrement } from 'automate-redux';
 const ChangePlan = () => {
   const dispatch = useDispatch()
   const history = useHistory();
+  const { projectID } = useParams();
   useEffect(() => {
     ReactGA.pageview("/projects/billing/change-plan");
   }, [])
-  
+
   const selectedPlan = useSelector(state => getClusterPlan(state))
   const handleSelectPlan = (plan) => {
     dispatch(increment("pendingRequests"))
@@ -25,8 +26,8 @@ const ChangePlan = () => {
       notify("success", "Success", `Successfully change plan of this cluster to ${planName} plan`)
       history.goBack()
     })
-    .catch(ex => notify("error", "Error changing plan", ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
+      .catch(ex => notify("error", "Error changing plan", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   return (
@@ -57,7 +58,10 @@ const ChangePlan = () => {
               <Col lg={{ span: 24 }}>
                 <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Change plan</h3>
                 <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in Teams plan right now. Change it to any other plan suitable as per your needs.</p>
-                <SelectPlan selectedPlan={selectedPlan} handleSelectPlan={handleSelectPlan} />
+                <SelectPlan
+                  selectedPlan={selectedPlan}
+                  handleSelectPlan={handleSelectPlan}
+                  handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
               </Col>
             </Row>
           </div>

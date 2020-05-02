@@ -2,21 +2,38 @@ import React, { useEffect, useState } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
-import { useParams, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from "react-redux"
 import { Button, Icon, Col, Row } from 'antd';
 import ContactForm from '../../components/billing/contact-us/ContactForm';
 import MessageCard from '../../components/billing/contact-us/MessageCard';
 import './billing.css';
+import { increment, decrement } from 'automate-redux';
+import client from "../../client"
+import { notify } from '../../utils';
 
-const UpgradeCluster = () => {
+const UpgradeCluster = (props) => {
 
   useEffect(() => {
-    ReactGA.pageview("/projects/contact-us");
+    ReactGA.pageview("projects/billing/contact-us");
   }, [])
 
-  const { projectID } = useParams();
+  const dispatch = useDispatch()
   const history = useHistory();
- 
+  const subject = props.location.state ? props.location.state.subject : undefined
+  const email = localStorage.getItem("email") ? localStorage.getItem("email") : undefined
+  const handleSendMessage = (email, subject, message) => {
+    const name = localStorage.getItem("name")
+    dispatch(increment("pendingRequests"))
+    client.billing.contactUs(email, name, subject, message)
+      .then(() => {
+        notify("success", "Success", "Successfully sent message. Our team will reach out to you shortly")
+        history.goBack()
+      })
+      .catch(ex => notify("error", "Error sending message", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -30,19 +47,16 @@ const UpgradeCluster = () => {
             zIndex: 98,
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             padding: "0 16px"
           }}>
-            <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)}>
-              <Icon type="left" />
-                            Go back
-                            </Button>
-            <span style={{ marginLeft: '35%' }}>
-              Contact us
-                            </span>
+            <Button style={{ position: "absolute", left: 0 }} type="link" onClick={history.goBack}>
+              <Icon type="left" />Go back</Button>
+            <span >Contact us</span>
           </div><br />
           <div>
             <MessageCard />
-            <ContactForm />
+            <ContactForm email={email} subject={subject} handleSendMessage={handleSendMessage} />
           </div>
         </div>
       </div>

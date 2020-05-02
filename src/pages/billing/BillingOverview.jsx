@@ -9,6 +9,7 @@ import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import { Row, Col } from 'antd';
 import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
 import ContactUs from '../../components/billing/contact/ContactUs';
+import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
 import client from '../../client';
 import { notify, getClusterPlan } from '../../utils';
 import { increment, decrement } from 'automate-redux';
@@ -71,7 +72,10 @@ const BillingOverview = () => {
             {plan === "open" && <Col lg={{ span: 24 }}>
               <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Upgrade cluster</h3>
               <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
-              <SelectPlan selectedPlan={plan} handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })} />
+              <SelectPlan
+                selectedPlan={plan}
+                handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })}
+                handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
             </Col>}
             {plan !== "open" && <Col lg={{ span: 11 }}>
               <PlanDetails plan={plan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/change-plan`)} />
@@ -82,6 +86,7 @@ const BillingOverview = () => {
           initialvalues={defaultSubject}
           handleContactUs={handleContactUs}
           handleCancel={handleCancel} />}
+        <ContactUsFab />
       </div>
     </div>
   )

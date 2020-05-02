@@ -17,7 +17,7 @@ import './billing.css';
 
 const UpgradeCluster = (props) => {
   useEffect(() => {
-    ReactGA.pageview("/projects/upgrade");
+    ReactGA.pageview("/projects/billing/upgrade");
   }, [])
 
   const { projectID } = useParams();
@@ -28,7 +28,7 @@ const UpgradeCluster = (props) => {
   const clusterId = useSelector(state => getClusterId(state))
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
-  const [current, setCurrent] = useState(3);
+  const [current, setCurrent] = useState(initialStep);
   const [conflictedClusterId, setConflictedClusterId] = useState(null)
   const { Step } = Steps;
   const plan = props.location.state.plan
