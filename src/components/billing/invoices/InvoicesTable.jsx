@@ -1,42 +1,7 @@
 import React from 'react';
 import { Table, Card } from 'antd';
-import { useSelector } from 'react-redux';
 
-const Invoice = () => {
-
-  //const invoiceData = useSelector(state => state.billing.invoices)
-  const invoiceData = [
-    {
-      key: "1",
-      period: {
-        start: '1487370220',
-        end: '1487370220'
-      },
-      amount: '$99',
-      status: 'paid',
-      invoice_pdf: 'download'
-    },
-    {
-      key: "2",
-      period: {
-        start: '1487370220',
-        end: '1487370220'
-      },
-      amount: '$99',
-      status: 'uncollectible',
-      invoice_pdf: 'download'
-    },
-    {
-      key: "3",
-      period: {
-        start: '1487370220',
-        end: '1487370220'
-      },
-      amount: '$99',
-      status: 'open',
-      invoice_pdf: 'download'
-    }
-  ]
+const InvoicesTable = ({ invoices }) => {
   const columns = [
     {
       title: "Period",
@@ -53,6 +18,7 @@ const Invoice = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
+      render: (_, record) => `$${record.amount}`
     },
     {
       title: "Status",
@@ -83,10 +49,10 @@ const Invoice = () => {
     <Card>
       <Table
         columns={columns}
-        dataSource={invoiceData}
+        dataSource={invoices}
       />
     </Card>
   );
 }
 
-export default Invoice;
+export default InvoicesTable;

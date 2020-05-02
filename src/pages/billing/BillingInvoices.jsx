@@ -3,10 +3,11 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
 import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
-import Invoice from '../../components/billing/invoice/Invoice';
+import InvoicesTable from '../../components/billing/invoices/InvoicesTable';
 import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
 import { useParams } from 'react-router-dom';
 import './billing.css'
+import { useSelector } from 'react-redux';
 
 const BillingInvoices = () => {
   useEffect(() => {
@@ -14,6 +15,7 @@ const BillingInvoices = () => {
   }, [])
 
   const { projectID } = useParams();
+  const invoices = useSelector(state => state.billing.invoices)
 
   return (
     <div className="invoices">
@@ -22,7 +24,7 @@ const BillingInvoices = () => {
       <div className='page-content page-content--no-padding'>
         <BillingTabs activeKey="invoices" projectID={projectID} />
         <div className="billing-tab-content">
-          <Invoice />
+          <InvoicesTable invoices={invoices} />
         </div>
       </div>
       <ContactUsFab />
