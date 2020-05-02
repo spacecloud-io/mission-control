@@ -9,8 +9,7 @@ import { setClusterPlan, notify, capitalizeFirstCharacter } from '../../../utils
 
 const StartSubscription = ({ plan, handleSuccess }) => {
   const dispatch = useDispatch()
-  const planName = capitalizeFirstCharacter(plan)
-  const [planDetails, setPlanDetails] = useState({ amount: 0, quotas: { maxProjects: 1, maxDatabases: 1 } })
+  const [planDetails, setPlanDetails] = useState({ name: capitalizeFirstCharacter(plan), amount: 0, quotas: { maxProjects: 1, maxDatabases: 1 } })
   useEffect(() => {
     dispatch(increment("pendingRequests"))
     client.billing.fetchPlanDetails(plan)
@@ -20,7 +19,7 @@ const StartSubscription = ({ plan, handleSuccess }) => {
   }, [])
   const handleStartSubscription = () => {
     setClusterPlan(plan).then(() => {
-      notify("success", "Success", `Successfully applied ${planName} plan to this cluster`)
+      notify("success", "Success", `Successfully applied ${planDetails.name} plan to this cluster`)
       handleSuccess()
     })
   }
@@ -29,7 +28,7 @@ const StartSubscription = ({ plan, handleSuccess }) => {
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
         <Card style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', padding: '24px' }}>
           <p><b>Subscription details</b></p>
-          <Card title={<p style={{ fontSize: "18px" }}>{planName} plan</p>} extra={<p style={{ fontSize: "18px" }}><span style={{ color: "#34A853" }}>${planDetails.amount}</span> per month</p>}>
+          <Card title={<p style={{ fontSize: "18px" }}>{planDetails.name} plan</p>} extra={<p style={{ fontSize: "18px" }}><span style={{ color: "#34A853" }}>${planDetails.amount}</span> per month</p>}>
             <p><b>Total Projects</b>: {planDetails.quotas.maxProjects}</p>
             <p><b>Total Databases</b>: {planDetails.quotas.maxDatabases} per project</p>
           </Card>

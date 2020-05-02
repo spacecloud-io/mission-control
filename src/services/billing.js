@@ -1,28 +1,33 @@
 import gql from 'graphql-tag';
 class Billing {
-  constructor(client) {
+  constructor(client, spaceSiteClient) {
     this.client = client
+    this.spaceSiteClient = spaceSiteClient
   }
 
   signIn(token) {
     return new Promise((resolve, reject) => {
+      // TODO: Put the correct endpoint name
       this.client.query({
         query: gql`
         query {
-          login(token: $token) {
+          login(token: $token) @masterServer {
             status
             error
-            token
+            message
+            result
           }
         }`,
         variables: { token }
       })
-        .then(result => {
-          const { status, error, token } = result.data.login
+        .then(res => {
+          const { status, error, message, result } = res.data.login
           if (status !== 200) {
-            reject(error)
+            reject(message)
+            console.log("Signin Error", error)
             return
           }
+          const { token } = result
           if (!token) {
             reject(new Error("Token not provided"))
             return
@@ -38,27 +43,29 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          create_subscription(name: $name, address: $address, paymentMethodId: $paymentMethodId${invoiceId ? ', invoiceId: $invoiceId' : ''}) {
+          create_subscription(name: $name, address: $address, paymentMethodId: $paymentMethodId${invoiceId ? ', invoiceId: $invoiceId' : ''}) @masterServer{
             status
             error
-            data
+            message
+            result
           }
         }`,
         variables: { name, address, paymentMethodId, invoiceId }
       })
-        .then(result => {
-          const { status, error, data } = result.data.login
+        .then(res => {
+          const { status, error, message, result } = res.data.create_subscription
           if (status !== 200) {
-            reject(error)
+            console.log("Set Billing Details Error", error)
+            reject(message)
             return
           }
 
-          const subscriptionId = data.id
-          const invoiceId = data.latest_invoice.id
-          const paymentIntentSecret = data.latest_invoice.client_secret
+          const subscriptionId = result.id
+          const invoiceId = result.latest_invoice.id
+          const paymentIntentSecret = result.latest_invoice.client_secret
 
-          const ack = data.status === "active" && data.latest_invoice.payment_intent.status === "succeeded"
-          const requiresAction = data.status === "incomplete" && data.latest_invoice.payment_intent.status === "requires_action"
+          const ack = result.status === "active" && result.latest_invoice.payment_intent.status === "succeeded"
+          const requiresAction = result.status === "incomplete" && result.latest_invoice.payment_intent.status === "requires_action"
 
           if (requiresAction) {
             resolve({ ack, requiresAction, invoiceId, subscriptionId, paymentIntentSecret })
@@ -75,17 +82,19 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          update_subscription(subscriptionId: $subscriptionId) {
+          create_failed_subscription(subscriptionId: $subscriptionId) @masterServer {
             status
             error
+            message
           }
         }`,
         variables: { subscriptionId }
       })
-        .then(result => {
-          const { status, error } = result.data.login
+        .then(res => {
+          const { status, error, message } = res.data.create_failed_subscription
           if (status !== 200) {
-            reject(error)
+            console.log("Create failed subscription error", error)
+            reject(message)
             return
           }
           resolve()
@@ -94,26 +103,29 @@ class Billing {
     })
   }
 
-  registerCluster(clusterId, doesExist) {
+  registerCluster(clusterName, doesExist) {
     return new Promise((resolve, reject) => {
       this.client.query({
         query: gql`
         query {
-          register_cluster(clusterId: $clusterId, doesExist: $doesExist) {
+          register_cluster(clusterName: $clusterName, doesExist: $doesExist) @masterServer {
             status
             error
-            key
+            message
+            result
           }
         }`,
-        variables: { clusterId, doesExist }
+        variables: { clusterName, doesExist }
       })
-        .then(result => {
-          const { status, key } = result.data.login
+        .then(res => {
+          const { status, error, message, result } = res.data.register_cluster
           if (status !== 200) {
+            console.log("Register Cluster Error", error, "Error Message", message)
             resolve({ ack: false })
             return
           }
-          resolve({ ack: true, key })
+          const { clusterId, key } = result
+          resolve({ ack: true, clusterId, key })
         })
         .catch(ex => reject(ex))
     })
@@ -125,17 +137,19 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          update_subscription(clusterId: $clusterId, plan: $plan) {
+          update_plan(clusterId: $clusterId, plan: $plan) @masterServer {
             status
             error
+            message
           }
         }`,
         variables: { clusterId, plan }
       })
-        .then(result => {
-          const { status, error } = result.data.login
+        .then(res => {
+          const { status, error, message } = res.data.update_plan
           if (status !== 200) {
-            reject(error)
+            console.log("Set Plan Error", error)
+            reject(message)
             return
           }
           resolve()
@@ -149,21 +163,23 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          apply_coupon(couponCode: $couponCode) {
+          add_promotion(couponCode: $couponCode) @masterServer {
             status
             error
-            value
+            message
+            result
           }
         }`,
         variables: { couponCode }
       })
-        .then(result => {
-          const { status, error, value } = result.data.login
+        .then(res => {
+          const { status, error, message, result } = res.data.add_promotion
           if (status !== 200) {
-            reject(error)
+            console.log("Apply Coupon Error", error)
+            reject(message)
             return
           }
-          resolve(value)
+          resolve(result.amount)
         })
         .catch(ex => reject(ex))
     })
@@ -174,22 +190,24 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          billing_details {
+          billing_details @masterServer{
             status
             error
-            data
+            message
+            result
           }
         }`,
         variables: {}
       })
-        .then(result => {
-          const { status, error, data } = result.data.login
+        .then(res => {
+          const { status, error, message, result } = res.data.billing_details
           if (status !== 200) {
-            reject(error)
+            console.log("Fetch Billing Details Error", error)
+            reject(message)
             return
           }
 
-          const { country, card_number, card_type, card_expiry_date, amount, invoices } = data
+          const { country, card_number, card_type, card_expiry_date, amount, invoices } = result
           if (!card_number) {
             reject(new Error("Billing is not enabled"))
           }
@@ -207,18 +225,19 @@ class Billing {
         query: gql`
         query {
           plans(id: $plan) @db{
+            name
             amount
             quotas
           }
         }`,
         variables: { plan }
       })
-        .then(result => {
-          if (!result.data.plans || !result.data.plans.length) {
+        .then(res => {
+          if (!res.data.plans || !res.data.plans.length) {
             reject("No such plan")
           }
 
-          const plan = result.data.plans[0]
+          const plan = res.data.plans[0]
           resolve(plan)
         })
         .catch(ex => reject(ex))
@@ -229,24 +248,18 @@ class Billing {
 
   contactUs(email, name, subject, msg) {
     return new Promise((resolve, reject) => {
-      this.client.query({
-        query: gql`
-        query {
-          contact_us(source: "Space Cloud Enterprise", email: $email, subject: $subject, msg: $msg${name ? ", name: $name" : ""}) {
-            status
-            error
-            data
-          }
-        }`,
-        variables: { email, name, subject, msg }
-      })
-        .then(result => {
-          const { status, error, data } = result.data.login
+      const body = { email, name, subject, msg }
+      this.spaceSiteClient.postJSON("/v1/site/contact-us", body)
+        .then(({ status, data }) => {
           if (status !== 200) {
-            reject(error)
+            reject(new Error("Internal server error"))
             return
           }
-
+          if (!data.ack) {
+            reject(new Error("Internal server error"))
+            return
+          }
+          
           resolve()
         })
         .catch(ex => reject(ex))

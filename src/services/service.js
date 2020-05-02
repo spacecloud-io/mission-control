@@ -14,7 +14,6 @@ import Deployments from "./deployments"
 import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
-import Clusters from "./clusters"
 import Billing from "./billing";
 
 const API = SpaceAPI.API
@@ -24,6 +23,7 @@ const and = SpaceAPI.and
 class Service {
   constructor(token, spaceUpToken) {
     this.client = createRESTClient(spaceCloudClusterOrigin)
+    this.spaceSiteClient = createRESTClient("https://api.spaceuptech.com")
     this.enterpriseClient = createGraphQLClient(enterpriseServerGraphQLURL, getSpaceUpToken)
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
@@ -35,8 +35,7 @@ class Service {
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
-    this.clusters = new Clusters(this.client)
-    this.billing = new Billing(this.enterpriseClient)
+    this.billing = new Billing(this.enterpriseClient, this.spaceSiteClient)
     if (token) this.client.setToken(token);
     if (spaceUpToken) this.enterpriseClient.setToken(spaceUpToken);
   }

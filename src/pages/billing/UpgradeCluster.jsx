@@ -29,7 +29,7 @@ const UpgradeCluster = (props) => {
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
   const [current, setCurrent] = useState(initialStep);
-  const [conflictedClusterId, setConflictedClusterId] = useState(null)
+  const [conflictedClusterName, setConflictedClusterName] = useState(null)
   const { Step } = Steps;
   const plan = props.location.state.plan
 
@@ -46,12 +46,12 @@ const UpgradeCluster = (props) => {
     setCurrent(2)
   }
 
-  const handleRegisterCluster = (clusterId, doesExist, onRegisteredCallback) => {
+  const handleRegisterCluster = (clusterName, doesExist, onRegisteredCallback) => {
     dispatch(increment("pendingRequests"))
-    registerCluster(clusterId, doesExist)
+    registerCluster(clusterName, doesExist)
       .then(({ registered, notifiedToCluster, exceptionNotifyingToCluster }) => {
         if (!registered) {
-          setConflictedClusterId(clusterId)
+          setConflictedClusterName(clusterName)
           return
         }
         if (onRegisteredCallback) onRegisteredCallback()
@@ -87,7 +87,7 @@ const UpgradeCluster = (props) => {
   {
     title: 'Register cluster',
     content: <React.Fragment>
-      <RegisterCluster handleRegisterCluster={(clusterId) => handleRegisterCluster(clusterId, false)} />
+      <RegisterCluster handleRegisterCluster={(clusterName) => handleRegisterCluster(clusterName, false)} />
     </React.Fragment>
   },
   {
@@ -134,10 +134,10 @@ const UpgradeCluster = (props) => {
           </div>
         </div>
       </div>
-      {conflictedClusterId && <ConflictedClusterIdModal
-        clusterId={conflictedClusterId}
-        handleCancel={() => setConflictedClusterId(null)}
-        handleContinue={() => handleRegisterCluster(conflictedClusterId, true, () => setConflictedClusterId(null))}
+      {conflictedClusterName && <ConflictedClusterIdModal
+        clusterName={conflictedClusterName}
+        handleCancel={() => setConflictedClusterName(null)}
+        handleContinue={() => handleRegisterCluster(conflictedClusterName, true, () => setConflictedClusterName(null))}
       />}
     </React.Fragment>
   );

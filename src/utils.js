@@ -410,7 +410,7 @@ export function enterpriseSignin(token) {
   })
 }
 
-export function registerCluster(clusterId, doesExist = false) {
+export function registerCluster(clusterName, doesExist = false) {
   return new Promise((resolve, reject) => {
     const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
     if (isClusterIdAlreadySet) {
@@ -418,8 +418,8 @@ export function registerCluster(clusterId, doesExist = false) {
       return
     }
 
-    client.billing.registerCluster(clusterId, doesExist)
-      .then(({ ack, key }) => {
+    client.billing.registerCluster(clusterName, doesExist)
+      .then(({ ack, clusterId, key }) => {
         if (!ack) {
           resolve({ registered: false })
           return

@@ -8,7 +8,7 @@ import { increment, decrement } from 'automate-redux';
 
 const PlanDetails = ({ plan, handleChangePlan }) => {
   const dispatch = useDispatch()
-  const [planDetails, setPlanDetails] = useState({ amount: 0, quotas: { maxDatabases: 1, maxProjects: 1 } })
+  const [planDetails, setPlanDetails] = useState({ name: capitalizeFirstCharacter(plan), amount: 0, quotas: { maxDatabases: 1, maxProjects: 1 } })
   useEffect(() => {
     if (plan) {
       dispatch(increment("pendingRequests"))
@@ -18,13 +18,12 @@ const PlanDetails = ({ plan, handleChangePlan }) => {
         .finally(() => dispatch(decrement("pendingRequests")))
     }
   }, [plan])
-  const planName = capitalizeFirstCharacter(plan)
   const { maxDatabases, maxProjects } = planDetails.quotas
   return (
     <div>
       <h3 style={{ marginTop: "40px", marginBottom: "24px", fontSize: "21px" }}>Cluster details</h3>
       <Card>
-        <h1 style={{ marginBottom: 0 }}><b>{planName} plan</b> <img src={crown} /></h1>
+        <h1 style={{ marginBottom: 0 }}><b>{planDetails.name} plan</b> <img src={crown} /></h1>
         <p style={{ marginTop: 0 }}>${planDetails.amount}/month</p>
         <p style={{ marginTop: "5%" }}><b>Details:</b></p>
         <p>Project limits: {maxProjects} {maxProjects === 1 ? "project" : "projects"}</p>

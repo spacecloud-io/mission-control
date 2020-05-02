@@ -2,9 +2,9 @@ import React from 'react';
 import { Alert, Modal, Icon } from 'antd';
 import './register-cluster.css';
 
-const ConflictedClusterIdModal = ({ clusterId, handleCancel, handleContinue }) => {
+const ConflictedClusterIdModal = ({ clusterName, handleCancel, handleContinue }) => {
 
-  const alertMsg = <div>You have already registered a cluster with the <a>{clusterId}</a> name in the past. <br /><br />Continuing with this name for this cluster will cause any previously running cluster with the same name to be switched back to the open source plan.</div>
+  const alertMsg = <div>You have already registered a cluster with the <a>{clusterName}</a> name in the past. <br /><br />Continuing with this name for this cluster will cause any previously running cluster with the same name to be switched back to the open source plan.</div>
 
   return (
     <Modal
