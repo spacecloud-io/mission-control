@@ -9,7 +9,7 @@ import useEventListener from "@use-it/event-listener"
 const SigninCard = (props) => {
   const messageHandler = (event) => {
     console.log("Event", event)
-    if (event.origin !== "http://localhost:5000") {
+    if (event.origin !== "https://login.spaceuptech.com") {
       return;
     }
 
@@ -19,7 +19,7 @@ const SigninCard = (props) => {
   useEventListener("message", messageHandler)
   
   const openSigninPage = (provider) => {
-    const signinPageURL = `http://localhost:5000/${provider}` 
+    const signinPageURL = `https://login.spaceuptech.com/${provider}` 
     window.open(signinPageURL)
   }
   return (
