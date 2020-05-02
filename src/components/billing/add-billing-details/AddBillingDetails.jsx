@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStripe, useElements, CardElement, Elements } from '@stripe/react-stripe-js';
 import CardSection from './card-section/CardSection';
 import { Form, Button, Input, Select, Card } from 'antd';
@@ -7,7 +7,9 @@ import countries from "./countries.json"
 import { notify, fetchBillingDetails } from '../../../utils';
 import store from '../../../store';
 import { increment, decrement } from 'automate-redux';
-import { useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripeClient = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 const countriesOptions = countries.map(obj => <Select.Option key={obj.code} value={obj.code}>{obj.name}</Select.Option>)
 
 const BillingDetailsForm = (props) => {
@@ -78,7 +80,7 @@ const BillingDetailsForm = (props) => {
 
 const WrappedBillingDetailsForm = Form.create({})(BillingDetailsForm);
 
-const AddBillingDetails = ({ stripe, handleSuccess }) => {
+export default function AddBillingDetails({ handleSuccess }) {
   const [invoiceId, setInvoiceId] = useState(undefined)
   const handleStripePayment = (paymentMethodId, address) => {
     const name = localStorage.getItem("name")
@@ -101,7 +103,7 @@ const AddBillingDetails = ({ stripe, handleSuccess }) => {
         }
 
         // Requires Action Workflow:
-        stripe.confirmCardPayment(paymentIntentSecret).then(function (result) {
+        stripeClient.confirmCardPayment(paymentIntentSecret).then(function (result) {
           if (result.error) {
             // Display error.message in your UI.
             notify("error", "Error in 3d secure payment", result.error.message)
@@ -122,11 +124,9 @@ const AddBillingDetails = ({ stripe, handleSuccess }) => {
   }
   return (
     <Card style={{ padding: '24px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-      <Elements stripe={stripe}>
+      <Elements stripe={stripeClient}>
         <WrappedBillingDetailsForm handleStripePayment={handleStripePayment} />
       </Elements>
     </Card>
   );
 }
-
-export default AddBillingDetails;

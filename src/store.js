@@ -8,6 +8,7 @@ const initialState = {
 	pendingRequests: 0,
 	uiState: {
 		selectedCollection: "",
+		showSigninModal: false,
 		showSidenav: false,
 		sideNavActiveKeys: ["1", "2"],
 		eventFilters: {

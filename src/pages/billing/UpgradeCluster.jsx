@@ -9,13 +9,11 @@ import AddBillingDetails from '../../components/billing/add-billing-details/AddB
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
 import ConflictedClusterIdModal from '../../components/billing/upgrade/ConflictedClusterIdModal';
 import StartSubscription from '../../components/billing/upgrade/StartSubscription';
-import { loadStripe } from '@stripe/stripe-js';
 import { notify, isSignedIn, isBillingEnabled, enterpriseSignin, getClusterId, registerCluster } from '../../utils';
 import { increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
 
 import './billing.css';
-const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 
 const UpgradeCluster = (props) => {
   useEffect(() => {
@@ -82,10 +80,7 @@ const UpgradeCluster = (props) => {
     title: 'Add billing details',
     content: <Row>
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
-        <AddBillingDetails
-          stripe={stripePromise}
-          handleSuccess={handleBillingSuccess}
-        />
+        <AddBillingDetails handleSuccess={handleBillingSuccess} />
       </Col>
     </Row>
   },

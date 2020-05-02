@@ -8,9 +8,10 @@ import { Row, Col } from 'antd';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import Signin from '../../components/billing/setup-card/Signin';
 import SetupBilling from '../../components/billing/setup-card/SetupBilling';
+import AddBillingDetailsModal from "../../components/billing/add-billing-details/AddBillingDetailsModal";
 import client from '../../client';
 import { notify, isSignedIn } from '../../utils';
-import { increment, decrement } from 'automate-redux';
+import { increment, decrement, set } from 'automate-redux';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
@@ -24,6 +25,7 @@ const Billing = () => {
   const { projectID } = useParams();
   const history = useHistory();
   const [contactModalVisible, setContactModalVisible] = useState(false)
+  const [billingDetailsModalVisible, setBillingDetailsModalVisible] = useState(false);
   const [defaultSubject, setDefaultSubject] = useState("")
   const signedIn = isSignedIn()
   const selectedPlan = useSelector(state => state.plan)
@@ -65,8 +67,8 @@ const Billing = () => {
       <div className='page-content'>
         <Row style={{ marginBottom: "48px" }}>
           <Col lg={{ span: 12 }}>
-            {signedIn && <SetupBilling handleSetupBilling={() => console.log("setup billing")} />}
-            {!signedIn && <Signin handleSignin={() => console.log("signin")} />}
+            {signedIn && <SetupBilling handleSetupBilling={() => setBillingDetailsModalVisible(true)} />}
+            {!signedIn && <Signin handleSignin={() => dispatch(set("uiState.showSigninModal", true))} />}
           </Col>
         </Row>
         <Row>
@@ -85,6 +87,7 @@ const Billing = () => {
           initialvalues={defaultSubject}
           handleContactUs={handleContactUs}
           handleCancel={handleCancel} />}
+        {billingDetailsModalVisible && <AddBillingDetailsModal handleCancel={() => setBillingDetailsModalVisible(false)} />}
       </div>
     </div>
   )
