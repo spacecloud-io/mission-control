@@ -20,7 +20,7 @@ const UserManagement = () => {
   const { projectID } = useParams()
 
   useEffect(() => {
-    ReactGA.pageview("/projects/auth");
+    ReactGA.pageview("/projects/userman");
   }, [])
 
   const dispatch = useDispatch()
@@ -29,15 +29,15 @@ const UserManagement = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const emailConfig = getProjectConfig(projects, projectID, "modules.auth.email", {})
+  const emailConfig = getProjectConfig(projects, projectID, "modules.userMan.email", {})
 
   // Handlers
   const handleProviderConfig = (provider, config) => {
     dispatch(increment("pendingRequests"))
     client.userManagement.setUserManConfig(projectID, provider, config)
       .then(() => {
-        setProjectConfig(projectID, `modules.auth.${provider}`, config)
-        notify("success", "Success", "Saved auth config successfully")
+        setProjectConfig(projectID, `modules.userMan.${provider}`, config)
+        notify("success", "Success", "Saved user management config successfully")
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")))
@@ -47,7 +47,7 @@ const UserManagement = () => {
     <div className="user-management">
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="auth" />
+        <Sidenav selectedItem="userman" />
         <div className="page-content">
           <h2>Auth Providers</h2>
           <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <Icon type="right" rotate={isActive ? 270 : 90} />}>

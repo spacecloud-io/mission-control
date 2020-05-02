@@ -27,7 +27,7 @@ const RemoteServices = () => {
   const [serviceClicked, setServiceClicked] = useState("")
 
   // Derived state
-  const services = getProjectConfig(projects, projectID, "modules.services.externalServices", {})
+  const services = getProjectConfig(projects, projectID, "modules.remoteServices.externalServices", {})
   const servicesTableData = Object.entries(services).map(([name, { url }]) => ({ name, url }))
   const noOfServices = servicesTableData.length
   const serviceClickedInfo = serviceClicked ? { name: serviceClicked, url: services[serviceClicked].url } : undefined
@@ -46,9 +46,10 @@ const RemoteServices = () => {
   const handleSubmit = (name, url) => {
     const serviceConfig = services[name]
     const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
+    const newServices = Object.assign({}, services, { [name]: newServiceConfig })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${name}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.remoteServices.externalServices`, newServices)
       notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -62,7 +63,7 @@ const RemoteServices = () => {
     client.remoteServices.deleteServiceConfig(projectID, name).then(() => {
       const newServices = Object.assign({}, services)
       delete newServices[name]
-      setProjectConfig(projectID, "modules.services.externalServices", newServices)
+      setProjectConfig(projectID, "modules.remoteServices.externalServices", newServices)
       notify("success", "Success", "Removed service successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
@@ -78,12 +79,19 @@ const RemoteServices = () => {
       key: 'actions',
       className: 'column-actions',
       render: (_, { name }) => (
-        <span>
+        <span style={{ display: "flex", justifyContent: "inline" }}>
           <a onClick={() => handleViewClick(name)}>View</a>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
-          <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a style={{ color: "red" }}>Remove</a>
-          </Popconfirm>
+          <a onClick={(e) => {
+            handleEditClick(name)
+            e.stopPropagation()
+          }}>Edit</a>
+          <div onClick={e => e.stopPropagation()}>
+            <Popconfirm title={`This will remove this service and all its endpoints from Space Cloud. Are you sure?`} onConfirm={() => {
+              handleDelete(name)
+            }}>
+              <a style={{ color: "red" }}>Remove</a>
+            </Popconfirm>
+          </div>
         </span>
       )
     }
@@ -104,7 +112,7 @@ const RemoteServices = () => {
         {noOfServices > 0 && (
           <React.Fragment>
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>Remote Services <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-            <Table columns={tableColumns} dataSource={servicesTableData} />
+            <Table columns={tableColumns} dataSource={servicesTableData} onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }} />
           </React.Fragment>
         )}
         {modalVisible && <ServiceForm

@@ -29,9 +29,9 @@ const EventingSettings = () => {
         {}
     );
 
-    const crudModule = getProjectConfig(projects, projectID, "modules.crud", {});
+    const dbModule = getProjectConfig(projects, projectID, "modules.db", {});
 
-    const dbList = Object.entries(crudModule).map(([alias, obj]) => {
+    const dbList = Object.entries(dbModule).map(([alias, obj]) => {
         if (!obj.type) obj.type = alias;
         return {
         alias: alias,
@@ -40,13 +40,12 @@ const EventingSettings = () => {
         };
     });
 
-    const handleEventingConfig = (dbType, col) => {
+    const handleEventingConfig = (dbAlias) => {
         dispatch(increment("pendingRequests"));
         client.eventing
-          .setEventingConfig(projectID, { enabled: true, dbType, col })
+          .setEventingConfig(projectID, { enabled: true, dbAlias })
           .then(() => {
-            setProjectConfig(projectID, "modules.eventing.dbType", dbType);
-            setProjectConfig(projectID, "modules.eventing.col", col);
+            setProjectConfig(projectID, "modules.eventing.dbAlias", dbAlias);
             notify("success", "Success", "Changed eventing config successfully");
           })
           .catch(ex => notify("error", "Error", ex))
@@ -63,9 +62,8 @@ const EventingSettings = () => {
             <h2>Eventing Config</h2>
             <div className="divider" />
                 <EventingConfigure
-                    dbType={eventing.dbType}
+                    dbType={eventing.dbAlias}
                     dbList={dbList}
-                    col={eventing.col}
                     handleSubmit={handleEventingConfig}
                 />
             </div>

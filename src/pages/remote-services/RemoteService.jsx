@@ -51,8 +51,8 @@ const RemoteService = () => {
   const [endpointClicked, setEdnpointClicked] = useState("")
 
   // Derived state
-  const serviceURL = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.url`)
-  const endpoints = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}.endpoints`, {})
+  const serviceURL = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.url`)
+  const endpoints = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints`, {})
   const endpointsTableData = Object.entries(endpoints).map(([name, { path, method }]) => ({ name, method, path }))
   const noOfEndpoints = endpointsTableData.length
   const endpointClickedInfo = endpointClicked ? { name: endpointClicked, ...endpoints[endpointClicked] } : undefined
@@ -69,25 +69,25 @@ const RemoteService = () => {
   }
 
   const handleSubmit = (name, method, path, rule) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`)
+    const serviceConfig = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
     const isEndpointPresent = endpoints[name] ? true : false
     const newEndpoints = Object.assign({}, endpoints, { [name]: { path, method, rule } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const handleDelete = (name) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.services.externalServices.${serviceName}`)
+    const serviceConfig = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
     const newEndpoints = Object.assign({}, endpoints)
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.services.externalServices.${serviceName}`, newServiceConfig)
+      setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", "Removed endpoint successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }

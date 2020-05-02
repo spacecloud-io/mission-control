@@ -12,9 +12,9 @@ function DbSelector(props) {
   const { projectID, selectedDB } = useParams();
   const history = useHistory();
   const projects = useSelector(state => state.projects)
-  const crudModule = getProjectConfig(projects, projectID, "modules.crud", {})
+  const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
 
-  const dbList = Object.entries(crudModule).map(([alias, obj]) => {
+  const dbList = Object.entries(dbModule).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
     return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(projects, projectID, alias) }
   })

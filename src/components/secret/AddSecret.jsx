@@ -25,7 +25,7 @@ const AddSecret = props => {
     props.form.validateFields((err, formValues) => {
       if (!err) {
         const values = {
-          name: formValues.name,
+          id: formValues.id,
           type: formValues.type
         };
         switch (values.type) {
@@ -245,7 +245,7 @@ const AddSecret = props => {
           <React.Fragment>
             <p>Name your secret</p>
             <Form.Item>
-              {getFieldDecorator("name", {
+              {getFieldDecorator("id", {
                 rules: [
                   { required: true, message: "Please input a secret name" }
                 ]
@@ -259,7 +259,7 @@ const AddSecret = props => {
           <React.Fragment>
             <p>Name your secret</p>
             <Form.Item>
-              {getFieldDecorator("name", {
+              {getFieldDecorator("id", {
                 rules: [
                   { required: true, message: "Please input a secret name" }
                 ]
@@ -306,7 +306,7 @@ const AddSecret = props => {
           <React.Fragment>
             <p>Name your secret</p>
             <Form.Item>
-              {getFieldDecorator("name", {
+              {getFieldDecorator("id", {
                 rules: [
                   { required: true, message: "Please input a secret name" }
                 ]

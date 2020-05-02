@@ -32,7 +32,7 @@
 .topbar .right-list {
     float: right;
     position: absolute;
-    right: 4vw;
+    right: 1vw;
 }
 
 .topbar>span {
@@ -62,22 +62,44 @@
 
 @media screen and (max-width: 600px) {
     .topbar .btn-position {
-        margin-left: 0;
-        position: absolute;
-        right: 0;
+        margin-left: 16px;
     }
     .topbar .hamburger {
         margin-right: 16px;
     }
+    .topbar .right-list{
+        display: none;
+    }
 }
 
-@media screen and (min-width: 800px) {
+.popContent {
+    padding: 10px 30px;
+}
+
+.topbar .ant-menu-horizontal > .ant-menu-item,
+.ant-menu-horizontal > .ant-menu-item:hover, 
+.ant-menu-horizontal > .ant-menu-submenu:hover, 
+.ant-menu-horizontal > .ant-menu-item-active, 
+.ant-menu-horizontal > .ant-menu-submenu-active, 
+.ant-menu-horizontal > .ant-menu-item-open, 
+.ant-menu-horizontal > .ant-menu-submenu-open, 
+.ant-menu-horizontal > .ant-menu-item-selected, 
+.ant-menu-horizontal > .ant-menu-submenu-selected {
+    border: none;
+}
+
+.ant-menu-horizontal{
+    border: none;
+    background-color: initial;
+}
+
+@media screen and (min-width: 992px) {
     .topbar .upLogo,
     .hamburger {
         display: none;
     }
 }
-@media screen and (max-width: 800px){
+@media screen and (max-width: 992px){
     .topbar .logo {
         display: none;
     }

@@ -33,7 +33,7 @@ const EventingSchema = () => {
   const eventRules = getProjectConfig(
     projects,
     projectID,
-    `modules.eventing.rules`,
+    `modules.eventing.triggers`,
     {}
   );
 
@@ -133,7 +133,7 @@ const EventingSchema = () => {
           {/* <a
             style={{ marginTop: 4 }}
             target="_blank"
-            href="https://docs.spaceuptech.com/essentials/data-modelling"
+            href="https://docs.spaceuptech.com/essentials/storage/database/data-modelling"
             className="panel__link"
           >
             <span>View docs</span> <i className="material-icons">launch</i>

@@ -8,7 +8,6 @@ import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
 import { getProjectConfig, setProjectConfig, notify } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import client from "../../client";
-import store from "../../store";
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "automate-redux";
 import './secretDetail.css';
@@ -26,11 +25,11 @@ const getLabelFromSecretType = type => {
 
 const SecretDetails = () => {
   const history = useHistory();
-  const { projectID, secretName } = useParams();
+  const { projectID, secretId } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
-  let secret = secrets.find(obj => obj.name === secretName);
+  let secret = secrets.find(obj => obj.id === secretId);
   if (!secret) secret = { data: {} };
   const secretType = secret.type;
   const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
@@ -51,10 +50,10 @@ const SecretDetails = () => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
       client.secrets
-        .setSecretKey(projectID, secretName, key, value)
+        .setSecretKey(projectID, secretId, key, value)
         .then(() => {
           const newSecrets = secrets.map(obj => {
-            if (obj.name !== secretName) return obj;
+            if (obj.id !== secretId) return obj;
             const newData = Object.assign({}, secret.data, { [key]: value });
             return Object.assign({}, secret, { data: newData });
           });
@@ -71,9 +70,9 @@ const SecretDetails = () => {
 
   const handleDeleteSecretKey = name => {
     dispatch(increment("pendingRequests"));
-    client.secrets.deleteSecretKey(projectID, secretName, name).then(() => {
+    client.secrets.deleteSecretKey(projectID, secretId, name).then(() => {
       const newSecrets = secrets.map(obj => {
-        if (obj.name !== secretName) return obj;
+        if (obj.id !== secretId) return obj;
         const newData = Object.assign({}, secret.data);
         delete newData[name]
         return Object.assign({}, secret, { data: newData });
@@ -91,9 +90,9 @@ const SecretDetails = () => {
   const handleUpdateRootpath = (path) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
-      client.secrets.setRootPath(projectID, secretName, { rootPath : path}).then(() => {
+      client.secrets.setRootPath(projectID, secretId, { rootPath : path}).then(() => {
         const updatedSecret = secrets.map(obj => {
-          if (obj.name !==  secretName) return obj;
+          if (obj.id !==  secretId) return obj;
           const newData = Object.assign({}, { rootPath: path });
           return Object.assign({}, obj, newData);
         });
@@ -188,11 +187,11 @@ const SecretDetails = () => {
               <Icon type="left" />
               Go back
             </Button>
-            <span style={{ marginLeft: "35%" }}>{secretName}</span>
+            <span style={{ marginLeft: "35%" }}>{secretId}</span>
           </div>
           <br />
           <Row>
-            <Col lg={{ span: 15, offset: 1 }}>
+            <Col lg={{ span: 15, offset: 1 }} xs={{ span:22, offset:1 }}>
               {secretType === "file" && (
                   <React.Fragment>
                     <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>

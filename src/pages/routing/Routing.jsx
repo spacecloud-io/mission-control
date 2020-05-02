@@ -20,12 +20,6 @@ const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
 };
 
-const calculateTargetURL = (routeType, url, host, port, rewrite) => {
-  return `${host}:${port}${calculateRequestURL(
-    routeType,
-    rewrite ? rewrite : url
-  )}`;
-};
 function Routing() {
   const { projectID } = useParams();
   const dispatch = useDispatch();
@@ -34,10 +28,10 @@ function Routing() {
   const [routeClicked, setRouteClicked] = useState("");
 
   useEffect(() => {
-		ReactGA.pageview("/projects/routing");
+    ReactGA.pageview("/projects/ingress-routes");
   }, [])
-  
-  let routes = getProjectConfig(projects, projectID, "modules.routes", []);
+
+  let routes = getProjectConfig(projects, projectID, "modules.ingressRoutes", []);
   if (!routes) routes = []
   const deployments = getProjectConfig(
     projects,
@@ -48,9 +42,9 @@ function Routing() {
   const services = deployments.map(obj => {
     const ports =
       obj.tasks &&
-      obj.tasks[0] &&
-      obj.tasks[0].ports &&
-      obj.tasks[0].ports.length
+        obj.tasks[0] &&
+        obj.tasks[0].ports &&
+        obj.tasks[0].ports.length
         ? obj.tasks[0].ports.map(port => port.port.toString())
         : [];
     return { name: obj.id, ports };
@@ -62,8 +56,8 @@ function Routing() {
     url: obj.source.url,
     routeType: obj.source.type,
     rewrite: obj.source.rewrite,
-    targetHost: obj.dest.host,
-    targetPort: obj.dest.port
+    allowedMethods: obj.source.methods,
+    targets: obj.targets
   }));
 
   const len = routes.length;
@@ -79,24 +73,22 @@ function Routing() {
         id: routeId ? routeId : generateId(),
         source: {
           hosts: values.allowedHosts,
+          methods: values.allowedMethods,
           url: values.url,
           rewrite: values.rewrite,
           type: values.routeType
         },
-        dest: {
-          host: values.targetHost,
-          port: values.targetPort
-        }
+        targets: values.targets
       };
       client.routing
         .setRoutingConfig(projectID, config.id, config)
         .then(() => {
           if (routeId) {
             const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.routes", newRoutes)
+            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
           } else {
             const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.routes", newRoutes)
+            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
           }
           resolve()
         })
@@ -117,7 +109,7 @@ function Routing() {
       .deleteRoutingConfig(projectID, id)
       .then(() => {
         const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.routes`, newRoutes);
+        setProjectConfig(projectID, `modules.ingressRoutes`, newRoutes);
         notify("success", "Success", "Deleted rule successfully");
       })
       .catch(ex => notify("error", "Error", ex.toString()))
@@ -147,9 +139,8 @@ function Routing() {
       render: (_, { routeType, url }) => calculateRequestURL(routeType, url)
     },
     {
-      title: <b>{"Target"}</b>,
-      render: (_, { routeType, url, targetHost, targetPort, rewrite }) =>
-        calculateTargetURL(routeType, url, targetHost, targetPort, rewrite)
+      title: <b>{"Targets"}</b>,
+      render: (_, { targets }) => (targets && targets.length) ? targets.length : 0
     },
     {
       title: <b>{"Actions"}</b>,
@@ -211,7 +202,7 @@ function Routing() {
                   justifyContent: "space-between"
                 }}
               >
-                Routing rules{" "}
+                Ingress Routing rules
                 <Button type="primary" onClick={() => setModalVisible(true)}>
                   Add
                 </Button>

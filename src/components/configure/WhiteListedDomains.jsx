@@ -12,13 +12,18 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
     form.validateFields((err, values) => {
       if (!err) {
         handleSubmit(values.domains).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
-        .catch(ex => notify("error", "Error", ex.toString()))
+          .catch(ex => notify("error", "Error", ex.toString()))
       }
     });
   };
 
   return (
-    <div style={{ width: 800 }}>
+    <div>
+      <h2>Whitelisted Domains</h2>
+      <p>
+        Add domains you want to whitelist for this project. Space cloud will
+            automatically add and renew SSL certificates for these domains{" "}
+      </p>
       <Alert
         message="Domain setup"
         description="Make sure you have added A/AAA records pointing these domains to the clusters in this environment."
@@ -34,7 +39,7 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
                 message: "Please enter the domain for the project"
               }
             ],
-            initialValue: domains ? domains: []
+            initialValue: domains ? domains : []
           })(
             <Select
               mode="tags"

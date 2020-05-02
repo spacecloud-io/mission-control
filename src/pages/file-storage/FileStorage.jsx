@@ -40,7 +40,7 @@ const Rules = (props) => {
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {
 		return Object.assign(prev, {
-			[curr.name]: {
+			[curr.id]: {
 				prefix: curr.prefix,
 				rule: curr.rule
 			}
@@ -49,7 +49,7 @@ const Rules = (props) => {
 
 	useEffect(() => {
 		if (!selectedRuleName && noOfRules > 0) {
-			setSelectedRuleName(rules[0].name)
+			setSelectedRuleName(rules[0].id)
 		}
 	}, [selectedRuleName, noOfRules])
 
@@ -71,7 +71,7 @@ const Rules = (props) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, selectedRuleName, rule).then(() => {
 			const newRules = rules.map(r => {
-				if (r.name !== selectedRuleName) return rule
+				if (r.id !== selectedRuleName) return rule
 				return Object.assign({}, r, rule)
 			})
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
@@ -84,7 +84,7 @@ const Rules = (props) => {
 	const handleAddRule = (ruleName, rule) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
-			const newRules = [...rules, { name: ruleName, ...rule }]
+			const newRules = [...rules, { id: ruleName, ...rule }]
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Added rule successfully")
 		})
@@ -95,7 +95,7 @@ const Rules = (props) => {
 	const handleDeleteRule = (ruleName) => {
 		dispatch(increment("pendingRequests"))
 		client.fileStore.deleteRule(projectID, ruleName).then(() => {
-			const newRules = rules.filter(r => r.name !== ruleName)
+			const newRules = rules.filter(r => r.id !== ruleName)
 			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
 			notify("success", "Success", "Deleted rule successfully")
 		})
@@ -120,7 +120,7 @@ const Rules = (props) => {
 		return <div style={{ marginTop: 24 }}>
 			<div className="panel">
 				<img src={securitySvg} width="240px" />
-				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/storage/filestore/securing-apis/">View Docs.</a></p>
 				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
 			</div>
 		</div>

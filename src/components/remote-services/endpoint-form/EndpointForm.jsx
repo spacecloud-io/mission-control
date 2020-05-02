@@ -13,9 +13,9 @@ import { defaultEndpointRule } from "../../../constants"
 
 const { Option } = Select;
 
-const defaultRule = JSON.stringify(defaultEndpointRule, null, 2)
+
 const EndpointForm = (props) => {
-  const [data, setData] = useState(defaultRule)
+  
   const handleSubmit = e => {
     e.preventDefault();
     props.form.validateFields((err, values) => {
@@ -31,7 +31,9 @@ const EndpointForm = (props) => {
     })
   }
   const { getFieldDecorator } = props.form;
-  const { name, path, method } = props.initialValues ? props.initialValues : {}
+  const { name, path, method, rule } = props.initialValues ? props.initialValues : {}
+  const initialRule = rule ? rule : defaultEndpointRule
+  const [data, setData] = useState(JSON.stringify(initialRule, null, 2))
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Endpoint`}
@@ -52,8 +54,9 @@ const EndpointForm = (props) => {
                     cb("Please provide a endpoint name!")
                     return
                   }
-                  if (value.includes("-") || value.includes(" ")) {
-                    cb("Endpoint name cannot contain hiphens or spaces!")
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb("Endpoint name can only contain alphanumeric characters and underscores!")
+                    return
                   }
                   cb()
                 }

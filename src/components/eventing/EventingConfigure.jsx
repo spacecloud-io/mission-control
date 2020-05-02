@@ -4,14 +4,14 @@ import { Form, Select, Input, Button } from 'antd';
 
 const { Option } = Select;
 
-const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
+const EventingConfigure = ({ form, dbType, handleSubmit, dbList }) => {
 	const { getFieldDecorator } = form;
 
 	const handleSubmitClick = e => {
 		e.preventDefault();
 		form.validateFields((err, values) => {
 			if (!err) {
-				handleSubmit(values.dbType, values.col);
+				handleSubmit(values.dbType);
 			}
 		});
 	}
@@ -31,12 +31,6 @@ const EventingConfigure = ({ form, dbType, col, handleSubmit, dbList }) => {
 							))}
 						</Select>
 					)}
-				</Form.Item>
-				<Form.Item >
-					{getFieldDecorator('col', {
-						rules: [{ required: true, message: 'Collection is required!' }],
-						initialValue: col
-					})(<Input placeholder="Enter collection name" />)}
 				</Form.Item>
 				<br />
 				<Form.Item>

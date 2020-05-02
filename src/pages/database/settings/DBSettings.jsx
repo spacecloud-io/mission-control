@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { Button, Divider, Tooltip, Input } from "antd"
+import { Button, Divider, Tooltip, Popconfirm } from "antd"
 import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -20,15 +20,15 @@ const Settings = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbType")
+  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbAlias")
   const canDisableDB = eventingDB !== selectedDB
 
   const history = useHistory()
 
   // Handlers
   const handleDisable = () => {
-    let conn = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.conn`)
-    let dbType = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.type`)
+    let conn = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
+    let dbType = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
     setDBConfig(projectID, selectedDB, false, conn, dbType)
       .then(() => {
         notify("success", "Success", "Disabled database successfully")
@@ -78,17 +78,25 @@ const Settings = () => {
             <Divider style={{ margin: "16px 0px" }} />
             <h3>Disable database</h3>
             <p>Disables all access to this database</p>
-            {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
-              <Button type="danger" disabled>Disable</Button>
-            </Tooltip>}
-            {canDisableDB && <Button type="danger" onClick={handleDisable} >Disable</Button>}
+            <Popconfirm
+              title={canDisableDB ? `This will disable all access to this database. Are you sure?`: `Eventing and realtime functionality will be disabled since this is the eventing db. Are you sure?`}
+              onConfirm={handleDisable}
+              okText="Yes, disable"
+              cancelText="No"
+            >
+              <Button type="danger">Disable</Button>
+            </Popconfirm>
             <Divider style={{ margin: "16px 0px" }} />
             <h3>Remove Config</h3>
             <p>Removes the config (schema, rules, etc.) of this database without dropping any tables or database</p>
-            {!canDisableDB && <Tooltip placement="right" title="This database is used for eventing. First change the eventing database from the config section" arrowPointAtCenter>
-              <Button type="danger" disabled>Remove</Button>
-            </Tooltip>}
-            {canDisableDB && <Button type="danger" onClick={handleRemoveDb} >Remove</Button>}
+            <Popconfirm
+              title={canDisableDB ? `This will remove the database config and disable all access to this database. Are you sure?`: `Eventing and realtime functionality will be disabled since this is the eventing db. Are you sure?`}
+              onConfirm={handleRemoveDb}
+              okText="Yes, remove"
+              cancelText="No"
+            >
+              <Button type="danger">Remove</Button>
+            </Popconfirm>
           </div>
         </div>
       </div>
