@@ -23,6 +23,11 @@ const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const lorem = new LoremIpsum();
 
+export function capitalizeFirstCharacter(str) {
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 export const getJWTSecret = (state, projectId) => {
   const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
   if (secrets.length === 0) return ""
@@ -140,7 +145,7 @@ export const getEventSourceFromType = (type, defaultValue) => {
 
 export const getEventSourceLabelFromType = (type) => {
   let source = getEventSourceFromType(type)
-  return source.charAt(0).toUpperCase() + source.slice(1)
+  return capitalizeFirstCharacter(source)
 }
 
 export const getFileStorageProviderLabelFromStoreType = (storeType) => {
@@ -291,6 +296,10 @@ export function isSignedIn() {
 
 export function getClusterId(state) {
   return get(state, "env.clusterId", undefined)
+}
+
+export function getClusterPlan(state) {
+  return get(state, "env.plan", "open")
 }
 
 export function getToken() {

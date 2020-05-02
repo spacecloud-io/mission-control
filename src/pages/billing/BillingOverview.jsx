@@ -5,14 +5,15 @@ import ReactGA from 'react-ga';
 import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
 import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
+import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import { Row, Col } from 'antd';
 import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
 import ContactUs from '../../components/billing/contact/ContactUs';
 import client from '../../client';
-import { notify } from '../../utils';
+import { notify, getClusterPlan } from '../../utils';
 import { increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
 
 const BillingOverview = () => {
@@ -21,15 +22,16 @@ const BillingOverview = () => {
   }, [])
 
   const { projectID } = useParams();
+  const history = useHistory();
   const quotas = useSelector(state => state.quotas)
   const [contactModalVisible, setContactModalVisible] = useState(false)
   const [defaultSubject, setDefaultSubject] = useState("")
   const dispatch = useDispatch();
-
-  const handleIncreaseLimit = () => {
-    setContactModalVisible(true);
-    setDefaultSubject("Increase Space Cloud Pro limits");
-  }
+  const name = localStorage.getItem("name")
+  const email = localStorage.getItem("email")
+  const billingDetails = useSelector(state => state.billing.details)
+  const balanceCredits = useSelector(state => state.billing.balanceCredits)
+  const plan = useSelector(state => getClusterPlan(state))
 
   const handleCancel = () => {
     setContactModalVisible(false)
@@ -59,16 +61,21 @@ const BillingOverview = () => {
         <div className="billing-tab-content">
           <Row>
             <Col lg={{ span: 11 }}>
-              <BillingDetails />
+              <BillingDetails name={name} email={email} billingDetails={billingDetails} />
             </Col>
             <Col lg={{ span: 11, offset: 2 }}>
-              <BalanceCredit />
+              <BalanceCredit balanceCredits={balanceCredits} />
             </Col>
           </Row>
           <Row>
-            <Col lg={{ span: 11 }}>
-              <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas} />
-            </Col>
+            {plan === "open" && <Col lg={{ span: 24 }}>
+              <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Upgrade cluster</h3>
+              <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
+              <SelectPlan selectedPlan={plan} handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })} />
+            </Col>}
+            {plan !== "open" && <Col lg={{ span: 11 }}>
+              <PlanDetails plan={plan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/change-plan`)} />
+            </Col>}
           </Row>
         </div>
         {contactModalVisible && <ContactUs

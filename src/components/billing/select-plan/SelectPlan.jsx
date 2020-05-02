@@ -2,8 +2,7 @@ import React from 'react';
 import { Card, Row, Col, Button } from 'antd';
 import './select-plan.css';
 
-const SelectPlan = (props) => {
-
+export default function SelectPlan({ selectedPlan, handleSelectPlan, handleContactUs }) {
   return (
     <Row className="select-plan">
       <Col lg={{ span: 7, offset: 0 }}>
@@ -14,8 +13,8 @@ const SelectPlan = (props) => {
           <span>1 Project</span><br />
           <span>1 Database</span><br />
           <span>Community support</span><br />
-          {props.selectedPlan === "open" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {props.selectedPlan !== "open" && <Button className="select-plan-button green-button" onClick={() => props.handleChangePlan("open")}>Use this plan</Button>}
+          {selectedPlan === "open" && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {selectedPlan !== "open" && <Button className="select-plan-button green-button" onClick={() => handleSelectPlan("open")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
@@ -26,8 +25,8 @@ const SelectPlan = (props) => {
           <span>1 Project</span><br />
           <span>3 Databases</span><br />
           <span>2 day priority email support</span><br />
-          {props.selectedPlan === "pro" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {props.selectedPlan !== "pro" && <Button className="select-plan-button blue-button" onClick={() => props.handleChangePlan("pro")}>Use this plan</Button>}
+          {selectedPlan === "pro" && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {selectedPlan !== "pro" && <Button className="select-plan-button blue-button" onClick={() => handleSelectPlan("pro")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
@@ -38,18 +37,16 @@ const SelectPlan = (props) => {
           <span>2 Projects</span><br />
           <span>3 Databases/project</span><br />
           <span>2 day priority email support</span><br />
-          {props.selectedPlan === "team" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {props.selectedPlan !== "team" && <Button className="select-plan-button purple-button" onClick={() => props.handleChangePlan("team")}>Use this plan</Button>}
+          {selectedPlan === "team" && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {selectedPlan !== "team" && <Button className="select-plan-button purple-button" onClick={() => handleSelectPlan("team")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 23 }}>
         <Card className="select-plan-card" style={{ marginTop: "32px" }}>
           <span style={{ fontSize: "14px", marginRight: "24px" }}>Want a customized plan to suit your needs? Don’t worry we have got you covered!</span>
-          <Button type="primary" ghost style={{ width: "188px" }} onClick={props.handleContactUs}>Contact us</Button>
+          <Button type="primary" ghost style={{ width: "188px" }} onClick={handleContactUs}>Contact us</Button>
         </Card>
       </Col>
     </Row>
   );
 }
-
-export default SelectPlan;

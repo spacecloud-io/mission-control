@@ -5,11 +5,11 @@ import './register-cluster.css';
 import ApplyCouponForm from "./ApplyCouponForm"
 import client from "../../../client"
 import { increment, decrement } from 'automate-redux';
-import { setClusterPlan, notify } from '../../../utils';
+import { setClusterPlan, notify, capitalizeFirstCharacter } from '../../../utils';
 
 const StartSubscription = ({ plan, handleSuccess }) => {
   const dispatch = useDispatch()
-  const planName = plan ? (plan.charAt(0).toUpperCase() + plan.slice(1)) : plan
+  const planName = capitalizeFirstCharacter(plan)
   const [planDetails, setPlanDetails] = useState({ amount: 0, quotas: { maxProjects: 1, maxDatabases: 1 } })
   useEffect(() => {
     dispatch(increment("pendingRequests"))

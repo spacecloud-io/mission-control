@@ -90,7 +90,7 @@ export default () => {
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
