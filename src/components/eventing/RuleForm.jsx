@@ -11,6 +11,14 @@ const { Option } = AutoComplete;
 
 const RuleForm = (props) => {
   const [form] = Form.useForm();
+  const [temp, setTemp] = useState();
+  const [selectedDb, setSelectedDb] = useState();
+
+  const handleChangedValues = ({source}) => {
+    console.log(source);
+    setTemp(source);
+    // setSelectedDb(optio ns);
+  }
 
   const { projectID } = useParams()
   const projects = useSelector(state => state.projects)
@@ -29,10 +37,10 @@ const RuleForm = (props) => {
 
   const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
   let defaultEventSource = getEventSourceFromType(type, "database")
-  const temp = form.getFieldValue("source")
+  // const temp = form.getFieldValue("source")
   const eventSource = temp ? temp : defaultEventSource
 
-  const selectedDb = form.getFieldValue("options.db")
+  // const selectedDb = form.getFieldValue("options.db")
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
   const trackedCollections = Object.keys(collections);
   const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
@@ -51,7 +59,7 @@ const RuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit}
+      <Form layout="vertical" form={form} onFinish={handleSubmit} onValuesChange={handleChangedValues}
         initialValues={{
           'name': name, 'source': defaultEventSource, 'options.db': options ? options.db : undefined,
           'options.col': options ? options.col : undefined, 'type': type ? type : (eventSource === "database" && "DB_INSERT"),

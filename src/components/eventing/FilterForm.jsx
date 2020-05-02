@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useState} from "react"
 import { CheckOutlined, CloseOutlined, HourglassOutlined } from '@ant-design/icons';
 import { Modal, Select, Checkbox, DatePicker, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
@@ -16,14 +16,19 @@ const FilterForm = (props) => {
   const dispatch = useDispatch();
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const projects = useSelector(state => state.projects);
+  const [showDate, setShowDate] = useState();
 
   const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers"));
+
+  const handleChangedValues = ({ showDate }) => {
+    setShowDate(showDate);
+  }
 
   const handleSubmit = e => {
     form.validateFields().then(fieldsValue => {
       // console.log(fieldsValue);
       let values = {};
-      if (form.getFieldValue("showDate")) {
+      if (showDate) {
         const rangeValue = fieldsValue["range-picker"];
         values = {
           ...fieldsValue,
@@ -49,7 +54,7 @@ const FilterForm = (props) => {
       cancelButtonProps={{ style: { float: "left" }, onClick: () => { dispatch(reset("uiState.eventFilters")); props.handleCancel() } }}
       cancelText="Reset Filters"
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit} 
+      <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmit} 
       initialValues={{ 'status': eventFilters.status ? eventFilters.status : ['processed', 'failed', 'staged'],
        'name': eventFilters.name ? eventFilters.name : undefined, 'showDate': eventFilters.showDate,
        'range-picker': eventFilters.startDate ? [moment.unix(eventFilters.startDate, 'YYYY-MM-DD'), moment.unix(eventFilters.endDate, 'YYYY-MM-DD')] : [moment().subtract(7, 'd'), moment()] }}>

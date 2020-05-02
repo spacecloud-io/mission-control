@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { Modal, Input, Radio, Form } from 'antd';
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
@@ -6,6 +6,11 @@ import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const ConfigurationForm = (props) => {
   const [form] = Form.useForm();
+  const [storeTypeValue, setStoreTypeValue] = useState();
+
+  const storeTypeChange = ({ storeType }) => {
+    setStoreTypeValue(storeType)
+  }
 
   const handleSubmit = e => {
     form.validateFields().then(values => {
@@ -24,7 +29,7 @@ const ConfigurationForm = (props) => {
       onCancel={form.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit} 
+      <Form layout="vertical" form={form} onFinish={handleSubmit} onValuesChange={storeTypeChange}
       initialValues={{'storeType': storeType ? storeType : "local", 'conn': conn, 'bucket': bucket, "endpoint": endpoint}}>
         <FormItemLabel name="Choose storage backend" />
         <Form.Item name="storeType" rules={[{ required: true, message: 'Please select a storage backend!' }]}>            
@@ -34,13 +39,13 @@ const ConfigurationForm = (props) => {
               <RadioCard value="gcp-storage">GCP Storage</RadioCard>
             </Radio.Group>
         </Form.Item>
-        {(form.getFieldValue("storeType") === "local" || !form.getFieldValue("storeType")) && <React.Fragment>
+        {(storeTypeValue === "local" || !storeTypeValue) && <React.Fragment>
           <FormItemLabel name="Directory path" />
           <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a directory path!' }]}>
               <Input placeholder="Example: /home/user/my-folder" />
           </Form.Item>
         </React.Fragment>}
-        {form.getFieldValue("storeType") === "amazon-s3" && <React.Fragment>
+        {storeTypeValue === "amazon-s3" && <React.Fragment>
           <FormItemLabel name="Region" />
           <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a region!' }]}>
               <Input placeholder="Example: us-east-1" />
@@ -54,7 +59,7 @@ const ConfigurationForm = (props) => {
               <Input placeholder="Example: https://nyc3.digitaloceanspaces.com" />
           </Form.Item>
         </React.Fragment>}
-        {form.getFieldValue("storeType") === "gcp-storage" && <React.Fragment>
+        {storeTypeValue === "gcp-storage" && <React.Fragment>
           <FormItemLabel name="Bucket" />
           <Form.Item name="bucket" rules={[{ required: true, message: 'Please provide a bucket!' }]}>                  
               <Input placeholder="Example: my-bucket" />

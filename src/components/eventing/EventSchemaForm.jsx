@@ -12,8 +12,11 @@ import { notify } from '../../utils';
 
 const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes, conformLoading }) => {
   const [form] = Form.useForm()
+  const [eventType, setEventType] = useState();
 
-  const eventType = form.getFieldValue("eventType");
+  const handleChangedValues = ({ eventType }) => {
+    setEventType(eventType);
+  }
 
   if (!initialValues) {
     initialValues = {
@@ -62,7 +65,7 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
         confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} initialValues={{ 'eventType': eventType }}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} initialValues={{ 'eventType': eventType }}>
           <FormItemLabel name='Event Type' />
           <Form.Item name="eventType" rules={[{ required: true, message: `Event type is required` }]}>
             <AutoComplete

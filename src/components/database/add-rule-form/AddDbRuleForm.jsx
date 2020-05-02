@@ -19,7 +19,6 @@ const AddDbRuleForm = ({ handleSubmit, handleCancel, conformLoading, defaultRule
 
     const handleSubmitClick = values => {
         form.validateFields().then(values => {
-            console.log(values);
             try {
                 handleSubmit(
                     values.name,

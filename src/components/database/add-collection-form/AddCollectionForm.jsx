@@ -13,6 +13,7 @@ import { notify, getDBTypeFromAlias } from '../../../utils';
 
 const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
   const [form] = Form.useForm();
+  const [colName, setcolName] = useState('')
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
@@ -37,7 +38,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   const [schema, setSchema] = useState(initialValues.schema);
   const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
-  const colName = form.getFieldValue('name')
+  const fieldValueChange = ({ name }) => {setcolName(name)};
   useEffect(() => {
     if (schema) {
       const temp = schema.trim().slice(4).trim()
@@ -53,6 +54,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
+      console.log(colName);
       try {
         handleSubmit(
           values.name,
@@ -77,9 +79,10 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
         confirmLoading={conformLoading}
-        onCancel={handleCancel}
+        onCancel={handleCancel} 
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} initialValues={{
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={fieldValueChange} 
+        initialValues={{
           'name': initialValues.name,
         }}>
           <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />

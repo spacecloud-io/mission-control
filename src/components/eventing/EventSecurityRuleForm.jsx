@@ -20,8 +20,11 @@ const EventSecurityRuleForm = ({
   customEventTypes
 }) => {
   const [form] = Form.useForm();
+  const [eventType, setEventType] = useState()
 
-  const eventType = form.getFieldValue('eventType');
+  const handleChangedValue = ({ eventType }) => {
+    setEventType(eventType)
+  }
 
   if (!initialValues) {
     initialValues = {
@@ -57,7 +60,7 @@ const EventSecurityRuleForm = ({
         confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValue}>
           <FormItemLabel name="Event Type" />
           <Form.Item name="eventType" rules={[
                 { required: true, message: "Please provide a event type!" }

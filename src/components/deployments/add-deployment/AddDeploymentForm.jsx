@@ -1,12 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "./add-deployment-form.css";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
-
+import { Form } from 'antd'
 import { DeleteOutlined, RightOutlined } from '@ant-design/icons';
-
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
 
 import {
   Modal,
@@ -29,87 +26,86 @@ let white = 1;
 let upstreams = 1;
 const AddDeploymentForm = props => {
   const { initialValues, projectId, dockerSecrets, secrets } = props;
-  const {
-    getFieldDecorator,
-    getFieldValue,
-    setFieldsValue
-  } = props.form;
+  const [form] = Form.useForm();
+  const [registryType, setRegistryType] = useState();
+  const [addGPUs, setAddGPUs] = useState();
+  const [keys, setKeys] = useState();
+  const [envKeys, setEnvKeys] = useState();
+  const [whiteKeys, setWhiteKeys] = useState();
+  const [upstreamsKeys, setUpstreamsKeys] = useState();
+
+
+  const handleChangedValues = ({ registryType, addGPUs, keys, envKeys, whiteKeys, upstreamsKeys }) => {
+    setRegistryType(registryType);
+    setAddGPUs(addGPUs);
+    setKeys(keys);
+    setEnvKeys(envKeys);
+    setWhiteKeys(whiteKeys);
+    setUpstreamsKeys(upstreamsKeys);
+  }
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
-        delete values["keys"];
-        delete values["envKeys"];
-        delete values["whiteKeys"];
-        delete values["upstreamsKeys"];
-        delete values["addGPUs"];
-        delete values["gpuType"];
-        delete values["gpuCount"];
-        values.cpu = Number(values.cpu);
-        values.memory = Number(values.memory);
-        values.min = Number(values.min);
-        values.max = Number(values.max);
-        values.concurrency = Number(values.concurrency);
-        values.gpu = gpu
-        values.serviceType = "image";
-        props
-          .handleSubmit(values)
-          .then(() => {
-            notify(
-              "success",
-              "Success",
-              "Saved deployment config successfully"
-            );
-            props.handleCancel();
-          })
-          .catch(ex => notify("error", "Error saving config", ex.toString()));
-      }
+    form.validateFields().then(values => {
+      const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
+      delete values["keys"];
+      delete values["envKeys"];
+      delete values["whiteKeys"];
+      delete values["upstreamsKeys"];
+      delete values["addGPUs"];
+      delete values["gpuType"];
+      delete values["gpuCount"];
+      values.cpu = Number(values.cpu);
+      values.memory = Number(values.memory);
+      values.min = Number(values.min);
+      values.max = Number(values.max);
+      values.concurrency = Number(values.concurrency);
+      values.gpu = gpu
+      values.serviceType = "image";
+      props
+        .handleSubmit(values)
+        .then(() => {
+          notify(
+            "success",
+            "Success",
+            "Saved deployment config successfully"
+          );
+          props.handleCancel();
+        })
+        .catch(ex => notify("error", "Error saving config", ex.toString()));
     });
   };
 
   // PORTS
   const remove = k => {
-    const keys = getFieldValue("keys");
     if (keys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       keys: keys.filter(key => key !== k)
     });
   };
 
   const add = () => {
-    const keys = getFieldValue("keys");
     const nextKeys = keys.concat(ports++);
-    setFieldsValue({
+    form.setFieldsValue({
       keys: nextKeys
     });
   };
 
-
-  getFieldDecorator("keys", {
-    initialValue: initialValues
-      ? initialValues.ports.map((_, index) => index)
-      : [0]
-  });
-  const keys = getFieldValue("keys");
   const formItemsPorts = keys.map((k, index) => (
     <Row key={k}>
       <Col span={6}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`ports[${k}].protocol`, {
-            initialValue:
+        <Form.Item name={`ports[${k}].protocol`} style={{ display: "inline-block" }}>
+            {/* initialValue:
               initialValues && initialValues.ports[k]
                 ? initialValues.ports[k].protocol
-                : "http"
-          })(
+                : "http" */}
+          (
             <Select style={{ width: 120 }}>
               <Option value="http">HTTP</Option>
             </Select>
-          )}
+          )
         </Form.Item>
         <br />
         {index === keys.length - 1 && (
@@ -119,24 +115,22 @@ const AddDeploymentForm = props => {
         )}
       </Col>
       <Col span={9}>
-        <Form.Item style={{ marginLeft: -40, marginRight: 30 }}>
-          {getFieldDecorator(`ports[${k}].port`, {
-            rules: [
+        <Form.Item name={`ports[${k}].port`} style={{ marginLeft: -40, marginRight: 30 }} rules={[
               {
                 required: true,
                 message: "Please fill this field before adding!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.ports[k]
                 ? initialValues.ports[k].port
-                : ""
-          })(
+                : "" */}
+          (
             <InputNumber
               placeholder="Port (Example: 8080)"
               style={{ width: 280 }}
             />
-          )}
+          )
         </Form.Item>
       </Col>
       <Col span={5}>
@@ -151,58 +145,47 @@ const AddDeploymentForm = props => {
 
   // ENVIRONMENT VARIABLES
   const envRemove = k => {
-    const envKeys = getFieldValue("envKeys");
-    setFieldsValue({
+    form.setFieldsValue({
       envKeys: envKeys.filter(key => key !== k)
     });
   };
 
   const envAdd = () => {
-    const envKeys = getFieldValue("envKeys");
     const nextKeys = envKeys.concat(env++);
-    setFieldsValue({
+    form.setFieldsValue({
       envKeys: nextKeys
     });
   };
 
-  getFieldDecorator("envKeys", {
-    initialValue: initialValues
-      ? initialValues.env.map((_, index) => index)
-      : []
-  });
-  const envKeys = getFieldValue("envKeys");
   const formItemsEnv = envKeys.map(k => (
     <Row key={k}>
       <Col span={6}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`env[${k}].key`, {
-            rules: [{ required: true, message: "Please enter key!" }],
-            initialValue:
+        <Form.Item name={`env[${k}].key`} style={{ display: "inline-block" }} 
+        rules={[{ required: true, message: "Please enter key!" }]}>
+            {/* initialValue:
               initialValues && initialValues.env[k]
                 ? initialValues.env[k].key
-                : ""
-          })(<Input style={{ width: 120 }} placeholder="Key" />)}
+                : "" */}
+          (<Input style={{ width: 120 }} placeholder="Key" />)
         </Form.Item>
       </Col>
       <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`env[${k}].value`, {
-            rules: [
+        <Form.Item name={`env[${k}].value`} style={{ marginRight: 30 }} rules={[
               {
                 required: true,
                 message: "Please enter value before adding another!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.env[k]
                 ? initialValues.env[k].value
-                : ""
-          })(
+                : "" */}
+          (
             <Input
               style={{ width: 280, marginLeft: -40, marginRight: 30 }}
               placeholder="Value"
             />
-          )}
+          )
         </Form.Item>
       </Col>
       <Col span={5}>
@@ -215,54 +198,44 @@ const AddDeploymentForm = props => {
 
   //WHITELIST
   const whiteRemove = k => {
-    const whiteKeys = getFieldValue("whiteKeys");
     if (whiteKeys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       whiteKeys: whiteKeys.filter(key => key !== k)
     });
   };
 
   const whiteAdd = () => {
-    const whiteKeys = getFieldValue("whiteKeys");
     const nextKeys = whiteKeys.concat(white++);
-    setFieldsValue({
+    form.setFieldsValue({
       whiteKeys: nextKeys
     });
   };
 
-  getFieldDecorator("whiteKeys", {
-    initialValue: initialValues
-      ? initialValues.whitelists.map((_, index) => index)
-      : [0]
-  });
-  const whiteKeys = getFieldValue("whiteKeys");
   const formItemsWhite = whiteKeys.map((k, index) => (
     <Row
       key={k}
       className={index === whiteKeys.length - 1 ? "bottom-spacing" : ""}
     >
       <Col span={10}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`whitelists[${k}].projectId`, {
-            rules: [
+        <Form.Item name={`whitelists[${k}].projectId`} style={{ display: "inline-block" }} rules={[
               {
                 required: true,
                 message: "Please fill the project id of the service!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.whitelists[k]
                 ? initialValues.whitelists[k].projectId
-                : projectId
-          })(
+                : projectId */}
+          (
             <Input
               style={{ width: 230 }}
               placeholder="Project ID ( * to select all )"
             />
-          )}
+          )
         </Form.Item>
         <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
         <br />
@@ -273,24 +246,22 @@ const AddDeploymentForm = props => {
         )}
       </Col>
       <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`whitelists[${k}].service`, {
-            rules: [
+        <Form.Item name={`whitelists[${k}].service`} style={{ marginRight: 30 }} rules={[
               {
                 required: true,
                 message: "Please fill the name of the service!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.whitelists[k]
                 ? initialValues.whitelists[k].service
-                : "*"
-          })(
+                : "*" */}
+          (
             <Input
               style={{ width: 230 }}
               placeholder="Service Name ( * to select all )"
             />
-          )}
+          )
         </Form.Item>
       </Col>
       <Col span={3}>
@@ -303,54 +274,44 @@ const AddDeploymentForm = props => {
 
   //UPSTREAMS
   const upstreamsRemove = k => {
-    const upstreamsKeys = getFieldValue("upstreamsKeys");
     if (upstreamsKeys.length === 1) {
       return;
     }
 
-    setFieldsValue({
+    form.setFieldsValue({
       upstreamsKeys: upstreamsKeys.filter(key => key !== k)
     });
   };
 
   const upstreamsAdd = () => {
-    const upstreamsKeys = getFieldValue("upstreamsKeys");
     const nextKeys = upstreamsKeys.concat(upstreams++);
-    setFieldsValue({
+    form.setFieldsValue({
       upstreamsKeys: nextKeys
     });
   };
 
-  getFieldDecorator("upstreamsKeys", {
-    initialValue: initialValues
-      ? initialValues.upstreams.map((_, index) => index)
-      : [0]
-  });
-  const upstreamsKeys = getFieldValue("upstreamsKeys");
   const formItemsUpstreams = upstreamsKeys.map((k, index) => (
     <Row
       key={k}
       className={index === upstreamsKeys.length - 1 ? "bottom-spacing" : ""}
     >
       <Col span={10}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`upstreams[${k}].projectId`, {
-            rules: [
+        <Form.Item name={`upstreams[${k}].projectId`} style={{ display: "inline-block" }} rules={[
               {
                 required: true,
                 message: "Please fill the project id of the upstream service!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.upstreams[k]
                 ? initialValues.upstreams[k].projectId
-                : projectId
-          })(
+                : projectId */}
+          (
             <Input
               style={{ width: 230 }}
               placeholder="Project ID ( * to select all )"
             />
-          )}
+          )
         </Form.Item>
         <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
         <br />
@@ -364,24 +325,22 @@ const AddDeploymentForm = props => {
         )}
       </Col>
       <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`upstreams[${k}].service`, {
-            rules: [
+        <Form.Item name={`upstreams[${k}].service`} style={{ marginRight: 30 }} rules={[
               {
                 required: true,
                 message: "Please fill the name of the upstream service!"
               }
-            ],
-            initialValue:
+            ]}>
+            {/* initialValue:
               initialValues && initialValues.upstreams[k]
                 ? initialValues.upstreams[k].service
-                : "*"
-          })(
+                : "*" */}
+          (
             <Input
               style={{ width: 230 }}
               placeholder="Service Name ( * to select all )"
             />
-          )}
+          )
         </Form.Item>
       </Col>
       <Col span={5}>
@@ -393,10 +352,8 @@ const AddDeploymentForm = props => {
   ));
 
   const autoscalingModeSelect = (
-    <Form.Item style={{ marginBottom: 0 }}>
-      {getFieldDecorator("autoscalingMode", {
-        initialValue: initialValues ? initialValues.autoscalingMode : "parallel"
-      })(
+    <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
+      (
         <Select
           placeholder="Select auto scaling mode"
           style={{ width: 240, top: 4 }}
@@ -404,7 +361,7 @@ const AddDeploymentForm = props => {
           <Option value="per-second">Requests per second</Option>
           <Option value="parallel">Parallel requests</Option>
         </Select>
-      )}
+      )
     </Form.Item>)
 
   const modalProps = {
@@ -420,12 +377,22 @@ const AddDeploymentForm = props => {
   return (
     <div>
       <Modal {...modalProps}>
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmitClick}
+        initialValues={{ 'id': initialValues ? initialValues.id : "", 'version': initialValues ? initialValues.version : "",
+        'dockerImage': initialValues ? initialValues.dockerImage : "", 'registryType': initialValues ? initialValues.registryType : "public",
+        'imagePullPolicy': initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists", 'cpu': initialValues ? initialValues.cpu : 0.1,
+        'memory': initialValues ? initialValues.memory : 100, 'addGPUs': initialValues && initialValues.gpuType ? true : false,  
+        'gpuType': initialValues ? initialValues.gpuType : "nvdia", 'gpuCount': initialValues ? initialValues.gpuCount : 1, 
+        'concurrency': initialValues ? initialValues.concurrency : 50, 'min': initialValues ? initialValues.min : 1, 
+        'max': initialValues ? initialValues.max : 100, 'secrets': initialValues ? initialValues.secrets : [], 
+        'keys': initialValues ? initialValues.ports.map((_, index) => index) : [0], 
+        'envKeys': initialValues ? initialValues.env.map((_, index) => index) : [], 
+        'whiteKeys': initialValues ? initialValues.whitelists.map((_, index) => index) : [0], 
+        'upstreamsKeys': initialValues ? initialValues.upstreams.map((_, index) => index) : [0], 
+        'autoscalingMode': initialValues ? initialValues.autoscalingMode : "parallel" }}>
           <React.Fragment>
             <FormItemLabel name="Service ID" />
-            <Form.Item>
-              {getFieldDecorator("id", {
-                rules: [
+            <Form.Item name="id" rules={[
                   {
                     validator: (_, value, cb) => {
                       if (!value) {
@@ -439,20 +406,17 @@ const AddDeploymentForm = props => {
                       cb()
                     }
                   }
-                ],
-                initialValue: initialValues ? initialValues.id : ""
-              })(
+                ]}>
+              (
                 <Input
                   placeholder="Unique name for your service"
                   style={{ width: 288 }}
                   disabled={initialValues ? true : false}
                 />
-              )}
+              )
             </Form.Item>
             <FormItemLabel name="Version" />
-            <Form.Item>
-              {getFieldDecorator("version", {
-                rules: [
+            <Form.Item name="version" rules={[
                   {
                     validator: (_, value, cb) => {
                       if (!value) {
@@ -466,50 +430,42 @@ const AddDeploymentForm = props => {
                       cb()
                     }
                   }
-                ],
-                initialValue: initialValues ? initialValues.version : ""
-              })(
+                ]}>
+              (
                 <Input
                   placeholder="Version of your service (example: v1)"
                   style={{ width: 288 }}
                   disabled={initialValues ? true : false}
                 />
-              )}
+              )
             </Form.Item>
             <FormItemLabel name="Docker container" />
-            <Form.Item>
-              {getFieldDecorator("dockerImage", {
-                rules: [
+            <Form.Item name="dockerImage" rules={[
                   {
                     required: true,
                     message: "Please input docker container!"
                   }
-                ],
-                initialValue: initialValues ? initialValues.dockerImage : ""
-              })(<Input placeholder="eg: spaceuptech/basic-service" />)}
+                ]}>
+              (<Input placeholder="eg: spaceuptech/basic-service" />)
             </Form.Item>
             <FormItemLabel name="Docker registry type" />
-            <Form.Item>
-              {getFieldDecorator("registryType", {
-                initialValue: initialValues
-                  ? initialValues.registryType
-                  : "public"
-              })(
+            <Form.Item name="registryType">
+              (
                 <Radio.Group>
                   <Radio value="public">Public Registry</Radio>
                   <Radio value="private">Private Registry</Radio>
                 </Radio.Group>
-              )}
+              )
             </Form.Item>
             <React.Fragment>
-              {getFieldValue("registryType") === "private" && (
+              {registryType === "private" && (
                 <React.Fragment>
                   <FormItemLabel
                     name="Docker secret"
                     description="Docker secret for authentication to pull private Docker images"
                   />
                   <Form.Item>
-                    {getFieldDecorator("dockerSecret", {
+                    {/* {getFieldDecorator("dockerSecret", {
                       rules: [
                         {
                           required: true,
@@ -519,7 +475,7 @@ const AddDeploymentForm = props => {
                       initialValue: initialValues
                         ? initialValues.dockerSecret
                         : ""
-                    })(
+                    })( */}
                       <Select placeholder="Select docker secret to be applied">
                         {dockerSecrets.map(secret => (
                           <Option value={secret}>{secret}</Option>
@@ -536,49 +492,37 @@ const AddDeploymentForm = props => {
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
-                <Form.Item>
-                  {getFieldDecorator("imagePullPolicy", {
-                    initialValue: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists"
-                  })(<Select style={{ width: 175 }}>
+                <Form.Item name="imagePullPolicy">
+                  (<Select style={{ width: 175 }}>
                     <Select.Option value="always">Always</Select.Option>
                     <Select.Option value="pull-if-not-exists">If not present</Select.Option>
-                  </Select>)}
+                  </Select>)
                 </Form.Item>
                 <FormItemLabel
                   name="Resources"
                   description="The resources to provide to each instance of the service"
                 />
-                <Form.Item>
-                  {getFieldDecorator("cpu", {
-                    initialValue: initialValues ? initialValues.cpu : 0.1
-                  })(<Input addonBefore="vCPUs" style={{ width: 160 }} />)}
-                  {getFieldDecorator("memory", {
-                    initialValue: initialValues ? initialValues.memory : 100
-                  })(
+                <Form.Item name="cpu">
+                  (<Input addonBefore="vCPUs" style={{ width: 160 }} />)
+                  (
                     <Input
                       addonBefore="Memory (in MBs)"
                       style={{ width: 240, marginLeft: 32 }}
                     />
-                  )}
+                  )
                 </Form.Item>
                 <FormItemLabel name="GPUs" />
-                <Form.Item>
-                  {getFieldDecorator("addGPUs", {
-                    valuePropName: "checked",
-                    initialValue:
-                      initialValues && initialValues.gpuType ? true : false
-                  })(
+                <Form.Item name="addGPUs" valuePropName="checked">
+                  (
                     <Checkbox>
                       Consume GPUs
                     </Checkbox>
-                  )}
+                  )
                 </Form.Item>
-                {getFieldValue("addGPUs") === true && <React.Fragment>
+                {addGPUs === true && <React.Fragment>
                   <FormItemLabel name="GPU resources" />
                   <Form.Item>
-                    {getFieldDecorator("gpuType", {
-                      initialValue: initialValues ? initialValues.gpuType : "nvdia"
-                    })(
+                    (
                       <Select
                         placeholder="Select gpu type"
                         style={{ width: 160 }}
@@ -586,43 +530,35 @@ const AddDeploymentForm = props => {
                         <Option value="nvdia">NVDIA</Option>
                         <Option value="amd">AMD</Option>
                       </Select>
-                    )}
-                    {getFieldDecorator("gpuCount", {
-                      initialValue: initialValues ? initialValues.gpuCount : 1
-                    })(
+                    )
+                    (
                       <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
-                    )}
+                    )
                   </Form.Item>
                 </React.Fragment>}
                 <FormItemLabel
                   name="Auto scaling"
                   description="Auto scale your container instances between min and max replicas based on the following config"
                 />
-                <Form.Item>
-                  {getFieldDecorator("concurrency", {
-                    initialValue: initialValues ? initialValues.concurrency : 50
-                  })(
+                <Form.Item name="concurrency">
+                  (
                     <Input addonBefore={autoscalingModeSelect} style={{ width: 400 }} min={1} />
-                  )}
+                  )
                 </Form.Item>
                 <FormItemLabel
                   name="Replicas"
                 />
-                <Form.Item>
-                  {getFieldDecorator("min", {
-                    initialValue: initialValues ? initialValues.min : 1
-                  })(
+                <Form.Item name="min">
+                  (
                     <Input addonBefore="Min" style={{ width: 160 }} min={1} />
-                  )}
-                  {getFieldDecorator("max", {
-                    initialValue: initialValues ? initialValues.max : 100
-                  })(
+                  )
+                  (
                     <Input
                       addonBefore="Max"
                       style={{ width: 160, marginLeft: 32 }}
                       min={1}
                     />
-                  )}
+                  )
                 </Form.Item>
                 <FormItemLabel name="Environment variables" />
                 {formItemsEnv}
@@ -632,10 +568,8 @@ const AddDeploymentForm = props => {
                     : "Add another environment variable"}
                 </Button>
                 <FormItemLabel name="Secrets" />
-                <Form.Item>
-                  {getFieldDecorator("secrets", {
-                    initialValue: initialValues ? initialValues.secrets : []
-                  })(
+                <Form.Item name="secrets">
+                  (
                     <Select
                       mode="multiple"
                       placeholder="Select secrets to be applied"
@@ -645,7 +579,7 @@ const AddDeploymentForm = props => {
                         <Option value={secret}>{secret}</Option>
                       ))}
                     </Select>
-                  )}
+                  )
                 </Form.Item>
                 <FormItemLabel
                   name="Whitelists"
@@ -666,4 +600,4 @@ const AddDeploymentForm = props => {
   );
 };
 
-export default Form.create({})(AddDeploymentForm);
+export default AddDeploymentForm;
