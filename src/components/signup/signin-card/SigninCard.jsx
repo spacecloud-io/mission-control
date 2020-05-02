@@ -8,7 +8,6 @@ import useEventListener from "@use-it/event-listener"
 
 const SigninCard = (props) => {
   const messageHandler = (event) => {
-    console.log("Event", event)
     if (event.origin !== "https://login.spaceuptech.com") {
       return;
     }

@@ -403,10 +403,12 @@ export const onAppLoad = () => {
 
 export function enterpriseSignin(token) {
   return new Promise((resolve, reject) => {
-    client.billing.signIn(token).then(newToken => {
+    client.billing.signIn(token)
+    .then(newToken => {
       saveSpaceUpToken(newToken)
       fetchBillingDetails().finally(() => resolve())
-    }).catch((error) => reject(error))
+    })
+    .catch((error) => reject(error))
   })
 }
 
