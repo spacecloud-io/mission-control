@@ -35,7 +35,7 @@ const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const version = useSelector(state => state.version)
+  const version = useSelector(state => state.env.version)
   const enterpriseMode = localStorage.getItem('enterprise') === 'true';
   const billingEnabled = useSelector(state => state.billing.status ? true : false)
 
@@ -115,9 +115,9 @@ const Sidenav = (props) => {
           {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link> */}
-          {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
+          <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
             <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link>}
+          </Link>
         </div>
         <div className="sidenav-version">
           <Icon type="info-circle" style={{ fontSize: "20px", fontWeight: "700" }} />

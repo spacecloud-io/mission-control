@@ -8,6 +8,7 @@ const initialState = {
 	pendingRequests: 0,
 	uiState: {
 		selectedCollection: "",
+		showSigninModal: false,
 		showSidenav: false,
 		sideNavActiveKeys: ["1", "2"],
 		eventFilters: {
@@ -16,12 +17,18 @@ const initialState = {
 			showDate: false
 		}
 	},
-	clusters: [],
 	eventLogs: [],
 	credentials: {},
-	quotas: {},
+	env: {
+		version: "",
+		clusterId: null,
+		plan: "open",
+		quotas: { maxDatabases: 1, maxProjects: 1 }
+	},
 	billing: {
 		status: false,
+		balanceCredits: 0,
+		details: {},
 		invoices: []
 	}
 };

@@ -55,3 +55,6 @@ export const defaultFileRootPathRule = {
 export const defaultEndpointRule = {
   rule: "allow"
 }
+
+export const spaceCloudClusterOrigin = process.env.NODE_ENV !== "production" ? "http://localhost:4122": undefined
+export const enterpriseServerGraphQLURL = process.env.NODE_ENV !== "production" ? "http://localhost:8000/v1/api/graphql": "https://api.spaceuptech.com/v1/api/spacecloud/graphql"

@@ -5,6 +5,7 @@ const {Panel} = Collapse;
 const FAQ = (props) => {
     return(
         <div className="faq">
+            <h3 style={{marginTop:"48px", marginBottom:"32px", fontSize:"21px"}}>Frequently asked questions</h3>
             <Collapse accordion>
                 <Panel header="Is there a free trial?" key='1'>
                     <p>The pro version does not have a free trial as of now. 
@@ -24,7 +25,10 @@ const FAQ = (props) => {
                     <p><b>$50</b> per additional project</p>
                     <p><b>$100</b> per additional cluster</p>
                 </Panel>
-                <Panel header="How do I cancel my subscription?" key='4'>
+                <Panel header="Can I upgrade multiple Space Cloud clusters?" key='4'>
+                    <p></p>
+                </Panel>
+                <Panel header="How do I cancel my subscription?" key='5'>
                     <p>You can cancel your subscription anytime by sending us an email. 
                         We will setup a quick call to take your feedback and that’s it.</p>
                 </Panel>

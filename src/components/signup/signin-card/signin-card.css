@@ -1,0 +1,40 @@
+.signin-card{
+    text-align: center;
+    padding: 64px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+}
+
+.signin-card .ant-card-body{
+    padding: 16px 24px;
+}
+
+.signin-card .vendor-card{
+    border-radius: 4px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    cursor: pointer;   
+}
+
+.signin-card .vendor-text{
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.signin-card .google{
+    margin-top: 32px;
+}
+
+.signin-card .twitter{
+    margin-top: 24px;
+    background-color: #1DA1F2;
+    color: #FFFFFF;
+    border-color: #1DA1F2;
+}
+
+.signin-card .github{
+    margin-top: 24px;
+    background-color: #171515;
+    color: #FFFFFF;
+    border-color: #171515;
+}
