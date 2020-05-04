@@ -37,7 +37,6 @@ class Service {
     this.secrets = new Secrets(this.client)
     this.billing = new Billing(this.enterpriseClient, this.spaceSiteClient)
     if (token) this.client.setToken(token);
-    if (spaceUpToken) this.enterpriseClient.setToken(spaceUpToken);
   }
 
   setToken(token) {
