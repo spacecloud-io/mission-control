@@ -8,7 +8,6 @@ import * as serviceWorker from './serviceWorker';
 import './index.css'
 
 import ReactGA from 'react-ga';
-import { defaultDbConnectionStrings } from './constants';
 if (process.env.NODE_ENV === "production")  {
   ReactGA.initialize('UA-104521884-3');
 }

@@ -11,7 +11,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          login(token: $token) @masterServer {
+          login(token: "${token}") @backend {
             status
             error
             message
@@ -43,7 +43,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          create_subscription(name: $name, address: $address, paymentMethodId: $paymentMethodId${invoiceId ? ', invoiceId: $invoiceId' : ''}) @masterServer{
+          create_subscription(name: $name, address: $address, paymentMethodId: $paymentMethodId${invoiceId ? ', invoiceId: $invoiceId' : ''}) @backend{
             status
             error
             message
@@ -82,7 +82,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          create_failed_subscription(subscriptionId: $subscriptionId) @masterServer {
+          create_failed_subscription(subscriptionId: $subscriptionId) @backend {
             status
             error
             message
@@ -108,7 +108,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          register_cluster(clusterName: $clusterName, doesExist: $doesExist) @masterServer {
+          register_cluster(clusterName: $clusterName, doesExist: $doesExist) @backend {
             status
             error
             message
@@ -137,7 +137,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          update_plan(clusterId: $clusterId, plan: $plan) @masterServer {
+          update_plan(clusterId: $clusterId, plan: $plan) @backend {
             status
             error
             message
@@ -163,7 +163,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          add_promotion(couponCode: $couponCode) @masterServer {
+          add_promotion(couponCode: $couponCode) @backend {
             status
             error
             message
@@ -190,7 +190,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          billing_details @masterServer{
+          billing_details @backend{
             status
             error
             message
