@@ -50,7 +50,7 @@ const Topbar = (props) => {
 
   const handleLogout = () => {
     localStorage.clear();
-    history.push('/mission-control/signin');
+    history.push('/mission-control/');
   }
 
   const signedIn = isSignedIn();
