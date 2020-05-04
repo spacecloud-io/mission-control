@@ -9,7 +9,7 @@ import store from '../../../store';
 import { increment, decrement } from 'automate-redux';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripeClient = loadStripe("pk_test_CSfrVqqLxnemAgS92ci3BUlN00t7E2AKmm");
+const stripeClient = loadStripe("pk_test_86Z4cMrqx8qC7bHLa0nLeQYs00D1MqsudX");
 const countriesOptions = countries.map(obj => <Select.Option key={obj.code} value={obj.code}>{obj.name}</Select.Option>)
 
 const BillingDetailsForm = (props) => {

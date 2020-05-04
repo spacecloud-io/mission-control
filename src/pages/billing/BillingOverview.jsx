@@ -60,7 +60,7 @@ const BillingOverview = () => {
       <div className='page-content page-content--no-padding'>
         <BillingTabs activeKey="overview" projectID={projectID} />
         <div className="billing-tab-content">
-          <Row>
+          <Row gutter={48}>
             <Col lg={{ span: 11 }}>
               <BillingDetails name={name} email={email} billingDetails={billingDetails} />
             </Col>

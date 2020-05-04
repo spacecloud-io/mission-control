@@ -76,9 +76,9 @@
     padding: 10px 30px;
 }
 
-.ant-popover-inner-content{
+/* .ant-popover-inner-content{
     padding: 0;
-}
+} */
 
 .topbar .ant-menu-horizontal > .ant-menu-item,
 .ant-menu-horizontal > .ant-menu-item:hover, 
