@@ -4,7 +4,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { increment, decrement, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 import { Row, Col } from 'antd';
-import { notify, isSignedIn, getClusterPlan } from '../../utils';
+import { notify, isSignedIn, getClusterPlan, isBillingEnabled } from '../../utils';
 import client from '../../client';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
@@ -32,6 +32,12 @@ const Billing = () => {
   const signedIn = isSignedIn()
   const selectedPlan = useSelector(state => getClusterPlan(state))
   const dispatch = useDispatch();
+  const billingEnabled = useSelector(state => isBillingEnabled(state))
+  useEffect(() => {
+    if (billingEnabled) {
+      history.push(`/mission-control/projects/${projectID}/billing/overview`)
+    }
+  }, [billingEnabled])
 
   const handleRequestFreeTrial = () => {
     setContactModalVisible(true);

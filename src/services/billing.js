@@ -213,7 +213,6 @@ class Billing {
           }
           const obj = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices, amount }
           resolve(obj)
-          resolve()
         })
         .catch(ex => reject(ex))
     })

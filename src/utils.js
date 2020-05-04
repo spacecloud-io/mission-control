@@ -481,7 +481,7 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
 
 
 export const BillingRoute = ({ component: Component, ...rest }) => {
-  const billingEnabled = isBillingEnabled()
+  const billingEnabled = isBillingEnabled(store.getState())
   return (
     <Route
       {...rest}
