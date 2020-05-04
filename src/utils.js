@@ -254,7 +254,7 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
     if (spaceUpToken) {
       store.dispatch(increment("pendingRequests"))
       fetchBillingDetails()
-        .catch(ex => notify("error", "Error fetching billing details", ex))
+        .catch(ex => console.log("Error fetching billing details", ex))
         .finally(() => store.dispatch(decrement("pendingRequests")))
     }
   }
