@@ -39,6 +39,12 @@ const UpgradeCluster = (props) => {
     }
   }, [billingEnabled])
 
+  useEffect(() => {
+    if (clusterRegistered && current < 3) {
+      setCurrent(3)
+    }
+  }, [clusterRegistered])
+
   const handleSignin = (firebaseToken) => {
     dispatch(increment("pendingRequests"))
     enterpriseSignin(firebaseToken)

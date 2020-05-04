@@ -119,9 +119,13 @@ class Billing {
       })
         .then(res => {
           const { status, error, message, result } = res.data.register_cluster
-          if (status !== 200) {
-            console.log("Register Cluster Error", error, "Error Message", message)
+          if (status === 409) {
             resolve({ ack: false })
+            return
+          }
+          if (status !== 200) {
+            console.log("Register Cluster Error", error)
+            reject(message)
             return
           }
           const { clusterId, clusterKey } = result
@@ -223,7 +227,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          plans(id: $plan) @db{
+          plans(where: {id: $plan}) @db{
             name
             amount
             quotas
