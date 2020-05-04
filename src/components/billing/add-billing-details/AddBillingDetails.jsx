@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStripe, useElements, CardElement, Elements } from '@stripe/react-stripe-js';
 import CardSection from './card-section/CardSection';
+// import CreditCardInput from 'react-credit-card-input';
 import { Form, Button, Input, Select, Card } from 'antd';
 import client from "../../../client"
 import countries from "./countries.json"
@@ -8,6 +9,7 @@ import { notify, fetchBillingDetails } from '../../../utils';
 import store from '../../../store';
 import { increment, decrement } from 'automate-redux';
 import { loadStripe } from '@stripe/stripe-js';
+// import { useEffect } from 'react';
 
 const stripeClient = loadStripe("pk_test_86Z4cMrqx8qC7bHLa0nLeQYs00D1MqsudX");
 const countriesOptions = countries.map(obj => <Select.Option key={obj.code} value={obj.code}>{obj.name}</Select.Option>)
@@ -16,6 +18,9 @@ const BillingDetailsForm = (props) => {
   const stripe = useStripe();
   const elements = useElements();
   const { getFieldDecorator } = props.form;
+  // const [creditCardNumber, setCreditCardNuber] = useState(null)
+  // const [creditCardCVC, setCreditCardCVC] = useState(null)
+  // const [creditCardExpiry, setCreditCardExpiry] = useState(null)
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -24,7 +29,9 @@ const BillingDetailsForm = (props) => {
       return;
     }
 
+
     props.form.validateFields(async (err, values) => {
+      // console.log("FormValues", values, elements.getElement(CardElement))
       if (!err) {
         const { cardDetails, ...address } = values
         const result = await stripe.createPaymentMethod({
@@ -52,6 +59,16 @@ const BillingDetailsForm = (props) => {
             <CardSection />
           )}
         </Form.Item>
+        {/* <Form.Item style={{ marginTop: '-8px' }}>
+          {getFieldDecorator('cardDetails', {
+            rules: [{ required: false }],
+          })(
+            <CreditCardInput 
+            cardNumberInputProps={{ value: creditCardNumber, onChange: (e) => setCreditCardNuber(e.target.value)}}
+            cardExpiryInputProps={{ value: creditCardExpiry, onChange: (e) => setCreditCardExpiry(e.target.value) }}
+            cardCVCInputProps={{ value: creditCardCVC, onChange: (e) => setCreditCardCVC(e.target.value)}} />
+          )}
+        </Form.Item> */}
         <p style={{ marginTop: '48px' }}><b>Billing address</b></p>
         <Form.Item>
           {getFieldDecorator('country', {
