@@ -299,7 +299,8 @@ export function getClusterId(state) {
 }
 
 export function getClusterPlan(state) {
-  return get(state, "env.plan", "open")
+  const plan = get(state, "env.plan", "open")
+  return plan ? plan : "open"
 }
 
 export function getToken() {
@@ -404,11 +405,11 @@ export const onAppLoad = () => {
 export function enterpriseSignin(token) {
   return new Promise((resolve, reject) => {
     client.billing.signIn(token)
-    .then(newToken => {
-      saveSpaceUpToken(newToken)
-      fetchBillingDetails().finally(() => resolve())
-    })
-    .catch((error) => reject(error))
+      .then(newToken => {
+        saveSpaceUpToken(newToken)
+        fetchBillingDetails().finally(() => resolve())
+      })
+      .catch((error) => reject(error))
   })
 }
 
