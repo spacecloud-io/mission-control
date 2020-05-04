@@ -124,8 +124,8 @@ class Billing {
             resolve({ ack: false })
             return
           }
-          const { clusterId, key } = result
-          resolve({ ack: true, clusterId, key })
+          const { clusterId, clusterKey } = result
+          resolve({ ack: true, clusterId, clusterKey })
         })
         .catch(ex => reject(ex))
     })
@@ -163,7 +163,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          add_promotion(couponCode: $couponCode) @backend {
+          add_promotion(code: $couponCode) @backend {
             status
             error
             message

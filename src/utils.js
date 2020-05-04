@@ -422,13 +422,13 @@ export function registerCluster(clusterName, doesExist = false) {
     }
 
     client.billing.registerCluster(clusterName, doesExist)
-      .then(({ ack, clusterId, key }) => {
+      .then(({ ack, clusterId, clusterKey }) => {
         if (!ack) {
           resolve({ registered: false })
           return
         }
 
-        client.setClusterIdentity(clusterId, key)
+        client.setClusterIdentity(clusterId, clusterKey)
           .then(() => {
             resolve({ registered: true, notifiedToCluster: true })
             store.dispatch(set("env.clusterId", clusterId))
