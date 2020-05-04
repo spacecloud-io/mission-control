@@ -326,10 +326,10 @@ function saveToken(token) {
 
 function saveSpaceUpToken(token) {
   // Get claims of the token
-  const { email, name } = getTokenClaims(token)
+  const { emailId, name } = getTokenClaims(token)
 
   // Save token claims to local storage
-  localStorage.setItem("email", email)
+  localStorage.setItem("email", emailId)
   localStorage.setItem("name", name)
 
   // Save token to local storage and set the token on the API
