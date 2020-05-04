@@ -9,13 +9,55 @@ import store from '../../../store';
 import { increment, decrement } from 'automate-redux';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripeClient = loadStripe("pk_test_86Z4cMrqx8qC7bHLa0nLeQYs00D1MqsudX");
+const stripePromise = loadStripe("pk_test_86Z4cMrqx8qC7bHLa0nLeQYs00D1MqsudX");
 const countriesOptions = countries.map(obj => <Select.Option key={obj.code} value={obj.code}>{obj.name}</Select.Option>)
 
 const BillingDetailsForm = (props) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [invoiceId, setInvoiceId] = useState(undefined)
   const { getFieldDecorator } = props.form;
+
+  const handleStripePayment = (paymentMethodId, address) => {
+    const name = localStorage.getItem("name")
+    store.dispatch(increment("pendingRequests"))
+    client.billing.setBillingDetails(name, address, paymentMethodId, invoiceId)
+      .then(({ ack, requiresAction, invoiceId, subscriptionId, paymentIntentSecret }) => {
+        if (ack) {
+          fetchBillingDetails()
+          props.handleSuccess()
+          return
+        }
+        // Store the invoiceId as it is required while retrying with new card
+        setInvoiceId(invoiceId)
+
+        // If the subscription is not started with no further action (3d secure) required
+        // we assume that the card was invalid or declined and let user try with another card.
+        if (!requiresAction) {
+          notify("error", "Error saving billing details", "Card declined. Make sure your card details are proper.")
+          return
+        }
+
+        // Requires Action Workflow:
+        stripe.confirmCardPayment(paymentIntentSecret).then(function (result) {
+          if (result.error) {
+            // Display error.message in your UI.
+            notify("error", "Error in 3d secure payment", result.error.message)
+          } else {
+            // The payment has succeeded. Inform the enterprise server about it
+            store.dispatch(increment("pendingRequests"))
+            client.billing.handle3DSecureSuccess(subscriptionId).then(() => {
+              fetchBillingDetails()
+              props.handleSuccess()
+            })
+              .catch(ex => notify("error", "Error notifying Space Up server about billing success", ex))
+              .finally(() => store.dispatch(decrement("pendingRequests")))
+          }
+        });
+      })
+      .catch(ex => notify("error", "Error saving billing details", ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -38,7 +80,7 @@ const BillingDetailsForm = (props) => {
           }
         });
         if (!result.error) {
-          props.handleStripePayment(result.paymentMethod.id, address);
+          handleStripePayment(result.paymentMethod.id, address);
         }
       }
     })
@@ -82,51 +124,11 @@ const BillingDetailsForm = (props) => {
 const WrappedBillingDetailsForm = Form.create({})(BillingDetailsForm);
 
 export default function AddBillingDetails({ handleSuccess }) {
-  const [invoiceId, setInvoiceId] = useState(undefined)
-  const handleStripePayment = (paymentMethodId, address) => {
-    const name = localStorage.getItem("name")
-    store.dispatch(increment("pendingRequests"))
-    client.billing.setBillingDetails(name, address, paymentMethodId, invoiceId)
-      .then(({ subscriptionStarted, requiresAction, invoiceId, subscriptionId, paymentIntentSecret }) => {
-        if (subscriptionStarted) {
-          fetchBillingDetails()
-          handleSuccess()
-          return
-        }
-        // Store the invoiceId as it is required while retrying with new card
-        setInvoiceId(invoiceId)
 
-        // If the subscription is not started with no further action (3d secure) required
-        // we assume that the card was invalid or declined and let user try with another card.
-        if (!requiresAction) {
-          notify("error", "Error saving billing details", "Card declined. Make sure your card details are proper.")
-          return
-        }
-
-        // Requires Action Workflow:
-        stripeClient.confirmCardPayment(paymentIntentSecret).then(function (result) {
-          if (result.error) {
-            // Display error.message in your UI.
-            notify("error", "Error in 3d secure payment", result.error.message)
-          } else {
-            // The payment has succeeded. Inform the enterprise server about it
-            store.dispatch(increment("pendingRequests"))
-            client.billing.handle3DSecureSuccess(subscriptionId).then(() => {
-              fetchBillingDetails()
-              handleSuccess()
-            })
-              .catch(ex => notify("error", "Error notifying Space Up server about billing success", ex))
-              .finally(() => store.dispatch(decrement("pendingRequests")))
-          }
-        });
-      })
-      .catch(ex => notify("error", "Error saving billing details", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-  }
   return (
     <Card style={{ padding: '24px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-      <Elements stripe={stripeClient}>
-        <WrappedBillingDetailsForm handleStripePayment={handleStripePayment} />
+      <Elements stripe={stripePromise}>
+        <WrappedBillingDetailsForm handleSuccess={handleSuccess} />
       </Elements>
     </Card>
   );

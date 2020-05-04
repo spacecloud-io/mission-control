@@ -62,7 +62,7 @@ class Billing {
 
           const subscriptionId = result.id
           const invoiceId = result.latest_invoice.id
-          const paymentIntentSecret = result.latest_invoice.client_secret
+          const paymentIntentSecret = result.latest_invoice.payment_intent.client_secret
 
           const ack = result.status === "active" && result.latest_invoice.payment_intent.status === "succeeded"
           const requiresAction = result.status === "incomplete" && result.latest_invoice.payment_intent.status === "requires_action"
