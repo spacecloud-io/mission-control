@@ -19,26 +19,26 @@ export default function SelectPlan({ selectedPlan, handleSelectPlan, handleConta
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
         <Card className="select-plan-card blue-card">
-          <h3 className="select-plan-plan blue">PRO</h3>
-          <h1 className="select-plan-amount blue">$25</h1>
+          <h3 className="select-plan-plan blue">Starter</h3>
+          <h1 className="select-plan-amount blue">$50</h1>
           <p className="select-plan-time blue">per month</p>
           <span>1 Project</span><br />
           <span>3 Databases</span><br />
           <span>2 day priority email support</span><br />
-          {selectedPlan === "pro" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {selectedPlan !== "pro" && <Button className="select-plan-button blue-button" onClick={() => handleSelectPlan("pro")}>Use this plan</Button>}
+          {selectedPlan === "starter-v1" && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {selectedPlan !== "starter-v1" && <Button className="select-plan-button blue-button" onClick={() => handleSelectPlan("starter-v1")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
         <Card className="select-plan-card purple-card">
-          <h3 className="select-plan-plan purple">TEAMS</h3>
-          <h1 className="select-plan-amount purple">$99</h1>
+          <h3 className="select-plan-plan purple">PRO</h3>
+          <h1 className="select-plan-amount purple">$100</h1>
           <p className="select-plan-time purple">per month</p>
           <span>2 Projects</span><br />
           <span>3 Databases/project</span><br />
           <span>2 day priority email support</span><br />
-          {selectedPlan === "team" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {selectedPlan !== "team" && <Button className="select-plan-button purple-button" onClick={() => handleSelectPlan("team")}>Use this plan</Button>}
+          {selectedPlan === "pro-v1" && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {selectedPlan !== "pro-v1" && <Button className="select-plan-button purple-button" onClick={() => handleSelectPlan("pro-v1")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 23 }}>
