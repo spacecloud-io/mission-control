@@ -8,7 +8,7 @@ import { increment, decrement } from 'automate-redux';
 
 const PlanDetails = ({ plan, handleChangePlan }) => {
   const dispatch = useDispatch()
-  const [planDetails, setPlanDetails] = useState({ name: capitalizeFirstCharacter(plan), amount: 0, quotas: { maxDatabases: 1, maxProjects: 1 } })
+  const [planDetails, setPlanDetails] = useState({ product: { name: capitalizeFirstCharacter(plan) }, amount: 0, currency: "usd", quotas: { maxDatabases: 1, maxProjects: 1 } })
   useEffect(() => {
     if (plan) {
       dispatch(increment("pendingRequests"))
@@ -19,12 +19,13 @@ const PlanDetails = ({ plan, handleChangePlan }) => {
     }
   }, [plan])
   const { maxDatabases, maxProjects } = planDetails.quotas
+  const currencyNotation = planDetails.currency.toLowerCase() === "inr" ? "₹" : "$"
   return (
     <div>
       <h3 style={{ marginTop: "40px", marginBottom: "24px", fontSize: "21px" }}>Cluster details</h3>
       <Card>
-        <h1 style={{ marginBottom: 0 }}><b>{planDetails.name} plan</b> <img src={crown} /></h1>
-        <p style={{ marginTop: 0 }}>${planDetails.amount/100}/month</p>
+        <h1 style={{ marginBottom: 0 }}><b>{planDetails.product.name} plan</b> <img src={crown} /></h1>
+        <p style={{ marginTop: 0 }}>{currencyNotation}{planDetails.amount / 100}/month</p>
         <p style={{ marginTop: "5%" }}><b>Details:</b></p>
         <p>Project limits: {maxProjects} {maxProjects === 1 ? "project" : "projects"}</p>
         <p style={{ marginBottom: "10%" }}>Database limits: {maxDatabases} {maxDatabases === 1 ? "database" : "databases"}</p>

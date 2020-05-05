@@ -201,12 +201,21 @@ export const openProject = (projectId) => {
 
 export const fetchBillingDetails = () => {
   return new Promise((resolve, reject) => {
-    client.billing.fetchBillingDetails().then(({ invoices, details, amount }) => {
-      store.dispatch(set("billing", { status: true, details, invoices, balanceCredits: amount }))
+    client.billing.fetchBillingDetails().then(({ details, amount }) => {
+      store.dispatch(set("billing", { status: true, details, balanceCredits: amount }))
       resolve()
     }).catch(ex => reject(ex))
   })
 }
+
+// export const fetchInvoices = () => {
+//   return new Promise((resolve, reject) => {
+//     client.billing.fetchInvoices().then((invoices) => {
+//       store.dispatch(set("billing.invoices", { status: true, details, balanceCredits: amount }))
+//       resolve()
+//     }).catch(ex => reject(ex))
+//   })
+// }
 
 export const fetchGlobalEntities = (token, spaceUpToken) => {
   // Save the new token value

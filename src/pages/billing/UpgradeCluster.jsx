@@ -105,7 +105,7 @@ const UpgradeCluster = (props) => {
   {
     title: 'Start subscription',
     content: <React.Fragment>
-      <StartSubscription plan={plan} handleSuccess={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)} />
+      <StartSubscription  plan={plan} handleSuccess={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)} />
     </React.Fragment>
   }]
 

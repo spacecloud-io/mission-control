@@ -32,14 +32,14 @@ const SigninCard = (props) => {
           </Card>
         </Col>
       </Row>
-      <Row>
+      {/* <Row>
         <Col xs={{ span: 18, offset: 3 }}>
           <Card className="vendor-card twitter" onClick={() => openSigninPage("twitter")}>
             <img src={twitterIcon} height="32px" width="32px" />
             <span className="vendor-text">Sign in with Twitter</span>
           </Card>
         </Col>
-      </Row>
+      </Row> */}
       <Row>
         <Col xs={{ span: 18, offset: 3 }}>
           <Card className="vendor-card github" onClick={() => openSigninPage("github")}>

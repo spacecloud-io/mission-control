@@ -211,11 +211,11 @@ class Billing {
             return
           }
 
-          const { country, card_number, card_type, card_expiry_date, amount, invoices } = result
+          const { country, card_number, card_type, card_expiry_date, amount } = result
           if (!card_number) {
             reject(new Error("Billing is not enabled"))
           }
-          const obj = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, invoices, amount }
+          const obj = { details: { country, balanceCredits: amount, cardNumber: card_number, cardType: card_type, cardExpiryDate: card_expiry_date }, amount }
           resolve(obj)
         })
         .catch(ex => reject(ex))
@@ -228,8 +228,11 @@ class Billing {
         query: gql`
         query {
           plans(where: {id: $plan}) @db{
-            name
+            product {
+              name
+            }
             amount
+            currency
             quotas
           }
         }`,
@@ -247,7 +250,33 @@ class Billing {
     })
   }
 
+  fetchInvoices(startingAfter) {
+    return new Promise((resolve, reject) => {
+      this.client.query({
+        query: gql`
+        query {
+          invoices${startingAfter ? "(startingAfter: $startingAfter)": ""} @backend {
+            status
+            error
+            message
+            result
+          }
+        }`,
+        variables: { startingAfter }
+      })
+        .then(res => {
+          const { status, error, message, result } = res.data.invoices
+          if (status !== 200) {
+            console.log("Fetch Invoices Error", error)
+            reject(message)
+            return
+          }
 
+          resolve(result)
+        })
+        .catch(ex => reject(ex))
+    })
+  }
 
   contactUs(email, name, subject, msg) {
     return new Promise((resolve, reject) => {
