@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
@@ -8,12 +8,9 @@ import BillingDetails from '../../components/billing/billing-details/BillingDeta
 import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import { Row, Col } from 'antd';
 import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
-import ContactUs from '../../components/billing/contact/ContactUs';
 import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
-import client from '../../client';
-import { notify, getClusterPlan } from '../../utils';
-import { increment, decrement } from 'automate-redux';
-import { useDispatch, useSelector } from 'react-redux';
+import { getClusterPlan } from '../../utils';
+import { useSelector } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
 
@@ -24,34 +21,11 @@ const BillingOverview = () => {
 
   const { projectID } = useParams();
   const history = useHistory();
-  const quotas = useSelector(state => state.quotas)
-  const [contactModalVisible, setContactModalVisible] = useState(false)
-  const [defaultSubject, setDefaultSubject] = useState("")
-  const dispatch = useDispatch();
   const name = localStorage.getItem("name")
   const email = localStorage.getItem("email")
   const billingDetails = useSelector(state => state.billing.details)
   const balanceCredits = useSelector(state => state.billing.balanceCredits)
   const plan = useSelector(state => getClusterPlan(state))
-
-  const handleCancel = () => {
-    setContactModalVisible(false)
-  }
-
-  const handleContactUs = (subject, message) => {
-    dispatch(increment("pendingRequests"));
-    const email = localStorage.getItem('email')
-    const name = localStorage.getItem('name')
-    client.billing.contactUs(email, name, subject, message).then(res => {
-      if (res === 200) {
-        setContactModalVisible(false)
-        notify("success", "Successfully sent message", "Our team will reach out to you shortly:)")
-      }
-    }).catch(ex => {
-      console.log(ex)
-      notify("error", "Error sending message", ex)
-    }).finally(() => dispatch(decrement("pendingRequests")))
-  }
 
   return (
     <div>
@@ -82,10 +56,6 @@ const BillingOverview = () => {
             </Col>}
           </Row>
         </div>
-        {contactModalVisible && <ContactUs
-          initialvalues={defaultSubject}
-          handleContactUs={handleContactUs}
-          handleCancel={handleCancel} />}
         <ContactUsFab />
       </div>
     </div>
