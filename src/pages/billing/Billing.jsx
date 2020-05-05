@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
-import { increment, decrement, set } from 'automate-redux';
+import { set } from 'automate-redux';
 import ReactGA from 'react-ga';
 import { Row, Col } from 'antd';
 import { notify, isSignedIn, getClusterPlan, isBillingEnabled } from '../../utils';
-import client from '../../client';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import FAQ from '../../components/billing/faq/FAQ';
-import ContactUs from '../../components/billing/contact/ContactUs';
 import Signin from '../../components/billing/setup-card/Signin';
 import SetupBilling from '../../components/billing/setup-card/SetupBilling';
 import AddBillingDetailsModal from "../../components/billing/add-billing-details/AddBillingDetailsModal";
@@ -26,9 +24,7 @@ const Billing = () => {
 
   const { projectID } = useParams();
   const history = useHistory();
-  const [contactModalVisible, setContactModalVisible] = useState(false)
   const [billingDetailsModalVisible, setBillingDetailsModalVisible] = useState(false);
-  const [defaultSubject, setDefaultSubject] = useState("")
   const signedIn = isSignedIn()
   const selectedPlan = useSelector(state => getClusterPlan(state))
   const dispatch = useDispatch();
@@ -39,33 +35,8 @@ const Billing = () => {
     }
   }, [billingEnabled])
 
-  const handleRequestFreeTrial = () => {
-    setContactModalVisible(true);
-    setDefaultSubject("Free trial for Space Cloud Pro");
-  }
-
   const handleDiscount = () => {
-    setContactModalVisible(true);
-    setDefaultSubject("Request discount for Space Cloud Pro");
-  }
-
-  const handleCancel = () => {
-    setContactModalVisible(false)
-  }
-
-  const handleContactUs = (subject, message) => {
-    dispatch(increment("pendingRequests"));
-    const email = localStorage.getItem('email')
-    const name = localStorage.getItem('name')
-    client.billing.contactUs(email, name, subject, message).then(res => {
-      if (res === 200) {
-        setContactModalVisible(false)
-        notify("success", "Successfully sent message", "Our team will reach out to you shortly:)")
-      }
-    }).catch(ex => {
-      console.log(ex)
-      notify("error", "Error sending message", ex)
-    }).finally(() => dispatch(decrement("pendingRequests")))
+    history.push(`/mission-control/projects/${projectID}/billing/contact-us`, { subject: "Request discount for Space Cloud Pro"})
   }
 
   return (
@@ -94,13 +65,9 @@ const Billing = () => {
         </Row>
         <Row>
           <Col lg={{ span: 18 }}>
-            <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />
+            <FAQ handleDiscount={handleDiscount} />
           </Col>
         </Row>
-        {contactModalVisible && <ContactUs
-          initialvalues={defaultSubject}
-          handleContactUs={handleContactUs}
-          handleCancel={handleCancel} />}
         {billingDetailsModalVisible && <AddBillingDetailsModal handleCancel={() => setBillingDetailsModalVisible(false)} />}
         <ContactUsFab />
       </div>
