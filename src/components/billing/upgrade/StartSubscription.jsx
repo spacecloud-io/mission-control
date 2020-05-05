@@ -28,7 +28,7 @@ const StartSubscription = ({ plan, handleSuccess }) => {
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
         <Card style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', padding: '24px' }}>
           <p><b>Subscription details</b></p>
-          <Card title={<p style={{ fontSize: "18px" }}>{planDetails.name} plan</p>} extra={<p style={{ fontSize: "18px" }}><span style={{ color: "#34A853" }}>${planDetails.amount}</span> per month</p>}>
+          <Card title={<p style={{ fontSize: "18px" }}>{planDetails.name} plan</p>} extra={<p style={{ fontSize: "18px" }}><span style={{ color: "#34A853" }}>${planDetails.amount/100}</span> per month</p>}>
             <p><b>Total Projects</b>: {planDetails.quotas.maxProjects}</p>
             <p><b>Total Databases</b>: {planDetails.quotas.maxDatabases} per project</p>
           </Card>

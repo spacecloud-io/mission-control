@@ -15,7 +15,6 @@ import { dbEnable } from '../database/dbActions'
 const CreateProject = (props) => {
   const [selectedDB, setSelectedDB] = useState("mongo");
   const [current, setCurrent] = useState(0);
-  const [stepImg, setStepImg] = useState("create project");
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -133,7 +132,7 @@ const CreateProject = (props) => {
           </Card><br />
         </Col>
       </Row>
-      <center><Link to="/mission-control/welcome" style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</Link></center>
+      <center><a onClick={history.goBack} style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</a></center>
     </React.Fragment>
   },
   {

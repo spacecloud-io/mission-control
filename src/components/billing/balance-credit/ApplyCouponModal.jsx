@@ -14,7 +14,7 @@ function ApplyCouponModal(props) {
         dispatch(increment("pendingRequests"))
         applyCoupon(values.couponCode)
           .then((couponValue) => {
-            notify("success", "Successfully applied coupon code", `Credits worth $${couponValue} credited to your account`)
+            notify("success", "Successfully applied coupon code", `Credits worth $${couponValue/100} credited to your account`)
             props.handleCancel()
           })
           .catch((ex) => notify("error", "Error applying coupon code", ex))

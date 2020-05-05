@@ -13,7 +13,7 @@ function ApplyCouponForm(props) {
       if (!err) {
         dispatch(increment("pendingRequests"))
         applyCoupon(values.couponCode)
-          .then((couponValue) => notify("success", "Successfully applied coupon code", `Credits worth $${couponValue} credited to your account`))
+          .then((couponValue) => notify("success", "Successfully applied coupon code", `Credits worth $${couponValue/100} credited to your account`))
           .catch((ex) => notify("error", "Error applying coupon code", ex))
           .finally(dispatch(decrement("pendingRequests")))
       }
