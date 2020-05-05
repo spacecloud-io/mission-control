@@ -24,7 +24,7 @@ const PlanDetails = ({ plan, handleChangePlan }) => {
     <div>
       <h3 style={{ marginTop: "40px", marginBottom: "24px", fontSize: "21px" }}>Cluster details</h3>
       <Card>
-        <h1 style={{ marginBottom: 0 }}><b>{planDetails.product.name} plan</b> <img src={crown} /></h1>
+        <h1 style={{ marginBottom: 0 }}><b>{planDetails.product.name}</b> <img src={crown} /></h1>
         <p style={{ marginTop: 0 }}>{currencyNotation}{planDetails.amount / 100}/month</p>
         <p style={{ marginTop: "5%" }}><b>Details:</b></p>
         <p>Project limits: {maxProjects} {maxProjects === 1 ? "project" : "projects"}</p>

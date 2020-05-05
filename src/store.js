@@ -4,6 +4,7 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
 	projects: [],
+	clusters: [],
 	serviceRoutes: {},
 	pendingRequests: 0,
 	uiState: {
@@ -22,7 +23,7 @@ const initialState = {
 	env: {
 		version: "",
 		clusterId: null,
-		plan: "open",
+		plan: "space-cloud-open--monthly",
 		quotas: { maxDatabases: 1, maxProjects: 1 }
 	},
 	billing: {

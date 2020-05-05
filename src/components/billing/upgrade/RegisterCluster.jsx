@@ -1,9 +1,17 @@
-import React from 'react';
-import { Row, Col, Card, Form, Input, Button } from 'antd';
+import React, { useEffect } from 'react';
+import { Row, Col, Card, Form, AutoComplete, Button } from 'antd';
 import './register-cluster.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { increment, decrement } from 'automate-redux';
+import { fetchClusters } from '../../../utils';
 
 const RegisterCluster = (props) => {
-
+  const dispatch = useDispatch()
+  const clusters = useSelector(state => state.clusters)
+  useEffect(() => {
+    dispatch(increment("pendingRequests"))
+    fetchClusters().finally(decrement("pendingRequests"))
+  }, [])
   const { getFieldDecorator } = props.form;
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -13,6 +21,7 @@ const RegisterCluster = (props) => {
       }
     })
   }
+  const clusterNames = clusters.map(c => c.name)
   return (
     <Row className="register-cluster">
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
@@ -24,7 +33,7 @@ const RegisterCluster = (props) => {
               {getFieldDecorator('clusterName', {
                 rules: [{ required: true, message: 'Please input cluster name' }],
               })(
-                <Input placeholder="e.g. Testing Cluster" />
+                <AutoComplete placeholder="e.g. Testing Cluster" dataSource={clusterNames} />
               )}
             </Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: '24px' }} >Register cluster</Button>

@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Icon, Col, Row } from 'antd';
 import './billing.css';
-import { setClusterPlan, notify, capitalizeFirstCharacter, getClusterPlan } from '../../utils';
+import { setClusterPlan, notify, getClusterPlan } from '../../utils';
 import { increment, decrement } from 'automate-redux';
 
 const ChangePlan = () => {
@@ -22,8 +22,7 @@ const ChangePlan = () => {
   const handleSelectPlan = (plan) => {
     dispatch(increment("pendingRequests"))
     setClusterPlan(plan).then(() => {
-      const planName = capitalizeFirstCharacter(plan)
-      notify("success", "Success", `Successfully change plan of this cluster to ${planName} plan`)
+      notify("success", "Success", `Successfully changed plan of this cluster`)
       history.goBack()
     })
       .catch(ex => notify("error", "Error changing plan", ex))

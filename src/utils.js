@@ -208,14 +208,26 @@ export const fetchBillingDetails = () => {
   })
 }
 
-// export const fetchInvoices = () => {
-//   return new Promise((resolve, reject) => {
-//     client.billing.fetchInvoices().then((invoices) => {
-//       store.dispatch(set("billing.invoices", { status: true, details, balanceCredits: amount }))
-//       resolve()
-//     }).catch(ex => reject(ex))
-//   })
-// }
+export const fetchInvoices = (startingAfter) => {
+  return new Promise((resolve, reject) => {
+    client.billing.fetchInvoices(startingAfter).then((invoices) => {
+      const oldInvoices = store.getState().billing.details.invoices
+      const newInvoices = [...oldInvoices, ...newInvoices]
+      const hasMore = invoices.length === 10
+      store.dispatch(set("billing.invoices", newInvoices))
+      resolve(hasMore)
+    }).catch(ex => reject(ex))
+  })
+}
+
+export const fetchClusters = () => {
+  return new Promise((resolve, reject) => {
+    client.billing.fetchClusters().then((clusters) => {
+      store.dispatch(set("clusters", clusters))
+      resolve()
+    }).catch(ex => reject(ex))
+  })
+}
 
 export const fetchGlobalEntities = (token, spaceUpToken) => {
   // Save the new token value
@@ -308,8 +320,8 @@ export function getClusterId(state) {
 }
 
 export function getClusterPlan(state) {
-  const plan = get(state, "env.plan", "open")
-  return plan ? plan : "open"
+  const plan = get(state, "env.plan", "space-cloud-open--monthly")
+  return plan ? plan : "space-cloud-open--monthly"
 }
 
 export function getToken() {

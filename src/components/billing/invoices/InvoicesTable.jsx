@@ -4,6 +4,11 @@ import { Table, Card } from 'antd';
 const InvoicesTable = ({ invoices }) => {
   const columns = [
     {
+      title: "Invoice Number",
+      dataIndex: "number",
+      key: "number"
+    },
+    {
       title: "Period",
       dataIndex: "period",
       key: "period",
@@ -18,7 +23,10 @@ const InvoicesTable = ({ invoices }) => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (_, record) => `$${record.amount}`
+      render: (_, { amount, currency = "usd" }) => {
+        const currencyNotation = currency.toLowerCase() === "inr" ? "₹" : "$"
+        return `${currencyNotation}${amount / 100}`
+      }
     },
     {
       title: "Status",
@@ -50,6 +58,8 @@ const InvoicesTable = ({ invoices }) => {
       <Table
         columns={columns}
         dataSource={invoices}
+        pagination={false}
+        rowKey="id"
       />
     </Card>
   );

@@ -278,6 +278,22 @@ class Billing {
     })
   }
 
+  fetchClusters() {
+    return new Promise((resolve, reject) => {
+      this.client.query({
+        query: gql`
+        query {
+          clusters @db {
+            id
+            name
+          }
+        }`
+      })
+        .then(res => resolve(res.data.clusters))
+        .catch(ex => reject(ex))
+    })
+  }
+
   contactUs(email, name, subject, msg) {
     return new Promise((resolve, reject) => {
       const body = { email, name, subject, msg, source: "Mission Control" }

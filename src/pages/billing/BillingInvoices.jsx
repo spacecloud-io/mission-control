@@ -8,15 +8,24 @@ import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
 import { useParams } from 'react-router-dom';
 import './billing.css'
 import { useSelector } from 'react-redux';
+import InfiniteScroll from 'react-infinite-scroller';
+import { fetchInvoices, notify } from '../../utils';
 
-const BillingInvoices = () => {
+function BillingInvoices() {
   useEffect(() => {
     ReactGA.pageview("/projects/billing/invoices");
   }, [])
 
   const { projectID } = useParams();
+  const [hasMoreInvoices, setHasMoreInvoices] = useState(false)
   const invoices = useSelector(state => state.billing.invoices)
-
+  const loadInvoices = () => {
+    const noOfInvoices = invoices.length
+    const startingAfter = noOfInvoices > 0 ? invoices[noOfInvoices - 1].id : undefined
+    fetchInvoices(startingAfter)
+      .then((hasMore) => setHasMoreInvoices(hasMore))
+      .catch(ex => notify("error", "Error fetching invoices", ex))
+  }
   return (
     <div className="invoices">
       <Topbar showProjectSelector />
@@ -24,7 +33,14 @@ const BillingInvoices = () => {
       <div className='page-content page-content--no-padding'>
         <BillingTabs activeKey="invoices" projectID={projectID} />
         <div className="billing-tab-content">
-          <InvoicesTable invoices={invoices} />
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadInvoices}
+            hasMore={hasMoreInvoices}
+            loader={<div style={{ textAlign: "center" }} key={0}>Loading...</div>}
+          >
+            <InvoicesTable invoices={invoices} />
+          </InfiniteScroll>
         </div>
       </div>
       <ContactUsFab />

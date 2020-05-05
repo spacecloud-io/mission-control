@@ -25,6 +25,8 @@ const BillingOverview = () => {
   const email = localStorage.getItem("email")
   const billingDetails = useSelector(state => state.billing.details)
   const balanceCredits = useSelector(state => state.billing.balanceCredits)
+  const countryCode = useSelector(state => state.billing.details.country)
+  const currencyNotation = countryCode === "IN" ? "₹" : "$"
   const plan = useSelector(state => getClusterPlan(state))
 
   return (
@@ -39,19 +41,19 @@ const BillingOverview = () => {
               <BillingDetails name={name} email={email} billingDetails={billingDetails} />
             </Col>
             <Col lg={{ span: 11, offset: 2 }}>
-              <BalanceCredit balanceCredits={balanceCredits} />
+              <BalanceCredit currencyNotation={currencyNotation} balanceCredits={balanceCredits} />
             </Col>
           </Row>
           <Row>
-            {plan === "open" && <Col lg={{ span: 24 }}>
+            {plan.startsWith("space-cloud-open") && <Col lg={{ span: 24 }}>
               <h3 style={{ marginBottom: "0", fontSize: "21px", marginTop: 24 }}>Upgrade cluster</h3>
-              <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
+              <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource plan right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
               <SelectPlan
                 selectedPlan={plan}
                 handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })}
                 handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
             </Col>}
-            {plan !== "open" && <Col lg={{ span: 11 }}>
+            {!plan.startsWith("space-cloud-open") && <Col lg={{ span: 11 }}>
               <PlanDetails plan={plan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/change-plan`)} />
             </Col>}
           </Row>

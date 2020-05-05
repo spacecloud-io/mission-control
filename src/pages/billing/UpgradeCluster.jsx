@@ -25,6 +25,7 @@ const UpgradeCluster = (props) => {
   const dispatch = useDispatch();
   const signedIn = isSignedIn()
   const billingEnabled = useSelector(state => isBillingEnabled(state))
+  const countryCode = useSelector(state => state.billing.details.country) 
   const clusterId = useSelector(state => getClusterId(state))
   const clusterRegistered = clusterId ? true : false
   const initialStep = clusterRegistered ? 3 : (billingEnabled ? 2 : (signedIn ? 1 : 0))
@@ -105,7 +106,7 @@ const UpgradeCluster = (props) => {
   {
     title: 'Start subscription',
     content: <React.Fragment>
-      <StartSubscription  plan={plan} handleSuccess={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)} />
+      <StartSubscription countryCode={countryCode} plan={plan} handleSuccess={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)} />
     </React.Fragment>
   }]
 

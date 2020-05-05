@@ -34,7 +34,7 @@ export default function SelectPlan({ selectedPlan, handleSelectPlan, handleConta
           <h3 className="select-plan-plan purple">PRO</h3>
           <h1 className="select-plan-amount purple">$100</h1>
           <p className="select-plan-time purple">per month</p>
-          <span>2 Projects</span><br />
+          <span>3 Projects</span><br />
           <span>3 Databases/project</span><br />
           <span>2 day priority email support</span><br />
           {selectedPlan === "space-cloud-pro--monthly" && <Button className="select-plan-button selected-button">Current plan</Button>}

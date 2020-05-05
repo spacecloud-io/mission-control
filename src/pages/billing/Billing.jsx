@@ -50,7 +50,7 @@ const Billing = () => {
             {!signedIn && <Signin handleSignin={() => dispatch(set("uiState.showSigninModal", true))} />}
           </Col>
         </Row>
-        {selectedPlan === "open" && <Row>
+        {selectedPlan.startsWith("space-cloud-open") && <Row>
           <Col lg={{ span: 24 }}>
             <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Upgrade cluster</h3>
             <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
@@ -63,7 +63,7 @@ const Billing = () => {
             <FAQ handleDiscount={handleDiscount} />
           </Col>
         </Row>}
-        {selectedPlan !== "open" && <Row>
+        {!selectedPlan.startsWith("space-cloud-open") && <Row>
           <Col lg={{ span: 11 }}>
             <PlanDetails plan={selectedPlan} handleChangePlan={() => notify("info", "Signin required", "You need to signin first to change plan")} />
           </Col>
