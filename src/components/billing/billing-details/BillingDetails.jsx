@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Row, Col } from 'antd';
+import { capitalizeFirstCharacter } from '../../../utils';
 
 const BillingDetails = ({ billingDetails, name, email }) => {
   return (
@@ -20,7 +21,7 @@ const BillingDetails = ({ billingDetails, name, email }) => {
         </Col>
         <Col xs={{ span: 24 }}>
           <p><b>Card details</b></p>
-          <p>{billingDetails.cardType} card ending in {billingDetails.cardNumber}. Valid till {billingDetails.cardExpiryDate}</p>
+          <p>{capitalizeFirstCharacter(billingDetails.cardType)} card ending in {billingDetails.cardNumber}. Valid till {billingDetails.cardExpiryDate}</p>
         </Col>
       </Row>
     </Card>

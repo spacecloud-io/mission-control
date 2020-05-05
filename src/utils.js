@@ -445,7 +445,10 @@ export function setClusterPlan(plan) {
     client.billing.setPlan(clusterId, plan)
       .then(() => {
         client.renewClusterLicense()
-          .then(() => resolve())
+          .then(() => {
+            store.dispatch(set("env.plan", plan))
+            resolve()
+          })
           .catch(ex => reject(ex))
       })
       .catch(ex => reject(ex))
