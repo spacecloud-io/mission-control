@@ -21,16 +21,17 @@ function fetchJSON(origin, url, options) {
   })
 }
 
+const defaultHeaders = {
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json"
+  }
+}
 
 class Client {
-  constructor(origin) {
+  constructor(origin, options) {
     this.origin = origin
-    this.options = {
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
+    this.options = Object.assign({}, defaultHeaders, options)
   }
 
   setToken(token) {
@@ -48,13 +49,13 @@ class Client {
   delete(url) {
     return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'DELETE' }))
   }
-  putJSON(url, obj){
+  putJSON(url, obj) {
     return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'PUT', body: JSON.stringify(obj) }))
   }
 }
 
-export function createRESTClient(origin) {
-  return new Client(origin)
+export function createRESTClient(origin, options) {
+  return new Client(origin, options)
 }
 
 
@@ -66,7 +67,7 @@ export function createGraphQLClient(uri, getToken) {
 
   const httpAuthLink = setContext((_, { headers }) => {
     // get the authentication token from local storage if it exists
-    const token = getToken ? getToken(): undefined
+    const token = getToken ? getToken() : undefined
     // return the headers to the context so httpLink can read them
     return {
       headers: {

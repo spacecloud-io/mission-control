@@ -23,7 +23,7 @@ const and = SpaceAPI.and
 class Service {
   constructor(token, spaceUpToken) {
     this.client = createRESTClient(spaceCloudClusterOrigin)
-    this.spaceSiteClient = createRESTClient("https://api.spaceuptech.com")
+    this.spaceSiteClient = createRESTClient("https://api.spaceuptech.com", { credentials: "omit" })
     this.enterpriseClient = createGraphQLClient(enterpriseServerGraphQLURL, getSpaceUpToken)
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
