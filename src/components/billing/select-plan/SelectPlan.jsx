@@ -13,8 +13,8 @@ export default function SelectPlan({ selectedPlan, handleSelectPlan, handleConta
           <span>1 Project</span><br />
           <span>1 Database</span><br />
           <span>Community support</span><br />
-          {selectedPlan === "space-cloud-open--monthly" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {selectedPlan !== "space-cloud-open--monthly" && <Button className="select-plan-button green-button" onClick={() => handleSelectPlan("space-cloud-open--monthly")}>Use this plan</Button>}
+          {selectedPlan.startsWith("space-cloud-open") && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {!selectedPlan.startsWith("space-cloud-open") && <Button className="select-plan-button green-button" onClick={() => handleSelectPlan("space-cloud-open--monthly")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
@@ -25,8 +25,8 @@ export default function SelectPlan({ selectedPlan, handleSelectPlan, handleConta
           <span>1 Project</span><br />
           <span>3 Databases</span><br />
           <span>2 day priority email support</span><br />
-          {selectedPlan === "space-cloud-starter--monthly" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {selectedPlan !== "space-cloud-starter--monthly" && <Button className="select-plan-button blue-button" onClick={() => handleSelectPlan("space-cloud-starter--monthly")}>Use this plan</Button>}
+          {selectedPlan.startsWith("space-cloud-starter") && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {!selectedPlan.startsWith("space-cloud-starter") && <Button className="select-plan-button blue-button" onClick={() => handleSelectPlan("space-cloud-starter--monthly")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 7, offset: 1 }}>
@@ -37,8 +37,8 @@ export default function SelectPlan({ selectedPlan, handleSelectPlan, handleConta
           <span>3 Projects</span><br />
           <span>3 Databases/project</span><br />
           <span>2 day priority email support</span><br />
-          {selectedPlan === "space-cloud-pro--monthly" && <Button className="select-plan-button selected-button">Current plan</Button>}
-          {selectedPlan !== "space-cloud-pro--monthly" && <Button className="select-plan-button purple-button" onClick={() => handleSelectPlan("space-cloud-pro--monthly")}>Use this plan</Button>}
+          {selectedPlan.startsWith("space-cloud-pro") && <Button className="select-plan-button selected-button">Current plan</Button>}
+          {!selectedPlan.startsWith("space-cloud-pro") && <Button className="select-plan-button purple-button" onClick={() => handleSelectPlan("space-cloud-pro--monthly")}>Use this plan</Button>}
         </Card>
       </Col>
       <Col lg={{ span: 23 }}>
