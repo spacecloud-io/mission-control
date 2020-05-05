@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { dbIcons, isSignedIn } from '../../utils'
+import { dbIcons, isSignedIn, onAppLoad } from '../../utils'
 import { Button, Icon, Menu, Popover, Row, Col, Divider } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
@@ -49,7 +49,7 @@ const Topbar = (props) => {
 
   const handleLogout = () => {
     localStorage.clear();
-    history.push('/mission-control/');
+    window.location.reload()
   }
 
   const signedIn = isSignedIn();
