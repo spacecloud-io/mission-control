@@ -108,7 +108,7 @@ class Billing {
       this.client.query({
         query: gql`
         query {
-          register_cluster(clusterName: $clusterName, doesExist: $doesExist) @backend {
+          register_cluster(clusterName: $clusterName, doesExists: $doesExist) @backend {
             status
             error
             message
