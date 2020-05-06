@@ -8,12 +8,17 @@ const { Option } = Select;
 let target = 1;
 
 const RoutingRule = props => {
-  // const { getFieldDecorator, getFieldValue, setFieldsValue, validateFields } = props.form;
   const [form] = Form.useForm();
+  const [routeType, setRouteType] = useState();
+  const [performRewrite, setPerformRewrite] = useState();
+  const [allowSpecificHosts, setAllowSpecificHosts] = useState();
+  const [allowSpecificMethods, setAllowSpecificMethods] = useState();
+
   const initialValues = props.initialValues;
   const children = [];
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
+      console.log(values);
       delete values["allowSpecificHosts"];
       delete values["allowSpecificMethods"];
       delete values["performRewrite"];
@@ -32,6 +37,14 @@ const RoutingRule = props => {
       });
     })
   };
+  
+
+  const handleChangedValues = ({ routeType, performRewrite, allowSpecificHosts, allowSpecificMethods}) => {
+    setRouteType(routeType);
+    setPerformRewrite(performRewrite);
+    setAllowSpecificHosts(allowSpecificHosts);
+    setAllowSpecificMethods(allowSpecificMethods);
+  }
 
   const checkHost = (host) => {
     if (host.length === 1 && host[0] === "*") {
@@ -201,7 +214,7 @@ const RoutingRule = props => {
         onCancel={props.handleCancel}
         onOk={handleSubmitClick}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick}
+        <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmitClick}
           initialValues={{
             "routeType": initialValues ? initialValues.routeType : "prefix", "url": initialValues ? initialValues.url : "",
             "url": initialValues ? initialValues.url : "", "performRewrite": initialValues && initialValues.rewrite ? true : false,
@@ -223,7 +236,7 @@ const RoutingRule = props => {
               <Select.Option value="exact">Exact Match</Select.Option>
             </Select>
           </Form.Item>
-          {form.getFieldValue("routeType") === "exact" ? (
+          {routeType === "exact" ? (
             <div>
               <FormItemLabel name="URL" />
               <Form.Item name="url" rules={[{ required: true, message: "Please provide URL" }]}>
@@ -244,7 +257,7 @@ const RoutingRule = props => {
               Rewrite incoming request URL to target service
               </Checkbox>
           </Form.Item>
-          {form.getFieldValue("performRewrite") ? (
+          {performRewrite ? (
             <div>
               <FormItemLabel name="Rewrite URL" />
               <Form.Item name="rewrite" rules={[{ required: true, message: "Please provide URL" }]}>
@@ -258,7 +271,7 @@ const RoutingRule = props => {
           <Form.Item name="allowSpecificHosts" valuePropName="checked">
             <Checkbox>Allow traffic with specified hosts only</Checkbox>
           </Form.Item>
-          {form.getFieldValue("allowSpecificHosts") ? (
+          {allowSpecificHosts ? (
             <div>
               <FormItemLabel name="Allowed hosts " />
               <Form.Item name="allowedHosts" rules={[
@@ -284,7 +297,7 @@ const RoutingRule = props => {
           <Form.Item name="allowSpecificMethods" valuePropName="checked">
             <Checkbox>Allow traffic with specified methods only</Checkbox>
           </Form.Item>
-          {form.getFieldValue("allowSpecificMethods") ? (
+          {allowSpecificMethods ? (
             <div>
               <FormItemLabel name="Allowed methods " />
               <Form.Item name="allowedMethods" rules={[
