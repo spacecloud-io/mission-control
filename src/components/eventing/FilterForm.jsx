@@ -18,7 +18,7 @@ const FilterForm = (props) => {
   const projects = useSelector(state => state.projects);
   const [showDate, setShowDate] = useState();
 
-  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers"));
+  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers", {}));
 
   const handleChangedValues = ({ showDate }) => {
     setShowDate(showDate);
