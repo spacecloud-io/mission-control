@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { notify } from "../../../utils";
 import { Form } from 'antd'
-import { DeleteOutlined, RightOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
 
 import {
   Modal,
@@ -16,6 +15,7 @@ import {
   InputNumber,
   Checkbox,
 } from "antd";
+import { notify } from "../../../utils";
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -30,14 +30,33 @@ const AddDeploymentForm = props => {
     setAddGPUs(addGPUs);
   }
 
+  const formInitialValues = {
+    id: initialValues ? initialValues.id : "",
+    version: initialValues ? initialValues.version : "",
+    registryType: initialValues ? initialValues.registryType : "public",
+    dockerImage: initialValues ? initialValues.dockerImage : "",
+    dockerSecret: initialValues ? initialValues.dockerSecret : "",
+    imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists",
+    cpu: initialValues ? initialValues.cpu : 0.1,
+    memory: initialValues ? initialValues.memory : 100,
+    addGPUs: initialValues && initialValues.gpuType ? true : false,
+    gpuType: initialValues ? initialValues.gpuType : "nvdia",
+    gpuCount: initialValues ? initialValues.gpuCount : 1,
+    concurrency: initialValues ? initialValues.concurrency : 50,
+    min: initialValues ? initialValues.min : 1,
+    max: initialValues ? initialValues.max : 100,
+    secrets: initialValues ? initialValues.secrets : [],
+    autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
+    ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
+    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [{ key: "", value: "" }],
+    whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
+    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }]
+  }
+
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(values);
+      values = Object.assign({}, formInitialValues, values)
       const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
-      delete values["keys"];
-      delete values["envKeys"];
-      delete values["whiteKeys"];
-      delete values["upstreamsKeys"];
       delete values["addGPUs"];
       delete values["gpuType"];
       delete values["gpuCount"];
@@ -57,21 +76,10 @@ const AddDeploymentForm = props => {
             "Saved deployment config successfully"
           );
           props.handleCancel();
-        })
-        .catch(ex => notify("error", "Error saving config", ex.toString()));
+      })
+      .catch(ex => notify("error", "Error saving config", ex.toString()));
     });
   };
-
-  const autoscalingModeSelect = (
-    <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
-      <Select
-        placeholder="Select auto scaling mode"
-        style={{ minWidth: 200 }}
-      >
-        <Option value="per-second">Requests per second</Option>
-        <Option value="parallel">Parallel requests</Option>
-      </Select>
-    </Form.Item>)
 
   const modalProps = {
     className: "edit-item-modal",
@@ -87,37 +95,7 @@ const AddDeploymentForm = props => {
     <div>
       <Modal {...modalProps}>
         <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmitClick}
-          initialValues={{
-            id: initialValues ? initialValues.id : "", version: initialValues ? initialValues.version : "",
-            dockerImage: initialValues ? initialValues.dockerImage : "", registryType: initialValues ? initialValues.registryType : "public",
-            imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists", cpu: initialValues ? initialValues.cpu : 0.1,
-            memory: initialValues ? initialValues.memory : 100, addGPUs: initialValues && initialValues.gpuType ? true : false,
-            gpuType: initialValues ? initialValues.gpuType : "nvdia", gpuCount: initialValues ? initialValues.gpuCount : 1,
-            concurrency: initialValues ? initialValues.concurrency : 50, min: initialValues ? initialValues.min : 1,
-            max: initialValues ? initialValues.max : 100, secrets: initialValues ? initialValues.secrets : [],
-            // 'keys': initialValues ? initialValues.ports.map((_, index) => index) : [0],
-            // 'envKeys': initialValues ? initialValues.env.map((_, index) => index) : [],
-            // 'whiteKeys': initialValues ? initialValues.whitelists.map((_, index) => index) : [0],
-            // 'upstreamsKeys': initialValues ? initialValues.upstreams.map((_, index) => index) : [0],
-            autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
-            dockerSecret: initialValues ? initialValues.dockerSecret : "",
-            ports: [{
-              protocol: initialValues && initialValues.ports ? initialValues.ports.protocol : "http",
-              port: initialValues && initialValues.ports ? initialValues.ports.port : ""
-            }],
-            envVariable: [{
-              key: initialValues && initialValues.env ? initialValues.env.key : "",
-              value: initialValues && initialValues.env ? initialValues.env.value : ""
-            }],
-            whitelists: [{
-              projectId: initialValues && initialValues.whitelists ? initialValues.whitelists.projectId : projectId,
-              service: initialValues && initialValues.whitelists ? initialValues.whitelists.service : "*"
-            }],
-            upstreams: [{
-              projectId: initialValues && initialValues.upstreams ? initialValues.upstreams.projectId : projectId,
-              service: initialValues && initialValues.upstreams ? initialValues.upstreams.service : "*"
-            }]
-          }}>
+          initialValues={formInitialValues}>
           <React.Fragment>
             <FormItemLabel name="Service ID" />
             <Form.Item name="id" rules={[
@@ -208,17 +186,20 @@ const AddDeploymentForm = props => {
                 {(fields, { add, remove }) => {
                   return (
                     <div>
-                      {fields.map((field, index) => (
+                      {fields.map((field) => (
                         <React.Fragment>
-                          <Row key={field}>
-                            <Col span={6}>
-                              <Form.Item name={[field.key.toString(), "protocol"]} style={{ display: "inline-block" }}>
+                          <Row key={field} gutter={24}>
+                            <Col>
+                              <Form.Item
+                                name={[field.name, "protocol"]}
+                                key={[field.key, "protocol"]}
+                                style={{ display: "inline-block" }}>
                                 <Select style={{ width: 120 }}>
                                   <Option value="http">HTTP</Option>
                                 </Select>
                               </Form.Item>
                             </Col>
-                            <Col span={9}>
+                            <Col>
                               <Form.Item
                                 validateTrigger={["onChange", "onBlur"]}
                                 rules={[
@@ -227,8 +208,8 @@ const AddDeploymentForm = props => {
                                     message: "Please fill this field before adding!"
                                   }
                                 ]}
-                                name={[field.key.toString(), "port"]}
-                                style={{ marginLeft: -40, marginRight: 30 }}
+                                name={[field.name, "port"]}
+                                key={[field.key, "port"]}
                               >
                                 <InputNumber
                                   placeholder="Port (Example: 8080)"
@@ -236,10 +217,10 @@ const AddDeploymentForm = props => {
                                 />
                               </Form.Item>
                             </Col>
-                            <Col span={5}>
+                            <Col flex="auto">
                               {fields.length > 1 ? (
                                 <DeleteOutlined
-                                  style={{ margin: "0 8px" }}
+                                  style={{ lineHeight: "32px" }}
                                   onClick={() => {
                                     remove(field.name);
                                   }}
@@ -278,13 +259,14 @@ const AddDeploymentForm = props => {
                   name="Resources"
                   description="The resources to provide to each instance of the service"
                 />
-                <Form.Item name="cpu">
-                  <Input addonBefore="vCPUs" style={{ width: 160 }} />
-                  <Input
-                    addonBefore="Memory (in MBs)"
-                    style={{ width: 240, marginLeft: 32 }}
-                  />
-                </Form.Item>
+                <Input.Group compact>
+                  <Form.Item name="cpu">
+                    <Input addonBefore="vCPUs" style={{ width: 160 }} />
+                  </Form.Item>
+                  <Form.Item name="memory">
+                    <Input addonBefore="Memory (in MBs)" style={{ width: 240, marginLeft: 32 }} />
+                  </Form.Item>
+                </Input.Group>
                 <FormItemLabel name="GPUs" />
                 <Form.Item name="addGPUs" valuePropName="checked">
                   <Checkbox>
@@ -308,31 +290,43 @@ const AddDeploymentForm = props => {
                   name="Auto scaling"
                   description="Auto scale your container instances between min and max replicas based on the following config"
                 />
-                <Form.Item name="concurrency">
-                  <Input addonBefore={autoscalingModeSelect} style={{ width: 400 }} min={1} />
-                </Form.Item>
-                <FormItemLabel
-                  name="Replicas"
-                />
-                <Form.Item name="min">
-                  <Input addonBefore="Min" style={{ width: 160 }} min={1} />
-                  <Input
-                    addonBefore="Max"
-                    style={{ width: 160, marginLeft: 32 }}
-                    min={1}
-                  />
-                </Form.Item>
+                <Input.Group compact>
+                  <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
+                    <Select placeholder="Select auto scaling mode">
+                      <Option value="per-second">Requests per second</Option>
+                      <Option value="parallel">Parallel requests</Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="concurrency">
+                    <Input style={{ width: 400 }} min={1} />
+                  </Form.Item>
+                </Input.Group>
+                <FormItemLabel name="Replicas" />
+                <Input.Group compact>
+                  <Form.Item name="min">
+                    <Input addonBefore="Min" style={{ width: 160 }} min={0} />
+                  </Form.Item>
+                  <Form.Item name="max">
+                    <Input
+                      addonBefore="Max"
+                      style={{ width: 160, marginLeft: 32 }}
+                      min={1}
+                    />
+                  </Form.Item>
+                </Input.Group>
                 <FormItemLabel name="Environment variables" />
-                {/* Environment Variable */}
                 <Form.List name="env" style={{ display: "inline-block" }}>
                   {(fields, { add, remove }) => {
                     return (
                       <div>
-                        {fields.map((field, index) => (
+                        {fields.map((field) => (
                           <React.Fragment>
                             <Row key={field}>
                               <Col span={6}>
-                                <Form.Item name={[field.key.toString(), "key"]} style={{ display: "inline-block" }}
+                                <Form.Item
+                                  key={[field.key, "key"]}
+                                  name={[field.name, "key"]}
+                                  style={{ display: "inline-block" }}
                                   rules={[{ required: true, message: "Please enter key!" }]}>
                                   <Input style={{ width: 120 }} placeholder="Key" />
                                 </Form.Item>
@@ -346,7 +340,8 @@ const AddDeploymentForm = props => {
                                       message: "Please enter value before adding another!"
                                     }
                                   ]}
-                                  name={[field.key.toString(), "value"]}
+                                  name={[field.name, "value"]}
+                                  key={[field.key, "value"]}
                                   style={{ marginRight: 30 }}
                                 >
                                   <Input
@@ -358,7 +353,7 @@ const AddDeploymentForm = props => {
                               <Col span={5}>
                                 {fields.length > 1 ? (
                                   <DeleteOutlined
-                                    style={{ margin: "0 8px" }}
+                                    style={{ lineHeight: "32px" }}
                                     onClick={() => {
                                       remove(field.name);
                                     }}
@@ -410,7 +405,10 @@ const AddDeploymentForm = props => {
                               className={index === fields.length - 1 ? "bottom-spacing" : ""}
                             >
                               <Col span={10}>
-                                <Form.Item name={[field.key.toString(), "projectId"]} style={{ display: "inline-block" }}
+                                <Form.Item
+                                  key={[field.key, "projectId"]}
+                                  name={[field.name, "projectId"]}
+                                  style={{ display: "inline-block" }}
                                   rules={[{ required: true, message: "Please fill the project id of the upstream service!" }]}>
                                   <Input
                                     style={{ width: 230 }}
@@ -428,7 +426,8 @@ const AddDeploymentForm = props => {
                                       message: "Please fill the name of the upstream service!"
                                     }
                                   ]}
-                                  name={[field.key.toString(), "service"]}
+                                  key={[field.key, "service"]}
+                                  name={[field.name, "service"]}
                                   style={{ marginRight: 30 }}
                                 >
                                   <Input
@@ -440,7 +439,7 @@ const AddDeploymentForm = props => {
                               <Col span={3}>
                                 {fields.length > 1 ? (
                                   <DeleteOutlined
-                                    style={{ margin: "0 8px" }}
+                                    style={{ lineHeight: "32px" }}
                                     onClick={() => {
                                       remove(field.name);
                                     }}
@@ -480,7 +479,10 @@ const AddDeploymentForm = props => {
                               className={index === fields.length - 1 ? "bottom-spacing" : ""}
                             >
                               <Col span={10}>
-                                <Form.Item name={[field.key.toString(), "projectId"]} style={{ display: "inline-block" }}
+                                <Form.Item
+                                  name={[field.name, "projectId"]}
+                                  key={[field.key, "projectId"]}
+                                  style={{ display: "inline-block" }}
                                   rules={[{ required: true, message: "Please fill the project id of the service!" }]}>
                                   <Input
                                     style={{ width: 230 }}
@@ -498,7 +500,8 @@ const AddDeploymentForm = props => {
                                       message: "Please enter value before adding another!"
                                     }
                                   ]}
-                                  name={[field.key.toString(), "service"]}
+                                  key={[field.key, "service"]}
+                                  name={[field.name, "service"]}
                                   style={{ marginRight: 30 }}
                                 >
                                   <Input
@@ -510,7 +513,7 @@ const AddDeploymentForm = props => {
                               <Col span={3}>
                                 {fields.length > 1 ? (
                                   <DeleteOutlined
-                                    style={{ margin: "0 8px" }}
+                                    style={{ lineHeight: "32px" }}
                                     onClick={() => {
                                       remove(field.name);
                                     }}
