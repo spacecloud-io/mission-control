@@ -1,21 +1,15 @@
 import React from "react";
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Select, Button, Alert } from "antd";
+import { Form, Select, Button, Alert } from "antd";
 import { notify } from "../../utils";
 
-const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
-  const { getFieldDecorator } = form;
-
+const WhiteListedDomains = ({ domains, handleSubmit }) => {
+  const [form] = Form.useForm();
   const children = [];
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit(values.domains).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
-          .catch(ex => notify("error", "Error", ex.toString()))
-      }
+    form.validateFields().then(values => {
+      handleSubmit(values.domains).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
+        .catch(ex => notify("error", "Error", ex.toString()))
     });
   };
 
@@ -32,26 +26,21 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
         type="info"
         showIcon
       />
-      <Form style={{ paddingTop: 10 }} onSubmit={handleSubmitClick}>
-        <Form.Item>
-          {getFieldDecorator("domains", {
-            rules: [
-              {
-                required: true,
-                message: "Please enter the domain for the project"
-              }
-            ],
-            initialValue: domains ? domains : []
-          })(
-            <Select
-              mode="tags"
-              placeholder="Example: foo.bar.com"
-              style={{ width: "100%" }}
-              tokenSeparators={[","]}
-            >
-              {children}
-            </Select>
-          )}
+      <Form form={form} style={{ paddingTop: 10 }} initialValues={{ domains: domains ? domains : [] }} onFinish={handleSubmitClick}>
+        <Form.Item name="domains" rules={[
+          {
+            required: true,
+            message: "Please enter the domain for the project"
+          }
+        ]}>
+          <Select
+            mode="tags"
+            placeholder="Example: foo.bar.com"
+            style={{ width: "100%" }}
+            tokenSeparators={[","]}
+          >
+            {children}
+          </Select>
         </Form.Item>
         <Form.Item>
           <Button htmlType="submit">Save</Button>
@@ -61,4 +50,4 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
   );
 };
 
-export default Form.create({})(WhiteListedDomains);
+export default WhiteListedDomains;
