@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./add-deployment-form.css";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
 import { Form } from 'antd'
@@ -20,22 +19,13 @@ import {
 const { Option } = Select;
 const { Panel } = Collapse;
 
-let ports = 1;
-let env = 0;
-let white = 1;
-let upstreams = 1;
 const AddDeploymentForm = props => {
   const { initialValues, projectId, dockerSecrets, secrets } = props;
   const [form] = Form.useForm();
   const [registryType, setRegistryType] = useState();
   const [addGPUs, setAddGPUs] = useState();
-  const [keys, setKeys] = useState();
-  const [envKeys, setEnvKeys] = useState();
-  const [whiteKeys, setWhiteKeys] = useState();
-  const [upstreamsKeys, setUpstreamsKeys] = useState();
 
-
-  const handleChangedValues = ({ registryType, addGPUs, keys, envKeys, whiteKeys, upstreamsKeys }) => {
+  const handleChangedValues = ({ registryType, addGPUs }) => {
     setRegistryType(registryType);
     setAddGPUs(addGPUs);
   }
@@ -76,7 +66,7 @@ const AddDeploymentForm = props => {
     <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
       <Select
         placeholder="Select auto scaling mode"
-        style={{ width: 240, top: 4 }}
+        style={{ minWidth: 200 }}
       >
         <Option value="per-second">Requests per second</Option>
         <Option value="parallel">Parallel requests</Option>
@@ -274,7 +264,7 @@ const AddDeploymentForm = props => {
                 }}
               </Form.List>
             </React.Fragment>
-            <Collapse className="deployment-collapse" bordered={false} style={{ background: 'white' }}>
+            <Collapse bordered={false} style={{ background: 'white' }}>
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
