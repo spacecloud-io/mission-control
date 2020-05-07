@@ -64,12 +64,16 @@ body {
   padding-left: 24px !important;
 }
 
-.ant-form .ant-collapse-header > i {
+.ant-form .ant-collapse-header > .ant-collapse-arrow {
   left: 0 !important;
 }
 
 .ant-form .ant-collapse-content-box {
   padding: 4px 0 !important;
+}
+
+.ant-input-group-addon .ant-form-item-control-input {
+  min-height: 0;
 }
 
 .empty-state {
