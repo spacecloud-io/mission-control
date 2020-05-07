@@ -1,7 +1,5 @@
 import React from "react";
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input } from "antd";
+import { Modal, Input, Form } from "antd";
 import "./add-secret.css";
 
 const getModalTitle = (initialValue, secretType) => {
@@ -11,20 +9,17 @@ const getModalTitle = (initialValue, secretType) => {
 };
 
 const AddSecretKey = props => {
-  const { getFieldDecorator } = props.form;
+  const [form] = Form.useForm();
   const { initialValue, secretType } = props;
 
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
+    form.validateFields().then(values => {
         props.handleSubmit(values.key, values.value).then(() => {
           props.handleCancel();
           props.form.resetFields();
         })
-      }
-    });
-  };
+      });
+    };
 
   return (
     <Modal
@@ -35,20 +30,16 @@ const AddSecretKey = props => {
       onOk={handleSubmit}
       width="600px"
     >
-      <Form>
+      <Form form={form} initialValues={{ key: initialValue}}>
         <p>Key</p>
-        <Form.Item>
-          {getFieldDecorator(`key`, {
-            rules: [
+        <Form.Item name="key" rules={[
               {
                 required: true,
                 message: `Please input ${
                   secretType === "env" ? "key" : "file name"
                 }`
               }
-            ],
-            initialValue: initialValue
-          })(
+            ]}>
             <Input
               disabled={initialValue ? true : false}
               style={{
@@ -62,35 +53,26 @@ const AddSecretKey = props => {
                   : "File name (eg: credentials.json)"
               }
             />
-          )}
         </Form.Item>
         {secretType === "env" && (
           <React.Fragment>
             <p>Value</p>
-            <Form.Item>
-              {getFieldDecorator(`value`, {
-                rules: [{ required: true, message: "Please input value" }]
-              })(
+            <Form.Item name="value" rules={[{ required: true, message: "Please input value" }]}>
                 <Input
                   placeholder="Value"
                   style={{ width: "90%", marginRight: "6%", float: "left" }}
                 />
-              )}
             </Form.Item>
           </React.Fragment>
         )}
         {secretType === "file" && (
           <React.Fragment>
             <p>Value</p>
-            <Form.Item>
-              {getFieldDecorator(`value`, {
-                rules: [{ required: true, message: "Please input value" }]
-              })(
+            <Form.Item name="value" rules={[{ required: true, message: "Please input value" }]}>
                 <Input.TextArea
                   placeholder="Value"
                   style={{ width: "90%", marginRight: "6%", float: "left" }}
                 />
-              )}
             </Form.Item>
           </React.Fragment>
         )}
@@ -99,6 +81,4 @@ const AddSecretKey = props => {
   );
 };
 
-const WrappedRuleForm = Form.create({})(AddSecretKey);
-
-export default WrappedRuleForm;
+export default AddSecretKey;

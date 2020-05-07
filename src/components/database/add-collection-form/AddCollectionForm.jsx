@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '@ant-design/compatible/assets/index.css';
 import { Modal, Form, Switch, Input, Row, Col, Checkbox } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
@@ -38,7 +37,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   const [schema, setSchema] = useState(initialValues.schema);
   const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
-  const fieldValueChange = ({ name }) => {setcolName(name)};
+  const handleChangedValues = ({ name }) => {setcolName(name)};
   useEffect(() => {
     if (schema) {
       const temp = schema.trim().slice(4).trim()
@@ -81,7 +80,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
         confirmLoading={conformLoading}
         onCancel={handleCancel} 
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={fieldValueChange} 
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} 
         initialValues={{
           'name': initialValues.name,
         }}>

@@ -1,31 +1,24 @@
 import React from 'react'
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Input, Button } from 'antd';
+import { Form, Input, Button } from 'antd';
 
-const GraphQLTimeout = ({ form, contextTimeGraphQL, handleSubmit }) => {
-  const { getFieldDecorator } = form;
+const GraphQLTimeout = ({ contextTimeGraphQL, handleSubmit }) => {
+  const [form] = Form.useForm();
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit(Number(values.contextTimeGraphQL));
-      }
+    form.validateFields().then(values => {
+      handleSubmit(Number(values.contextTimeGraphQL));
     });
-  }
+  };
+
   return (
     <div>
       <h2>GraphQL Timeout (in seconds)</h2>
       <p>The timeout of GraphQL requests in seconds</p>
-      <Form>
-        <Form.Item>
-          {getFieldDecorator('contextTimeGraphQL', {
-            rules: [{ required: true, message: 'Please input a time in seconds!' }],
-            initialValue: contextTimeGraphQL
-          })(
+      <Form form={form} initialValues={{ contextTimeGraphQL: contextTimeGraphQL }}>
+        <Form.Item name="contextTimeGraphQL" 
+        rules={[{ required: true, message: 'Please input a time in seconds!' }]}
+        >
             <Input placeholder="Enter time in seconds" />
-          )}
         </Form.Item>
         <Form.Item>
           <Button onClick={handleSubmitClick} >
@@ -37,4 +30,4 @@ const GraphQLTimeout = ({ form, contextTimeGraphQL, handleSubmit }) => {
   )
 }
 
-export default Form.create({})(GraphQLTimeout);
+export default GraphQLTimeout;

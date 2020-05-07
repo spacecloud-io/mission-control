@@ -1,20 +1,13 @@
 import React from "react"
-
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-
-import { Modal, Input } from 'antd';
+import { Modal, Input, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
 const AddClusterForm = (props) => {
-    const { getFieldDecorator, getFieldValue } = props.form;
+    const [form] = Form.useForm;
 
     const handleSubmitClick = e => {
-        e.preventDefault();
-        props.form.validateFields((err, values) => {
-            if (!err) {
-                console.log("submit")
-            }
+        form.validateFields().then(values => {
+            console.log("submit")
         });
     };
 
@@ -26,39 +19,23 @@ const AddClusterForm = (props) => {
             onCancel={props.handleCancel}
             onOk={handleSubmitClick}
         >
-            <Form layout="vertical" onSubmit={handleSubmitClick}>
+            <Form layout="vertical" form={form} initialValues={{ username: "", url: "" }} onFinish={handleSubmitClick}>
                 <FormItemLabel name="Username" />
-                <Form.Item>
-                    {getFieldDecorator('username', {
-                        rules: [{ required: true, message: 'Please provide a username' }],
-                        initialValue: ""
-                    })(
+                <Form.Item name="username" rules={[{ required: true, message: 'Please provide a username' }]}>
                         <Input className="input" placeholder="Username of your cluster admin" />
-                    )}
                 </Form.Item>
                 <FormItemLabel name="Access Key" />
-                <Form.Item>
-                    {getFieldDecorator('Access Key', {
-                        rules: [{ required: true, message: 'Please provide Access Key' }],
-                        initialValue: ""
-                    })(
+                <Form.Item name="Access Key" rules={[{ required: true, message: 'Please provide Access Key' }]}
+                initialValue="">
                         <Input placeholder="Access Key of your cluster admin" />
-                    )}
                 </Form.Item>
                 <FormItemLabel name="Cluster URL" />
-                <Form.Item >
-                    {getFieldDecorator('url', {
-                        rules: [{ required: true, message: 'Please provide a cluster url' }],
-                        initialValue: ""
-                    })(
+                <Form.Item name="url" rules={[{ required: true, message: 'Please provide a cluster url' }]}>
                         <Input placeholder="URL of your cluster" />
-                    )}
                 </Form.Item>
             </Form>
         </Modal>
     )
 }
 
-const WrappedRuleForm = Form.create({})(AddClusterForm);
-
-export default WrappedRuleForm
+export default AddClusterForm

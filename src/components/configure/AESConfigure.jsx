@@ -1,42 +1,39 @@
-import React from 'react'
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Input, Button } from 'antd';
+import React, { useState } from 'react'
+import { Input, Button, Form } from 'antd';
 import { generateAESKey } from "../../utils";
 
-const AESConfigure = ({ form, aesKey, handleSubmit }) => {
-  const { getFieldDecorator, setFieldsValue, getFieldValue } = form;
+const AESConfigure = ({ aesKey, handleSubmit }) => {
+  const [form] = Form.useForm();  
+  const [currentAESKey, setCurrentAESKey] = useState();
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit(values.aesKey);
-      }
+    form.validateFields().then(values => {
+      handleSubmit(values.aesKey);
     });
+  };
+
+  const handleChangedValues = ({ aesKey }) => {
+    setCurrentAESKey(aesKey);
   }
+
 
   const handleClickGenerateKey = () => {
     const newAESKey = generateAESKey()
-    setFieldsValue({ aesKey: newAESKey })
+    form.setFieldsValue({ aesKey: newAESKey })
   }
 
-  const currentAESKey = getFieldValue("aesKey")
   const isKeyChanged = currentAESKey !== undefined && aesKey !== currentAESKey
 
   return (
     <div>
       <h2>AES Key</h2>
       <p>This key is used by the security rules in Space Cloud to encrypt/decrypt certain fields</p>
-      <Form>
+      <Form form={form} onValuesChange={handleChangedValues} initialValues={{ aesKey: aesKey }}>
         <div style={{ display: "flex" }}>
-          <Form.Item style={{ flex: 1 }}>
-            {getFieldDecorator('aesKey', {
-              rules: [{ required: true, message: 'Please input a AES Key!' }],
-              initialValue: aesKey
-            })(
+          <Form.Item name="aesKey" style={{ flex: 1 }}
+          rules={[{ required: true, message: 'Please input a AES Key!' }]}
+          >
               <Input.Password placeholder="Enter AES Key" />
-            )}
           </Form.Item>
           <Form.Item>
             <Button onClick={handleClickGenerateKey} >
@@ -54,4 +51,4 @@ const AESConfigure = ({ form, aesKey, handleSubmit }) => {
   )
 }
 
-export default Form.create({})(AESConfigure);
+export default AESConfigure;
