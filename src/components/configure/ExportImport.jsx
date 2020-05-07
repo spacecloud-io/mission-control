@@ -1,8 +1,6 @@
 import React from 'react'
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Upload, message, Select, Input, Button } from 'antd';
+import { Form, Upload, message, Select, Input, Button } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { setProjectConfig, getProjectConfig, notify } from '../../utils';
 import { useParams } from "react-router-dom";
@@ -10,6 +8,7 @@ import { useParams } from "react-router-dom";
 const YAML = require('yamljs');
 
 const ExportImport = ({ projectConfig, importProjectConfig }) => {
+    const [form] = Form.useForm();
     const { projectID, selectedDB } = useParams()
 
     const projects = useSelector(state => state.projects)
@@ -56,7 +55,7 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
     return (
         <div>
             <p>Download project config in JSON/YAML file </p>
-            <Form layout="inline">
+            <Form form={form} layout="inline">
                 <Form.Item>
                     <Button onClick={(e) => download(e, "yaml")}>
                         Yaml
@@ -92,4 +91,4 @@ const ExportImport = ({ projectConfig, importProjectConfig }) => {
     );
 }
 
-export default Form.create({})(ExportImport);
+export default ExportImport;

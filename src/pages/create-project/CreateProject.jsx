@@ -9,9 +9,7 @@ import history from "../../history"
 import { generateProjectConfig, notify } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
 import { EditOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Row, Col, Button, Input, Steps, Card, Select, Alert } from 'antd';
+import { Form, Row, Col, Button, Input, Steps, Card, Select, Alert } from 'antd';
 import './create-project.css'
 import { dbEnable } from '../database/dbActions'
 
@@ -25,41 +23,41 @@ const CreateProject = (props) => {
     ReactGA.pageview("/create-project");
   }, [])
 
-
-  const { getFieldDecorator, validateFields, getFieldValue } = props.form;
+  const [form] = Form.useForm();
+  const [projectName, setProjectName] = useState();
   const { Step } = Steps;
 
-  const projectName = getFieldValue("projectName");
-  const projectID = projectName ? projectName.toLowerCase(): "";
+  const projectID = projectName ? projectName.toLowerCase() : "";
   const [projectId, setProjectId] = useState(projectID);
   const enterpriseMode = localStorage.getItem('enterprise') === 'true'
   const projects = useSelector(state => state.projects)
   const clusters = useSelector(state => state.clusters)
 
-  const handleSubmit = e => {
-    //e.preventDefault();
-    setProjectId(projectID);
-    validateFields((err, values) => {
-      if (!err) {
-        const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+  const handleChangedValues = ({ projectName }) => { 
+    setProjectName(projectName);
+  }
 
-        dispatch(increment("pendingRequests"))
-        client.projects.addProject(projectConfig.id, projectConfig).then(() => {
-          const updatedProjects = [...store.getState().projects, projectConfig]
-          dispatch(set("projects", updatedProjects))
-          setCurrent(current + 1);
-          notify("success", "Success", "Project created successfully with suitable defaults")
-          const projectClusters = values.cluster
-          if (enterpriseMode) {
-            Promise.all(...projectClusters.map(c => client.clusters.addCluster(projectConfig.id, c))).then(() => {
-              const updatedClusters = store.getState().clusters.map(cluster => projectClusters.some(c => c === cluster.id) ? Object.assign({}, cluster, { projects: [...cluster.projects, projectConfig.id] }) : cluster)
-              dispatch(set("clusters", updatedClusters))
-            })
-              .catch(ex => notify("error", "Error adding clusters to project", ex))
-          }
-        }).catch(ex => notify("error", "Error creating project", ex))
-          .finally(() => dispatch(decrement("pendingRequests")))
-      }
+  const handleSubmit = e => {
+    setProjectId(projectID);
+    form.validateFields().then(values => {
+      const projectConfig = generateProjectConfig(projectID, values.projectName, selectedDB)
+
+      dispatch(increment("pendingRequests"))
+      client.projects.addProject(projectConfig.id, projectConfig).then(() => {
+        const updatedProjects = [...store.getState().projects, projectConfig]
+        dispatch(set("projects", updatedProjects))
+        setCurrent(current + 1);
+        notify("success", "Success", "Project created successfully with suitable defaults")
+        const projectClusters = values.cluster
+        if (enterpriseMode) {
+          Promise.all(...projectClusters.map(c => client.clusters.addCluster(projectConfig.id, c))).then(() => {
+            const updatedClusters = store.getState().clusters.map(cluster => projectClusters.some(c => c === cluster.id) ? Object.assign({}, cluster, { projects: [...cluster.projects, projectConfig.id] }) : cluster)
+            dispatch(set("clusters", updatedClusters))
+          })
+            .catch(ex => notify("error", "Error adding clusters to project", ex))
+        }
+      }).catch(ex => notify("error", "Error creating project", ex))
+        .finally(() => dispatch(decrement("pendingRequests")))
     });
   };
 
@@ -83,11 +81,9 @@ const CreateProject = (props) => {
       <Row>
         <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <Card>
-            <Form>
+            <Form form={form} onValuesChange={handleChangedValues}>
               <p style={{ fontWeight: "bold" }}><b>Name your project</b></p>
-              <Form.Item >
-                {getFieldDecorator('projectName', {
-                  rules: [
+              <Form.Item name="projectName" rules={[
                     {
                       validator: (_, value, cb) => {
                         if (!value) {
@@ -104,27 +100,21 @@ const CreateProject = (props) => {
                         }
                         cb()
                       }
-                    }],
-                })(
+                    }]}>
                   <Input
                     prefix={<EditOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
                     placeholder="Project name" />,
-                )}
                 <br />
                 {projectID && <span className="hint">ProjectID: {projectID}</span>}
               </Form.Item>
               {enterpriseMode && <div> <p style={{ marginBottom: 0, fontWeight: "bold" }}>Clusters</p>
                 <label style={{ marginTop: 0, fontSize: "12px" }}>Each project requires atleast one Space Cloud cluster to run</label>
-                <Form.Item>
-                  {getFieldDecorator('cluster', {
-                    rules: [{ required: true, message: "Please select cluster" }]
-                  })(
+                <Form.Item name="cluster" rules={[{ required: true, message: "Please select cluster" }]}>
                     <Select mode="multiple" placeholder="Select clusters">
                       {clusters.map(data => {
                         return <Select.Option value={data.id}>{data.id}</Select.Option>
                       })}
                     </Select>
-                  )}
                 </Form.Item>
                 <Alert message={alertMsg}
                   description={alertDes}
@@ -167,6 +157,5 @@ const CreateProject = (props) => {
     </div>
   )
 }
-const WrappedCreateProject = Form.create({})(CreateProject)
 
-export default WrappedCreateProject;
+export default CreateProject;

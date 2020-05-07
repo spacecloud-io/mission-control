@@ -1,23 +1,17 @@
 import React, { useState } from "react"
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, Input, Select } from 'antd';
+import { Modal, Input, Select, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
-
 const AddClusters = (props) => {
-    const { getFieldDecorator } = props.form;
     const { Option } = Select;
+    const [form] = Form.useForm();
 
     const handleSubmitClick = e => {
-        e.preventDefault();
-        props.form.validateFields((err, values) => {
-            if (!err) {
-                props.handleSubmit(
-                    values.name
-                )
-            }
-        })
+        form.validateFields().then(values => {
+            props.handleSubmit(
+                values.name
+            )
+        });
     }
 
     return (
@@ -30,25 +24,21 @@ const AddClusters = (props) => {
         >
             <Form layout="vertical">
                 <FormItemLabel name="Select a cluster to add to project" />
-                <Form.Item>
-                    {getFieldDecorator("name", {
-                        rules: [
-                            {
-                                required: true,
-                                message: "Please select a cluster"
-                            }
-                        ]
-                    })(
-                        <Select placeholder="Select a cluster">
-                            {props.clusters.map((data) => (
-                                <Option value={data.id}>{data.id}</Option>
-                            ))}
-                        </Select>
-                    )}
+                <Form.Item name="name" rules={[
+                    {
+                        required: true,
+                        message: "Please select a cluster"
+                    }
+                ]}>
+                    <Select placeholder="Select a cluster">
+                        {props.clusters.map((data) => (
+                            <Option value={data.id}>{data.id}</Option>
+                        ))}
+                    </Select>
                 </Form.Item>
             </Form>
         </Modal>
     )
 }
 
-export default Form.create({})(AddClusters);
+export default AddClusters;

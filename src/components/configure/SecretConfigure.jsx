@@ -1,20 +1,15 @@
 import React, { useState } from 'react'
 import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
 import FormItemLabel from "../../components/form-item-label/FormItemLabel";
 import { generateJWTSecret, notify } from '../../utils';
 
-const AddSecretModal = ({ form, handleSubmit, handleCancel }) => {
-  const { getFieldDecorator } = form;
+const AddSecretModal = ({ handleSubmit, handleCancel }) => {
+  const [form] = Form.useForm();
   const handleSubmitClick = (e) => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
+    form.validateFields().then(values => {
       const { secret, isPrimary } = values;
-      if (!err) {
-        handleSubmit(secret, isPrimary).then(() => handleCancel())
-      }
+      handleSubmit(secret, isPrimary).then(() => handleCancel())
     });
   };
 
@@ -26,31 +21,21 @@ const AddSecretModal = ({ form, handleSubmit, handleCancel }) => {
       onOk={handleSubmitClick}
       onCancel={handleCancel}
     >
-      <Form layout="vertical">
+      <Form form={form} layout="vertical" initialValues={{ generateJWTSecret: generateJWTSecret(), isPrimary: true }}>
         <FormItemLabel name="Secret" />
-        <Form.Item>
-          {getFieldDecorator('secret', {
-            rules: [{ required: true, message: 'Please provide a secret' }],
-            initialValue: generateJWTSecret()
-          })(
+        <Form.Item name="secret" 
+        rules={[{ required: true, message: 'Please provide a secret' }]}
+        >
             <Input.Password className="input" placeholder="What is this about?" />
-          )}
         </Form.Item>
         <FormItemLabel name="Primary secret" />
-        <Form.Item>
-          {getFieldDecorator('isPrimary', {
-            valuePropName: "checked",
-            initialValue: true
-          })(
+        <Form.Item name="isPrimary" valuePropName="checked">
             <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
-          )}
         </Form.Item>
       </Form>
     </Modal>
   )
 }
-
-const WrappedAddSecretModal = Form.create({})(AddSecretModal)
 
 const SecretValue = ({ secret }) => {
   const [showSecret, setShowSecret] = useState(false)
@@ -162,7 +147,7 @@ const SecretConfigure = ({ secrets, handleSetSecrets }) => {
         pagination={false}
         rowKey="key"
       />
-      {modalVisible && <WrappedAddSecretModal
+      {modalVisible && <AddSecretModal
         handleSubmit={handleAddSecret}
         handleCancel={() => setModalVisible(false)} />}
     </div>
