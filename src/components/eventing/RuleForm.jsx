@@ -5,7 +5,6 @@ import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber, Form 
 import { getEventSourceFromType, getProjectConfig } from "../../utils";
 import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
-//import {dbIcons} from '../../utils';
 
 const { Option } = AutoComplete;
 
@@ -14,14 +13,34 @@ const RuleForm = (props) => {
   const [temp, setTemp] = useState();
   const [selectedDb, setSelectedDb] = useState();
 
-  const handleChangedValues = ({source}) => {
-    console.log(source);
+  const handleChangedValues = ({ source }) => {
     setTemp(source);
-    // setSelectedDb(optio ns);
   }
 
   const { projectID } = useParams()
   const projects = useSelector(state => state.projects)
+
+  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
+  let defaultEventSource = getEventSourceFromType(type, "database")
+  const eventSource = temp ? temp : defaultEventSource
+
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
+  const trackedCollections = Object.keys(collections);
+  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
+
+  const [value, setValue] = useState("");
+
+  const formInitialValues = {
+    'name': name, 'source': defaultEventSource, 'options.db': options ? options.db : undefined,
+    'options.col': options ? options.col : undefined, 'type': type ? type : (eventSource === "database" && "DB_INSERT"),
+    'type': type ? type : (eventSource === "file storage" && "FILE_CREATE"), 'type': type, 'url': url, 'retries': retries ? retries : 3,
+    'timeout': timeout ? timeout : 5000
+  }
+
+  const handleSearch = value => {
+    setValue(value);
+  };
+
   const handleSubmit = e => {
     form.validateFields().then(values => {
       let options = values.options
@@ -35,22 +54,6 @@ const RuleForm = (props) => {
     });
   }
 
-  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-  let defaultEventSource = getEventSourceFromType(type, "database")
-  // const temp = form.getFieldValue("source")
-  const eventSource = temp ? temp : defaultEventSource
-
-  // const selectedDb = form.getFieldValue("options.db")
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
-  const trackedCollections = Object.keys(collections);
-  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
-
-  const [value, setValue] = useState("");
-
-  const handleSearch = value => {
-    setValue(value);
-  };
-
   return (
     <Modal
       title={`${props.initialValues ? "Edit" : "Add"} Trigger`}
@@ -60,12 +63,7 @@ const RuleForm = (props) => {
       onOk={handleSubmit}
     >
       <Form layout="vertical" form={form} onFinish={handleSubmit} onValuesChange={handleChangedValues}
-        initialValues={{
-          'name': name, 'source': defaultEventSource, 'options.db': options ? options.db : undefined,
-          'options.col': options ? options.col : undefined, 'type': type ? type : (eventSource === "database" && "DB_INSERT"),
-          'type': type ? type : (eventSource === "file storage" && "FILE_CREATE"), 'type': type, 'url': url, 'retries': retries ? retries : 3,
-          'timeout': timeout ? timeout : 5000
-        }}>
+        initialValues={formInitialValues}>
         <FormItemLabel name="Trigger name" />
         <Form.Item name="name" rules={[
           {
@@ -127,35 +125,35 @@ const RuleForm = (props) => {
         {(!eventSource || eventSource === 'file storage') && <React.Fragment>
           <FormItemLabel name="Trigger operation" />
           <Form.Item name="type" rules={[{ required: true, message: 'Please select a type!' }]}>
-                <Radio.Group>
-                  <RadioCard value="FILE_CREATE">Write</RadioCard>
-                  <RadioCard value="FILE_DELETE">Delete</RadioCard>
-                </Radio.Group>
+            <Radio.Group>
+              <RadioCard value="FILE_CREATE">Write</RadioCard>
+              <RadioCard value="FILE_DELETE">Delete</RadioCard>
+            </Radio.Group>
           </Form.Item>
         </React.Fragment>}
         {eventSource === "custom" && <React.Fragment>
           <FormItemLabel name="Type" />
           <Form.Item name="type" rules={[
-                {
-                  validator: (_, value, cb) => {
-                    if (!value) {
-                      cb("Please provide event type!")
-                      return
-                    }
-                    if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
-                      cb("Event type can only contain alphanumeric characters and underscores!")
-                      return
-                    }
-                    cb()
-                  }
+            {
+              validator: (_, value, cb) => {
+                if (!value) {
+                  cb("Please provide event type!")
+                  return
                 }
-              ]}>
-              <Input placeholder="Custom event type (Example: my_custom_event_type)" />
+                if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                  cb("Event type can only contain alphanumeric characters and underscores!")
+                  return
+                }
+                cb()
+              }
+            }
+          ]}>
+            <Input placeholder="Custom event type (Example: my_custom_event_type)" />
           </Form.Item>
         </React.Fragment>}
         <FormItemLabel name="Webhook URL" />
         <Form.Item name="url" rules={[{ required: true, message: 'Please provide a webhook url!' }]}>
-            <Input placeholder="eg: https://myapp.com/endpoint1" />
+          <Input placeholder="eg: https://myapp.com/endpoint1" />
         </Form.Item>
         <Collapse style={{ background: "white" }} bordered={false} >
           <Collapse.Panel header="Advanced settings" key="advanced">
