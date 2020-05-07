@@ -1,8 +1,8 @@
 import { Server, Model, RestSerializer, Response } from "miragejs";
 import fixtures from './fixtures'
 
-function respondOk() {
-  return new Response(200, {}, {})
+function respondOk(body = {}) {
+  return new Response(200, {}, body)
 }
 
 function graphQLAPIHandler(request, schema) {
@@ -40,9 +40,10 @@ export function makeServer({ environment = "development" } = {}) {
       this.timing = 500;
 
       // Global endpoints
-      this.get("/config/env", () => ({ isProd: false, enterprise: false, version: "0.17.0" }));
+      this.get("/config/env", () => ({ isProd: false, version: "0.17.0" }));
       this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
       this.get("/config/quotas", () => respondOk());
+      this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
 
       // Projects Endpoint
       this.get("/config/projects", (schema) => schema.projects.all());

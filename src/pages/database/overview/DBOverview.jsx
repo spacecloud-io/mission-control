@@ -273,7 +273,6 @@ const Overview = () => {
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
-              selectedDB={selectedDB}
               conformLoading={conformLoading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}

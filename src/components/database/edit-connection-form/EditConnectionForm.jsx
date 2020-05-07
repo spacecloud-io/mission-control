@@ -3,14 +3,11 @@ import { Modal, Input, Alert, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 
 const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, conformLoading }) => {
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      handleSubmit(values.conn)
-    });
-  }
-
   const [form] = Form.useForm();
-  const { conn } = initialValues ? initialValues : {}
+
+  const handleOk = () => {
+    form.validateFields().then(values => handleSubmit(values.conn))
+  }
 
   const alertMsg = <div>
     <b>Note:</b> If your database is running inside a docker container, use the container IP address of that docker container as the host in the connection string.
@@ -23,12 +20,12 @@ const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, conform
       visible={true}
       onCancel={handleCancel}
       confirmLoading={conformLoading}
-      onOk={handleSubmitClick}
+      onOk={handleOk}
     >
-      <Form layout="vertical" onSubmit={handleSubmitClick}>
+      <Form form={form} layout="vertical" initialValues={initialValues}>
         <FormItemLabel name="Connection string" />
-        <Form.Item name="name" rules={[{ required: true, message: 'Please provide a connection string!' }]} initialValue={conn}>
-            <Input.Password placeholder="Enter connection string of your database" />
+        <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a connection string!' }]}>
+          <Input.Password placeholder="Enter connection string of your database" />
         </Form.Item>
         <Alert message={alertMsg}
           description=" "

@@ -31,17 +31,12 @@ body {
   justify-content: space-between;
 }
 
-.discord {
-  background: #ffffff;
-  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 10px;
-  z-index: 8;
-  padding: 0 8px;
-  right: 3vw;
-  position: fixed;
-  bottom: 30px;
-  cursor: pointer;
-  color: #002c39;
+.ant-alert-info {
+  border: 1px solid #91d5ff;
+  background-color: #e6f7ff;
+}
+.ant-alert-info .ant-alert-icon {
+  color: #1890ff;
 }
 
 .hint {
