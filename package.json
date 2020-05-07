@@ -3,11 +3,10 @@
   "version": "0.17.0",
   "private": true,
   "dependencies": {
-    "@ant-design/compatible": "^1.0.0",
-    "@ant-design/icons": "^4.0.0-rc.0",
+    "@ant-design/icons": "^4.1.0",
     "@stripe/react-stripe-js": "^1.0.3",
     "@stripe/stripe-js": "^1.0.3",
-    "antd": "^4.1.4",
+    "antd": "^4.2.0",
     "apollo-boost": "^0.4.4",
     "automate-redux": "^1.1.0",
     "babel-plugin-import": "^1.12.0",

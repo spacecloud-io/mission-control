@@ -16,7 +16,7 @@ const AddSecretKey = props => {
     form.validateFields().then(values => {
         props.handleSubmit(values.key, values.value).then(() => {
           props.handleCancel();
-          props.form.resetFields();
+          form.resetFields();
         })
       });
     };

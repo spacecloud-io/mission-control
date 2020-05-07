@@ -43,6 +43,7 @@ const RuleForm = (props) => {
 
   const handleSubmit = e => {
     form.validateFields().then(values => {
+      values = Object.assign({}, formInitialValues, values)
       let options = values.options
       if (options && !options.col) {
         delete options["col"]
