@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Modal, AutoComplete } from "antd";
+import { Modal, AutoComplete, Form } from "antd";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import "codemirror/theme/material.css";
@@ -14,7 +12,6 @@ import { defaultEventRule } from "../../constants";
 import { notify } from "../../utils";
 
 const EventSecurityRuleForm = ({
-  form,
   handleSubmit,
   handleCancel,
   initialValues,
@@ -22,9 +19,12 @@ const EventSecurityRuleForm = ({
   defaultRules,
   customEventTypes
 }) => {
-  const { getFieldDecorator, getFieldValue } = form;
+  const [form] = Form.useForm();
+  const [eventType, setEventType] = useState()
 
-  const eventType = getFieldValue("eventType");
+  const handleChangedValue = ({ eventType }) => {
+    setEventType(eventType)
+  }
 
   if (!initialValues) {
     initialValues = {
@@ -38,17 +38,15 @@ const EventSecurityRuleForm = ({
   );
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          handleSubmit(values.eventType, JSON.parse(rule));
-        } catch (ex) {
-          notify("error", "Error", ex.toString());
-        }
+    form.validateFields().then(values => {
+      console.log(eventType);
+      try {
+        handleSubmit(values.eventType, JSON.parse(rule));
+      } catch (ex) {
+        notify("error", "Error", ex.toString());
       }
     });
-  };
+  }
 
   return (
     <div>
@@ -62,14 +60,11 @@ const EventSecurityRuleForm = ({
         confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValue}>
           <FormItemLabel name="Event Type" />
-          <Form.Item>
-            {getFieldDecorator("eventType", {
-              rules: [
+          <Form.Item name="eventType" rules={[
                 { required: true, message: "Please provide a event type!" }
-              ]
-            })(
+              ]}>
               <AutoComplete
                 placeholder="Example: event-type"
               >
@@ -77,7 +72,6 @@ const EventSecurityRuleForm = ({
                   <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
                 ))}
               </AutoComplete>
-            )}
           </Form.Item>
           <div>
             <FormItemLabel name="Rule" />
@@ -103,4 +97,4 @@ const EventSecurityRuleForm = ({
   );
 };
 
-export default Form.create({})(EventSecurityRuleForm);
+export default EventSecurityRuleForm;

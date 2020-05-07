@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form } from '@ant-design/compatible';
 import '@ant-design/compatible/assets/index.css';
-import { Modal, Switch, Input, Row, Col, Checkbox } from 'antd';
+import { Modal, Form, Switch, Input, Row, Col, Checkbox } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -12,8 +11,9 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
-  const { getFieldDecorator, getFieldValue } = form;
+const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
+  const [form] = Form.useForm();
+  const [colName, setcolName] = useState('')
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
@@ -38,7 +38,7 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   const [schema, setSchema] = useState(initialValues.schema);
   const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
-  const colName = getFieldValue("name")
+  const fieldValueChange = ({ name }) => {setcolName(name)};
   useEffect(() => {
     if (schema) {
       const temp = schema.trim().slice(4).trim()
@@ -53,19 +53,17 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   };
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          handleSubmit(
-            values.name,
-            applyDefaultRules ? {} : JSON.parse(rule),
-            schema,
-            isRealtimeEnabled
-          );
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
+    form.validateFields().then(values => {
+      console.log(colName);
+      try {
+        handleSubmit(
+          values.name,
+          applyDefaultRules ? {} : JSON.parse(rule),
+          schema,
+          isRealtimeEnabled
+        );
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
       }
     });
   };
@@ -81,42 +79,38 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
         confirmLoading={conformLoading}
-        onCancel={handleCancel}
+        onCancel={handleCancel} 
       >
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={fieldValueChange} 
+        initialValues={{
+          'name': initialValues.name,
+        }}>
           <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />
-          <Form.Item>
-            {getFieldDecorator("name", {
-              rules: [{
-                validator: (_, value, cb) => {
-                  if (!value) {
-                    cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name is required`)
-                    return
-                  }
-                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
-                    cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name can only contain alphanumeric characters and underscores!`)
-                    return
-                  }
-                  cb()
-                }
-              }],
-              initialValue: initialValues.name
-            })(
-              <Input
-                className="input"
-                placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
-                disabled={editMode}
-              />
-            )}
+          <Form.Item name="name" rules={[{
+            validator: (_, value, cb) => {
+              if (!value) {
+                cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name is required`)
+                return
+              }
+              if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name can only contain alphanumeric characters and underscores!`)
+                return
+              }
+              cb()
+            }
+          }]}>
+            <Input
+              className="input"
+              placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
+              disabled={editMode}
+            />
           </Form.Item>
 
           <FormItemLabel name="Realtime subscriptions" />
-          <Form.Item>
-            {getFieldDecorator('realtime')(
-              <span className='realtime'>
-                Enabled: <Switch defaultChecked={initialValues.isRealtimeEnabled} onChange={onSwitchChange} />
-              </span>
-            )}
+          <Form.Item name="realtime">
+            <span className='realtime'>
+              Enabled: <Switch defaultChecked={initialValues.isRealtimeEnabled} onChange={onSwitchChange} />
+            </span>
           </Form.Item>
           <FormItemLabel name="Schema" />
           <CodeMirror
@@ -166,4 +160,4 @@ const AddCollectionForm = ({ form, editMode, projectId, selectedDB, handleSubmit
   );
 }
 
-export default Form.create({})(AddCollectionForm);
+export default AddCollectionForm;
