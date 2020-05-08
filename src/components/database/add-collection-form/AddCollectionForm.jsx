@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Switch, Input, Row, Col, Checkbox } from 'antd';
+import { Modal, Form, Switch, Input, Checkbox } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';

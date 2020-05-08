@@ -32,11 +32,50 @@ const projects = [
       },
       "userMan": {},
       "remoteServices": {
-        "externalServices": {}
+        "externalServices": {
+          "auth": {
+            "url": "localhost:3000",
+            "endpoints": {}
+          }
+        }
       },
       "fileStore": {
-        "enabled": false,
-        "rules": []
+        "enabled": true,
+        "storeType": "amazon-s3",
+        "bucket": "my-bucket",
+        "conn": "us-east-1",
+        "rules": [
+          {
+            "id": "Default Rule",
+            "prefix": "/",
+            "rule": {
+              "create": {
+                "rule": "allow"
+              },
+              "read": {
+                "rule": "allow"
+              },
+              "delete": {
+                "rule": "allow"
+              }
+            }
+          },
+          {
+            "id": "Posts",
+            "prefix": "/posts",
+            "rule": {
+              "create": {
+                "rule": "allow"
+              },
+              "read": {
+                "rule": "allow"
+              },
+              "delete": {
+                "rule": "deny"
+              }
+            }
+          }
+        ]
       }
     }
   }

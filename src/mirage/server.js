@@ -51,6 +51,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId", () => respondOk());
 
       // Database endpoints
+      this.get("/external/projects/:projectId/database/:dbName/connection-state", () => respondOk({ result: true }));
       this.post("/config/projects/:projectId/database/:db/config/database-config", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/mutate", () => respondOk());
@@ -61,7 +62,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
 
       // FileStore endpoints
-      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk());
+      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk({ result: true }));
       this.post("/config/projects/:projectId/file-storage/config/file-storage-config", () => respondOk());
       this.post("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
       this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());

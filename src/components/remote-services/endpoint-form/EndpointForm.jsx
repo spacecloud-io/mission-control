@@ -62,7 +62,7 @@ const EndpointForm = (props) => {
             <Input placeholder="Example: allPayments" disabled={props.initialValues ? true : false} />
         </Form.Item>
         <FormItemLabel name="Method" />
-        <Form.Item name="mathod" rules={[{ required: true, message: 'Please select a method!' }]}>
+        <Form.Item name="method" rules={[{ required: true, message: 'Please select a method!' }]}>
             <Select placeholder="Please select a method">
               <Option value="POST">POST</Option>
               <Option value="PUT">PUT</Option>
