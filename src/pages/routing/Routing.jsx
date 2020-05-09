@@ -6,7 +6,7 @@ import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
-import RoutingRule from "../../components/routing/routingRule";
+import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
 import { set, increment, decrement } from "automate-redux";
 import client from "../../client";
 import {
@@ -212,7 +212,7 @@ function Routing() {
           )}
         </div>
         {modalVisible && (
-          <RoutingRule
+          <IngressRoutingModal
             handleSubmit={values => handleSubmit(routeClicked, values)}
             services={services}
             initialValues={routeClickedInfo}

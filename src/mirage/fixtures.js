@@ -147,6 +147,38 @@ const projects = [
           }
         }
       ],
+      "ingressRoutes": [
+        {
+          "id": "3f020b02cacd48e59e70fc371172a9b5",
+          "source": {
+            "hosts": [
+              "example.com",
+              "foo.bar"
+            ],
+            "methods": [
+              "GET",
+              "POST"
+            ],
+            "url": "/v1",
+            "rewrite": "/v2",
+            "type": "exact"
+          },
+          "targets": [
+            {
+              "scheme": "http",
+              "host": "service1.project1.svc.cluster.local",
+              "port": 80,
+              "weight": 40
+            },
+            {
+              "scheme": "https",
+              "host": "qwertyu",
+              "port": 443,
+              "weight": 60
+            }
+          ]
+        }
+      ],
       "fileStore": {
         "enabled": true,
         "storeType": "amazon-s3",
