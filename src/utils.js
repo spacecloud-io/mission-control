@@ -204,10 +204,14 @@ export const fetchGlobalEntities = (token) => {
   }
 
   // Redirect if needed
-  redirectIfNeeded()
+  const { redirect, redirectUrl } = shouldRedirect()
+  if (redirect) {
+    history.push(redirectUrl)
+    return
+  }
 
-  // Fetch projects
-  if (shouldFetchProjects()) {
+  if (shouldFetchGlobalEntities()) {
+    // Fetch projects
     store.dispatch(increment("pendingRequests"))
     client.projects.getProjects().then(projects => {
       store.dispatch(set("projects", projects))
@@ -225,19 +229,19 @@ export const fetchGlobalEntities = (token) => {
       openProject(projectToBeOpened)
     }).catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
+
+    store.dispatch(increment("pendingRequests"))
+    client.fetchCredentials()
+      .then(data => store.dispatch(set("credentials", data)))
+      .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+
+    store.dispatch(increment("pendingRequests"))
+    client.fetchQuotas()
+      .then(data => store.dispatch(set("quotas", data)))
+      .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
   }
-
-  store.dispatch(increment("pendingRequests"))
-  client.fetchCredentials()
-    .then(data => store.dispatch(set("credentials", data)))
-    .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-    .finally(() => store.dispatch(decrement("pendingRequests")))
-
-  store.dispatch(increment("pendingRequests"))
-  client.fetchQuotas()
-    .then(data => store.dispatch(set("quotas", data)))
-    .catch(ex => notify("error", "Error fetching quotas", ex.toString()))
-    .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
 const storeEnv = (enterpriseMode, isProd, version) => {
@@ -254,7 +258,7 @@ const getToken = () => localStorage.getItem("token")
 export const getFirebaseToken = () => localStorage.getItem("firebase-token")
 export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
 
-const shouldFetchProjects = () => {
+const shouldFetchGlobalEntities = () => {
   const prodMode = isProdMode()
   const enterprise = isEnterprise()
   const emailVerified = isEmailVerified()
@@ -292,10 +296,13 @@ const storeToken = (token) => {
   client.setToken(token)
 }
 
+const isCurrentRoutePublic = () => {
+  const path = window.location.pathname.split("/")[2]
+  return (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler")
+}
 const shouldRedirect = () => {
   // Check if we are at a public route
-  const path = window.location.pathname.split("/")[2]
-  if (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler") {
+  if (isCurrentRoutePublic()) {
     return { redirect: false, redirectUrl: "" }
   }
 

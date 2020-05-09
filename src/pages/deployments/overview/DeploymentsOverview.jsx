@@ -30,10 +30,10 @@ const DeploymentsOverview = () => {
   );
   const dockerSecrets = totalSecrets
     .filter(obj => obj.type === "docker")
-    .map(obj => obj.name);
+    .map(obj => obj.id);
   const secrets = totalSecrets
     .filter(obj => obj.type !== "docker")
-    .map(obj => obj.name);
+    .map(obj => obj.id);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [deploymentClicked, setDeploymentClicked] = useState(null);
 

@@ -67,7 +67,7 @@ const UpdateDockerSecret = props => {
                 message: `Please input your docker registry url`
               }
             ]
-          })(<Input placeholder="https://foo.bar.com/my-private-registry" />)}
+          })(<Input placeholder="Example: https://index.docker.io/v1/" />)}
         </Form.Item>
       </Form>
     </Modal>
