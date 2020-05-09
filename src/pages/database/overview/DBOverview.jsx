@@ -4,7 +4,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
-import { Col, Row, Button, Icon, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+
+import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
@@ -231,7 +233,7 @@ const Overview = () => {
                     </span>
                     <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
                       onClick={handleAddClick}>
-                      <Icon type='plus' /> Add {label}
+                      <PlusOutlined /> Add {label}
                     </Button>
                   </div>
                   <div style={{ marginTop: '32px' }}>
@@ -249,7 +251,7 @@ const Overview = () => {
                       <Button
                         style={{ float: "right" }} type="primary" className="secondary-action" ghost
                         onClick={() => handleTrackCollections(unTrackedCollections)}>
-                        <Icon type='plus' /> Track All
+                        <PlusOutlined /> Track All
                     </Button>
                     </div>
                     <div style={{ marginTop: '32px' }}>
@@ -271,7 +273,6 @@ const Overview = () => {
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
-              selectedDB={selectedDB}
               conformLoading={conformLoading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}
@@ -279,7 +280,7 @@ const Overview = () => {
         </div>
       </div>
     </React.Fragment>
-  )
+  );
 }
 
 export default Overview

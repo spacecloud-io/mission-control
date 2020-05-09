@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Modal, Form, Card } from 'antd';
+import { Modal, Card, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -13,6 +13,7 @@ import jwt from 'jsonwebtoken';
 import { notify } from "../../../utils";
 
 const GenerateTokenForm = (props) => {
+  const [form] = Form.useForm();
   const decodedClaims = jwt.decode(props.initialToken)
   const initialPayload = decodedClaims ? decodedClaims : {}
 
@@ -20,19 +21,16 @@ const GenerateTokenForm = (props) => {
   const generatedToken = jwt.sign(data, props.secret)
 
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          JSON.parse(data) 
-          props.handleSubmit(jwt.sign(data, props.secret));
-          props.handleCancel();
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
+    form.validateFields().then(values => {
+      try {
+        JSON.parse(data)
+        props.handleSubmit(jwt.sign(data, props.secret));
+        props.handleCancel();
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
       }
-    })
-  }
+    });
+  };
 
   return (
     <Modal
@@ -42,7 +40,7 @@ const GenerateTokenForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical">
+      <Form form={form} layout="vertical">
         <FormItemLabel name="Token claims" />
         <CodeMirror
           value={data}
@@ -70,4 +68,4 @@ const GenerateTokenForm = (props) => {
   )
 }
 
-export default Form.create({})(GenerateTokenForm)
+export default GenerateTokenForm

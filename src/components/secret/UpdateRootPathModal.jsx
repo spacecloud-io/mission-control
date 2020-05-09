@@ -1,49 +1,37 @@
 import React from "react";
-import { Modal, Form, Input } from "antd";
-import "./add-secret.css";
+import { Modal, Input, Form } from "antd";
+import FormItemLabel from "../form-item-label/FormItemLabel";
 
-const UpdateRootPathModal = (props) => {
-    const { getFieldDecorator } = props.form;
-    const { rootPath } = props;
+const UpdateRootPathModal = ({ rootPath, handleCancel, handleSubmit }) => {
+  const [form] = Form.useForm();
+  const formInitialValues = { rootPath }
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        props.form.validateFields((err, values) => {
-          if (!err) {
-            props.handleSubmit(values.rootPath).then(() => {
-              props.handleCancel();
-              props.form.resetFields();
-            })
-          }
-        });
-      };
+  const handleOk = () => {
+    form.validateFields().then(values => {
+      handleSubmit(values.rootPath).then(() => {
+        handleCancel();
+        form.resetFields();
+      })
+    });
+  };
 
-    return(
-        <Modal 
-        title="Update file root path"
-        okText="Save"
-        visible={true}
-        onCancel={props.handleCancel}
-        onOk={handleSubmit}
-        width="600px"
-        >
-            <Form>
-                <p>Root path</p>
-                {getFieldDecorator("rootPath", {
-                rules: [
-                  {
-                    required: true,
-                    message: "Please input a root path"
-                  }
-                ], initialValue: rootPath
-                })(
-                    <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
-                )}
-            </Form>
-        </Modal>
-    );
+  return (
+    <Modal
+      title="Update file root path"
+      okText="Save"
+      visible={true}
+      onCancel={handleCancel}
+      onOk={handleOk}
+      width="600px"
+    >
+      <Form form={form} initialValues={formInitialValues}>
+        <FormItemLabel name="Root path" />
+        <Form.Item name="rootPath">
+          <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
 }
 
-const WrappedRuleForm = Form.create({})(UpdateRootPathModal);
-
-export default WrappedRuleForm;
+export default UpdateRootPathModal;

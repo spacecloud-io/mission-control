@@ -79,7 +79,7 @@ class Service {
           reject("Internal server error")
           return
         }
-        resolve(data.result)
+        resolve(data)
       }).catch(ex => reject(ex.toString()))
     })
   }
@@ -89,6 +89,10 @@ class Service {
       this.client.postJSON('/v1/config/login', { user, key }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
+          return
+        }
+        if (!data.token) {
+          reject(new Error("Token not returned from Space Cloud"))
           return
         }
 
@@ -127,7 +131,7 @@ class Service {
 
   execSpaceAPI(projectId, code, token) {
     return new Promise((resolve, reject) => {
-      const url = process.env.NODE_ENV !== "production" ? "http://localhost:4122" : undefined
+      const url = process.env.REACT_APP_DISABLE_MOCK ? "http://localhost:4122" : undefined
       const api = new API(projectId, url)
       if (token) {
         api.setToken(token)

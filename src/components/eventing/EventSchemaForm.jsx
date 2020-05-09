@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, AutoComplete, Row, Col } from 'antd';
+import { Modal, AutoComplete, Row, Col, Form } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -10,10 +10,13 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify } from '../../utils';
 
-const EventSchemaForm = ({ form, handleSubmit, handleCancel, initialValues, customEventTypes, conformLoading }) => {
-  const { getFieldDecorator, getFieldValue } = form;
+const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes, conformLoading }) => {
+  const [form] = Form.useForm()
+  const [eventType, setEventType] = useState();
 
-  const eventType = getFieldValue("eventType");
+  const handleChangedValues = ({ eventType }) => {
+    setEventType(eventType);
+  }
 
   if (!initialValues) {
     initialValues = {
@@ -36,20 +39,18 @@ const EventSchemaForm = ({ form, handleSubmit, handleCancel, initialValues, cust
 
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          handleSubmit(
-            values.eventType,
-            schema
-          );
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
+    form.validateFields().then(values => {
+      console.log(values);
+      try {
+        handleSubmit(
+          values.eventType,
+          schema
+        );
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
       }
     });
-  };
+  }
 
 
   return (
@@ -64,21 +65,16 @@ const EventSchemaForm = ({ form, handleSubmit, handleCancel, initialValues, cust
         confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} initialValues={{ 'eventType': eventType }}>
           <FormItemLabel name='Event Type' />
-          <Form.Item>
-            {getFieldDecorator("eventType", {
-              rules: [{ required: true, message: `Event type is required` }],
-              initialValue: initialValues.eventType
-            })(
-              <AutoComplete
-                placeholder="Example: event-type"
-              >
-                {customEventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
-                  <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
-                ))}
-              </AutoComplete>
-            )}
+          <Form.Item name="eventType" rules={[{ required: true, message: `Event type is required` }]}>
+            <AutoComplete
+              placeholder="Example: event-type"
+            >
+              {customEventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
+                <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
+              ))}
+            </AutoComplete>
           </Form.Item>
           <Row>
             <Col span={24}>
@@ -106,4 +102,4 @@ const EventSchemaForm = ({ form, handleSubmit, handleCancel, initialValues, cust
   );
 }
 
-export default Form.create({})(EventSchemaForm);
+export default EventSchemaForm;

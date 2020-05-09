@@ -1,28 +1,19 @@
 import React from "react";
 import { Form, Select, Button, Alert } from "antd";
-import { notify } from "../../utils";
 
-const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
-  const { getFieldDecorator } = form;
-
-  const children = [];
-
-  const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit(values.domains).then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
-          .catch(ex => notify("error", "Error", ex.toString()))
-      }
-    });
-  };
+const WhiteListedDomains = ({ loading, domains, handleSubmit }) => {
+  const [form] = Form.useForm();
+  if (!loading) {
+    form.setFieldsValue({ domains })
+  }
+  const handleSubmitClick = values => handleSubmit(values.domains)
 
   return (
     <div>
       <h2>Whitelisted Domains</h2>
       <p>
         Add domains you want to whitelist for this project. Space cloud will
-            automatically add and renew SSL certificates for these domains{" "}
+        automatically add and renew SSL certificates for these domains
       </p>
       <Alert
         message="Domain setup"
@@ -30,33 +21,31 @@ const WhiteListedDomains = ({ form, domains, handleSubmit }) => {
         type="info"
         showIcon
       />
-      <Form style={{ paddingTop: 10 }} onSubmit={handleSubmitClick}>
-        <Form.Item>
-          {getFieldDecorator("domains", {
-            rules: [
-              {
-                required: true,
-                message: "Please enter the domain for the project"
-              }
-            ],
-            initialValue: domains ? domains : []
-          })(
-            <Select
-              mode="tags"
-              placeholder="Example: foo.bar.com"
-              style={{ width: "100%" }}
-              tokenSeparators={[","]}
-            >
-              {children}
-            </Select>
-          )}
+      <Form form={form} style={{ paddingTop: 10 }} initialValues={{ domains: domains ? domains : [] }} onFinish={handleSubmitClick}>
+        <Form.Item name="domains">
+          <Select
+            mode="tags"
+            placeholder="Example: foo.bar.com"
+            style={{ width: "100%" }}
+            tokenSeparators={[","]}
+          >
+          </Select>
         </Form.Item>
-        <Form.Item>
-          <Button htmlType="submit">Save</Button>
+        <Form.Item shouldUpdate={(prev, curr) => prev.domains !== curr.domains}>
+          {
+            () => {
+              const valueChanged = domains && JSON.stringify(form.getFieldValue("domains")) != JSON.stringify(domains)
+              return (
+                <Button disabled={!valueChanged} htmlType="submit" >
+                  Save
+                </Button>
+              )
+            }
+          }
         </Form.Item>
       </Form>
     </div>
   );
 };
 
-export default Form.create({})(WhiteListedDomains);
+export default WhiteListedDomains;

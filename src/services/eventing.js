@@ -15,8 +15,8 @@ class Eventing {
     const graphqlClient = createGraphQLClient(uri)
     return new Promise((resolve, reject) => {
       let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.NODE_ENV !== "production") {
-        uri = "http://localhost:4122" + uri;
+      if (process.env.REACT_APP_DISABLE_MOCK) {
+        uri = "http://localhost:4122" + uri
       }
 
       graphqlClient.query({

@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { dbIcons, isSignedIn, onAppLoad } from '../../utils'
-import { Button, Icon, Menu, Popover, Row, Col, Divider } from 'antd';
+import { dbIcons, isSignedIn } from '../../utils'
+import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
+import { Button, Menu, Popover, Row, Col, Divider } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -77,25 +78,24 @@ const Topbar = (props) => {
   return (
     <div>
       <div className="topbar">
-
-        <Icon type="menu" className="hamburger" onClick={() => store.dispatch(set("uiState.showSidenav", true))} />
+        <MenuOutlined
+          className="hamburger"
+          onClick={() => store.dispatch(set("uiState.showSidenav", true))} />
         <img className="logo" src={logo} alt="logo" />
         <img className="upLogo" src={upLogo} alt="logo" />
         {props.showProjectSelector && <div className="btn-position">
           <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
-            <Icon type="caret-down" />
+            <CaretDownOutlined />
           </Button>
         </div>}
         {props.showDbSelector && <div className="db-btn-position">
           <Button className="action-rounded" onClick={() => setVisible(true)}>
             <img src={svgIcon} alt={selectedDB} style={{ marginRight: 10 }} />
             {selectedDB}
-            <Icon type="caret-down" />
+            <CaretDownOutlined />
           </Button>
         </div>}
-
         <DbSelector visible={visible} handleSelect={handleDBSelect} handleCancel={() => setVisible(false)} />
-
         <SelectProject visible={modalVisible} handleCancel={() => setModalVisible(false)} />
         <div className="right-list">
           <Menu mode="horizontal">
@@ -126,7 +126,7 @@ const Topbar = (props) => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Topbar;

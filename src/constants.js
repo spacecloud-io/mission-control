@@ -56,5 +56,15 @@ export const defaultEndpointRule = {
   rule: "allow"
 }
 
-export const spaceCloudClusterOrigin = process.env.NODE_ENV !== "production" ? "http://localhost:4122": undefined
-export const enterpriseServerGraphQLURL = process.env.NODE_ENV !== "production" ? "http://35.188.208.249/v1/api/spacecloud/graphql": "https://api.spaceuptech.com/v1/api/spacecloud/graphql"
+const getURL = (productionURL, developmentURL, mockURL) => {
+  if (process.env.NODE_ENV === "production") {
+    return productionURL
+  }
+  if (process.env.REACT_APP_DISABLE_MOCK === "true") {
+    return developmentURL
+  }
+  return mockURL
+}
+
+export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
+export const enterpriseServerGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "http://35.188.208.249/v1/api/spacecloud/graphql", undefined)

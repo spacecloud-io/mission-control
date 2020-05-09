@@ -1,414 +1,79 @@
 import React from "react";
-import "./add-deployment-form.css";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { notify } from "../../../utils";
+import { Form } from 'antd'
+import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 
 import {
   Modal,
-  Form,
   Radio,
   Input,
   Row,
   Col,
   Select,
   Button,
-  Icon,
   Collapse,
   InputNumber,
-  Checkbox
+  Checkbox,
 } from "antd";
+import { notify } from "../../../utils";
 const { Option } = Select;
 const { Panel } = Collapse;
 
-let ports = 1;
-let env = 0;
-let white = 1;
-let upstreams = 1;
 const AddDeploymentForm = props => {
   const { initialValues, projectId, dockerSecrets, secrets } = props;
-  const {
-    getFieldDecorator,
-    getFieldValue,
-    setFieldsValue
-  } = props.form;
+  const [form] = Form.useForm();
+
+  const formInitialValues = {
+    id: initialValues ? initialValues.id : "",
+    version: initialValues ? initialValues.version : "",
+    registryType: initialValues ? initialValues.registryType : "public",
+    dockerImage: initialValues ? initialValues.dockerImage : "",
+    dockerSecret: initialValues ? initialValues.dockerSecret : "",
+    imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists",
+    cpu: initialValues ? initialValues.cpu : 0.1,
+    memory: initialValues ? initialValues.memory : 100,
+    addGPUs: initialValues && initialValues.gpuType ? true : false,
+    gpuType: initialValues ? initialValues.gpuType : "nvdia",
+    gpuCount: initialValues ? initialValues.gpuCount : 1,
+    concurrency: initialValues ? initialValues.concurrency : 50,
+    min: initialValues ? initialValues.min : 1,
+    max: initialValues ? initialValues.max : 100,
+    secrets: initialValues ? initialValues.secrets : [],
+    autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
+    ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
+    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
+    whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
+    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }]
+  }
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
-        delete values["keys"];
-        delete values["envKeys"];
-        delete values["whiteKeys"];
-        delete values["upstreamsKeys"];
-        delete values["addGPUs"];
-        delete values["gpuType"];
-        delete values["gpuCount"];
-        values.cpu = Number(values.cpu);
-        values.memory = Number(values.memory);
-        values.min = Number(values.min);
-        values.max = Number(values.max);
-        values.concurrency = Number(values.concurrency);
-        values.gpu = gpu
-        values.serviceType = "image";
-        props
-          .handleSubmit(values)
-          .then(() => {
-            notify(
-              "success",
-              "Success",
-              "Saved deployment config successfully"
-            );
-            props.handleCancel();
-          })
-          .catch(ex => notify("error", "Error saving config", ex.toString()));
-      }
+    form.validateFields().then(values => {
+      values = Object.assign({}, formInitialValues, values)
+      const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
+      delete values["addGPUs"];
+      delete values["gpuType"];
+      delete values["gpuCount"];
+      values.cpu = Number(values.cpu);
+      values.memory = Number(values.memory);
+      values.min = Number(values.min);
+      values.max = Number(values.max);
+      values.concurrency = Number(values.concurrency);
+      values.gpu = gpu
+      values.serviceType = "image";
+      props
+        .handleSubmit(values)
+        .then(() => {
+          notify(
+            "success",
+            "Success",
+            "Saved deployment config successfully"
+          );
+          props.handleCancel();
+        })
+        .catch(ex => notify("error", "Error saving config", ex.toString()));
     });
   };
-
-  // PORTS
-  const remove = k => {
-    const keys = getFieldValue("keys");
-    if (keys.length === 1) {
-      return;
-    }
-
-    setFieldsValue({
-      keys: keys.filter(key => key !== k)
-    });
-  };
-
-  const add = () => {
-    const keys = getFieldValue("keys");
-    const nextKeys = keys.concat(ports++);
-    setFieldsValue({
-      keys: nextKeys
-    });
-  };
-
-
-  getFieldDecorator("keys", {
-    initialValue: initialValues
-      ? initialValues.ports.map((_, index) => index)
-      : [0]
-  });
-  const keys = getFieldValue("keys");
-  const formItemsPorts = keys.map((k, index) => (
-    <Row key={k}>
-      <Col span={6}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`ports[${k}].protocol`, {
-            initialValue:
-              initialValues && initialValues.ports[k]
-                ? initialValues.ports[k].protocol
-                : "http"
-          })(
-            <Select style={{ width: 120 }}>
-              <Option value="http">HTTP</Option>
-            </Select>
-          )}
-        </Form.Item>
-        <br />
-        {index === keys.length - 1 && (
-          <Button onClick={() => add()} style={{ marginTop: -10 }}>
-            Add another port
-          </Button>
-        )}
-      </Col>
-      <Col span={9}>
-        <Form.Item style={{ marginLeft: -40, marginRight: 30 }}>
-          {getFieldDecorator(`ports[${k}].port`, {
-            rules: [
-              {
-                required: true,
-                message: "Please fill this field before adding!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.ports[k]
-                ? initialValues.ports[k].port
-                : ""
-          })(
-            <InputNumber
-              placeholder="Port (Example: 8080)"
-              style={{ width: 280 }}
-            />
-          )}
-        </Form.Item>
-      </Col>
-      <Col span={5}>
-        {index > 0 && (
-          <Button onClick={() => remove(k)}>
-            <Icon type="delete" />
-          </Button>
-        )}
-      </Col>
-    </Row>
-  ));
-
-  // ENVIRONMENT VARIABLES
-  const envRemove = k => {
-    const envKeys = getFieldValue("envKeys");
-    setFieldsValue({
-      envKeys: envKeys.filter(key => key !== k)
-    });
-  };
-
-  const envAdd = () => {
-    const envKeys = getFieldValue("envKeys");
-    const nextKeys = envKeys.concat(env++);
-    setFieldsValue({
-      envKeys: nextKeys
-    });
-  };
-
-  getFieldDecorator("envKeys", {
-    initialValue: initialValues
-      ? initialValues.env.map((_, index) => index)
-      : []
-  });
-  const envKeys = getFieldValue("envKeys");
-  const formItemsEnv = envKeys.map(k => (
-    <Row key={k}>
-      <Col span={6}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`env[${k}].key`, {
-            rules: [{ required: true, message: "Please enter key!" }],
-            initialValue:
-              initialValues && initialValues.env[k]
-                ? initialValues.env[k].key
-                : ""
-          })(<Input style={{ width: 120 }} placeholder="Key" />)}
-        </Form.Item>
-      </Col>
-      <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`env[${k}].value`, {
-            rules: [
-              {
-                required: true,
-                message: "Please enter value before adding another!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.env[k]
-                ? initialValues.env[k].value
-                : ""
-          })(
-            <Input
-              style={{ width: 280, marginLeft: -40, marginRight: 30 }}
-              placeholder="Value"
-            />
-          )}
-        </Form.Item>
-      </Col>
-      <Col span={5}>
-        <Button onClick={() => envRemove(k)}>
-          <Icon type="delete" />
-        </Button>
-      </Col>
-    </Row>
-  ));
-
-  //WHITELIST
-  const whiteRemove = k => {
-    const whiteKeys = getFieldValue("whiteKeys");
-    if (whiteKeys.length === 1) {
-      return;
-    }
-
-    setFieldsValue({
-      whiteKeys: whiteKeys.filter(key => key !== k)
-    });
-  };
-
-  const whiteAdd = () => {
-    const whiteKeys = getFieldValue("whiteKeys");
-    const nextKeys = whiteKeys.concat(white++);
-    setFieldsValue({
-      whiteKeys: nextKeys
-    });
-  };
-
-  getFieldDecorator("whiteKeys", {
-    initialValue: initialValues
-      ? initialValues.whitelists.map((_, index) => index)
-      : [0]
-  });
-  const whiteKeys = getFieldValue("whiteKeys");
-  const formItemsWhite = whiteKeys.map((k, index) => (
-    <Row
-      key={k}
-      className={index === whiteKeys.length - 1 ? "bottom-spacing" : ""}
-    >
-      <Col span={10}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`whitelists[${k}].projectId`, {
-            rules: [
-              {
-                required: true,
-                message: "Please fill the project id of the service!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.whitelists[k]
-                ? initialValues.whitelists[k].projectId
-                : projectId
-          })(
-            <Input
-              style={{ width: 230 }}
-              placeholder="Project ID ( * to select all )"
-            />
-          )}
-        </Form.Item>
-        <Icon
-          type="right"
-          style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }}
-        />
-        <br />
-        {index === whiteKeys.length - 1 && (
-          <Button onClick={() => whiteAdd()} style={{ marginTop: -10 }}>
-            Add another whitelist
-          </Button>
-        )}
-      </Col>
-      <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`whitelists[${k}].service`, {
-            rules: [
-              {
-                required: true,
-                message: "Please fill the name of the service!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.whitelists[k]
-                ? initialValues.whitelists[k].service
-                : "*"
-          })(
-            <Input
-              style={{ width: 230 }}
-              placeholder="Service Name ( * to select all )"
-            />
-          )}
-        </Form.Item>
-      </Col>
-      <Col span={3}>
-        <Button onClick={() => whiteRemove(k)}>
-          <Icon type="delete" />
-        </Button>
-      </Col>
-    </Row>
-  ));
-
-  //UPSTREAMS
-  const upstreamsRemove = k => {
-    const upstreamsKeys = getFieldValue("upstreamsKeys");
-    if (upstreamsKeys.length === 1) {
-      return;
-    }
-
-    setFieldsValue({
-      upstreamsKeys: upstreamsKeys.filter(key => key !== k)
-    });
-  };
-
-  const upstreamsAdd = () => {
-    const upstreamsKeys = getFieldValue("upstreamsKeys");
-    const nextKeys = upstreamsKeys.concat(upstreams++);
-    setFieldsValue({
-      upstreamsKeys: nextKeys
-    });
-  };
-
-  getFieldDecorator("upstreamsKeys", {
-    initialValue: initialValues
-      ? initialValues.upstreams.map((_, index) => index)
-      : [0]
-  });
-  const upstreamsKeys = getFieldValue("upstreamsKeys");
-  const formItemsUpstreams = upstreamsKeys.map((k, index) => (
-    <Row
-      key={k}
-      className={index === upstreamsKeys.length - 1 ? "bottom-spacing" : ""}
-    >
-      <Col span={10}>
-        <Form.Item style={{ display: "inline-block" }}>
-          {getFieldDecorator(`upstreams[${k}].projectId`, {
-            rules: [
-              {
-                required: true,
-                message: "Please fill the project id of the upstream service!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.upstreams[k]
-                ? initialValues.upstreams[k].projectId
-                : projectId
-          })(
-            <Input
-              style={{ width: 230 }}
-              placeholder="Project ID ( * to select all )"
-            />
-          )}
-        </Form.Item>
-        <Icon
-          type="right"
-          style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }}
-        />
-        <br />
-        {index === upstreamsKeys.length - 1 && (
-          <Button
-            onClick={() => upstreamsAdd(index)}
-            style={{ marginTop: -10 }}
-          >
-            Add another upstream service
-          </Button>
-        )}
-      </Col>
-      <Col span={9}>
-        <Form.Item style={{ marginRight: 30 }}>
-          {getFieldDecorator(`upstreams[${k}].service`, {
-            rules: [
-              {
-                required: true,
-                message: "Please fill the name of the upstream service!"
-              }
-            ],
-            initialValue:
-              initialValues && initialValues.upstreams[k]
-                ? initialValues.upstreams[k].service
-                : "*"
-          })(
-            <Input
-              style={{ width: 230 }}
-              placeholder="Service Name ( * to select all )"
-            />
-          )}
-        </Form.Item>
-      </Col>
-      <Col span={5}>
-        <Button onClick={() => upstreamsRemove(k)}>
-          <Icon type="delete" />
-        </Button>
-      </Col>
-    </Row>
-  ));
-
-  const autoscalingModeSelect = (
-    <Form.Item style={{ marginBottom: 0 }}>
-      {getFieldDecorator("autoscalingMode", {
-        initialValue: initialValues ? initialValues.autoscalingMode : "parallel"
-      })(
-        <Select
-          placeholder="Select auto scaling mode"
-          style={{ width: 240, top: 4 }}
-        >
-          <Option value="per-second">Requests per second</Option>
-          <Option value="parallel">Parallel requests</Option>
-        </Select>
-      )}
-    </Form.Item>)
 
   const modalProps = {
     className: "edit-item-modal",
@@ -419,169 +84,184 @@ const AddDeploymentForm = props => {
     onOk: handleSubmitClick,
     onCancel: props.handleCancel
   };
-
   return (
     <div>
       <Modal {...modalProps}>
-        <Form layout="vertical" onSubmit={handleSubmitClick}>
+        <Form layout="vertical" form={form} initialValues={formInitialValues}>
           <React.Fragment>
             <FormItemLabel name="Service ID" />
-            <Form.Item>
-              {getFieldDecorator("id", {
-                rules: [
-                  {
-                    validator: (_, value, cb) => {
-                      if (!value) {
-                        cb("Please provide a service id!")
-                        return
-                      }
-                      if (!(/^[0-9a-zA-Z]+$/.test(value))) {
-                        cb("Service ID can only contain alphanumeric characters!")
-                        return
-                      }
-                      cb()
-                    }
+            <Form.Item name="id" rules={[
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please provide a service id!")
+                    return
                   }
-                ],
-                initialValue: initialValues ? initialValues.id : ""
-              })(
-                <Input
-                  placeholder="Unique name for your service"
-                  style={{ width: 288 }}
-                  disabled={initialValues ? true : false}
-                />
-              )}
+                  if (!(/^[0-9a-zA-Z]+$/.test(value))) {
+                    cb("Service ID can only contain alphanumeric characters!")
+                    return
+                  }
+                  cb()
+                }
+              }
+            ]}>
+              <Input
+                placeholder="Unique name for your service"
+                style={{ width: 288 }}
+                disabled={initialValues ? true : false}
+              />
             </Form.Item>
             <FormItemLabel name="Version" />
-            <Form.Item>
-              {getFieldDecorator("version", {
-                rules: [
-                  {
-                    validator: (_, value, cb) => {
-                      if (!value) {
-                        cb("Please provide a version!")
-                        return
-                      }
-                      if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
-                        cb("Version can only contain alphanumeric characters, dots and underscores!")
-                        return
-                      }
-                      cb()
-                    }
+            <Form.Item name="version" rules={[
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please provide a version!")
+                    return
                   }
-                ],
-                initialValue: initialValues ? initialValues.version : ""
-              })(
-                <Input
-                  placeholder="Version of your service (example: v1)"
-                  style={{ width: 288 }}
-                  disabled={initialValues ? true : false}
-                />
-              )}
+                  if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
+                    cb("Version can only contain alphanumeric characters, dots and underscores!")
+                    return
+                  }
+                  cb()
+                }
+              }
+            ]}>
+              <Input
+                placeholder="Version of your service (example: v1)"
+                style={{ width: 288 }}
+                disabled={initialValues ? true : false}
+              />
             </Form.Item>
             <FormItemLabel name="Docker container" />
-            <Form.Item>
-              {getFieldDecorator("dockerImage", {
-                rules: [
-                  {
-                    required: true,
-                    message: "Please input docker container!"
-                  }
-                ],
-                initialValue: initialValues ? initialValues.dockerImage : ""
-              })(<Input placeholder="eg: spaceuptech/basic-service" />)}
+            <Form.Item name="dockerImage" rules={[
+              {
+                required: true,
+                message: "Please input docker container!"
+              }
+            ]}>
+              <Input placeholder="eg: spaceuptech/basic-service" />
             </Form.Item>
             <FormItemLabel name="Docker registry type" />
-            <Form.Item>
-              {getFieldDecorator("registryType", {
-                initialValue: initialValues
-                  ? initialValues.registryType
-                  : "public"
-              })(
-                <Radio.Group>
-                  <Radio value="public">Public Registry</Radio>
-                  <Radio value="private">Private Registry</Radio>
-                </Radio.Group>
-              )}
+            <Form.Item name="registryType">
+              <Radio.Group>
+                <Radio value="public">Public Registry</Radio>
+                <Radio value="private">Private Registry</Radio>
+              </Radio.Group>
             </Form.Item>
-            <React.Fragment>
-              {getFieldValue("registryType") === "private" && (
-                <React.Fragment>
-                  <FormItemLabel
-                    name="Docker secret"
-                    description="Docker secret for authentication to pull private Docker images"
-                  />
-                  <Form.Item>
-                    {getFieldDecorator("dockerSecret", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input docker secret!"
-                        }
-                      ],
-                      initialValue: initialValues
-                        ? initialValues.dockerSecret
-                        : ""
-                    })(
-                      <Select placeholder="Select docker secret to be applied">
-                        {dockerSecrets.map(secret => (
-                          <Option value={secret}>{secret}</Option>
-                        ))}
-                      </Select>
-                    )}
-                  </Form.Item>
-                </React.Fragment>
-              )}
-            </React.Fragment>
+            <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "private"}>
+              <FormItemLabel
+                name="Docker secret"
+                description="Docker secret for authentication to pull private Docker images"
+              />
+              <Form.Item name="dockerSecret" rules={[
+                {
+                  required: true,
+                  message: "Please input docker secret!"
+                }]
+              }>
+                <Select placeholder="Select docker secret to be applied">
+                  {dockerSecrets.map(secret => (
+                    <Option value={secret}>{secret}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ConditionalFormBlock>
             <FormItemLabel name="Ports" />
-            <React.Fragment>{formItemsPorts}</React.Fragment>
-            <Collapse className="deployment-collapse" bordered={false} style={{ background: 'white' }}>
+            <React.Fragment>
+              <Form.List name="ports" style={{ display: "inline-block" }}>
+                {(fields, { add, remove }) => {
+                  return (
+                    <div>
+                      {fields.map((field) => (
+                        <React.Fragment>
+                          <Row key={field} gutter={24}>
+                            <Col>
+                              <Form.Item
+                                name={[field.name, "protocol"]}
+                                key={[field.name, "protocol"]}
+                                style={{ display: "inline-block" }}
+                                rules={[{ required: true, message: "Please enter protocol!" }]}>
+                                <Select style={{ width: 120 }}>
+                                  <Option value="http">HTTP</Option>
+                                </Select>
+                              </Form.Item>
+                            </Col>
+                            <Col>
+                              <Form.Item
+                                validateTrigger={["onChange", "onBlur"]}
+                                rules={[{ required: true, message: "Please enter port!" }]}
+                                name={[field.name, "port"]}
+                                key={[field.name, "port"]}
+                              >
+                                <InputNumber
+                                  placeholder="Port (Example: 8080)"
+                                  style={{ width: 280 }}
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col flex="auto">
+                              {fields.length > 1 ? (
+                                <DeleteOutlined
+                                  style={{ lineHeight: "32px" }}
+                                  onClick={() => {
+                                    remove(field.name);
+                                  }}
+                                />
+                              ) : null}
+                            </Col>
+                          </Row>
+                        </React.Fragment>
+                      ))}
+                      <Form.Item>
+                        <Button
+                          onClick={() => {
+                            form.validateFields([...fields.map(obj => ["ports", obj.key, "port"]), ...fields.map(obj => ["ports", obj.key, "protocol"])])
+                              .then(() => add({ protocol: "http", port: "" }))
+                              .catch(ex => console.log("Exception", ex))
+                          }}
+                          style={{ marginTop: -10 }}
+                        >
+                          <PlusOutlined /> Add another port
+                        </Button>
+                      </Form.Item>
+                    </div>
+                  );
+                }}
+              </Form.List>
+            </React.Fragment>
+            <Collapse bordered={false} style={{ background: 'white' }}>
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
-                <Form.Item>
-                  {getFieldDecorator("imagePullPolicy", {
-                    initialValue: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists"
-                  })(<Select style={{ width: 175 }}>
+                <Form.Item name="imagePullPolicy">
+                  <Select style={{ width: 175 }}>
                     <Select.Option value="always">Always</Select.Option>
                     <Select.Option value="pull-if-not-exists">If not present</Select.Option>
-                  </Select>)}
+                  </Select>
                 </Form.Item>
                 <FormItemLabel
                   name="Resources"
                   description="The resources to provide to each instance of the service"
                 />
-                <Form.Item>
-                  {getFieldDecorator("cpu", {
-                    initialValue: initialValues ? initialValues.cpu : 0.1
-                  })(<Input addonBefore="vCPUs" style={{ width: 160 }} />)}
-                  {getFieldDecorator("memory", {
-                    initialValue: initialValues ? initialValues.memory : 100
-                  })(
-                    <Input
-                      addonBefore="Memory (in MBs)"
-                      style={{ width: 240, marginLeft: 32 }}
-                    />
-                  )}
-                </Form.Item>
+                <Input.Group compact>
+                  <Form.Item name="cpu">
+                    <Input addonBefore="vCPUs" style={{ width: 160 }} />
+                  </Form.Item>
+                  <Form.Item name="memory">
+                    <Input addonBefore="Memory (in MBs)" style={{ width: 240, marginLeft: 32 }} />
+                  </Form.Item>
+                </Input.Group>
                 <FormItemLabel name="GPUs" />
-                <Form.Item>
-                  {getFieldDecorator("addGPUs", {
-                    valuePropName: "checked",
-                    initialValue:
-                      initialValues && initialValues.gpuType ? true : false
-                  })(
-                    <Checkbox>
-                      Consume GPUs
+                <Form.Item name="addGPUs" valuePropName="checked">
+                  <Checkbox>
+                    Consume GPUs
                     </Checkbox>
-                  )}
                 </Form.Item>
-                {getFieldValue("addGPUs") === true && <React.Fragment>
+                <ConditionalFormBlock dependency="addGPUs" condition={() => form.getFieldValue("addGPUs")}>
                   <FormItemLabel name="GPU resources" />
-                  <Form.Item>
-                    {getFieldDecorator("gpuType", {
-                      initialValue: initialValues ? initialValues.gpuType : "nvdia"
-                    })(
+                  <Input.Group compact>
+                    <Form.Item name="gpuType">
                       <Select
                         placeholder="Select gpu type"
                         style={{ width: 160 }}
@@ -589,84 +269,260 @@ const AddDeploymentForm = props => {
                         <Option value="nvdia">NVDIA</Option>
                         <Option value="amd">AMD</Option>
                       </Select>
-                    )}
-                    {getFieldDecorator("gpuCount", {
-                      initialValue: initialValues ? initialValues.gpuCount : 1
-                    })(
+                    </Form.Item>
+                    <Form.Item name="gpuCount">
                       <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
-                    )}
-                  </Form.Item>
-                </React.Fragment>}
+                    </Form.Item>
+                  </Input.Group>
+                </ConditionalFormBlock>
                 <FormItemLabel
                   name="Auto scaling"
                   description="Auto scale your container instances between min and max replicas based on the following config"
                 />
-                <Form.Item>
-                  {getFieldDecorator("concurrency", {
-                    initialValue: initialValues ? initialValues.concurrency : 50
-                  })(
-                    <Input addonBefore={autoscalingModeSelect} style={{ width: 400 }} min={1} />
-                  )}
-                </Form.Item>
-                <FormItemLabel
-                  name="Replicas"
-                />
-                <Form.Item>
-                  {getFieldDecorator("min", {
-                    initialValue: initialValues ? initialValues.min : 1
-                  })(
-                    <Input addonBefore="Min" style={{ width: 160 }} min={1} />
-                  )}
-                  {getFieldDecorator("max", {
-                    initialValue: initialValues ? initialValues.max : 100
-                  })(
+                <Input.Group compact>
+                  <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
+                    <Select placeholder="Select auto scaling mode">
+                      <Option value="per-second">Requests per second</Option>
+                      <Option value="parallel">Parallel requests</Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="concurrency">
+                    <Input style={{ width: 400 }} min={1} />
+                  </Form.Item>
+                </Input.Group>
+                <FormItemLabel name="Replicas" />
+                <Input.Group compact>
+                  <Form.Item name="min">
+                    <Input addonBefore="Min" style={{ width: 160 }} min={0} />
+                  </Form.Item>
+                  <Form.Item name="max">
                     <Input
                       addonBefore="Max"
                       style={{ width: 160, marginLeft: 32 }}
                       min={1}
                     />
-                  )}
-                </Form.Item>
+                  </Form.Item>
+                </Input.Group>
                 <FormItemLabel name="Environment variables" />
-                {formItemsEnv}
-                <Button onClick={() => envAdd()} style={{ marginBottom: 20 }}>
-                  {envKeys.length === 0
-                    ? "Add an environment variable"
-                    : "Add another environment variable"}
-                </Button>
+                <Form.List name="env" style={{ display: "inline-block" }}>
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field) => (
+                          <React.Fragment>
+                            <Row key={field}>
+                              <Col span={6}>
+                                <Form.Item
+                                  key={[field.name, "key"]}
+                                  name={[field.name, "key"]}
+                                  style={{ display: "inline-block" }}
+                                  rules={[{ required: true, message: "Please enter key!" }]}>
+                                  <Input style={{ width: 120 }} placeholder="Key" />
+                                </Form.Item>
+                              </Col>
+                              <Col span={9}>
+                                <Form.Item
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please enter value!" }]}
+                                  name={[field.name, "value"]}
+                                  key={[field.name, "value"]}
+                                  style={{ marginRight: 30 }}
+                                >
+                                  <Input
+                                    style={{ width: 280, marginLeft: -40, marginRight: 30 }}
+                                    placeholder="Value"
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={5}>
+                                {fields.length > 1 ? (
+                                  <DeleteOutlined
+                                    style={{ lineHeight: "32px" }}
+                                    onClick={() => {
+                                      remove(field.name);
+                                    }}
+                                  />
+                                ) : null}
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            onClick={() => {
+                              form.validateFields([...fields.map(obj => ["env", obj.key, "key"]), ...fields.map(obj => ["env", obj.key, "value"])])
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
+                            }}
+                            style={{ marginTop: -10 }}
+                          >
+                            <PlusOutlined /> Add an environment variable
+                          </Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
                 <FormItemLabel name="Secrets" />
-                <Form.Item>
-                  {getFieldDecorator("secrets", {
-                    initialValue: initialValues ? initialValues.secrets : []
-                  })(
-                    <Select
-                      mode="multiple"
-                      placeholder="Select secrets to be applied"
-                      style={{ width: 410 }}
-                    >
-                      {secrets.map(secret => (
-                        <Option value={secret}>{secret}</Option>
-                      ))}
-                    </Select>
-                  )}
+                <Form.Item name="secrets">
+                  <Select
+                    mode="multiple"
+                    placeholder="Select secrets to be applied"
+                    style={{ width: 410 }}
+                  >
+                    {secrets.map(secret => (
+                      <Option value={secret}>{secret}</Option>
+                    ))}
+                  </Select>
                 </Form.Item>
                 <FormItemLabel
                   name="Whitelists"
                   description="Only those services that are whitelisted can access you"
                 />
-                {formItemsWhite}
+                {/* Whitelists */}
+                <Form.List name="whitelists" style={{ display: "inline-block" }}>
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field, index) => (
+                          <React.Fragment>
+                            <Row
+                              key={fields}
+                              className={index === fields.length - 1 ? "bottom-spacing" : ""}
+                            >
+                              <Col span={10}>
+                                <Form.Item
+                                  key={[field.name, "projectId"]}
+                                  name={[field.name, "projectId"]}
+                                  style={{ display: "inline-block" }}
+                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
+                                  <Input
+                                    style={{ width: 230 }}
+                                    placeholder="Project ID ( * to select all )"
+                                  />
+                                </Form.Item>
+                                <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
+                              </Col>
+                              <Col span={9}>
+                                <Form.Item
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                  key={[field.name, "service"]}
+                                  name={[field.name, "service"]}
+                                  style={{ marginRight: 30 }}
+                                >
+                                  <Input
+                                    style={{ width: 230 }}
+                                    placeholder="Service Name ( * to select all )"
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={3}>
+                                {fields.length > 1 ? (
+                                  <DeleteOutlined
+                                    style={{ lineHeight: "32px" }}
+                                    onClick={() => {
+                                      remove(field.name);
+                                    }}
+                                  />
+                                ) : null}
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            onClick={() => {
+                              form.validateFields([...fields.map(obj => ["whitelists", obj.key, "projectId"]), ...fields.map(obj => ["whitelists", obj.key, "service"])])
+                                .then(() => add({ projectId }))
+                                .catch(ex => console.log("Exception", ex))
+                            }}
+                            style={{ marginTop: -10 }}
+                          >
+                            <PlusOutlined /> Add another upstream service
+                          </Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
                 <FormItemLabel
                   name="Upstreams"
                   description="The upstream servces that you want to access"
                 />
-                {formItemsUpstreams}
+                <Form.List name="upstreams" style={{ display: "inline-block" }}>
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field, index) => (
+                          <React.Fragment>
+                            <Row
+                              key={fields}
+                              className={index === fields.length - 1 ? "bottom-spacing" : ""}
+                            >
+                              <Col span={10}>
+                                <Form.Item
+                                  name={[field.name, "projectId"]}
+                                  key={[field.name, "projectId"]}
+                                  style={{ display: "inline-block" }}
+                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
+                                  <Input
+                                    style={{ width: 230 }}
+                                    placeholder="Project ID ( * to select all )"
+                                  />
+                                </Form.Item>
+                                <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
+                              </Col>
+                              <Col span={9}>
+                                <Form.Item
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                  key={[field.name, "service"]}
+                                  name={[field.name, "service"]}
+                                  style={{ marginRight: 30 }}
+                                >
+                                  <Input
+                                    style={{ width: 230 }}
+                                    placeholder="Service Name ( * to select all )"
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={3}>
+                                {fields.length > 1 ? (
+                                  <DeleteOutlined
+                                    style={{ lineHeight: "32px" }}
+                                    onClick={() => {
+                                      remove(field.name);
+                                    }}
+                                  />
+                                ) : null}
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            onClick={() => {
+                              form.validateFields([...fields.map(obj => ["upstreams", obj.key, "projectId"]), ...fields.map(obj => ["upstreams", obj.key, "service"])])
+                                .then(() => add({ projectId }))
+                                .catch(ex => console.log("Exception", ex))
+                            }}
+                            style={{ marginTop: -10 }}
+                          >
+                            <PlusOutlined /> Add another upstream service
+                          </Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
               </Panel>
             </Collapse>
           </React.Fragment>
         </Form>
       </Modal>
-    </div>
+    </div >
   );
 };
 
-export default Form.create({})(AddDeploymentForm);
+export default AddDeploymentForm;

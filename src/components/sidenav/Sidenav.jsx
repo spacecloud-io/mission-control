@@ -5,7 +5,8 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
-import { Collapse, Divider, Icon, Button } from "antd";
+import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Collapse, Divider, Button } from "antd";
 import history from "../../history"
 import { capitalizeFirstCharacter, getClusterPlan } from '../../utils';
 const { Panel } = Collapse;
@@ -73,7 +74,7 @@ const Sidenav = (props) => {
             expandIconPosition="right"
             onChange={setActiveKeys}
             activeKey={sideNavActiveKeys}
-            expandIcon={({ isActive }) => <Icon type="down" rotate={isActive ? 180 : 0} />}>
+            expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}>
             <Panel header={<Header name="Storage" icon="dns" />} key="1">
               <Link to={`/mission-control/projects/${projectID}/database`} onClick={closeSidenav}>
                 <PanelItem name="Database" active={props.selectedItem === 'database'} />
@@ -122,13 +123,13 @@ const Sidenav = (props) => {
           </Link>
         </div>
         <div className="sidenav-version">
-          <Icon type="info-circle" style={{ fontSize: "20px", fontWeight: "700" }} />
+          <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
           <p className="plan">{planName} plan</p>
           {plan.startsWith("space-cloud-plan") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
         </div>
       </div>
     </div>
-  )
+  );
 }
 export default Sidenav;

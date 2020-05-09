@@ -17,7 +17,6 @@ import './billing.css';
 import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
 
 const Billing = () => {
-
   useEffect(() => {
     ReactGA.pageview("/projects/billing");
   }, [])

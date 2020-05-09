@@ -55,25 +55,6 @@
   font-size: 32px;
 }
 
-.login-form input {
-  width: 75%;
-  background: #053d4e;
-  border: 1px solid #053d4e;
-  color: #bdbdbd;
-}
-
-.login-form .input {
-  width: 75%;
-}
-
-.login .ant-input-suffix > i {
-  color: #bdbdbd;
-}
-
-.login-form .input input {
-  width: 100%;
-}
-
 .login-form .btn {
   margin-bottom: 50px;
 }
@@ -117,11 +98,5 @@
   }
   .login .text {
     padding: 0 32px;
-  }
-  .login input {
-    width: 75%;
-    background: white !important;
-    border: 1px solid lightgrey !important;
-    color: #bdbdbd;
   }
 }

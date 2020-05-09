@@ -4,7 +4,8 @@ import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
 import { dbEnable } from '../dbActions';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
-import { Icon, Row, Col, Button } from 'antd';
+import { LeftOutlined } from '@ant-design/icons';
+import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
 import { useSelector } from 'react-redux';
 import '../database.css';
@@ -44,7 +45,7 @@ const AddDb = () => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/database`)}>
-              <Icon type="left" />
+              <LeftOutlined />
                             Go back
                             </Button>
             <span style={{ marginLeft: 16 }}>

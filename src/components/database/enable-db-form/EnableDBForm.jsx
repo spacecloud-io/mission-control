@@ -1,6 +1,5 @@
 import React, { useState } from "react"
-
-import { Modal, Form, Input } from 'antd';
+import { Modal, Input, Form } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -11,28 +10,26 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify } from '../../../utils';
 
-const EnableDBForm = ({ form, handleSubmit, handleCancel, initialValues }) => {
-  const { getFieldDecorator } = form;
+const EnableDBForm = ({ handleSubmit, handleCancel, initialValues }) => {
+  const [form] = Form.useForm();
   const { conn, rules } = initialValues ? initialValues : {}
 
   const [rule, setRule] = useState(JSON.stringify(rules, null, 2));
 
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        try {
-          handleSubmit(
-            values.conn,
-            JSON.parse(rule)
-          );
-          handleCancel();
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
+    form.validateFields().then(values => {
+      try {
+        handleSubmit(
+          values.conn,
+          JSON.parse(rule)
+        );
+        handleCancel();
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
       }
-    })
-  }
+    });
+  };
+
 
   return (
     <Modal
@@ -42,15 +39,11 @@ const EnableDBForm = ({ form, handleSubmit, handleCancel, initialValues }) => {
       onCancel={handleCancel}
       onOk={handleSubmitClick}
     >
-      <Form layout="vertical" onSubmit={handleSubmitClick}>
+      <Form layout="vertical" form={form} initialValues={{ conn: conn }} onFinish={handleSubmitClick}>
         <FormItemLabel name="Connection string" />
-        <Form.Item>
-          {getFieldDecorator("conn", {
-            rules: [{ required: true, message: 'Please provide a connection string!' }],
-            initialValue: conn
-          })(
+        <Form.Item name="conn" 
+        rules={[{ required: true, message: 'Please provide a connection string!' }]}>
             <Input placeholder="Enter connection string of your database" />
-          )}
         </Form.Item>
         <FormItemLabel name="Default rules" />
         <CodeMirror
@@ -73,5 +66,5 @@ const EnableDBForm = ({ form, handleSubmit, handleCancel, initialValues }) => {
   );
 }
 
-export default Form.create({})(EnableDBForm);
+export default EnableDBForm;
 
