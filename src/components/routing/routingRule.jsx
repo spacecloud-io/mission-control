@@ -5,8 +5,6 @@ import FormItemLabel from "../form-item-label/FormItemLabel";
 import { notify } from "../../utils";
 const { Option } = Select;
 
-let target = 1;
-
 const RoutingRule = props => {
   const [form] = Form.useForm();
   const [routeType, setRouteType] = useState();
@@ -61,148 +59,6 @@ const RoutingRule = props => {
       return true;
     }
   }
-
-  // const removeTarget = k => {
-  //   const targetKeys = form.getFieldValue("targetKeys");
-  //   if (targetKeys.length === 1) {
-  //     return;
-  //   }
-
-  //   form.setFieldsValue({
-  //     targetKeys: targetKeys.filter(key => key !== k)
-  //   });
-  // };
-
-  // const addTarget = () => {
-  //   const schemeFields = targetKeys.map((k) => `targets[${k}].scheme`)
-  //   const hostFields = targetKeys.map((k) => `targets[${k}].host`)
-  //   const portFields = targetKeys.map((k) => `targets[${k}].port`)
-  //   const weightFields = targetKeys.map((k) => `targets[${k}].weight`)
-  //   form.validateFields([...schemeFields, ...hostFields, ...portFields, ...weightFields], (error) => {
-  //     if (!error) {
-  //       const targetKeys = form.getFieldValue("targetKeys");
-  //       const nextKeys = targetKeys.concat(target++);
-  //       form.setFieldsValue({
-  //         targetKeys: nextKeys
-  //       });
-  //     }
-  //   })
-  // };
-
-  // form.getFieldDecorator("targetKeys", { initialValue: initialValues ? initialValues.targets.map((_, i) => i) : [0] });
-  // const targetKeys = form.getFieldValue("targetKeys");
-  // const targetsFormItems = targetKeys.map((k, index) => (
-  //   <div>
-  //     <Row key={k} gutter={8}>
-  //       <Col span={3}>
-  //         <Form.Item name={`targets[${k}].scheme`} style={{ marginBottom: 0 }} >
-  //             {/* initialValue:
-  //               initialValues && initialValues.targets[k]
-  //                 ? initialValues.targets[k].scheme
-  //                 : "http" */}
-  //           (
-  //             <Select style={{ width: "100%" }}>
-  //               <Option value="http">HTTP</Option>
-  //               <Option value="https">HTTPS</Option>
-  //             </Select>
-  //           )
-  //         </Form.Item>
-  //         <br />
-  //       </Col>
-  //       <Col span={8}>
-  //         <Form.Item name={`targets[${k}].host`} style={{ marginBottom: 0 }} rules={[
-  //               {
-  //                 required: true,
-  //                 message: "Host is required!"
-  //               }
-  //             ]}>
-  //             {/* initialValue:
-  //               initialValues && initialValues.targets[k]
-  //                 ? initialValues.targets[k].host
-  //                 : "" */}
-  //           (
-  //             <Input
-  //               placeholder="Service Host"
-  //               style={{ width: "100%" }}
-  //             />
-  //           )
-  //         </Form.Item>
-  //       </Col>
-  //       <Col span={4}>
-  //         <Form.Item name={`targets[${k}].port`} style={{ marginBottom: 0 }} rules={[
-  //               {
-  //                 validator: (_, value, cb) => {
-  //                   if (!value) {
-  //                     cb("Please provide a port value!")
-  //                     return
-  //                   }
-  //                   if (!Number.isInteger(Number(value))) {
-  //                     cb("Not a valid port value")
-  //                     return
-  //                   }
-  //                   cb()
-  //                 }
-  //               }
-  //             ]}>
-  //             {/* initialValue:
-  //               initialValues && initialValues.targets[k]
-  //                 ? initialValues.targets[k].port
-  //                 : "" */}
-  //           (
-  //             <Input
-  //               placeholder="Port"
-  //               style={{ width: "100%" }}
-  //             />
-  //           )
-  //         </Form.Item>
-  //       </Col>
-  //       <Col span={5}>
-  //         <Form.Item name={`targets[${k}].weight`} style={{ marginBottom: 0 }} rules={[
-  //               {
-  //                 validator: (_, value, cb) => {
-  //                   if (!value) {
-  //                     cb("Please provide a weight!")
-  //                     return
-  //                   }
-  //                   const weightVal = Number(value)
-  //                   if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-  //                     cb("Weight should be a number between 1 to 100")
-  //                     return
-  //                   }
-  //                   cb()
-  //                 }
-  //               }
-  //             ]}>
-  //             {/* initialValue:
-  //               initialValues && initialValues.targets[k]
-  //                 ? initialValues.targets[k].weight
-  //                 : "" */}
-  //           (
-  //             <Input
-  //               placeholder="Weight between 1 to 100"
-  //               style={{ width: "100%" }}
-  //             />
-  //           )
-  //         </Form.Item>
-  //       </Col>
-  //       <Col span={4}>
-  //         {index > 0 && (
-  //           <Button onClick={() => removeTarget(k)}>
-  //             <DeleteOutlined />
-  //           </Button>
-  //         )}
-  //       </Col>
-  //     </Row>
-  //     {index === targetKeys.length - 1 && (
-  //       <Button
-  //         onClick={() => addTarget(index)}
-  //       >
-  //         <PlusOutlined />
-  //         Add another target
-  //       </Button>
-  //     )}
-  //   </div>
-  // ));
 
   return (
     <div>
@@ -337,10 +193,10 @@ const RoutingRule = props => {
                       <React.Fragment>
                         <Row key={fields} gutter={8}>
                           <Col span={3}>
-                            <Form.Item name={[field.key.toString(), "scheme"]}
+                            <Form.Item name={[field.name, "scheme"]}
                               style={{ marginBottom: 0 }}
                               validateTrigger={["onChange", "onBlur"]}
-                              rules={[{ required: true, message: "Please enter key!" }]}>
+                              rules={[{ required: true, message: "Please enter scheme!" }]}>
                               <Select style={{ width: "100%" }}>
                                 <Option value="http">HTTP</Option>
                                 <Option value="https">HTTPS</Option>
@@ -357,7 +213,7 @@ const RoutingRule = props => {
                                   message: "Host is required!"
                                 }
                               ]}
-                              name={[field.key.toString(), "host"]}
+                              name={[field.name, "host"]}
                             >
                               <Input
                                 placeholder="Service Host"
@@ -383,7 +239,7 @@ const RoutingRule = props => {
                                   }
                                 }
                               ]}
-                              name={[field.key.toString(), "port"]}
+                              name={[field.name, "port"]}
                             >
                               <Input
                                 placeholder="Port"
@@ -410,7 +266,7 @@ const RoutingRule = props => {
                                   }
                                 }
                               ]}
-                              name={[field.key.toString(), "weight"]}
+                              name={[field.name, "weight"]}
                             >
                               <Input
                                 placeholder="Weight between 1 to 100"
@@ -434,7 +290,15 @@ const RoutingRule = props => {
                     <Form.Item>
                       <Button
                         onClick={() => {
-                          add();
+                          const fieldKeys = [
+                            ...fields.map(obj => ["targets", obj.key, "scheme"]), 
+                            ...fields.map(obj => ["targets", obj.key, "host"]), 
+                            ...fields.map(obj => ["targets", obj.key, "port"]), 
+                            ...fields.map(obj => ["targets", obj.key, "weight"]),
+                          ]
+                          form.validateFields(fieldKeys)
+                          .then(() => add())
+                          .catch(ex => console.log("Exception", ex))
                         }}
                         style={{ marginTop: -10 }}
                       >

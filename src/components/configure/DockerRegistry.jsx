@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Input, Button, Modal, Select, Radio, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel";
-import RadioCard from "../radio-card/RadioCard";
+import RadioCards from "../radio-cards/RadioCards";
+import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
 const { Option } = Select
 
@@ -128,63 +129,49 @@ const DockerRegistryModal = ({ handleSubmit, handleCancel }) => {
       <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{ 'registryType': 'gcr' }}>
         <FormItemLabel name="Choose Registry Service" />
         <Form.Item name="registryType" rules={[{ required: true, message: 'Please select a registry service!' }]}>
-          (
-            <Radio.Group>
-              <RadioCard value="gcr">Google GCR</RadioCard>
-              <RadioCard value="ecr">AWS ECR</RadioCard>
-              <RadioCard value="acr">Azure ACR</RadioCard>
-              <RadioCard value="others">Others</RadioCard>
-            </Radio.Group>
-          )
+          <RadioCards>
+            <Radio.Button value="gcr">Google GCR</Radio.Button>
+            <Radio.Button value="ecr">AWS ECR</Radio.Button>
+            <Radio.Button value="acr">Azure ACR</Radio.Button>
+            <Radio.Button value="others">Others</Radio.Button>
+          </RadioCards>
         </Form.Item>
-        {(form.getFieldValue("registryType") === "gcr" || !form.getFieldValue("registryType")) && <React.Fragment>
+        <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "gcr"}>
           <FormItemLabel name="GCP Region" />
           <Form.Item name="gcrRegion" rules={[{ required: true, message: 'Please provide a region!' }]}>
-            (
-              <Select placeholder="Select a region" >
-                {gcrRegionOptions}
-              </Select>
-            )
+            <Select placeholder="Select a region" >
+              {gcrRegionOptions}
+            </Select>
           </Form.Item>
           <FormItemLabel name="GCP Project" />
           <Form.Item name="gcrProject" rules={[{ required: true, message: 'Please provide project id of your gcp project!' }]}>
-            (
-              <Input placeholder="Example: my-project-123456" />
-            )
+            <Input placeholder="Example: my-project-123456" />
           </Form.Item>
-        </React.Fragment>}
-        {form.getFieldValue("registryType") === "ecr" && <React.Fragment>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "ecr"}>
           <FormItemLabel name="AWS Region" />
           <Form.Item name="ecrRegion" rules={[{ required: true, message: 'Please provide a region!' }]}>
-            (
-              <Select placeholder="Select a region" >
-                {ecrRegionOptions}
-              </Select>
-            )
+            <Select placeholder="Select a region" >
+              {ecrRegionOptions}
+            </Select>
           </Form.Item>
           <FormItemLabel name="AWS Account ID" />
           <Form.Item name="awsAccountId" rules={[{ required: true, message: 'Please provide your aws account id' }]}>
-            (
-              <Input placeholder="Example: 563789405948" />
-            )
+            <Input placeholder="Example: 563789405948" />
           </Form.Item>
-        </React.Fragment>}
-        {form.getFieldValue("registryType") === "acr" && <React.Fragment>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "acr"}>
           <FormItemLabel name="ACR Registry name" />
           <Form.Item name="acrRegistryName" rules={[{ required: true, message: 'Please provide your registry name' }]}>
-            (
-              <Input placeholder="Example: mycontainerregistry007" />
-            )
+            <Input placeholder="Example: mycontainerregistry007" />
           </Form.Item>
-        </React.Fragment>}
-        {form.getFieldValue("registryType") === "others" && <React.Fragment>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "others"}>
           <FormItemLabel name="Docker Registry" />
           <Form.Item name="registryValue" rules={[{ required: true, message: 'Please provide your registry' }]}>
-            (
-              <Input placeholder="Provide registry" />
-            )
+            <Input placeholder="Provide registry" />
           </Form.Item>
-        </React.Fragment>}
+        </ConditionalFormBlock>
       </Form>
     </Modal>
   )

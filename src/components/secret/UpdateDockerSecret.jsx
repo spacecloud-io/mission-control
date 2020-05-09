@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Input, Form } from "antd";
-import "./add-secret.css";
+import FormItemLabel from "../form-item-label/FormItemLabel";
 
 const UpdateDockerSecret = props => {
   const [form] = Form.useForm();
@@ -26,12 +26,11 @@ const UpdateDockerSecret = props => {
       width="600px"
     >
       <Form form={form} initialValues={{ "id": props.initialValue }}>
-        <p>Secret name</p>
         <Form.Item name="id">
           <Input disabled={true} />
         </Form.Item>
-        <p>Docker Username</p>
-        <Form.Item name="data.username" rules={[
+        <FormItemLabel name="Docker Username" />
+        <Form.Item name={["data", "username"]} rules={[
           {
             required: true,
             message: `Please input your docker username`
@@ -39,8 +38,8 @@ const UpdateDockerSecret = props => {
         ]}>
           <Input placeholder="Username of your docker registry" />
         </Form.Item>
-        <p>Docker Password</p>
-        <Form.Item name="data.password" rules={[
+        <FormItemLabel name="Docker Password" />
+        <Form.Item name={["data", "password"]} rules={[
           {
             required: true,
             message: `Please input your docker password`
@@ -48,8 +47,8 @@ const UpdateDockerSecret = props => {
         ]}>
           <Input.Password type="password" placeholder="Password of your docker registry" />
         </Form.Item>
-        <p>Docker Registry URL</p>
-        <Form.Item name="data.url" rules={[
+        <FormItemLabel name="Docker Registry URL" />
+        <Form.Item name={["data", "url"]} rules={[
           {
             required: true,
             message: `Please input your docker registry url`

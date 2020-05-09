@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { Form } from 'antd'
 import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 
 import {
   Modal,
@@ -22,13 +23,6 @@ const { Panel } = Collapse;
 const AddDeploymentForm = props => {
   const { initialValues, projectId, dockerSecrets, secrets } = props;
   const [form] = Form.useForm();
-  const [registryType, setRegistryType] = useState();
-  const [addGPUs, setAddGPUs] = useState();
-
-  const handleChangedValues = ({ registryType, addGPUs }) => {
-    setRegistryType(registryType);
-    setAddGPUs(addGPUs);
-  }
 
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
@@ -48,7 +42,7 @@ const AddDeploymentForm = props => {
     secrets: initialValues ? initialValues.secrets : [],
     autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
     ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
-    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [{ key: "", value: "" }],
+    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
     whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
     upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }]
   }
@@ -76,8 +70,8 @@ const AddDeploymentForm = props => {
             "Saved deployment config successfully"
           );
           props.handleCancel();
-      })
-      .catch(ex => notify("error", "Error saving config", ex.toString()));
+        })
+        .catch(ex => notify("error", "Error saving config", ex.toString()));
     });
   };
 
@@ -90,12 +84,10 @@ const AddDeploymentForm = props => {
     onOk: handleSubmitClick,
     onCancel: props.handleCancel
   };
-
   return (
     <div>
       <Modal {...modalProps}>
-        <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmitClick}
-          initialValues={formInitialValues}>
+        <Form layout="vertical" form={form} initialValues={formInitialValues}>
           <React.Fragment>
             <FormItemLabel name="Service ID" />
             <Form.Item name="id" rules={[
@@ -157,31 +149,26 @@ const AddDeploymentForm = props => {
                 <Radio value="private">Private Registry</Radio>
               </Radio.Group>
             </Form.Item>
-            <React.Fragment>
-              {registryType === "private" && (
-                <React.Fragment>
-                  <FormItemLabel
-                    name="Docker secret"
-                    description="Docker secret for authentication to pull private Docker images"
-                  />
-                  <Form.Item rules={[
-                    {
-                      required: true,
-                      message: "Please input docker secret!"
-                    }]
-                  }>
-                    <Select placeholder="Select docker secret to be applied">
-                      {dockerSecrets.map(secret => (
-                        <Option value={secret}>{secret}</Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </React.Fragment>
-              )}
-            </React.Fragment>
+            <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "private"}>
+              <FormItemLabel
+                name="Docker secret"
+                description="Docker secret for authentication to pull private Docker images"
+              />
+              <Form.Item name="dockerSecret" rules={[
+                {
+                  required: true,
+                  message: "Please input docker secret!"
+                }]
+              }>
+                <Select placeholder="Select docker secret to be applied">
+                  {dockerSecrets.map(secret => (
+                    <Option value={secret}>{secret}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ConditionalFormBlock>
             <FormItemLabel name="Ports" />
             <React.Fragment>
-              {/* Ports */}
               <Form.List name="ports" style={{ display: "inline-block" }}>
                 {(fields, { add, remove }) => {
                   return (
@@ -192,8 +179,9 @@ const AddDeploymentForm = props => {
                             <Col>
                               <Form.Item
                                 name={[field.name, "protocol"]}
-                                key={[field.key, "protocol"]}
-                                style={{ display: "inline-block" }}>
+                                key={[field.name, "protocol"]}
+                                style={{ display: "inline-block" }}
+                                rules={[{ required: true, message: "Please enter protocol!" }]}>
                                 <Select style={{ width: 120 }}>
                                   <Option value="http">HTTP</Option>
                                 </Select>
@@ -202,14 +190,9 @@ const AddDeploymentForm = props => {
                             <Col>
                               <Form.Item
                                 validateTrigger={["onChange", "onBlur"]}
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Please fill this field before adding!"
-                                  }
-                                ]}
+                                rules={[{ required: true, message: "Please enter port!" }]}
                                 name={[field.name, "port"]}
-                                key={[field.key, "port"]}
+                                key={[field.name, "port"]}
                               >
                                 <InputNumber
                                   placeholder="Port (Example: 8080)"
@@ -233,7 +216,9 @@ const AddDeploymentForm = props => {
                       <Form.Item>
                         <Button
                           onClick={() => {
-                            add();
+                            form.validateFields([...fields.map(obj => ["ports", obj.key, "port"]), ...fields.map(obj => ["ports", obj.key, "protocol"])])
+                              .then(() => add({ protocol: "http", port: "" }))
+                              .catch(ex => console.log("Exception", ex))
                           }}
                           style={{ marginTop: -10 }}
                         >
@@ -273,19 +258,23 @@ const AddDeploymentForm = props => {
                     Consume GPUs
                     </Checkbox>
                 </Form.Item>
-                {addGPUs === true && <React.Fragment>
+                <ConditionalFormBlock dependency="addGPUs" condition={() => form.getFieldValue("addGPUs")}>
                   <FormItemLabel name="GPU resources" />
-                  <Form.Item>
-                    <Select
-                      placeholder="Select gpu type"
-                      style={{ width: 160 }}
-                    >
-                      <Option value="nvdia">NVDIA</Option>
-                      <Option value="amd">AMD</Option>
-                    </Select>
-                    <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
-                  </Form.Item>
-                </React.Fragment>}
+                  <Input.Group compact>
+                    <Form.Item name="gpuType">
+                      <Select
+                        placeholder="Select gpu type"
+                        style={{ width: 160 }}
+                      >
+                        <Option value="nvdia">NVDIA</Option>
+                        <Option value="amd">AMD</Option>
+                      </Select>
+                    </Form.Item>
+                    <Form.Item name="gpuCount">
+                      <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
+                    </Form.Item>
+                  </Input.Group>
+                </ConditionalFormBlock>
                 <FormItemLabel
                   name="Auto scaling"
                   description="Auto scale your container instances between min and max replicas based on the following config"
@@ -324,7 +313,7 @@ const AddDeploymentForm = props => {
                             <Row key={field}>
                               <Col span={6}>
                                 <Form.Item
-                                  key={[field.key, "key"]}
+                                  key={[field.name, "key"]}
                                   name={[field.name, "key"]}
                                   style={{ display: "inline-block" }}
                                   rules={[{ required: true, message: "Please enter key!" }]}>
@@ -334,14 +323,9 @@ const AddDeploymentForm = props => {
                               <Col span={9}>
                                 <Form.Item
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[
-                                    {
-                                      required: true,
-                                      message: "Please enter value before adding another!"
-                                    }
-                                  ]}
+                                  rules={[{ required: true, message: "Please enter value!" }]}
                                   name={[field.name, "value"]}
-                                  key={[field.key, "value"]}
+                                  key={[field.name, "value"]}
                                   style={{ marginRight: 30 }}
                                 >
                                   <Input
@@ -366,7 +350,9 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              add();
+                              form.validateFields([...fields.map(obj => ["env", obj.key, "key"]), ...fields.map(obj => ["env", obj.key, "value"])])
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
                             }}
                             style={{ marginTop: -10 }}
                           >
@@ -406,10 +392,10 @@ const AddDeploymentForm = props => {
                             >
                               <Col span={10}>
                                 <Form.Item
-                                  key={[field.key, "projectId"]}
+                                  key={[field.name, "projectId"]}
                                   name={[field.name, "projectId"]}
                                   style={{ display: "inline-block" }}
-                                  rules={[{ required: true, message: "Please fill the project id of the upstream service!" }]}>
+                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
                                   <Input
                                     style={{ width: 230 }}
                                     placeholder="Project ID ( * to select all )"
@@ -420,13 +406,8 @@ const AddDeploymentForm = props => {
                               <Col span={9}>
                                 <Form.Item
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[
-                                    {
-                                      required: true,
-                                      message: "Please fill the name of the upstream service!"
-                                    }
-                                  ]}
-                                  key={[field.key, "service"]}
+                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                  key={[field.name, "service"]}
                                   name={[field.name, "service"]}
                                   style={{ marginRight: 30 }}
                                 >
@@ -452,7 +433,9 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              add();
+                              form.validateFields([...fields.map(obj => ["whitelists", obj.key, "projectId"]), ...fields.map(obj => ["whitelists", obj.key, "service"])])
+                                .then(() => add({ projectId }))
+                                .catch(ex => console.log("Exception", ex))
                             }}
                             style={{ marginTop: -10 }}
                           >
@@ -467,7 +450,6 @@ const AddDeploymentForm = props => {
                   name="Upstreams"
                   description="The upstream servces that you want to access"
                 />
-                {/* Upstreams */}
                 <Form.List name="upstreams" style={{ display: "inline-block" }}>
                   {(fields, { add, remove }) => {
                     return (
@@ -481,9 +463,9 @@ const AddDeploymentForm = props => {
                               <Col span={10}>
                                 <Form.Item
                                   name={[field.name, "projectId"]}
-                                  key={[field.key, "projectId"]}
+                                  key={[field.name, "projectId"]}
                                   style={{ display: "inline-block" }}
-                                  rules={[{ required: true, message: "Please fill the project id of the service!" }]}>
+                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
                                   <Input
                                     style={{ width: 230 }}
                                     placeholder="Project ID ( * to select all )"
@@ -494,13 +476,8 @@ const AddDeploymentForm = props => {
                               <Col span={9}>
                                 <Form.Item
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[
-                                    {
-                                      required: true,
-                                      message: "Please enter value before adding another!"
-                                    }
-                                  ]}
-                                  key={[field.key, "service"]}
+                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                  key={[field.name, "service"]}
                                   name={[field.name, "service"]}
                                   style={{ marginRight: 30 }}
                                 >
@@ -526,7 +503,9 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              add();
+                              form.validateFields([...fields.map(obj => ["upstreams", obj.key, "projectId"]), ...fields.map(obj => ["upstreams", obj.key, "service"])])
+                                .then(() => add({ projectId }))
+                                .catch(ex => console.log("Exception", ex))
                             }}
                             style={{ marginTop: -10 }}
                           >
@@ -542,7 +521,7 @@ const AddDeploymentForm = props => {
           </React.Fragment>
         </Form>
       </Modal>
-    </div>
+    </div >
   );
 };
 

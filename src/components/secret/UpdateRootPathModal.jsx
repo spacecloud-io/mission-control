@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Input, Form } from "antd";
-import "./add-secret.css";
+import FormItemLabel from "../form-item-label/FormItemLabel";
 
 const UpdateRootPathModal = ({ rootPath, handleCancel, handleSubmit }) => {
   const [form] = Form.useForm();
@@ -25,7 +25,7 @@ const UpdateRootPathModal = ({ rootPath, handleCancel, handleSubmit }) => {
       width="600px"
     >
       <Form form={form} initialValues={formInitialValues}>
-        <p>Root path</p>
+        <FormItemLabel name="Root path" />
         <Form.Item name="rootPath">
           <Input placeholder="Root path to mount the secret at (eg: /home/.aws)" />
         </Form.Item>

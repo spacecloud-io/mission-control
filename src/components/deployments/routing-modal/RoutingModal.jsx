@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form } from "antd";
+import { Modal, Input, Select, Row, Col, Button, message, Form } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 const { Option } = Select;
 
 const RoutingRule = props => {
   const [form] = Form.useForm();
-  const [targetKeys, setTargetKeys] = useState();
-  const [type, setType] = useState();
   const initialValues = props.initialValues;
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      delete values["targetKeys"];
       values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
       const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
       if (weightSum !== 100) {
@@ -27,12 +25,6 @@ const RoutingRule = props => {
     });
   };
 
-  const handleChangedValues = ({ targetKeys, targets }) => {
-    setTargetKeys(targetKeys);
-    console.log(targets);
-    setType(type)
-  }
-
   return (
     <div>
       <Modal
@@ -43,26 +35,10 @@ const RoutingRule = props => {
         onCancel={props.handleCancel}
         onOk={handleSubmitClick}
       >
-        <Form layout="vertical" form={form} onValuesChange={handleChangedValues} onFinish={handleSubmitClick}
+        <Form layout="vertical" form={form}
           initialValues={{
             port: initialValues ? initialValues.port : "",
-            targets: [{
-              type: initialValues && initialValues.targets
-                ? initialValues.targets.type
-                : "version",
-              version: initialValues && initialValues.targets
-                ? initialValues.targets.version
-                : "",
-              host: initialValues && initialValues.targets
-                ? initialValues.targets.host
-                : "",
-              port: initialValues && initialValues.targets
-                ? initialValues.targets.port
-                : "",
-              weight: initialValues && initialValues.targets
-                ? initialValues.targets.weight
-                : ""
-            }]
+            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }]
           }}>
           <FormItemLabel name="Port" />
           <Form.Item name="port" rules={[
@@ -84,134 +60,143 @@ const RoutingRule = props => {
           </Form.Item>
           <FormItemLabel name="Targets" />
           <React.Fragment>
-
             <Form.List name="targets" >
               {(fields, { add, remove }) => {
                 return (
                   <div>
-                    {fields.map((field, index) => (
-                      <React.Fragment>
-                        <Row key={field} gutter={8}>
-                          <Col span={5}>
-                            <Form.Item name={[field.key.toString(), "type"]} validateTrigger={["onChange", "onBlur"]}
-                              style={{ marginBottom: 0 }}>
-                              <Select style={{ width: "100%" }}>
-                                <Option value="version">Internal service version</Option>
-                                <Option value="external">External host</Option>
-                              </Select>
-                            </Form.Item>
-                          </Col>
-                          {type === "version" &&
-                            <Col span={4}>
-                              <Form.Item
-                                validateTrigger={["onChange", "onBlur"]}
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Version is required!"
-                                  }
-                                ]}
-                                name={[field.key.toString(), "version"]}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <Input
-                                  placeholder="Service version"
-                                  style={{ width: "100%" }}
-                                />
-                              </Form.Item>
-                            </Col>}
-                          {type === "external" &&
-                            <Col span={8}>
-                              <Form.Item
-                                validateTrigger={["onChange", "onBlur"]}
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Host is required!"
-                                  }
-                                ]}
-                                name={[field.key.toString(), "host"]}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <Input
-                                  placeholder="Host"
-                                  style={{ width: "100%" }}
-                                />
-                              </Form.Item>
-                            </Col>}
-                          <Col span={3}>
-                            <Form.Item
-                              validateTrigger={["onChange", "onBlur"]}
-                              rules={[
-                                {
-                                  validator: (_, value, cb) => {
-                                    if (!value) {
-                                      cb("Please provide a port value!")
-                                      return
-                                    }
-                                    if (!Number.isInteger(Number(value))) {
-                                      cb("Not a valid port value")
-                                      return
-                                    }
-                                    cb()
-                                  }
-                                }
-                              ]}
-                              name={[field.key.toString(), "port"]}
-                              style={{ marginBottom: 0 }}
-                            >
-                              <Input
-                                placeholder="Port"
-                                style={{ width: "100%" }}
-                              />
-                            </Form.Item>
-                          </Col>
-
+                    {fields.map((field) => (
+                      <Row key={field} gutter={8}>
+                        <Col span={5}>
+                          <Form.Item
+                            key={[field.name, "type"]}
+                            name={[field.name, "type"]}
+                            validateTrigger={["onChange", "onBlur"]}>
+                            <Select style={{ width: "100%" }}>
+                              <Option value="version">Internal service version</Option>
+                              <Option value="external">External host</Option>
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "version"}>
                           <Col span={4}>
                             <Form.Item
                               validateTrigger={["onChange", "onBlur"]}
                               rules={[
                                 {
-                                  validator: (_, value, cb) => {
-                                    if (!value) {
-                                      cb("Please provide a weight!")
-                                      return
-                                    }
-                                    const weightVal = Number(value)
-                                    if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-                                      cb("Weight should be a number between 1 to 100")
-                                      return
-                                    }
-                                    cb()
-                                  }
+                                  required: true,
+                                  message: "Version is required!"
                                 }
                               ]}
-                              name={[field.key.toString(), "weight"]}
-                              style={{ marginBottom: 0 }}
+                              name={[field.name, "version"]}
+                              key={[field.name, "version"]}
                             >
                               <Input
-                                placeholder="Weight between 1 to 100"
+                                placeholder="Service version"
                                 style={{ width: "100%" }}
                               />
                             </Form.Item>
                           </Col>
-                          <Col span={4}>
-                            {fields.length > 1 ? (
-                              <DeleteOutlined
-                                style={{ margin: "0 8px" }}
-                                onClick={() => {
-                                  remove(field.name);
-                                }}
+                        </ConditionalFormBlock>
+                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "external"}>
+                          <Col span={8}>
+                            <Form.Item
+                              validateTrigger={["onChange", "onBlur"]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Host is required!"
+                                }
+                              ]}
+                              name={[field.name, "host"]}
+                              key={[field.name, "host"]}
+                            >
+                              <Input
+                                placeholder="Host"
+                                style={{ width: "100%" }}
                               />
-                            ) : null}
+                            </Form.Item>
                           </Col>
-                        </Row>
-                      </React.Fragment>
+                        </ConditionalFormBlock>
+                        <Col span={3}>
+                          <Form.Item
+                            validateTrigger={["onChange", "onBlur"]}
+                            rules={[
+                              {
+                                validator: (_, value, cb) => {
+                                  if (!value) {
+                                    cb("Please provide a port value!")
+                                    return
+                                  }
+                                  if (!Number.isInteger(Number(value))) {
+                                    cb("Not a valid port value")
+                                    return
+                                  }
+                                  cb()
+                                }
+                              }
+                            ]}
+                            name={[field.name, "port"]}
+                            key={[field.name, "port"]}
+                          >
+                            <Input
+                              placeholder="Port"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item
+                            validateTrigger={["onChange", "onBlur"]}
+                            rules={[
+                              {
+                                validator: (_, value, cb) => {
+                                  if (!value) {
+                                    cb("Please provide a weight!")
+                                    return
+                                  }
+                                  const weightVal = Number(value)
+                                  if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
+                                    cb("Weight should be a number between 1 to 100")
+                                    return
+                                  }
+                                  cb()
+                                }
+                              }
+                            ]}
+                            name={[field.name, "weight"]}
+                            key={[field.name, "weight"]}
+                          >
+                            <Input
+                              placeholder="Weight between 1 to 100"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          {fields.length > 1 ? (
+                            <DeleteOutlined
+                              style={{ margin: "0 8px" }}
+                              onClick={() => {
+                                remove(field.name);
+                              }}
+                            />
+                          ) : null}
+                        </Col>
+                      </Row>
                     ))}
                     <Form.Item>
                       <Button
                         onClick={() => {
-                          add();
+                          const fieldKeys = [
+                            ...fields.map(obj => ["targets", obj.key, "type"]),
+                            ...fields.map(obj => ["targets", obj.key, "version"]),
+                            ...fields.map(obj => ["targets", obj.key, "host"]),
+                            ...fields.map(obj => ["targets", obj.key, "port"]),
+                            ...fields.map(obj => ["targets", obj.key, "weight"])
+                          ]
+                          form.validateFields(fieldKeys)
+                            .then(() => add({ type: "version" }))
+                            .catch(ex => console.log("Exception", ex))
                         }}
                         style={{ marginTop: 10 }}
                       >
