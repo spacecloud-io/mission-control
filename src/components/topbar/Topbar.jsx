@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
-import { useParams, useHistory, Link } from "react-router-dom"
+import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils'
 import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
-import { Button, Select, Menu, Popover, Row, Col, Divider, Avatar } from 'antd';
+import { Button, Menu, Popover, Row, Col, Divider } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
 import store from "../../store"
-import { set, get } from "automate-redux"
+import { set } from "automate-redux"
 import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"

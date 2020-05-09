@@ -28,7 +28,14 @@ const projects = [
       },
       "eventing": {
         "enabled": true,
-        "dbAlias": "mydb"
+        "dbAlias": "postgres",
+        "triggers": {
+          "Trigger1": {
+            "type": "MY_CUSTOM_EVENT",
+            "url": "http://localhost:3000/v1/my-event",
+            "retries": 3,
+            "timeout": 5000          }
+        }
       },
       "userMan": {},
       "remoteServices": {

@@ -3,26 +3,20 @@ import { useParams } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber, Form } from 'antd';
 import { getEventSourceFromType, getProjectConfig } from "../../utils";
-import RadioCard from "../radio-card/RadioCard"
 import FormItemLabel from "../form-item-label/FormItemLabel"
+import RadioCards from "../radio-cards/RadioCards";
+import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
 const { Option } = AutoComplete;
 
 const RuleForm = (props) => {
   const [form] = Form.useForm();
-  const [temp, setTemp] = useState();
   const [selectedDb, setSelectedDb] = useState();
-
-  const handleChangedValues = ({ source }) => {
-    setTemp(source);
-  }
 
   const { projectID } = useParams()
   const projects = useSelector(state => state.projects)
 
   const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-  let defaultEventSource = getEventSourceFromType(type, "database")
-  const eventSource = temp ? temp : defaultEventSource
 
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
   const trackedCollections = Object.keys(collections);
@@ -31,15 +25,18 @@ const RuleForm = (props) => {
   const [value, setValue] = useState("");
 
   const formInitialValues = {
-    'name': name, 'source': defaultEventSource, 'options.db': options ? options.db : undefined,
-    'options.col': options ? options.col : undefined, 'type': type ? type : (eventSource === "database" && "DB_INSERT"),
-    'type': type ? type : (eventSource === "file storage" && "FILE_CREATE"), 'type': type, 'url': url, 'retries': retries ? retries : 3,
+    'name': name,
+    'source': getEventSourceFromType(type, "database"),
+    'type': type ? type : "DB_INSERT",
+    'options': options ? options : {},
+    'url': url,
+    'retries': retries ? retries : 3,
     'timeout': timeout ? timeout : 5000
   }
 
-  const handleSearch = value => {
-    setValue(value);
-  };
+  const handleSearch = value => setValue(value);
+  const handleSelectDatabase = value => setSelectedDb(value)
+  const handleSourceChange = () => form.setFieldsValue({ type: undefined })
 
   const handleSubmit = e => {
     form.validateFields().then(values => {
@@ -63,8 +60,7 @@ const RuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit} onValuesChange={handleChangedValues}
-        initialValues={formInitialValues}>
+      <Form layout="vertical" form={form} initialValues={formInitialValues}>
         <FormItemLabel name="Trigger name" />
         <Form.Item name="name" rules={[
           {
@@ -85,25 +81,25 @@ const RuleForm = (props) => {
         </Form.Item>
         <FormItemLabel name="Source" />
         <Form.Item name="source" rules={[{ required: true, message: 'Please select a source!' }]}>
-          <Radio.Group>
-            <RadioCard value="database">Database</RadioCard>
-            <RadioCard value="file storage">File Storage</RadioCard>
-            <RadioCard value="custom">Custom</RadioCard>
-          </Radio.Group>
+          <RadioCards onChange={handleSourceChange}>
+            <Radio.Button value="database">Database</Radio.Button>
+            <Radio.Button value="file storage">File Storage</Radio.Button>
+            <Radio.Button value="custom">Custom</Radio.Button>
+          </RadioCards>
         </Form.Item>
-        {(!eventSource || eventSource === "database") && <React.Fragment>
+        <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
           <FormItemLabel name="Table/collection" />
-          <div style={{ display: "flex" }}>
-            <Form.Item name="options.db" rules={[{ required: true, message: 'Please select a database!' }]}
+          <Input.Group compact>
+            <Form.Item name={["options", "db"]} rules={[{ required: true, message: 'Please select a database!' }]}
               style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-              <Select placeholder="Select a database">
+              <Select placeholder="Select a database" onSelect={handleSelectDatabase}>
                 {props.dbList.map((alias) => (
                   <Select.Option value={alias.alias}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="options.col" style={{ flexGrow: 1, width: 200 }}>
-              <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch}>
+            <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
+              <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
                 {
                   data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
                     <Option key={data} value={data}>
@@ -113,45 +109,54 @@ const RuleForm = (props) => {
                 }
               </AutoComplete>
             </Form.Item>
-          </div>
+          </Input.Group>
           <FormItemLabel name="Trigger operation" />
-          <Form.Item name="type" rules={[{ required: true, message: 'Please select a type!' }]}>
-            <Radio.Group>
-              <RadioCard value="DB_INSERT">Insert</RadioCard>
-              <RadioCard value="DB_UPDATE">Update</RadioCard>
-              <RadioCard value="DB_DELETE">Delete</RadioCard>
-            </Radio.Group>
+          <Form.Item
+            name="type"
+            dependencies={["source"]}
+            rules={[{ required: true, message: 'Please select a type!' }]}>
+            <RadioCards defaultValue="DB_INSERT">
+              <Radio.Button value="DB_INSERT">Insert</Radio.Button>
+              <Radio.Button value="DB_UPDATE">Update</Radio.Button>
+              <Radio.Button value="DB_DELETE">Delete</Radio.Button>
+            </RadioCards>
           </Form.Item>
-        </React.Fragment>}
-        {(!eventSource || eventSource === 'file storage') && <React.Fragment>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "file storage"}>
           <FormItemLabel name="Trigger operation" />
-          <Form.Item name="type" rules={[{ required: true, message: 'Please select a type!' }]}>
-            <Radio.Group>
-              <RadioCard value="FILE_CREATE">Write</RadioCard>
-              <RadioCard value="FILE_DELETE">Delete</RadioCard>
-            </Radio.Group>
+          <Form.Item
+            name="type"
+            dependencies={["source"]}
+            rules={[{ required: true, message: 'Please select a type!' }]}>
+            <RadioCards defaultValue="FILE_CREATE">
+              <Radio.Button value="FILE_CREATE">Write</Radio.Button>
+              <Radio.Button value="FILE_DELETE">Delete</Radio.Button>
+            </RadioCards>
           </Form.Item>
-        </React.Fragment>}
-        {eventSource === "custom" && <React.Fragment>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "custom"}>
           <FormItemLabel name="Type" />
-          <Form.Item name="type" rules={[
-            {
-              validator: (_, value, cb) => {
-                if (!value) {
-                  cb("Please provide event type!")
-                  return
+          <Form.Item
+            name="type"
+            dependencies={["source"]}
+            rules={[
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please provide event type!")
+                    return
+                  }
+                  if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                    cb("Event type can only contain alphanumeric characters and underscores!")
+                    return
+                  }
+                  cb()
                 }
-                if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
-                  cb("Event type can only contain alphanumeric characters and underscores!")
-                  return
-                }
-                cb()
               }
-            }
-          ]}>
-            <Input placeholder="Custom event type (Example: my_custom_event_type)" />
+            ]}>
+            <Input placeholder="Custom event type (Example: my_custom_event_type)" defaultValue="" />
           </Form.Item>
-        </React.Fragment>}
+        </ConditionalFormBlock>
         <FormItemLabel name="Webhook URL" />
         <Form.Item name="url" rules={[{ required: true, message: 'Please provide a webhook url!' }]}>
           <Input placeholder="eg: https://myapp.com/endpoint1" />

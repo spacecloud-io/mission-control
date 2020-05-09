@@ -21,7 +21,7 @@ const QueueEvent = () => {
   const initialEventType = state.eventType;
   const projects = useSelector(state => state.projects)
   const eventTriggerRules = getProjectConfig(projects, projectID, `modules.eventing.triggers`, {})
-  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "Custom").map(obj => obj.type)
+  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
   const secret = useSelector(state => getJWTSecret(state, projectID))
   const internalToken = useSelector(state => generateInternalToken(state, projectID))
 

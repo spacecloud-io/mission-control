@@ -39,7 +39,6 @@ const EventSecurityRuleForm = ({
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(eventType);
       try {
         handleSubmit(values.eventType, JSON.parse(rule));
       } catch (ex) {

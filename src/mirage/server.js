@@ -71,7 +71,6 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/projects/:projectId/eventing/config/eventing-config", () => respondOk());
       this.post("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
       this.post("/config/projects/:projectId/eventing/schema/:type", () => respondOk());
-      this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
       this.post("/config/projects/:projectId/eventing/triggers/:triggerName", () => respondOk())
       this.delete("/config/projects/:projectId/eventing/triggers/:triggerName", () => respondOk())
       this.delete("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
@@ -103,6 +102,10 @@ export function makeServer({ environment = "development" } = {}) {
 
       // LetsEncrypt endpoints
       this.post("/config/projects/:projectId/letsencrypt/config/letsencrypt-config", () => respondOk())
+
+      // API endpoints 
+      this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
+      this.post("/api/:projectId/eventing/queue", () => respondOk())
     }
   });
 
