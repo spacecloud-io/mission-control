@@ -11,10 +11,10 @@ const Email = ({ initialValues, handleSubmit }) => {
   };
 
   return (
-    <Form form={form} initialValue={{ enabled: initialValues.enabled}}>
-      <Form.Item name="enabled">
-        <FormItemLabel name={"Enabled"} />
-          <Switch defaultChecked={initialValues.enabled} />
+    <Form form={form} initialValues={{ enabled: initialValues.enabled }}>
+      <FormItemLabel name={"Enabled"} />
+      <Form.Item name="enabled" valuePropName="checked">
+        <Switch defaultChecked={initialValues.enabled} />
       </Form.Item>
       <br />
       <Form.Item>

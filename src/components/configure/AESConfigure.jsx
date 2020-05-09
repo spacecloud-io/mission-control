@@ -1,39 +1,24 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Input, Button, Form } from 'antd';
 import { generateAESKey } from "../../utils";
 
-const AESConfigure = ({ aesKey, handleSubmit }) => {
-  const [form] = Form.useForm();  
-  const [currentAESKey, setCurrentAESKey] = useState();
-
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      handleSubmit(values.aesKey);
-    });
-  };
-
-  const handleChangedValues = ({ aesKey }) => {
-    setCurrentAESKey(aesKey);
+const AESConfigure = ({ loading, aesKey, handleSubmit }) => {
+  const [form] = Form.useForm();
+  const handleClickGenerateKey = () => form.setFieldsValue({ aesKey: generateAESKey() })
+  const handleFormSubmit = (values) => handleSubmit(values.aesKey);
+  if (!loading) {
+    form.setFieldsValue({ aesKey })
   }
-
-
-  const handleClickGenerateKey = () => {
-    const newAESKey = generateAESKey()
-    form.setFieldsValue({ aesKey: newAESKey })
-  }
-
-  const isKeyChanged = currentAESKey !== undefined && aesKey !== currentAESKey
-
   return (
     <div>
       <h2>AES Key</h2>
       <p>This key is used by the security rules in Space Cloud to encrypt/decrypt certain fields</p>
-      <Form form={form} onValuesChange={handleChangedValues} initialValues={{ aesKey: aesKey }}>
+      <Form form={form} initialValues={{ aesKey }} onFinish={handleFormSubmit}>
         <div style={{ display: "flex" }}>
           <Form.Item name="aesKey" style={{ flex: 1 }}
-          rules={[{ required: true, message: 'Please input a AES Key!' }]}
+            rules={[{ required: true, message: 'Please input a AES Key!' }]}
           >
-              <Input.Password placeholder="Enter AES Key" />
+            <Input.Password placeholder="Enter AES Key" />
           </Form.Item>
           <Form.Item>
             <Button onClick={handleClickGenerateKey} >
@@ -41,10 +26,17 @@ const AESConfigure = ({ aesKey, handleSubmit }) => {
           </Button>
           </Form.Item>
         </div>
-        <Form.Item>
-          <Button disabled={!isKeyChanged} onClick={handleSubmitClick} >
-            Save
-          </Button>
+        <Form.Item shouldUpdate={(prev, curr) => prev.aesKey !== curr.aesKey}>
+          {
+            () => {
+              const valueChanged = aesKey !== undefined && form.getFieldValue("aesKey") !== aesKey
+              return (
+                <Button disabled={!valueChanged} htmlType="submit" >
+                  Save
+                </Button>
+              )
+            }
+          }
         </Form.Item>
       </Form>
     </div>

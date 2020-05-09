@@ -31,6 +31,7 @@ const Settings = () => {
 
   // Global state
   const projects = useSelector(state => state.projects);
+  const loading = useSelector(state => state.pendingRequests > 0)
   let selectedProject = projects.find(project => project.id === projectID);
   if (!selectedProject) selectedProject = {}
   const { modules, ...globalConfig } = selectedProject
@@ -144,17 +145,15 @@ const Settings = () => {
 
 
   const handleDomains = domains => {
-    return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.letsencrypt
-        .setConfig(projectID, { domains: domains })
-        .then(() => {
-          setProjectConfig(projectID, "modules.letsencrypt.domains", domains);
-          resolve();
-        })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
-    });
+    dispatch(increment("pendingRequests"));
+    client.letsencrypt
+      .setConfig(projectID, { domains: domains })
+      .then(() => {
+        setProjectConfig(projectID, "modules.letsencrypt.domains", domains);
+        notify("success", "Success", "Saved whitelisted domains successfully")
+      })
+      .catch(ex => notify("error", "Error saving domains", ex))
+      .finally(() => dispatch(decrement("pendingRequests")));
   };
 
   return (
@@ -178,11 +177,11 @@ const Settings = () => {
             <div className="divider" />
             <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
             <div className="divider" />
-            <AESConfigure aesKey={aesKey} handleSubmit={handleAES} />
+            <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
             <div className="divider" />
-            <GraphQLTimeout contextTime={contextTime} handleSubmit={handleContextTime} />
+            <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
             <div className="divider" />
-            <WhitelistedDomains domains={domains} handleSubmit={handleDomains} />
+            <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
             <div className="divider" />
             <h2>Delete Project</h2>
             <p>

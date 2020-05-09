@@ -117,7 +117,6 @@ const DockerRegistryModal = ({ handleSubmit, handleCancel }) => {
     })
   };
 
-
   return (
     <Modal
       title="Configure Docker Registry"

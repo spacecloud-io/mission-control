@@ -21,16 +21,16 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
       onOk={handleSubmitClick}
       onCancel={handleCancel}
     >
-      <Form form={form} layout="vertical" initialValues={{ generateJWTSecret: generateJWTSecret(), isPrimary: true }}>
+      <Form form={form} layout="vertical" initialValues={{ secret: generateJWTSecret(), isPrimary: true }}>
         <FormItemLabel name="Secret" />
-        <Form.Item name="secret" 
-        rules={[{ required: true, message: 'Please provide a secret' }]}
+        <Form.Item name="secret"
+          rules={[{ required: true, message: 'Please provide a secret' }]}
         >
-            <Input.Password className="input" placeholder="What is this about?" />
+          <Input.Password className="input" placeholder="Secret value" />
         </Form.Item>
         <FormItemLabel name="Primary secret" />
         <Form.Item name="isPrimary" valuePropName="checked">
-            <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
+          <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
         </Form.Item>
       </Form>
     </Modal>
