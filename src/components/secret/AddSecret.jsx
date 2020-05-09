@@ -158,7 +158,7 @@ const AddSecret = props => {
               message: "Please input your docker registry url"
             }
           ]}>
-            <Input placeholder="Example: htttps://foo.bar.com/my-private-registry" />
+            <Input placeholder="Example: https://index.docker.io/v1/" />
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="type" condition={() => form.getFieldValue("type") === "file"}>
