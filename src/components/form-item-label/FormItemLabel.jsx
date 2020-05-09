@@ -1,6 +1,16 @@
 import React from "react"
 
-export default ({ name, description }) => {
-  description = description ? `(${description})` : description
-  return <p><b>{name}</b> {description && <span style={{ color: "rgba(0,0,0,0.38)" }}><br/>{description}</span>}</p>
+export default function FormItemLabel({ name, description }) {
+  return (
+    <p style={{ fontSize: "16px" }}>
+      <b>{name}</b>
+      {description && <React.Fragment>
+        <br/>
+        <span style={{
+          marginTop: 4,
+          fontSize: "14px"
+        }}>{description}</span>
+      </React.Fragment>}
+    </p>
+  )
 }

@@ -1,8 +1,8 @@
 import { Server, Model, RestSerializer, Response } from "miragejs";
 import fixtures from './fixtures'
 
-function respondOk() {
-  return new Response(200, {}, {})
+function respondOk(body = {}) {
+  return new Response(200, {}, body)
 }
 
 function graphQLAPIHandler(request, schema) {
@@ -40,9 +40,10 @@ export function makeServer({ environment = "development" } = {}) {
       this.timing = 500;
 
       // Global endpoints
-      this.get("/config/env", () => ({ isProd: false, enterprise: false, version: "0.17.0" }));
+      this.get("/config/env", () => ({ isProd: false, version: "0.17.0" }));
       this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
       this.get("/config/quotas", () => respondOk());
+      this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
 
       // Projects Endpoint
       this.get("/config/projects", (schema) => schema.projects.all());
@@ -50,6 +51,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId", () => respondOk());
 
       // Database endpoints
+      this.get("/external/projects/:projectId/database/:dbName/connection-state", () => respondOk({ result: true }));
       this.post("/config/projects/:projectId/database/:db/config/database-config", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/mutate", () => respondOk());
@@ -60,7 +62,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
 
       // FileStore endpoints
-      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk());
+      this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk({ result: true }));
       this.post("/config/projects/:projectId/file-storage/config/file-storage-config", () => respondOk());
       this.post("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
       this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
@@ -69,7 +71,6 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/projects/:projectId/eventing/config/eventing-config", () => respondOk());
       this.post("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
       this.post("/config/projects/:projectId/eventing/schema/:type", () => respondOk());
-      this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
       this.post("/config/projects/:projectId/eventing/triggers/:triggerName", () => respondOk())
       this.delete("/config/projects/:projectId/eventing/triggers/:triggerName", () => respondOk())
       this.delete("/config/projects/:projectId/eventing/rules/:type", () => respondOk());
@@ -101,6 +102,10 @@ export function makeServer({ environment = "development" } = {}) {
 
       // LetsEncrypt endpoints
       this.post("/config/projects/:projectId/letsencrypt/config/letsencrypt-config", () => respondOk())
+
+      // API endpoints 
+      this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
+      this.post("/api/:projectId/eventing/queue", () => respondOk())
     }
   });
 

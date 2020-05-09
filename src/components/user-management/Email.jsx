@@ -1,25 +1,20 @@
 import React from 'react'
-import { Form, Switch, Button } from 'antd';
+import { Switch, Button, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 
-const Email = ({ form, initialValues, handleSubmit }) => {
-  const { getFieldDecorator } = form;
-
+const Email = ({ initialValues, handleSubmit }) => {
+  const [form] = Form.useForm();
   const handleSubmitClick = e => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        handleSubmit({ enabled: values.enabled });
-      }
+    form.validateFields().then(values => {
+      handleSubmit({ enabled: values.enabled });
     });
-  }
+  };
+
   return (
-    <Form>
-      <Form.Item>
-        <FormItemLabel name={"Enabled"} />
-        {getFieldDecorator('enabled', { initialValue: initialValues.enabled })(
-          <Switch defaultChecked={initialValues.enabled} />
-        )}
+    <Form form={form} initialValues={{ enabled: initialValues.enabled }}>
+      <FormItemLabel name={"Enabled"} />
+      <Form.Item name="enabled" valuePropName="checked">
+        <Switch defaultChecked={initialValues.enabled} />
       </Form.Item>
       <br />
       <Form.Item>
@@ -29,4 +24,4 @@ const Email = ({ form, initialValues, handleSubmit }) => {
   )
 }
 
-export default Form.create({})(Email);
+export default Email;

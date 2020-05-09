@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga'
 import { useSelector, useDispatch } from 'react-redux';
-import { Icon, Row, Col, Button } from 'antd';
+import { LeftOutlined } from '@ant-design/icons';
+import { Row, Col, Button } from 'antd';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -20,7 +21,7 @@ const QueueEvent = () => {
   const initialEventType = state.eventType;
   const projects = useSelector(state => state.projects)
   const eventTriggerRules = getProjectConfig(projects, projectID, `modules.eventing.triggers`, {})
-  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "Custom").map(obj => obj.type)
+  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
   const secret = useSelector(state => getJWTSecret(state, projectID))
   const internalToken = useSelector(state => generateInternalToken(state, projectID))
 
@@ -59,7 +60,7 @@ const QueueEvent = () => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/eventing/overview`)}>
-              <Icon type="left" />
+              <LeftOutlined />
               Go back
             </Button>
             <span style={{ marginLeft: 16 }}>

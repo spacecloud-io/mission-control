@@ -1,17 +1,15 @@
 import React, { useState } from 'react'
-import { Form, Icon, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
+import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
 import FormItemLabel from "../../components/form-item-label/FormItemLabel";
 import { generateJWTSecret, notify } from '../../utils';
 
-const AddSecretModal = ({ form, handleSubmit, handleCancel }) => {
-  const { getFieldDecorator } = form;
+const AddSecretModal = ({ handleSubmit, handleCancel }) => {
+  const [form] = Form.useForm();
   const handleSubmitClick = (e) => {
-    e.preventDefault();
-    form.validateFields((err, values) => {
+    form.validateFields().then(values => {
       const { secret, isPrimary } = values;
-      if (!err) {
-        handleSubmit(secret, isPrimary).then(() => handleCancel())
-      }
+      handleSubmit(secret, isPrimary).then(() => handleCancel())
     });
   };
 
@@ -23,46 +21,38 @@ const AddSecretModal = ({ form, handleSubmit, handleCancel }) => {
       onOk={handleSubmitClick}
       onCancel={handleCancel}
     >
-      <Form layout="vertical">
+      <Form form={form} layout="vertical" initialValues={{ secret: generateJWTSecret(), isPrimary: true }}>
         <FormItemLabel name="Secret" />
-        <Form.Item>
-          {getFieldDecorator('secret', {
-            rules: [{ required: true, message: 'Please provide a secret' }],
-            initialValue: generateJWTSecret()
-          })(
-            <Input.Password className="input" placeholder="What is this about?" />
-          )}
+        <Form.Item name="secret"
+          rules={[{ required: true, message: 'Please provide a secret' }]}
+        >
+          <Input.Password className="input" placeholder="Secret value" />
         </Form.Item>
         <FormItemLabel name="Primary secret" />
-        <Form.Item>
-          {getFieldDecorator('isPrimary', {
-            valuePropName: "checked",
-            initialValue: true
-          })(
-            <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
-          )}
+        <Form.Item name="isPrimary" valuePropName="checked">
+          <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
         </Form.Item>
       </Form>
     </Modal>
   )
 }
 
-const WrappedAddSecretModal = Form.create({})(AddSecretModal)
-
 const SecretValue = ({ secret }) => {
   const [showSecret, setShowSecret] = useState(false)
-  return <span style={{ display: "flex", alignItems: "center" }}>
-    <span style={{
-      marginRight: 8,
-      background: "#f5f5f5",
-      minWidth: 320,
-      height: "32px",
-      lineHeight: "32px",
-      borderRadius: 5,
-      padding: "0 16px"
-    }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
-    {showSecret ? <Icon type="eye-invisible" onClick={() => setShowSecret(false)} /> : <Icon type="eye" onClick={() => setShowSecret(true)} />}
-  </span>
+  return (
+    <span style={{ display: "flex", alignItems: "center" }}>
+      <span style={{
+        marginRight: 8,
+        background: "#f5f5f5",
+        minWidth: 320,
+        height: "32px",
+        lineHeight: "32px",
+        borderRadius: 5,
+        padding: "0 16px"
+      }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
+      {showSecret ? <EyeInvisibleOutlined onClick={() => setShowSecret(false)} /> : <EyeOutlined onClick={() => setShowSecret(true)} />}
+    </span>
+  );
 }
 
 const SecretConfigure = ({ secrets, handleSetSecrets }) => {
@@ -110,7 +100,7 @@ const SecretConfigure = ({ secrets, handleSetSecrets }) => {
     },
     {
       title: <span>Primary secret  <Tooltip placement="bottomLeft" title="Primary secret is used by the user management module of API gateway to sign tokens on successful signup/signin requests.">
-        <Icon type="question-circle-o" />
+        <QuestionCircleOutlined />
       </Tooltip></span>,
       render: (_, record) => {
         return <Radio
@@ -157,7 +147,7 @@ const SecretConfigure = ({ secrets, handleSetSecrets }) => {
         pagination={false}
         rowKey="key"
       />
-      {modalVisible && <WrappedAddSecretModal
+      {modalVisible && <AddSecretModal
         handleSubmit={handleAddSecret}
         handleCancel={() => setModalVisible(false)} />}
     </div>

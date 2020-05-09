@@ -1,37 +1,25 @@
 import React from 'react'
-import { Form, Input, Button } from 'antd';
+import { Input, Button, Form } from 'antd';
 import './login.css'
 
 function LoginForm(props) {
+  const [form] = Form.useForm();
   const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        props.handleSubmit(values.userName, values.key);
-      }
-    });
+    form.validateFields().then(values => {
+      props.handleSubmit(values.userName, values.key);
+    })
   };
-  const { getFieldDecorator } = props.form;
+
   return (
     <div className="login-form">
       <p className="sign-in">Sign In</p>
-      <Form onSubmit={handleSubmit}>
-        <Form.Item >
-          {getFieldDecorator('userName', {
-            rules: [{ required: true, message: 'Please input your username!' }],
-          })(
-            <Input placeholder="Username" className="input" />,
-          )}
+      <Form form={form} onFinish={handleSubmit}>
+        <Form.Item name="userName" rules={[{ required: true, message: 'Please input your username!' }]}>
+            <Input placeholder="Username" className="input" />
         </Form.Item>
-
-        <Form.Item>
-          {getFieldDecorator('key', {
-            rules: [{ required: true, message: 'Please input your key!' }],
-          })(
+        <Form.Item name="key" rules={[{ required: true, message: 'Please input your key!' }]}>
             <Input.Password type="password" placeholder="Key" className="input" />
-          )}
         </Form.Item>
-
         <Button type="primary" htmlType="submit" loading={props.isLoading} className="btn">
           SIGN IN
           </Button>
@@ -40,6 +28,4 @@ function LoginForm(props) {
   )
 }
 
-const WrappedLoginForm = Form.create({})(LoginForm);
-
-export default WrappedLoginForm
+export default LoginForm

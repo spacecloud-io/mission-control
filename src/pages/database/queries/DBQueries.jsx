@@ -23,7 +23,8 @@ const Queries = () => {
   const dispatch = useDispatch()
 
   // Handlers
-  const handleSelect = (colName) => dispatch(set("uiState.selectedCollection", colName))
+  const handleSelect = (colName) => {
+    dispatch(set("uiState.selectedCollection", colName))}
 
   const queries = generateGraphQLQueries(projectID, selectedDB, selectedCol)
   const schema = getSchema(projectID, selectedDB, selectedCol)
@@ -79,8 +80,8 @@ const Queries = () => {
           <div className="db-tab-content">
             {trackedCollections.length === 0 && <NoTableEmptyState />}
             {trackedCollections.length > 0 && <React.Fragment>
-              <Select value={selectedCol} style={{ minWidth: 160 }}>
-                {trackedCollections.map(colName => <Select.Option value={colName} onClick={() => handleSelect(colName)}>{colName}</Select.Option>)}
+              <Select value={selectedCol} style={{ minWidth: 160 }} onChange={handleSelect}>
+                {trackedCollections.map(colName => <Select.Option value={colName} >{colName}</Select.Option>)}
               </Select>
               {!schema && <NoSchemaEmptyState />}
               {schema && <React.Fragment>

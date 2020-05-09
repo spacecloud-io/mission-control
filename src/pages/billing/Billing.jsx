@@ -23,8 +23,7 @@ const Billing = () => {
     useEffect(() => {
 		ReactGA.pageview("/projects/plans");
     }, [])
-    // const subscribed = useSelector(state => state.billing.status)
-    const subscribed = true
+    const subscribed = useSelector(state => state.billing.status)
     const quotas = useSelector(state => state.quotas)
     const [contactModalVisible, setContactModalVisible] = useState(false)
     const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)

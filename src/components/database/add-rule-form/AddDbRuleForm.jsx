@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Switch, Form, Input } from 'antd';
+import { Modal, Form, Switch, Input } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -10,28 +10,25 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { defaultDBRules } from '../../../constants';
 import { notify } from '../../../utils';
+import { useForm } from 'antd/lib/form/util';
 
-const AddDbRuleForm = ({ form, handleSubmit, handleCancel, conformLoading, defaultRules }) => {
-    const { getFieldDecorator } = form;
+const AddDbRuleForm = ({ handleSubmit, handleCancel, conformLoading, defaultRules }) => {
+    const [form] = useForm()
 
     const [rule, setRule] = useState(JSON.stringify(defaultRules, null, 2));
 
-    const handleSubmitClick = e => {
-        e.preventDefault();
-        form.validateFields((err, values) => {
-            if (!err) {
-                try {
-                    handleSubmit(
-                        values.name,
-                        JSON.parse(rule)
-                    );
-                } catch (ex) {
-                    notify("error", "Error", ex.toString())
-                }
+    const handleSubmitClick = values => {
+        form.validateFields().then(values => {
+            try {
+                handleSubmit(
+                    values.name,
+                    JSON.parse(rule)
+                );
+            } catch (ex) {
+                notify("error", "Error", ex.toString())
             }
-        });
-    };
-
+        })
+    }
 
     return (
         <div>
@@ -45,14 +42,10 @@ const AddDbRuleForm = ({ form, handleSubmit, handleCancel, conformLoading, defau
                 confirmLoading={conformLoading}
                 onCancel={handleCancel}
             >
-                <Form layout="vertical" onSubmit={handleSubmitClick}>
+                <Form layout="vertical" form={form} onFinish={handleSubmitClick}>
                     <FormItemLabel name="Name" />
-                    <Form.Item>
-                        {getFieldDecorator('name', {
-                            rules: [{ required: true, message: 'Please provide a name to your collection or table!' }]
-                        })(
-                            <Input placeholder="Example: collection-name" />
-                        )}
+                    <Form.Item name="name" rules={[{ required: true, message: 'Please provide a name to your collection or table!' }]}>
+                        <Input placeholder="Example: collection-name" />
                     </Form.Item>
                     <div>
                         <FormItemLabel name="Rule" />
@@ -78,4 +71,4 @@ const AddDbRuleForm = ({ form, handleSubmit, handleCancel, conformLoading, defau
     );
 }
 
-export default Form.create({})(AddDbRuleForm);
+export default AddDbRuleForm;

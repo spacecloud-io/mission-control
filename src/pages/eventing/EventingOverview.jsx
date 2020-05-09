@@ -151,7 +151,7 @@ const EventingOverview = () => {
 					{noOfRules > 0 && (
 						<React.Fragment>
 							<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
-							<Table columns={columns} dataSource={rulesTableData} />
+							<Table columns={columns} dataSource={rulesTableData} rowKey="name" />
 						</React.Fragment>
 					)}
 					{ruleModalVisible && <RuleForm

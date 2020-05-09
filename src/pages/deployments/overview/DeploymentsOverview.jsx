@@ -279,7 +279,7 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} />
+              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
             </React.Fragment>
           )}
         </div>

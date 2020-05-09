@@ -12,7 +12,6 @@ import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
 import firebaseConfig from './firebaseConfig'
-import Clusters from "./clusters"
 import Billing from "./billing";
 
 import gql from 'graphql-tag';
@@ -40,7 +39,6 @@ class Service {
     this.routing = new Routes(this.client)
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
-    this.clusters = new Clusters(this.client)
     this.billing = new Billing(this.client)
     const token = localStorage.getItem("token")
     if (token) this.client.setToken(token);
@@ -82,7 +80,7 @@ class Service {
           reject("Internal server error")
           return
         }
-        resolve(data.result)
+        resolve(data)
       }).catch(ex => reject(ex.toString()))
     })
   }
@@ -104,6 +102,10 @@ class Service {
       this.client.postJSON('/v1/config/login', { user, key }).then(({ status, data }) => {
         if (status !== 200) {
           reject(data.error)
+          return
+        }
+        if (!data.token) {
+          reject(new Error("Token not returned from Space Cloud"))
           return
         }
 

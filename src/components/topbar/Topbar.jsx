@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
-import { useParams, useHistory, Link } from "react-router-dom"
+import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils'
-import { Button, Icon, Select, Menu, Popover, Row, Col, Divider, Avatar } from 'antd';
+import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
+import { Button, Menu, Popover, Row, Col, Divider } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
 import store from "../../store"
-import { set, get } from "automate-redux"
+import { set } from "automate-redux"
 import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"
@@ -71,19 +72,21 @@ const Topbar = (props) => {
     <div>
       <div className="topbar">
         
-          <Icon type="menu" className="hamburger" onClick={()=>store.dispatch(set("uiState.showSidenav", true))}/>
+          <MenuOutlined
+            className="hamburger"
+            onClick={()=>store.dispatch(set("uiState.showSidenav", true))} />
           <img className="logo" src={logo} alt="logo" />
           <img className="upLogo" src={upLogo} alt="logo" />
           {props.showProjectSelector && <div className="btn-position">
             <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
-              <Icon type="caret-down" />
+              <CaretDownOutlined />
             </Button>
           </div>}
           {props.showDbSelector && <div className="db-btn-position">
             <Button className="action-rounded" onClick={() => setVisible(true)}>
               <img src={svgIcon} alt={selectedDB} style={{ marginRight: 10 }} />
               {selectedDB}
-              <Icon type="caret-down" />
+              <CaretDownOutlined />
             </Button>
           </div>}
           
@@ -119,7 +122,7 @@ const Topbar = (props) => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Topbar;

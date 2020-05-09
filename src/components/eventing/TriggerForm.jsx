@@ -1,7 +1,8 @@
 import React, { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { AutoComplete, Form, Checkbox, Icon, Tooltip, Button, Input } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { Form, AutoComplete, Checkbox, Tooltip, Button, Input } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -12,96 +13,90 @@ import 'codemirror/addon/edit/closebrackets.js'
 import { notify, parseJSONSafely } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
+import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
-const TriggerForm = ({ form, handleSubmit, eventTypes, initialEventType, secret, internalToken }) => {
+const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken }) => {
+  const [form] = Form.useForm()
+  const [eventType, setEventType] = useState(initialEventType);
+
   const dispatch = useDispatch()
   const [generateTokenModalVisible, setGenerateTokenModalVisible] = useState(false)
   const [data, setData] = useState("{}")
   const [eventResponse, setEventResponse] = useState("")
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
-  const { getFieldDecorator, getFieldValue } = form;
-  const eventType = getFieldValue("eventType")
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
   const token = useSelector(state => get(state, "uiState.eventing.token", ""))
 
   const getToken = () => useInternalToken ? internalToken : token
-  const setToken = token => dispatch(set("uiState.eventing.token", token))
-  const handleClickSubmit = e => {
-    e.preventDefault();
-    form.validateFields((err, fieldsValue) => {
-      if (!err) {
-        try {
-          handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken()).then(res => {
-            notify("success", "Success", "Event successfully queued to Space Cloud")
-            setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
-            if (!triggeredEventOnce) setTriggeredEventOnce(true)
-          }).catch(ex => notify("error", "Error", ex.toString()))
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
-      }
-    });
+  const setToken = token => {
+    dispatch(set("uiState.eventing.token", token))
+    form.setFieldsValue({ token })
   }
 
+  const handleSearch = (value) => setEventType(value)
 
+  const handleClickSubmit = e => {
+    form.validateFields().then(fieldsValue => {
+      try {
+        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken()).then(res => {
+          notify("success", "Success", "Event successfully queued to Space Cloud")
+          setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
+          if (!triggeredEventOnce) setTriggeredEventOnce(true)
+        }).catch(ex => notify("error", "Error", ex.toString()))
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
+      }
+    });
+  };
+
+  const formInitialValues = {
+    eventType: initialEventType,
+    isSynchronous: false,
+    bypassSecurityRules: useInternalToken,
+    token: token
+  }
+  
   return (
     <React.Fragment>
-      <Form layout="vertical" onSubmit={handleClickSubmit}>
+      <Form layout="vertical" form={form} initialValues={formInitialValues}
+        onFinish={handleClickSubmit}>
         <FormItemLabel name='Event Type' />
-        <Form.Item>
-          {getFieldDecorator("eventType", {
-            rules: [{ required: true, message: `Event type is required` }],
-            initialValue: initialEventType
-          })(
-            <AutoComplete
-              placeholder="Example: event-type"
-            >
-              {eventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
-                <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
-              ))}
-            </AutoComplete>
-          )}
+        <Form.Item name="eventType" rules={[{ required: true, message: `Event type is required` }]}>
+          <AutoComplete
+            placeholder="Example: event-type"
+            onSearch={handleSearch}
+          >
+            {eventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
+              <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
+            ))}
+          </AutoComplete>
+        </Form.Item>
+        <Form.Item name="isSynchronous" valuePropName="checked">
+          <Checkbox>Trigger event synchronously</Checkbox>
         </Form.Item>
         <Form.Item>
-          {getFieldDecorator('isSynchronous', {
-            initialValue: false,
-            valuePropName: "checked"
-          })(
-            <Checkbox>Trigger event synchronously</Checkbox>
-          )}
-        </Form.Item>
-        <Form.Item>
-          {getFieldDecorator('bypassSecurityRules', {
-            initialValue: useInternalToken,
-            valuePropName: "checked"
-          })(
+          <Form.Item name="bypassSecurityRules" valuePropName="checked" noStyle>
             <Checkbox onChange={e => dispatch(set("uiState.eventing.useInternalToken", e.target.checked))}>Bypass security rules</Checkbox>
-          )}
+          </Form.Item>
           <Tooltip
             placement='bottomLeft'
             title='Use an internal token generated by Space Cloud to bypass all security rules for this request '
           >
-            <Icon
-              type='info-circle'
-              style={{ color: 'rgba(0,0,0,.45)' }}
-            />
+            <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
           </Tooltip>
         </Form.Item>
-        {!getFieldValue("bypassSecurityRules") && <Form.Item>
+        <ConditionalFormBlock dependency="bypassSecurityRules" condition={() => !form.getFieldValue("bypassSecurityRules")} >
           <div style={{ display: "flex" }}>
-            {getFieldDecorator('token', {
-              initialValue: token,
-              valuePropName: "checked"
-            })(
+            <Form.Item name="token" style={{ flex: 1 }}>
               <Input.Password
                 value={token}
                 placeholder='JWT Token'
                 onChange={e => dispatch(set("uiState.eventing.token", e.target.value))}
               />
-            )}
+            </Form.Item>
             <Button onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
           </div>
-        </Form.Item>}
+        </ConditionalFormBlock>
         <FormItemLabel name="Event data" description="JSON object" />
         <CodeMirror
           value={data}
@@ -139,5 +134,5 @@ const TriggerForm = ({ form, handleSubmit, eventTypes, initialEventType, secret,
 }
 
 
-export default Form.create({})(TriggerForm)
+export default TriggerForm
 
