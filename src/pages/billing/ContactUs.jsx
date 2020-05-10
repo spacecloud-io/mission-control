@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from "react-redux"
-import { Button, Icon, Col, Row } from 'antd';
+import { Button } from 'antd';
 import ContactForm from '../../components/billing/contact-us/ContactForm';
 import MessageCard from '../../components/billing/contact-us/MessageCard';
 import './billing.css';
 import { increment, decrement } from 'automate-redux';
 import client from "../../client"
 import { notify } from '../../utils';
+import { LeftOutlined } from "@ant-design/icons"
 
 const UpgradeCluster = (props) => {
 
@@ -51,7 +52,7 @@ const UpgradeCluster = (props) => {
             padding: "0 16px"
           }}>
             <Button style={{ position: "absolute", left: 0 }} type="link" onClick={history.goBack}>
-              <Icon type="left" />Go back</Button>
+            <LeftOutlined />Go back</Button>
             <span >Contact us</span>
           </div><br />
           <div>

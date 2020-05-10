@@ -1,5 +1,6 @@
 import React from 'react';
-import { Alert, Modal, Icon } from 'antd';
+import { Alert, Modal } from 'antd';
+import { InfoCircleOutlined } from "@ant-design/icons"
 import './register-cluster.css';
 
 const ConflictedClusterIdModal = ({ clusterName, handleCancel, handleContinue }) => {
@@ -16,7 +17,7 @@ const ConflictedClusterIdModal = ({ clusterName, handleCancel, handleContinue })
       className="cluster-name-modal"
       width='600px'
       style={{ padding: "32px 28px 0px 28px" }}>
-      <Icon type="info-circle" style={{ fontSize: "24px", color: '#F9AE3A' }} />
+      <InfoCircleOutlined style={{ fontSize: "24px", color: '#F9AE3A' }} />
       <span style={{ fontSize: '16px', marginLeft: '16px' }}>Cluster name already in use</span><br />
       <Alert
         message=" "

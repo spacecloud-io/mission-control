@@ -126,7 +126,7 @@ const Sidenav = (props) => {
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
           <p className="plan">{planName} plan</p>
-          {plan.startsWith("space-cloud-plan") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
+          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
         </div>
       </div>
     </div>

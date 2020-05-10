@@ -5,10 +5,11 @@ import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import ReactGA from 'react-ga';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
-import { Button, Icon, Col, Row } from 'antd';
+import { Button, Col, Row } from 'antd';
 import './billing.css';
 import { setClusterPlan, notify, getClusterPlan } from '../../utils';
 import { increment, decrement } from 'automate-redux';
+import { LeftOutlined } from "@ant-design/icons"
 
 const ChangePlan = () => {
   const dispatch = useDispatch()
@@ -45,7 +46,7 @@ const ChangePlan = () => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={history.goBack}>
-              <Icon type="left" />
+            <LeftOutlined />
                 Go back
             </Button>
             <span style={{ marginLeft: '35%' }}>

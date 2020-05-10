@@ -3,7 +3,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import ReactGA from 'react-ga';
 import { useParams, useHistory } from 'react-router-dom';
-import { Button, Icon, Steps, Col, Row } from 'antd';
+import { Button, Steps, Col, Row } from 'antd';
 import SigninCard from '../../components/signup/signin-card/SigninCard';
 import AddBillingDetails from '../../components/billing/add-billing-details/AddBillingDetails';
 import RegisterCluster from '../../components/billing/upgrade/RegisterCluster';
@@ -12,6 +12,7 @@ import StartSubscription from '../../components/billing/upgrade/StartSubscriptio
 import { notify, isSignedIn, isBillingEnabled, enterpriseSignin, getClusterId, registerCluster } from '../../utils';
 import { increment, decrement } from 'automate-redux';
 import { useDispatch, useSelector } from 'react-redux';
+import { LeftOutlined } from "@ant-design/icons"
 
 import './billing.css';
 
@@ -126,7 +127,7 @@ const UpgradeCluster = (props) => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/billing/overview`)}>
-              <Icon type="left" />
+            <LeftOutlined />
                             Go back
                             </Button>
             <span style={{ marginLeft: '35%' }}>

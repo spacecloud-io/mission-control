@@ -8,6 +8,7 @@ import { notify, fetchBillingDetails } from '../../../utils';
 import store from '../../../store';
 import { increment, decrement } from 'automate-redux';
 import { loadStripe } from '@stripe/stripe-js';
+import FormItemLabel from "../../form-item-label/FormItemLabel";
 
 const stripePromise = loadStripe("pk_test_86Z4cMrqx8qC7bHLa0nLeQYs00D1MqsudX");
 const countriesOptions = countries.map(obj => <Select.Option key={obj.code} value={obj.code}>{obj.name}</Select.Option>)
@@ -16,7 +17,6 @@ const BillingDetailsForm = (props) => {
   const stripe = useStripe();
   const elements = useElements();
   const [invoiceId, setInvoiceId] = useState(undefined)
-  const { getFieldDecorator } = props.form;
 
   const handleStripePayment = (paymentMethodId, address) => {
     const name = localStorage.getItem("name")
@@ -59,61 +59,45 @@ const BillingDetailsForm = (props) => {
       .finally(() => store.dispatch(decrement("pendingRequests")))
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleSubmit = async ({ cardDetails, ...address }) => {
     if (!stripe || !elements) {
       return;
     }
 
-
-    props.form.validateFields(async (err, values) => {
-      if (!err) {
-        const { cardDetails, ...address } = values
-        const result = await stripe.createPaymentMethod({
-          type: 'card',
-          card: elements.getElement(CardElement),
-          billing_details: {
-            email: localStorage.getItem("email"),
-            name: localStorage.getItem("name"),
-            address: address
-          }
-        });
-        if (!result.error) {
-          handleStripePayment(result.paymentMethod.id, address);
-        }
+    const result = await stripe.createPaymentMethod({
+      type: 'card',
+      card: elements.getElement(CardElement),
+      billing_details: {
+        email: localStorage.getItem("email"),
+        name: localStorage.getItem("name"),
+        address: address
       }
-    })
+    });
+    if (!result.error) {
+      handleStripePayment(result.paymentMethod.id, address);
+    }
   };
 
   return (
     <div>
-      <Form onSubmit={handleSubmit} autoComplete="off">
-        <p><b>Add your card</b></p>
+      <Form onFinish={handleSubmit} autoComplete="off">
+        <FormItemLabel name="Add your card" />
         <Form.Item>
-          {getFieldDecorator('cardDetails')(
+          <Form.Item name="cardDetails">
             <CardSection />
-          )}
+          </Form.Item>
         </Form.Item>
-        <p style={{ marginTop: '48px' }}><b>Billing address</b></p>
-        <Form.Item>
-          {getFieldDecorator('country', {
-            rules: [{ required: true, message: 'Please select your country' }],
-          })(
-            <Select placeholder="Select your country"
-              showSearch
-              optionFilterProp="children"
-            >
-              {countriesOptions}
-            </Select>
-          )}
+        <FormItemLabel name="Billing address" style={{ marginTop: '48px' }} />
+        <Form.Item name="country" rules={[{ required: true, message: 'Please select your country' }]}>
+          <Select placeholder="Select your country"
+            showSearch
+            optionFilterProp="children"
+          >
+            {countriesOptions}
+          </Select>
         </Form.Item>
-        <Form.Item style={{ marginTop: '-8px' }}>
-          {getFieldDecorator('line1', {
-            rules: [{ required: false }],
-          })(
-            <Input placeholder="Street" />
-          )}
+        <Form.Item name="line1" style={{ marginTop: '-8px' }}>
+          <Input placeholder="Street" />
         </Form.Item>
         <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: '24px' }}>Save your billing details</Button>
       </Form>
@@ -121,14 +105,12 @@ const BillingDetailsForm = (props) => {
   );
 }
 
-const WrappedBillingDetailsForm = Form.create({})(BillingDetailsForm);
-
 export default function AddBillingDetails({ handleSuccess }) {
 
   return (
     <Card style={{ padding: '24px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
       <Elements stripe={stripePromise}>
-        <WrappedBillingDetailsForm handleSuccess={handleSuccess} />
+        <BillingDetailsForm handleSuccess={handleSuccess} />
       </Elements>
     </Card>
   );
