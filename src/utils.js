@@ -211,10 +211,13 @@ export const fetchBillingDetails = () => {
 export const fetchInvoices = (startingAfter) => {
   return new Promise((resolve, reject) => {
     client.billing.fetchInvoices(startingAfter).then((invoices) => {
-      const oldInvoices = store.getState().billing.details.invoices
-      const newInvoices = [...oldInvoices, ...newInvoices]
+      const oldInvoices = store.getState().invoices
+      const newInvoices = [...oldInvoices, ...invoices]
       const hasMore = invoices.length === 10
-      store.dispatch(set("billing.invoices", newInvoices))
+      let invoicesMap = newInvoices.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
+      const uniqueInvoices = Object.values(invoicesMap)
+      const sortedInvoices = uniqueInvoices.sort((a, b) => a.number < b.number ? -1 : 1)
+      store.dispatch(set("invoices", sortedInvoices))
       resolve(hasMore)
     }).catch(ex => reject(ex))
   })
@@ -464,7 +467,7 @@ export function setClusterPlan(plan) {
   return new Promise((resolve, reject) => {
     const clusterId = getClusterId(store.getState())
     client.billing.setPlan(clusterId, plan)
-      .then(() => {
+      .then((plan) => {
         client.renewClusterLicense()
           .then(() => {
             store.dispatch(set("env.plan", plan))

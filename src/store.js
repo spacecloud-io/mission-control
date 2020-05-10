@@ -29,9 +29,9 @@ const initialState = {
 	billing: {
 		status: false,
 		balanceCredits: 0,
-		details: {},
-		invoices: []
-	}
+		details: {}
+	},
+	invoices: []
 };
 
 // Generate reducers with the initial state and pass it to the redux store

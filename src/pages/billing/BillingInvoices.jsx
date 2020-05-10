@@ -17,8 +17,8 @@ function BillingInvoices() {
   }, [])
 
   const { projectID } = useParams();
-  const [hasMoreInvoices, setHasMoreInvoices] = useState(false)
-  const invoices = useSelector(state => state.billing.invoices)
+  const [hasMoreInvoices, setHasMoreInvoices] = useState(true)
+  const invoices = useSelector(state => state.invoices)
   const loadInvoices = () => {
     const noOfInvoices = invoices.length
     const startingAfter = noOfInvoices > 0 ? invoices[noOfInvoices - 1].id : undefined

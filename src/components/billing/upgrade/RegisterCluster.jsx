@@ -11,7 +11,7 @@ const RegisterCluster = (props) => {
   const clusters = useSelector(state => state.clusters)
   useEffect(() => {
     dispatch(increment("pendingRequests"))
-    fetchClusters().finally(decrement("pendingRequests"))
+    fetchClusters().finally(() => dispatch(decrement("pendingRequests")))
   }, [])
   const handleSubmit = (values) => props.handleRegisterCluster(values.clusterName)
   const clusterNames = clusters.map(c => c.name)

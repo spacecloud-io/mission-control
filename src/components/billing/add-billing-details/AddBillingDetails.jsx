@@ -80,7 +80,7 @@ const BillingDetailsForm = (props) => {
 
   return (
     <div>
-      <Form onFinish={handleSubmit} autoComplete="off">
+      <Form onFinish={handleSubmit}>
         <FormItemLabel name="Add your card" />
         <Form.Item>
           <Form.Item name="cardDetails">

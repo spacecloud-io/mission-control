@@ -7,7 +7,6 @@ class Billing {
 
   signIn(token) {
     return new Promise((resolve, reject) => {
-      // TODO: Put the correct endpoint name
       this.client.query({
         query: gql`
         query {
@@ -145,18 +144,19 @@ class Billing {
             status
             error
             message
+            result
           }
         }`,
         variables: { clusterId, plan }
       })
         .then(res => {
-          const { status, error, message } = res.data.update_plan
+          const { status, error, message, result } = res.data.update_plan
           if (status !== 200) {
             console.log("Set Plan Error", error)
             reject(message)
             return
           }
-          resolve()
+          resolve(result.plan)
         })
         .catch(ex => reject(ex))
     })
