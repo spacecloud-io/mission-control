@@ -1,21 +1,29 @@
 import { Server, Model, RestSerializer, Response } from "miragejs";
 import fixtures from './fixtures'
+import gql from "graphql-tag"
 
 function respondOk(body = {}) {
   return new Response(200, {}, body)
 }
-
+function getRootField(ast) {
+  const { definitions = [] } = ast
+  if (definitions.length === 0) return ""
+  const definition = definitions[0]
+  const selectionSet = definition.selectionSet.selections[0]
+  const { name } = selectionSet
+  return name.value
+}
 function graphQLAPIHandler(request, schema) {
   const body = JSON.parse(request.requestBody)
   const { query } = body;
-  if (query.includes("event_logs")) {
-    return {
-      data: {
-        event_logs: schema.db.eventLogs
-      }
-    }
+  const ast = gql(query);
+  const field = getRootField(ast)
+  switch (field) {
+    case "event_logs":
+      return { data: { event_logs: schema.db.eventLogs } }
+    default:
+      return { data: {} }
   }
-  return { data: {} }
 }
 
 export function makeServer({ environment = "development" } = {}) {
