@@ -18,6 +18,7 @@ import DBSettings from "./pages/database/settings/DBSettings";
 import DBQueries from "./pages/database/queries/DBQueries";
 import AddDb from "./pages/database/add-db/AddDb";
 import FileStorage from "./pages/file-storage/FileStorage";
+import FileStorageConfig from "./pages/file-storage/FileStorageConfig";
 import EventingOverview from "./pages/eventing/EventingOverview";
 import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
@@ -62,6 +63,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage/config" component={FileStorageConfig} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />

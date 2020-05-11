@@ -9,6 +9,7 @@ import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
 import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
+import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
@@ -16,6 +17,7 @@ import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
 
 const Rules = (props) => {
+	const history = useHistory();
 	// Router params
 	const { projectID } = useParams()
 
@@ -54,6 +56,10 @@ const Rules = (props) => {
 	}, [selectedRuleName, noOfRules])
 
 	// Handlers
+	const handleFileConfig = () => {
+		history.push(`/mission-control/projects/${projectID}/file-storage/config`, {initialValues: {connConfig}});
+	}
+
 	const handleConfig = (config) => {
 		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
@@ -139,7 +145,7 @@ const Rules = (props) => {
 						</Button>
 					</div>}
 					{enabled && <React.Fragment>
-						<h3>Provider Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setConfigurationModalVisible(true)}>(Edit)</a></h3>
+						<h3>Provider Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={handleFileConfig}>(Edit)</a></h3>
 						<Descriptions bordered>
 							<Descriptions.Item label="Provider">{getFileStorageProviderLabelFromStoreType(connConfig.storeType)}</Descriptions.Item>
 							<Descriptions.Item label="Status" >

@@ -1,0 +1,18 @@
+.Card-align {
+  position: absolute;
+  margin-top: 32px;
+  margin-left: 25%;
+  width: 706px;
+}
+
+.submit {
+    border-radius: 4px;
+    position: absolute;
+    width: 660px;
+}
+
+.radio-align {
+    display: block;
+    height: 30px;
+    line-height: 30px;
+}
