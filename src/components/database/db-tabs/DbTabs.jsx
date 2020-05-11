@@ -15,6 +15,13 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
+        <TabPane tab='Prepared Queries' key='preparedQueries'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`
+            }}
+          />
+        </TabPane>
         <TabPane tab='Rules' key='rules'>
           <Redirect
             to={{
