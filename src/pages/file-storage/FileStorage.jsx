@@ -4,7 +4,6 @@ import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import ConfigurationForm from "../../components/file-storage/ConfigurationForm"
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
@@ -179,10 +178,6 @@ const Rules = (props) => {
 							</div>
 						</React.Fragment>}
 					</React.Fragment>}
-					{configurationModalVisible && <ConfigurationForm
-						handleSubmit={handleConfig}
-						handleCancel={() => setConfigurationModalVisible(false)}
-						initialValues={connConfig} />}
 					{addRuleModalVisible && <AddRuleForm
 						handleSubmit={handleAddRule}
 						handleCancel={() => setAddRuleModalVisible(false)} />}
