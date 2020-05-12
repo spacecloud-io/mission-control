@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 import PreparedQueriesRuleForm from '../../../components/database/prepared-queries-rule-form/PreparedQueriesRuleForm';
 import { Button, Table, Popconfirm, Alert } from 'antd';
@@ -10,16 +9,39 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
+import client from '../../../client';
+import { increment, decrement } from 'automate-redux'
+import { setProjectConfig, notify, getProjectConfig } from '../../../utils';
+import store from '../../../store';
+
 
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
   const [ruleModal, setRuleModal] = useState(false)
+  const projects = useSelector(state => state.projects);
+  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, []);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/prepared-queries");
   }, [])
+
+  const handleDeletePreparedQuery = (name) => {
+      dispatch(increment("pendingRequests"));
+      client.database
+        .deletePreparedQueries(projectID, selectedDB, name)
+        .then(() => {
+          const newPreparedQueries = preparedQueries.filter(obj => obj.id !== name);
+          setProjectConfig(projectID, `modules.db.${selectedDB}.preparedQueries`, newPreparedQueries);
+          notify("success", "Success", "Removed prepared query successfully");
+        })
+        .catch(ex => {
+          notify("error", "Error removing prepared query", ex.toString());
+        })
+        .finally(() => store.dispatch(decrement("pendingRequests")));  
+  }
 
   const alertDesc = <React.Fragment>
       <p><a style={{ color:"#1890FF" }}>Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color:"#1890FF" }}>security rules</a>.</p>
@@ -40,7 +62,7 @@ const preparedQueriesColumns = [
         <span>
           <a>Edit</a>
           <a onClick={() => setRuleModal(true)}>Secure</a>
-          <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} >
+          <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDeletePreparedQuery(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
         </span>

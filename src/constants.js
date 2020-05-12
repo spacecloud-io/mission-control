@@ -55,3 +55,7 @@ export const defaultFileRootPathRule = {
 export const defaultEndpointRule = {
   rule: "allow"
 }
+
+export const defaultPreparedQueryRule = {
+  rule: "allow"
+}

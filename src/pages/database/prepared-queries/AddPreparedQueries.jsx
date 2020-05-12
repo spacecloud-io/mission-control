@@ -5,7 +5,9 @@ import { useParams, useHistory } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
 import ReactGA from 'react-ga'
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import client from '../../../client';
+import { increment, decrement } from 'automate-redux'
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -15,30 +17,39 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
+import { setProjectConfig, notify } from '../../../utils';
+import { defaultPreparedQueryRule } from '../../../constants';
 
 const AddPreparedQueries = (props) => {
     const { projectID, selectedDB } = useParams()
     const history = useHistory()
+    const dispatch = useDispatch()
     const projects = useSelector(state => state.projects)
     const [form] = Form.useForm()
-    const [preparedQueries, setPreparedQueries] = useState("select * from all")
+    const [preparedQueries, setPreparedQueries] = useState("")
 
     useEffect(() => {
         ReactGA.pageview("/projects/database/prepared-queries/add-prepared-queries");
     }, [])
 
+    const handleAddPreparedQueries = (formValues) => {
+        dispatch(increment("pendingRequests"));
+        const config = { id: formValues.name, sql: preparedQueries, rule: defaultPreparedQueryRule, args: formValues.arguments }
+        client.database.setPreparedQueries(projectID, selectedDB, formValues.name, config)
+          .then(() => {
+            setProjectConfig(projectID, `modules.db.${selectedDB}.preparedQueries`, config);
+            notify("success", "Success", "Successfully added prepared queries");
+          })
+          .catch(ex => {
+            notify("error", "Error adding secret", ex);
+          })
+          .finally(() => dispatch(decrement("pendingRequests")));
+    }
+
     const handleSubmit = e => {
         form.validateFields().then(formValues => {
-          const values = {
-            id: formValues.id,
-            type: formValues.type
-          };
-          
-    
-          props.handleSubmit(values).then(() => {
-            props.handleCancel();
-            form.resetFields();
-          })
+          handleAddPreparedQueries(formValues)
+          form.resetFields();
         });
       };
 
@@ -103,8 +114,8 @@ const AddPreparedQueries = (props) => {
                                                 <React.Fragment>
                                                 <Row key={field}>
                                                     <Col span={10}>
-                                                    <Form.Item name={[field.name, "argument-name"]} validateTrigger={["onChange", "onBlur"]}
-                                                        rules={[{ required: true, message: "Please input " }]}>
+                                                    <Form.Item name={[field.name]} validateTrigger={["onChange", "onBlur"]}
+                                                        rules={[{ required: true, message: "Please input argument" }]}>
                                                         <Input
                                                         style={{ width: "90%", marginRight: "6%", float: "left" }}
                                                         placeholder="eg. args.foo"
@@ -125,7 +136,7 @@ const AddPreparedQueries = (props) => {
                                                 <Button
                                                 onClick={() => {
                                                     const fieldKeys = [
-                                                    ...fields.map(obj => ["arguments", obj.key, "argument-name"]),
+                                                    ...fields.map(obj => ["arguments"]),
                                                     ]
                                                     form.validateFields(fieldKeys)
                                                     .then(() => add())
