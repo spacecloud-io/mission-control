@@ -56,7 +56,7 @@ const Rules = (props) => {
 
 	// Handlers
 	const handleFileConfig = () => {
-		history.push(`/mission-control/projects/${projectID}/file-storage/config`, {initialValues: {connConfig}});
+		history.push(`/mission-control/projects/${projectID}/file-storage/config`);
 	}
 
 	const handleConfig = (config) => {
@@ -139,7 +139,7 @@ const Rules = (props) => {
 					{!enabled && <div className="panel">
 						<img src={fileStorageSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
-						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
+						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={handleFileConfig}>
 							Get started
 						</Button>
 					</div>}
