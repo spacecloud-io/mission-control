@@ -43,7 +43,28 @@ const projects = [
         "externalServices": {
           "auth": {
             "url": "localhost:3000",
-            "endpoints": {}
+            "endpoints": {
+              "payment": {
+                "method":"GET",
+                "path":"/v1/payments",
+                "kind":"simple",
+                "rule":"create: { allow }",
+              },
+              "login": {
+                "method":"POST",
+                "path":"/v1/login",
+                "kind":"simple",
+                "rule":"create: { allow }",
+                "token":"abcdefg"
+              },
+              "template": {
+                "method":"GET",
+                "path":"/v1/template",
+                "kind":"transform-go",
+                "rule":"create: { allow }",
+                "template":`"test": { "allow" }`
+              },
+            }
           }
         }
       },
