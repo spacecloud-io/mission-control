@@ -131,13 +131,14 @@ export const handleReload = (projectId, dbName) => {
   })
 }
 
-export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoading) => {
+export const setDBConfig = (projectId, aliasName, enabled, conn, type, dbName, setLoading) => {
   if (setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
-    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
+    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type, dbName }).then(() => {
       setProjectConfig(projectId, `modules.db.${aliasName}.enabled`, enabled)
       setProjectConfig(projectId, `modules.db.${aliasName}.conn`, conn)
       setProjectConfig(projectId, `modules.db.${aliasName}.type`, type)
+      setProjectConfig(projectId, `modules.db.${aliasName}.dbName`, dbName)
       store.dispatch(set(`extraConfig.${projectId}.db.${aliasName}.connected`, true))
       if (enabled) {
         fetchCollections(projectId, aliasName, false).then(() => resolve()).catch(ex => reject(ex))
@@ -192,7 +193,7 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .then(() => {
       setProjectConfig(projectId, "modules.eventing.enabled", true)
       setProjectConfig(projectId, "modules.eventing.dbAlias", alias)
-      
+
       const defaultEventingSecurityRule = getProjectConfig(projects, projectId, "modules.eventing.securityRules.default")
       if (!defaultEventingSecurityRule) {
         setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
@@ -203,9 +204,9 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
-export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) => {
+export const dbEnable = (projects, projectId, aliasName, conn, rules, type, dbName, cb) => {
   store.dispatch(increment("pendingRequests"))
-  setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
+  setDBConfig(projectId, aliasName, true, conn, type, dbName, false).then(() => {
     notify("success", "Success", "Enabled database successfully")
     if (cb) cb()
     const dbconfig = getProjectConfig(projects, projectId, `modules.db`)

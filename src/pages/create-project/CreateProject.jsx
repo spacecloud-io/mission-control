@@ -42,8 +42,8 @@ const CreateProject = () => {
       .finally(() => dispatch(decrement("pendingRequests")))
   };
 
-  const addDatabase = (alias, connectionString, defaultDBRules, selectedDB) => {
-    dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, (err) => {
+  const addDatabase = (alias, connectionString, defaultDBRules, selectedDB, dbName) => {
+    dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, dbName, (err) => {
       if (!err) {
         history.push(`/mission-control/projects/${projectId}`)
       }

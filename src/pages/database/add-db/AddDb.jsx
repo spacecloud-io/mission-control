@@ -19,8 +19,8 @@ const AddDb = () => {
         ReactGA.pageview("/projects/database/add-db");
     }, [])
 
-    const addDb = (alias, connectionString, defaultDBRules, selectedDB) => {
-        dbEnable(projects, projectID, alias, connectionString, defaultDBRules, selectedDB, (err) => {
+    const addDb = (alias, connectionString, defaultDBRules, selectedDB, dbName) => {
+        dbEnable(projects, projectID, alias, connectionString, defaultDBRules, selectedDB, dbName, (err) => {
             if (!err) {
                 history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
             }
