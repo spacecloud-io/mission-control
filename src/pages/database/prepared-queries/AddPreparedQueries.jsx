@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useHistory, match } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
 import ReactGA from 'react-ga'
@@ -17,150 +17,169 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
-import { setProjectConfig, notify } from '../../../utils';
+import { getProjectConfig, notify } from '../../../utils';
 import { defaultPreparedQueryRule } from '../../../constants';
+import { setPreparedQueries } from '../dbActions';
 
 const AddPreparedQueries = (props) => {
-    const { projectID, selectedDB } = useParams()
-    const history = useHistory()
-    const dispatch = useDispatch()
-    const projects = useSelector(state => state.projects)
-    const [form] = Form.useForm()
-    const [preparedQueries, setPreparedQueries] = useState("")
+  const { projectID, selectedDB, preparedQueryId } = useParams()
+  const history = useHistory()
+  const dispatch = useDispatch()
+  const projects = useSelector(state => state.projects)
+  const collection = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {});
+  const preparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${preparedQueryId}`, { id: "", sql: "", rule: "", args: [] });
+  const nameArray = [...Object.keys(collection), ...Object.keys(preparedQuery)]
+  const [form] = Form.useForm()
+  const [sqlPreparedQueries, setSqlPreparedQueries] = useState(preparedQueryId ? preparedQuery.sql : "")
 
-    useEffect(() => {
-        ReactGA.pageview("/projects/database/prepared-queries/add-prepared-queries");
-    }, [])
+  useEffect(() => {
+    ReactGA.pageview("/projects/database/prepared-queries/add-prepared-queries");
+  }, [])
 
-    const handleAddPreparedQueries = (formValues) => {
-        dispatch(increment("pendingRequests"));
-        const config = { id: formValues.name, sql: preparedQueries, rule: defaultPreparedQueryRule, args: formValues.arguments }
-        client.database.setPreparedQueries(projectID, selectedDB, formValues.name, config)
+
+  const handleSubmit = e => {
+    form.validateFields().then(formValues => {
+      if (!preparedQueryId) {
+        setPreparedQueries(projectID, selectedDB, formValues.name, formValues.arguments, sqlPreparedQueries, defaultPreparedQueryRule)
           .then(() => {
-            setProjectConfig(projectID, `modules.db.${selectedDB}.preparedQueries`, config);
-            notify("success", "Success", "Successfully added prepared queries");
+            history.goBack();
+            notify("success", "Success", "Sucessfully added prepared query")
           })
-          .catch(ex => {
-            notify("error", "Error adding secret", ex);
+          .catch(ex => notify("error", "Error adding prepared query", ex))
+      }else{
+        setPreparedQueries(projectID, selectedDB, formValues.name, formValues.arguments, sqlPreparedQueries, defaultPreparedQueryRule)
+          .then(() => {
+            history.goBack();
+            notify("success", "Success", "Sucessfully edited prepared query")
           })
-          .finally(() => dispatch(decrement("pendingRequests")));
-    }
+          .catch(ex => notify("error", "Error editing prepared query", ex))
+      }
+      form.resetFields();
+    });
+  };
 
-    const handleSubmit = e => {
-        form.validateFields().then(formValues => {
-          handleAddPreparedQueries(formValues)
-          form.resetFields();
-        });
-      };
-
-    return (
-        <React.Fragment>
-            <Topbar
-                showProjectSelector
-            />
-            <div>
-                <Sidenav selectedItem='database' />
-                <div className='page-content page-content--no-padding'>
-                    <div style={{
-                        boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
-                        height: 48,
-                        lineHeight: 48,
-                        zIndex: 98,
-                        display: "flex",
-                        alignItems: "center",
-                        padding: "0 16px"
-                    }}>
-                        <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`)}>
-                            <LeftOutlined />
-                            Go back
-                            </Button>
-                        <span style={{ marginLeft: "35%" }}>
-                            Add prepared queries
-                            </span>
-                    </div><br />
-                    <div>
-                        <Row>
-                            <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
-                                <Card style={{ padding:"24px" }}>
-                                <Form form={form} onFinish={handleSubmit}>
-                                    <p style={{ fontSize:"16px", marginBottom:0 }}><b>Name your prepared query </b></p>
-                                    <p style={{ fontSize:"14px", marginTop:0 }}>Used to identify the prepared query in the GraphQL API</p>
-                                    <Form.Item name="name" rules={[{ required: true, message: "Please input a name!" }]}>
-                                        <Input placeholder="e.g. my_prepared_statement1"/>
+  return (
+    <React.Fragment>
+      <Topbar
+        showProjectSelector
+      />
+      <div>
+        <Sidenav selectedItem='database' />
+        <div className='page-content page-content--no-padding'>
+          <div style={{
+            boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
+            height: 48,
+            lineHeight: 48,
+            zIndex: 98,
+            display: "flex",
+            alignItems: "center",
+            padding: "0 16px"
+          }}>
+            <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`)}>
+              <LeftOutlined /> Go back
+            </Button>
+            {!preparedQueryId && <span style={{ marginLeft: "35%" }}>
+              Add prepared queries
+              </span>}
+            {preparedQueryId && <span style={{ marginLeft: "35%" }}>
+              Edit prepared queries
+            </span>}
+          </div><br />
+          <div>
+            <Row>
+              <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
+                <Card style={{ padding: "24px" }}>
+                  <Form form={form} onFinish={handleSubmit} initialValues={{ 'name': preparedQuery.id, 'arguments': preparedQuery.args }}>
+                    <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Name your prepared query </b></p>
+                    <p style={{ fontSize: "14px", marginTop: 0 }}>Used to identify the prepared query in the GraphQL API</p>
+                    <Form.Item name="name" rules={[{
+                      validator: (_, value, cb) => {
+                        if (!value) {
+                          cb("Please input a name")
+                          return
+                        }
+                        if (nameArray.some(id => id.toLowerCase() === value.toLowerCase())) {
+                          cb("Provide a name which is not given to collection or other prepared query!")
+                          return
+                        }
+                        cb()
+                      }
+                    }]}>
+                      <Input disabled={preparedQueryId} placeholder="e.g. my_prepared_statement1" />
+                    </Form.Item>
+                    <FormItemLabel name="SQL Query" />
+                    <CodeMirror
+                      value={sqlPreparedQueries}
+                      options={{
+                        mode: { name: "sql", json: true },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2,
+                        autofocus: true
+                      }}
+                      onBeforeChange={(editor, data, value) => {
+                        setSqlPreparedQueries(value)
+                      }}
+                    /><br />
+                    <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Arguments</b> (Optional)</p>
+                    <p style={{ fontSize: "14px", marginTop: 0 }}>Add the arguments from the GraphQL API that you want to access in the SQL query</p>
+                    <Form.List name="arguments" rules={[{ required: true, message: "Please input a name!" }]}>
+                      {(fields, { add, remove }) => {
+                        return (
+                          <div>
+                            {fields.map((field, index) => (
+                              <React.Fragment>
+                                <Row key={field}>
+                                  <Col span={10}>
+                                    <Form.Item name={[field.name]} validateTrigger={["onChange", "onBlur"]}
+                                      rules={[{ required: true, message: "Please input argument" }]}>
+                                      <Input
+                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                        placeholder="eg. args.foo"
+                                      />
                                     </Form.Item>
-                                    <FormItemLabel name="SQL Query" />
-                                    <CodeMirror
-                                        value={preparedQueries}
-                                        options={{
-                                        mode: { name: "sql", json: true },
-                                        lineNumbers: true,
-                                        styleActiveLine: true,
-                                        matchBrackets: true,
-                                        autoCloseBrackets: true,
-                                        tabSize: 2,
-                                        autofocus: true
-                                        }}
-                                        onBeforeChange={(editor, data, value) => {
-                                            setPreparedQueries(value)
-                                        }}
-                                    /><br />
-                                    <p style={{ fontSize:"16px", marginBottom:0 }}><b>Arguments</b> (Optional)</p>
-                                    <p style={{ fontSize:"14px", marginTop:0 }}>Add the arguments from the GraphQL API that you want to access in the SQL query</p>
-                                    <Form.List name="arguments" rules={[{ required: true, message: "Please input a name!" }]}>
-                                    {(fields, { add, remove }) => {
-                                        return (
-                                            <div>
-                                            {fields.map((field, index) => (
-                                                <React.Fragment>
-                                                <Row key={field}>
-                                                    <Col span={10}>
-                                                    <Form.Item name={[field.name]} validateTrigger={["onChange", "onBlur"]}
-                                                        rules={[{ required: true, message: "Please input argument" }]}>
-                                                        <Input
-                                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                                        placeholder="eg. args.foo"
-                                                        />
-                                                    </Form.Item>
-                                                    </Col>
-                                                    <Col span={3}>
-                                                    <Button
-                                                    onClick={() => remove(field.name)}
-                                                    style={{ marginRight: "2%", float: "left" }}>
-                                                    <DeleteOutlined />
+                                  </Col>
+                                  <Col span={3}>
+                                    <Button
+                                      onClick={() => remove(field.name)}
+                                      style={{ marginRight: "2%", float: "left" }}>
+                                      <DeleteOutlined />
+                                    </Button>
+                                  </Col>
+                                </Row>
+                              </React.Fragment>
+                            ))}
+                            <Form.Item>
+                              <Button
+                                onClick={() => {
+                                  const fieldKeys = [
+                                    ...fields.map(obj => ["arguments", obj.key]),
+                                  ]
+                                  form.validateFields(fieldKeys)
+                                    .then(() => add())
+                                    .catch(ex => console.log("Exception", ex))
+                                }}
+                                style={{ marginRight: "2%", float: "left" }}
+                              >
+                                <PlusOutlined /> Add another pair
                                                     </Button>
-                                                    </Col>
-                                                </Row>
-                                                </React.Fragment>
-                                            ))}
-                                            <Form.Item>
-                                                <Button
-                                                onClick={() => {
-                                                    const fieldKeys = [
-                                                    ...fields.map(obj => ["arguments"]),
-                                                    ]
-                                                    form.validateFields(fieldKeys)
-                                                    .then(() => add())
-                                                    .catch(ex => console.log("Exception", ex))
-                                                }}
-                                                style={{ marginRight: "2%", float: "left" }}
-                                                >
-                                                <PlusOutlined /> Add another pair
-                                                    </Button>
-                                            </Form.Item>
-                                            </div>
-                                        );
-                                        }}
-                                    </Form.List>
-                                    <Button type="primary" style={{ width: "100%" }} onClick={handleSubmit}>Add prepared query</Button>
-                                </Form>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </div>
-                </div>
-            </div>
-        </React.Fragment>
-    );
+                            </Form.Item>
+                          </div>
+                        );
+                      }}
+                    </Form.List>
+                    <Button type="primary" style={{ width: "100%" }} onClick={handleSubmit}>Add prepared query</Button>
+                  </Form>
+                </Card>
+              </Col>
+            </Row>
+          </div>
+        </div>
+      </div>
+    </React.Fragment>
+  );
 }
 
 export default AddPreparedQueries;

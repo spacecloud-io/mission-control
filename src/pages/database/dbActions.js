@@ -1,10 +1,11 @@
 import store from "../../store"
 import { getProjectConfig, setProjectConfig, getEventingDB } from "../../utils"
-import { defaultDBRules, defaultEventRule } from "../../constants"
+import { defaultDBRules, defaultEventRule, defaultPreparedQueryRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
 import history from '../../history';
+import PreparedQueries from "./prepared-queries/PreparedQueries"
 
 export const modifyColSchema = (projectId, dbName, colName, schema, setLoading) => {
   return new Promise((resolve, reject) => {
@@ -203,6 +204,22 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
+export const setPreparedQueries = (projectId, aliasName, id, args, sqlPreparedQueries, rule) => {
+  return new Promise((resolve, reject) => {
+    store.dispatch(increment("pendingRequests"));
+    const config = {[id]: { id: id, sql: sqlPreparedQueries, rule: rule, args: args }}
+    client.database.setPreparedQueries(projectId, aliasName, id, config )
+      .then(() => {
+        const preparedQueryObject = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`)
+        const newObject = Object.assign({}, preparedQueryObject, config)
+        setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, newObject);
+        resolve()
+      })
+      .catch(ex => reject(ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")));
+  })
+}
+
 export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) => {
   store.dispatch(increment("pendingRequests"))
   setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
@@ -214,6 +231,7 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) 
     }
     setColRule(projectId, aliasName, "default", rules, type, true)
       .catch(ex => notify("error", "Error configuring default rules", ex))
+    setPreparedQueries(projectId, aliasName, "default", [], "", defaultPreparedQueryRule)
   }).catch(ex => {
     notify("error", "Error enabling database", ex)
     if (cb) cb(ex)

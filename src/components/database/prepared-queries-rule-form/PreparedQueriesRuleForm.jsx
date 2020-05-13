@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Form, Switch, Input, Checkbox } from 'antd';
+import { Modal, Form, Checkbox } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -8,10 +8,8 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { defaultDBRules } from '../../../constants';
 import { notify } from '../../../utils';
 import { useForm } from 'antd/lib/form/util';
-import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 
 const PreparedQueriesRuleForm = ({ handleSubmit, handleCancel, conformLoading, defaultRules }) => {
     const [form] = useForm()
@@ -22,8 +20,7 @@ const PreparedQueriesRuleForm = ({ handleSubmit, handleCancel, conformLoading, d
     const handleSubmitClick = values => {
         form.validateFields().then(values => {
             try {
-                handleSubmit(
-                    values.name,
+                handleSubmit(values.defaultRuleCheck,
                     JSON.parse(rule)
                 );
             } catch (ex) {
@@ -44,11 +41,11 @@ const PreparedQueriesRuleForm = ({ handleSubmit, handleCancel, conformLoading, d
                 confirmLoading={conformLoading}
                 onCancel={handleCancel}
             >
-                <Form layout="vertical" form={form} onFinish={handleSubmitClick}>
-                    <Form.Item name="defultRule" >
+                <Form layout="vertical" form={form} onFinish={handleSubmitClick} >
+                    <Form.Item name="defaultRuleCheck" >
                         <Checkbox checked={applyDefaultRules}
                         onChange={e =>
-                            setApplyDefaultRules(!applyDefaultRules)
+                            setApplyDefaultRules(false)
                         }>Apply default security rules</Checkbox>
                     </Form.Item>
                     {!applyDefaultRules && <div>

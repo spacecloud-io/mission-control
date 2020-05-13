@@ -10,9 +10,11 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
 import client from '../../../client';
-import { increment, decrement } from 'automate-redux'
+import { increment, decrement, set } from 'automate-redux'
 import { setProjectConfig, notify, getProjectConfig } from '../../../utils';
 import store from '../../../store';
+import { defaultPreparedQueryRule } from '../../../constants';
+import { setPreparedQueries } from '../dbActions'
 
 
 
@@ -21,20 +23,42 @@ const PreparedQueries = () => {
   const { projectID, selectedDB } = useParams()
   const [ruleModal, setRuleModal] = useState(false)
   const projects = useSelector(state => state.projects);
-  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, []);
+  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {});
+  const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default" )
   const dispatch = useDispatch();
+  const [clickedQuery, setClickedQuery] = useState("");
+  let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
+  if (Object.keys(defaultRules).length === 0) {
+    defaultRules = defaultPreparedQueryRule
+  }
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/prepared-queries");
   }, [])
 
+  const handleSecureClick = (queryName) =>{
+    setClickedQuery(queryName)
+    setRuleModal(true)
+  }
+
+  const handleSecureSubmit = (rule) => {
+    const obj = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${clickedQuery}`);
+    const newObj = Object.assign({}, obj, {rule: rule}) 
+    console.log(newObj)
+    setPreparedQueries(projectID, selectedDB, newObj.id, newObj.args, newObj.sql, newObj.rule)
+    .then(() =>{
+      setRuleModal(false)
+      notify("success", "Success", "Sucessfully edited rule for prepared query")
+    }).catch(ex => notify("error", "Error editing rule for prepared query", ex))
+  }
+
   const handleDeletePreparedQuery = (name) => {
       dispatch(increment("pendingRequests"));
-      client.database
-        .deletePreparedQueries(projectID, selectedDB, name)
+      client.database.deletePreparedQueries(projectID, selectedDB, name)
         .then(() => {
-          const newPreparedQueries = preparedQueries.filter(obj => obj.id !== name);
-          setProjectConfig(projectID, `modules.db.${selectedDB}.preparedQueries`, newPreparedQueries);
+          const preparedQueriesList = getProjectConfig(store.getState().projects, projectID, `modules.db.${selectedDB}.preparedQueries`)
+          const newPreparedQueries = delete preparedQueriesList[name]
+          store.dispatch(set(`extraConfig.${projectID}.db.${selectedDB}.preparedQueries`, newPreparedQueries))
           notify("success", "Success", "Removed prepared query successfully");
         })
         .catch(ex => {
@@ -60,8 +84,8 @@ const preparedQueriesColumns = [
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a>Edit</a>
-          <a onClick={() => setRuleModal(true)}>Secure</a>
+          <a onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/${name}/edit`)}>Edit</a>
+          <a onClick={() => handleSecureClick(name)}>Secure</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDeletePreparedQuery(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -69,16 +93,6 @@ const preparedQueriesColumns = [
       )
     }
   ]
-
-  const data = [
-    {
-      name: 'abc'
-    },
-    {
-      name: "xyz"
-    }
-  ]
-
 
   return (
     <React.Fragment>
@@ -91,7 +105,7 @@ const preparedQueriesColumns = [
         <div className='page-content page-content--no-padding'>
           <DBTabs activeKey='preparedQueries' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
-            {!data && <Alert 
+            {preparedQueriesData.length === 0 && <Alert 
                 message="Info"
                 description={alertDesc}
                 type="info"
@@ -103,12 +117,14 @@ const preparedQueriesColumns = [
             </h3>
             <Table 
               columns={preparedQueriesColumns}
-              dataSource={data}
+              dataSource={preparedQueriesData}
             />
           </div>
         </div>
       </div>
       {ruleModal && <PreparedQueriesRuleForm 
+      defaultRules={defaultRules}
+      handleSubmit={handleSecureSubmit}
       handleCancel={() => setRuleModal(false) }/>}
     </React.Fragment>
   );

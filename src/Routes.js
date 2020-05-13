@@ -65,6 +65,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries" component={PreparedQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/add-prepared-queries" component={AddPreparedQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/:preparedQueryId/edit" component={AddPreparedQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
