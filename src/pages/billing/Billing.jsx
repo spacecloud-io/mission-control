@@ -1,134 +1,77 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux';
+import { useParams, useHistory } from 'react-router-dom';
+import { set } from 'automate-redux';
+import ReactGA from 'react-ga';
+import { Row, Col } from 'antd';
+import { notify, isSignedIn, getClusterPlan, isBillingEnabled } from '../../utils';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import ReactGA from 'react-ga';
-import UpgradeCard from '../../components/billing/upgrade/UpgradeCard';
+import SelectPlan from '../../components/billing/select-plan/SelectPlan';
 import FAQ from '../../components/billing/faq/FAQ';
+import Signin from '../../components/billing/setup-card/Signin';
+import SetupBilling from '../../components/billing/setup-card/SetupBilling';
+import AddBillingDetailsModal from "../../components/billing/add-billing-details/AddBillingDetailsModal";
 import PlanDetails from '../../components/billing/plan/PlanDetails';
-import { Row, Col } from 'antd';
-import Support from '../../components/billing/support/Support';
-import Invoice from '../../components/billing/invoice/Invoice';
-import ContactUs from '../../components/billing/contact/ContactUs';
-import {Elements} from '@stripe/react-stripe-js';
-import {loadStripe} from '@stripe/stripe-js';
-import CheckoutForm from '../../components/billing/chekout-form/CheckoutForm';
-import client from '../../client';
-import { notify, setProjectConfig } from '../../utils';
-import {increment, decrement, set, get} from 'automate-redux';
-import {useDispatch, useSelector} from 'react-redux';
-import store from '../../store';
-const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
+import './billing.css';
+import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
 
 const Billing = () => {
-    useEffect(() => {
-		ReactGA.pageview("/projects/plans");
-    }, [])
-    const subscribed = useSelector(state => state.billing.status)
-    const quotas = useSelector(state => state.quotas)
-    const [contactModalVisible, setContactModalVisible] = useState(false)
-    const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false)
-    const [defaultSubject, setDefaultSubject] = useState("")
-    const dispatch = useDispatch();
+  useEffect(() => {
+    ReactGA.pageview("/projects/billing");
+  }, [])
 
-    const handleContactUsClick = () => {
-        setContactModalVisible(true);
-        setDefaultSubject("");
+  const { projectID } = useParams();
+  const history = useHistory();
+  const [billingDetailsModalVisible, setBillingDetailsModalVisible] = useState(false);
+  const signedIn = isSignedIn()
+  const selectedPlan = useSelector(state => getClusterPlan(state))
+  const dispatch = useDispatch();
+  const billingEnabled = useSelector(state => isBillingEnabled(state))
+  useEffect(() => {
+    if (billingEnabled) {
+      history.push(`/mission-control/projects/${projectID}/billing/overview`)
     }
+  }, [billingEnabled])
 
-    const handleIncreaseLimit = () => {
-        setContactModalVisible(true);
-        setDefaultSubject("Increase Space Cloud Pro limits");
-    }
+  const handleDiscount = () => {
+    history.push(`/mission-control/projects/${projectID}/billing/contact-us`, { subject: "Request discount for Space Cloud Pro" })
+  }
 
-    const handleRequestFreeTrial = () => {
-        setContactModalVisible(true);
-        setDefaultSubject("Free trial for Space Cloud Pro");
-    }
-
-    const handleDiscount = () => {
-        setContactModalVisible(true);
-        setDefaultSubject("Request discount for Space Cloud Pro");
-    }
-
-    const handleCancel = () => {
-        setContactModalVisible(false)
-    }
-   
-    const handleSubsriptionModalCancel = () =>{
-        setSubscriptionModalVisible(false)
-    }
-
-    const handleStripePaymentMethod = (paymentMethodId) => {
-        dispatch(increment("pendingRequests"));
-        client.billing.setBillingSubscription(paymentMethodId).then(res => {
-            if(res === 200){
-                store.dispatch(set("billing", {status: true, invoices:[{}]}))
-                setSubscriptionModalVisible(false);
-                notify("success", "Success", "Sucessfully subscribed to space cloud pro")
-            }
-        }).catch(ex =>{
-            console.log(ex)
-            notify("error", "Error subcribing to space cloud pro", ex)
-        }).finally(() => dispatch(decrement("pendingRequests")))
-    }
-
-    const handleContactUs = (subject, message) =>{
-        dispatch(increment("pendingRequests"));
-        const email = localStorage.getItem('email')
-        const name = localStorage.getItem('name')
-        client.billing.contactUs(email, name, subject, message).then(res => {
-            if(res === 200){
-                setContactModalVisible(false)
-                notify("success", "Successfully sent message", "Our team will reach out to you shortly:)")
-            }
-        }).catch(ex =>{
-            console.log(ex)
-            notify("error", "Error sending message", ex)
-        }).finally(() => dispatch(decrement("pendingRequests")))
-    } 
-
-    return (
-        <div>
-            <Topbar showProjectSelector />
-            <div>
-                <Sidenav selectedItem="billing" />
-                <div className="page-content">
-                    {!subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Upgrade <span style={{fontSize:"14px"}}>(currently using free plan)</span></h3>}
-                    {subscribed && <h3 style={{ marginBottom:"1%", fontSize:"21px"}}>Plan Details & Support</h3>}
-                    <Row>
-                        <Col lg={{ span:18}}>
-                            {!subscribed && <UpgradeCard handleSubscription={() => setSubscriptionModalVisible(true)}/>}
-                            {subscribed && 
-                            <Row>
-                                <Col lg={{ span:11 }}>
-                                    <PlanDetails handleIncreaseLimit={handleIncreaseLimit} {...quotas}/>
-                                </Col>
-                                <Col lg={{ span:11, offset:2 }}>
-                                    <Support handleContactUs={handleContactUsClick} />
-                                </Col>
-                            </Row>}
-                        </Col>
-                    </Row>
-                    {!subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Frequently asked questions</h3>}
-                    {subscribed && <h3 style={{marginTop:"4%", marginBottom:"1%", fontSize:"21px"}}>Invoices</h3>}
-                    <Row>
-                        <Col lg={{ span:18 }}>
-                            {!subscribed && <FAQ handleRequestFreeTrial={handleRequestFreeTrial} handleDiscount={handleDiscount} />}
-                            {subscribed && <Invoice />}
-                        </Col>
-                    </Row>
-                </div>
-                {contactModalVisible && <ContactUs 
-                    initialvalues={defaultSubject}
-                    handleContactUs={handleContactUs}
-                    handleCancel={handleCancel} />}
-                {subscriptionModalVisible && <Elements stripe={stripePromise}>
-                    <CheckoutForm handleCancel={handleSubsriptionModalCancel}
-                    handleStripePayment={handleStripePaymentMethod} />
-                </Elements>}
-            </div>
-        </div>
-    )
+  return (
+    <div>
+      <Topbar showProjectSelector />
+      <Sidenav selectedItem="billing" />
+      <div className='page-content'>
+        <Row style={{ marginBottom: "48px" }}>
+          <Col lg={{ span: 12 }}>
+            {signedIn && <SetupBilling handleSetupBilling={() => setBillingDetailsModalVisible(true)} />}
+            {!signedIn && <Signin handleSignin={() => dispatch(set("uiState.showSigninModal", true))} />}
+          </Col>
+        </Row>
+        {selectedPlan.startsWith("space-cloud-open") && <Row>
+          <Col lg={{ span: 24 }}>
+            <h3 style={{ marginBottom: "0", fontSize: "21px" }}>Upgrade cluster</h3>
+            <p style={{ marginBottom: "24px" }}>This Space Cloud cluster is operating in opensource mode right now. Upgrade the cluster to a paid plan to get increased limits for the cluster</p>
+            <SelectPlan
+              selectedPlan={selectedPlan}
+              handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })}
+              handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
+          </Col>
+          <Col lg={{ span: 18 }}>
+            <FAQ handleDiscount={handleDiscount} />
+          </Col>
+        </Row>}
+        {!selectedPlan.startsWith("space-cloud-open") && <Row>
+          <Col lg={{ span: 11 }}>
+            <PlanDetails plan={selectedPlan} handleChangePlan={() => notify("info", "Signin required", "You need to signin first to change plan")} />
+          </Col>
+        </Row>}
+        {billingDetailsModalVisible && <AddBillingDetailsModal handleCancel={() => setBillingDetailsModalVisible(false)} />}
+        <ContactUsFab />
+      </div>
+    </div>
+  )
 }
 
 export default Billing;

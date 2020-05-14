@@ -1,8 +1,6 @@
 import gql from 'graphql-tag';
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { HttpLink } from 'apollo-link-http';
-import Client from "./client"
+import { createRESTClient, createGraphQLClient } from "./client";
+import { spaceCloudClusterOrigin } from "../constants"
 
 class Eventing {
   constructor(client) {
@@ -10,18 +8,12 @@ class Eventing {
   }
 
   fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType) {
+    let uri = `/v1/api/${projectId}/graphql`
+    if (spaceCloudClusterOrigin) {
+      uri = "http://localhost:4122" + uri;
+    }
+    const graphqlClient = createGraphQLClient(uri)
     return new Promise((resolve, reject) => {
-      let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.REACT_APP_DISABLE_MOCK) {
-        uri = "http://localhost:4122" + uri
-      }
-      const cache = new InMemoryCache({ addTypename: false });
-      const link = new HttpLink({ uri: uri });
-      const graphqlClient = new ApolloClient({
-        cache: cache,
-        link: link
-      });
-
       graphqlClient.query({
         query: gql`
         query {
@@ -72,7 +64,7 @@ class Eventing {
   }
 
   queueEvent(projectId, event, token) {
-    const client = new Client()
+    const client = createRESTClient(spaceCloudClusterOrigin)
     if (token) client.setToken(token)
     return new Promise((resolve, reject) => {
       client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
