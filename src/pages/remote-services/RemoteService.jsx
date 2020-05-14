@@ -89,7 +89,7 @@ const RemoteService = () => {
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
+    client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
       setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", "Removed endpoint successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
@@ -143,7 +143,7 @@ const RemoteService = () => {
           {noOfEndpoints > 0 && (
             <React.Fragment>
               <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => setModalVisible(true)} type="primary">Add</Button></h3>
-              <Table columns={tableColumns} dataSource={endpointsTableData} />
+              <Table columns={tableColumns} dataSource={endpointsTableData} pagination={false}/>
             </React.Fragment>
           )}
           {modalVisible && <EndpointForm
