@@ -12,7 +12,7 @@ export default function BalanceCredit({ currencyNotation, balanceCredits = 0 }) 
         <p style={{ marginTop: "35px", marginBottom: '32px', fontSize: "28px", color: "#34A853" }}>{currencyNotation}{(balanceCredits * -1) / 100}</p>
         <p><b>Want some free credits? 😛</b></p>
         <p>Apply a coupon code and get free credits to your account instantly! </p>
-        <Button type="primary" style={{ marginTop: '24px', width: '50%' }} onClick={() => setCouponModalVisible(true)}>Apply coupon code</Button>
+        <Button type="primary" style={{ marginTop: '24px', minWidth: '50%' }} onClick={() => setCouponModalVisible(true)}>Apply coupon code</Button>
       </Card>
       {couponModalVisible && <ApplyCouponModal handleCancel={() => setCouponModalVisible(false)} />}
     </div>

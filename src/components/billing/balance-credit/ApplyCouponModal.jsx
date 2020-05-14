@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Modal, Form, Input } from 'antd';
 import { applyCoupon, notify } from '../../../utils';
 import { increment, decrement } from 'automate-redux';
@@ -8,13 +8,15 @@ import FormItemLabel from "../../form-item-label/FormItemLabel";
 function ApplyCouponModal(props) {
   const [form] = Form.useForm()
   const dispatch = useDispatch()
+  const countryCode = useSelector(state => state.billing.details.country)
+  const currencyNotation = countryCode === "IN" ? "₹": "$";
   const handleSubmit = function (event) {
     event.preventDefault()
     form.validateFields().then(values => {
       dispatch(increment("pendingRequests"))
       applyCoupon(values.couponCode)
         .then((couponValue) => {
-          notify("success", "Successfully applied coupon code", `Credits worth $${couponValue / 100} credited to your account`)
+          notify("success", "Successfully applied coupon code", `Amount worth ${currencyNotation}${couponValue / 100} credited to your account`)
           props.handleCancel()
         })
         .catch((ex) => notify("error", "Error applying coupon code", ex))

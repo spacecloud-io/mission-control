@@ -456,6 +456,7 @@ export function registerCluster(clusterName, doesExist = false) {
           .then(() => {
             resolve({ registered: true, notifiedToCluster: true })
             store.dispatch(set("env.clusterId", clusterId))
+            client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => saveEnv(isProd, version, clusterId, plan, quotas))
           })
           .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
       })
@@ -483,6 +484,7 @@ export function applyCoupon(couponCode) {
   return new Promise((resolve, reject) => {
     client.billing.applyCoupon(couponCode)
       .then((couponValue) => {
+        if (couponValue < 0) couponValue = couponValue * -1
         store.dispatch(increment("billing.balanceCredits", couponValue))
         resolve(couponValue)
       })

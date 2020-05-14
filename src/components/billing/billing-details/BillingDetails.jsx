@@ -7,13 +7,9 @@ const BillingDetails = ({ billingDetails, name, email }) => {
     <Card>
       <h1 style={{ textAlign: 'center' }}>Billing details</h1>
       <Row>
-        <Col xs={{ span: 12 }}>
+        <Col xs={{ span: 24 }}>
           <p style={{ marginTop: '24px' }}><b>Name</b></p>
           <p style={{ marginBottom: '24px' }}>{name}</p>
-        </Col>
-        <Col xs={{ span: 12 }}>
-          <p style={{ marginTop: '24px' }}><b>Email</b></p>
-          <p style={{ marginBottom: '24px' }}>{email}</p>
         </Col>
         <Col xs={{ span: 12 }}>
           <p><b>Country</b></p>
