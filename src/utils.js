@@ -187,10 +187,15 @@ export const getEventingDB = (projectId) => {
 
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
-  const config = projects.find(project => project.id === projectId)
-  if (!config) {
-    notify("error", "Error", "Project does not exist")
-    return
+  const doesExist = projects.some(project => project.id === projectId)
+  if (!doesExist) {
+    // Check if some other projectExists. If not then redirect to the welcome page
+    if (projects.length === 0) {
+      history.push(`/mission-control/welcome`)
+      return
+    }
+    projectId = projects[0].id
+    notify("info", "Info", "Opened another existing project as the requested project does not exist")
   }
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}/`
