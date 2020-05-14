@@ -23,16 +23,16 @@ const projects = [
             },
           },
           "preparedQueries": {
-            "prepared-query-1": {
-              "id": "prepared-query-1",
+            "preparedQuery1": {
+              "id": "preparedQuery1",
               "sql": "select * from users",
-              "rule": { "allow": "true" },
-              "args": ['args1']
+              "rule": { "rule": "allow" },
+              "args": ['args.args1']
             },
-            "prepared-query-2": {
-              "id": "prepared-query-2",
-              "sql": "select * from users",
-              "rule": { "allow": "true" },
+            "preparedQuery2": {
+              "id": "preparedQuery2",
+              "sql": "select * from posts",
+              "rule": { "rule": "deny" },
               "args": ['args1', 'args2']
             }
           },

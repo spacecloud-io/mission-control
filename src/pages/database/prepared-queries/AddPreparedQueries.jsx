@@ -5,9 +5,7 @@ import { useParams, useHistory, match } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
 import ReactGA from 'react-ga'
-import { useSelector, useDispatch } from 'react-redux';
-import client from '../../../client';
-import { increment, decrement } from 'automate-redux'
+import { useSelector } from 'react-redux';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -21,41 +19,40 @@ import { getProjectConfig, notify } from '../../../utils';
 import { defaultPreparedQueryRule } from '../../../constants';
 import { setPreparedQueries } from '../dbActions';
 
-const AddPreparedQueries = (props) => {
+const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
   const history = useHistory()
-  const dispatch = useDispatch()
   const projects = useSelector(state => state.projects)
-  const collection = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {});
-  const preparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${preparedQueryId}`, { id: "", sql: "", rule: "", args: [] });
-  const nameArray = [...Object.keys(collection), ...Object.keys(preparedQuery)]
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {});
+  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {})
+  const preparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${preparedQueryId}`, { id: "", args: [] });
+  const collectionNames = Object.keys(collections)
+  const preparedQueryNames = Object.keys(preparedQueries)
   const [form] = Form.useForm()
-  const [sqlPreparedQueries, setSqlPreparedQueries] = useState(preparedQueryId ? preparedQuery.sql : "")
+  const [sqlQuery, setSqlQuery] = useState(preparedQueryId ? preparedQuery.sql : "")
+
+  // This is used to bind the form initial values on page reload. 
+  // On page reload the redux is intially empty leading the form initial values to be empty. 
+  // Hence as soon as redux gets the desired value, we set the form values    
+  useEffect(() => {
+    if (preparedQuery.id) {
+      form.setFieldsValue(preparedQuery)
+      setSqlQuery(preparedQuery.sql)
+    }
+  }, [preparedQuery])
 
   useEffect(() => {
-    ReactGA.pageview("/projects/database/prepared-queries/add-prepared-queries");
+    ReactGA.pageview(`/projects/database/prepared-queries/${preparedQueryId ? "edit" : "add"}`);
   }, [])
 
 
-  const handleSubmit = e => {
-    form.validateFields().then(formValues => {
-      if (!preparedQueryId) {
-        setPreparedQueries(projectID, selectedDB, formValues.name, formValues.arguments, sqlPreparedQueries, defaultPreparedQueryRule)
-          .then(() => {
-            history.goBack();
-            notify("success", "Success", "Sucessfully added prepared query")
-          })
-          .catch(ex => notify("error", "Error adding prepared query", ex))
-      }else{
-        setPreparedQueries(projectID, selectedDB, formValues.name, formValues.arguments, sqlPreparedQueries, defaultPreparedQueryRule)
-          .then(() => {
-            history.goBack();
-            notify("success", "Success", "Sucessfully edited prepared query")
-          })
-          .catch(ex => notify("error", "Error editing prepared query", ex))
-      }
-      form.resetFields();
-    });
+  const handleSubmit = formValues => {
+    setPreparedQueries(projectID, selectedDB, formValues.name, formValues.args, sqlQuery, defaultPreparedQueryRule)
+      .then(() => {
+        history.goBack();
+        notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)
+      })
+      .catch(ex => notify("error", `Error ${preparedQueryId ? "editing" : "adding"} prepared query`, ex))
   };
 
   return (
@@ -89,7 +86,7 @@ const AddPreparedQueries = (props) => {
             <Row>
               <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
                 <Card style={{ padding: "24px" }}>
-                  <Form form={form} onFinish={handleSubmit} initialValues={{ 'name': preparedQuery.id, 'arguments': preparedQuery.args }}>
+                  <Form form={form} onFinish={handleSubmit} initialValues={{ 'name': preparedQuery.id, 'args': preparedQuery.args }}>
                     <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Name your prepared query </b></p>
                     <p style={{ fontSize: "14px", marginTop: 0 }}>Used to identify the prepared query in the GraphQL API</p>
                     <Form.Item name="name" rules={[{
@@ -98,8 +95,16 @@ const AddPreparedQueries = (props) => {
                           cb("Please input a name")
                           return
                         }
-                        if (nameArray.some(id => id.toLowerCase() === value.toLowerCase())) {
-                          cb("Provide a name which is not given to collection or other prepared query!")
+                        if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
+                          cb(`Prepared query name can only contain alphanumeric characters and underscores!`)
+                          return
+                        }
+                        if (collectionNames.some(name => name.toLowerCase() === value.toLowerCase())) {
+                          cb("This name collides with an existing collection/table name. Please provide an unique name!")
+                          return
+                        }
+                        if (preparedQueryNames.some(name => name.toLowerCase() === value.toLowerCase())) {
+                          cb("This name collides with an existing prepared query name. Please provide an unique name!")
                           return
                         }
                         cb()
@@ -109,9 +114,9 @@ const AddPreparedQueries = (props) => {
                     </Form.Item>
                     <FormItemLabel name="SQL Query" />
                     <CodeMirror
-                      value={sqlPreparedQueries}
+                      value={sqlQuery}
                       options={{
-                        mode: { name: "sql", json: true },
+                        mode: { name: "sql" },
                         lineNumbers: true,
                         styleActiveLine: true,
                         matchBrackets: true,
@@ -120,12 +125,12 @@ const AddPreparedQueries = (props) => {
                         autofocus: true
                       }}
                       onBeforeChange={(editor, data, value) => {
-                        setSqlPreparedQueries(value)
+                        setSqlQuery(value)
                       }}
                     /><br />
                     <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Arguments</b> (Optional)</p>
                     <p style={{ fontSize: "14px", marginTop: 0 }}>Add the arguments from the GraphQL API that you want to access in the SQL query</p>
-                    <Form.List name="arguments" rules={[{ required: true, message: "Please input a name!" }]}>
+                    <Form.List name="args" rules={[{ required: true, message: "Please input a name!" }]}>
                       {(fields, { add, remove }) => {
                         return (
                           <div>
@@ -155,7 +160,7 @@ const AddPreparedQueries = (props) => {
                               <Button
                                 onClick={() => {
                                   const fieldKeys = [
-                                    ...fields.map(obj => ["arguments", obj.key]),
+                                    ...fields.map(obj => ["args", obj.name]),
                                   ]
                                   form.validateFields(fieldKeys)
                                     .then(() => add())
@@ -163,14 +168,13 @@ const AddPreparedQueries = (props) => {
                                 }}
                                 style={{ marginRight: "2%", float: "left" }}
                               >
-                                <PlusOutlined /> Add another pair
-                                                    </Button>
+                                <PlusOutlined /> Add argument</Button>
                             </Form.Item>
                           </div>
                         );
                       }}
                     </Form.List>
-                    <Button type="primary" style={{ width: "100%" }} onClick={handleSubmit}>Add prepared query</Button>
+                    <Button type="primary" style={{ width: "100%" }} onClick={handleSubmit}>{preparedQueryId ? "Save" : "Add prepared query"}</Button>
                   </Form>
                 </Card>
               </Col>

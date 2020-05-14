@@ -1,10 +1,16 @@
 import React from 'react';
 import { Tabs } from 'antd';
-import { Redirect, useParams } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
+import { useSelector } from "react-redux";
 import "./db-tabs.css"
+import { getProjectConfig } from '../../../utils';
+import { dbTypes } from '../../../constants';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
+  const projects = useSelector(state => state.projects)
+  const dbType = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbType`, "")
+  const showPreparedQueriesTab = [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
   return (
     <div className="db-tabs">
       <Tabs defaultActiveKey={activeKey} >
@@ -15,13 +21,13 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
-        <TabPane tab='Prepared Queries' key='preparedQueries'>
+        {showPreparedQueriesTab && <TabPane tab='Prepared Queries' key='preparedQueries'>
           <Redirect
             to={{
               pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`
             }}
           />
-        </TabPane>
+        </TabPane>}
         <TabPane tab='Rules' key='rules'>
           <Redirect
             to={{

@@ -188,11 +188,11 @@ const RoutingRule = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.key, "type"]),
-                            ...fields.map(obj => ["targets", obj.key, "version"]),
-                            ...fields.map(obj => ["targets", obj.key, "host"]),
-                            ...fields.map(obj => ["targets", obj.key, "port"]),
-                            ...fields.map(obj => ["targets", obj.key, "weight"])
+                            ...fields.map(obj => ["targets", obj.name,"type"]),
+                            ...fields.map(obj => ["targets", obj.name,"version"]),
+                            ...fields.map(obj => ["targets", obj.name,"host"]),
+                            ...fields.map(obj => ["targets", obj.name,"port"]),
+                            ...fields.map(obj => ["targets", obj.name,"weight"])
                           ]
                           form.validateFields(fieldKeys)
                             .then(() => add({ type: "version" }))

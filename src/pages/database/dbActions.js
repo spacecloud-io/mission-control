@@ -193,7 +193,7 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .then(() => {
       setProjectConfig(projectId, "modules.eventing.enabled", true)
       setProjectConfig(projectId, "modules.eventing.dbAlias", alias)
-      
+
       const defaultEventingSecurityRule = getProjectConfig(projects, projectId, "modules.eventing.securityRules.default")
       if (!defaultEventingSecurityRule) {
         setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
@@ -207,12 +207,12 @@ const handleEventingConfig = (projects, projectId, alias) => {
 export const setPreparedQueries = (projectId, aliasName, id, args, sqlPreparedQueries, rule) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"));
-    const config = {[id]: { id: id, sql: sqlPreparedQueries, rule: rule, args: args }}
-    client.database.setPreparedQueries(projectId, aliasName, id, config )
+    const config = { id: id, sql: sqlPreparedQueries, rule: rule, args: args }
+    client.database.setPreparedQueries(projectId, aliasName, id, config)
       .then(() => {
-        const preparedQueryObject = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`)
-        const newObject = Object.assign({}, preparedQueryObject, config)
-        setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, newObject);
+        const preparedQueries = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`)
+        preparedQueries[id] = config
+        setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, preparedQueries);
         resolve()
       })
       .catch(ex => reject(ex))
