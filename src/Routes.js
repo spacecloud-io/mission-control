@@ -1,9 +1,8 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute } from "./utils";
+import { PrivateRoute, BillingRoute } from "./utils";
 import history from "./history";
 
-import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Welcome from "./pages/welcome/Welcome";
@@ -36,6 +35,11 @@ import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
 import Billing from './pages/billing/Billing';
+import BillingOverview from './pages/billing/BillingOverview';
+import BillingInvoices from './pages/billing/BillingInvoices';
+import UpgradeCluster from './pages/billing/UpgradeCluster';
+import ChangePlan from './pages/billing/ChangePlan';
+import ContactUs from './pages/billing/ContactUs';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 
@@ -45,7 +49,6 @@ export default () => {
       <Switch>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
-        <Route path="/mission-control/email-action-handler" component={EmailActionHandler} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
@@ -84,6 +87,11 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
       </Switch>
