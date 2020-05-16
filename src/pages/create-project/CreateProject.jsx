@@ -61,7 +61,7 @@ const CreateProject = () => {
           <br />
         </Col>
       </Row>
-      <center><Link to="/mission-control/welcome" style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</Link></center>
+      <center><a onClick={history.goBack} style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</a></center>
     </React.Fragment>
   },
   {

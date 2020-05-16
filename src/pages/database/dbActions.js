@@ -1,6 +1,6 @@
 import store from "../../store"
-import { getProjectConfig, setProjectConfig, getEventingDB } from "../../utils"
-import { defaultDBRules, defaultEventRule } from "../../constants"
+import { getProjectConfig, setProjectConfig, getEventingDB, canDatabaseHavePreparedQueries } from "../../utils"
+import { defaultDBRules, defaultEventRule, defaultPreparedQueryRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
@@ -204,6 +204,22 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
+export const setPreparedQueries = (projectId, aliasName, id, args, sqlPreparedQueries, rule) => {
+  return new Promise((resolve, reject) => {
+    store.dispatch(increment("pendingRequests"));
+    const config = { id: id, sql: sqlPreparedQueries, rule: rule, args: args }
+    client.database.setPreparedQueries(projectId, aliasName, id, config)
+      .then(() => {
+        const preparedQueries = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`, {})
+        preparedQueries[id] = config
+        setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, preparedQueries);
+        resolve()
+      })
+      .catch(ex => reject(ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")));
+  })
+}
+
 export const dbEnable = (projects, projectId, aliasName, conn, rules, type, dbName, cb) => {
   store.dispatch(increment("pendingRequests"))
   setDBConfig(projectId, aliasName, true, conn, type, dbName, false).then(() => {
@@ -214,7 +230,11 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, dbNa
       handleEventingConfig(projects, projectId, aliasName)
     }
     setColRule(projectId, aliasName, "default", rules, type, true)
-      .catch(ex => notify("error", "Error configuring default rules", ex))
+      .catch(ex => notify("error", "Error configuring default rules for collections/tables", ex))
+    if (canDatabaseHavePreparedQueries(projectId, aliasName)) {
+      setPreparedQueries(projectId, aliasName, "default", [], "", defaultPreparedQueryRule)
+        .catch(ex => notify("error", "Error configuring default rules for prepared queries", ex))
+    }
   }).catch(ex => {
     notify("error", "Error enabling database", ex)
     if (cb) cb(ex)
