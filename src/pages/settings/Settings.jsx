@@ -10,14 +10,13 @@ import SecretConfigure from "../../components/configure/SecretConfigure";
 import "./settings.css";
 import { getProjectConfig, notify, setProjectConfig, openProject } from "../../utils";
 import client from "../../client";
-import { Button, Row, Col, Card } from "antd";
+import { Button, Row, Col, Card, Typography } from "antd";
 import store from "../../store";
 import history from "../../history";
 import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
 import AESConfigure from "../../components/configure/AESConfigure";
 import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
 import DockerRegistry from "../../components/configure/DockerRegistry";
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const Settings = () => {
   // Router params
@@ -36,9 +35,6 @@ const Settings = () => {
   if (!selectedProject) selectedProject = {}
   const { modules, ...globalConfig } = selectedProject
 
-  const [nameCopy, setNameCopy] = useState("copy")
-  const [keyCopy, setKeyCopy] = useState("copy")
-
   // Derived properties
   const projectName = globalConfig.name;
   const secrets = globalConfig.secrets ? globalConfig.secrets : []
@@ -46,19 +42,6 @@ const Settings = () => {
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
   const credentials = useSelector(state => state.credentials)
-
-  const copyValue = (e, text) => {
-    e.preventDefault();
-    if (text === "username") {
-      setNameCopy("copied");
-      setKeyCopy("copy")
-      setTimeout(() => setNameCopy("copy"), 5000);
-    } else {
-      setKeyCopy("copied");
-      setNameCopy("copy")
-      setTimeout(() => setKeyCopy("copy"), 5000);
-    }
-  }
 
   const domains = getProjectConfig(
     projects,
@@ -165,12 +148,14 @@ const Settings = () => {
           <Col lg={{ span: 12 }}>
             <h2>Credentials</h2>
             <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}><b>Username </b> {credentials.user}  <CopyToClipboard text={credentials.user}>
-                <a onClick={(e) => copyValue(e, "username")}>{nameCopy}</a>
-              </CopyToClipboard></h3>
-              <h3 style={{ wordSpacing: 6 }}><b>Access Key </b>  ************************* <CopyToClipboard text={credentials.pass}>
-                <a onClick={(e) => copyValue(e, "AccessKey")}>{keyCopy}</a>
-              </CopyToClipboard></h3>
+              <h3 style={{ wordSpacing: 6 }}>
+                <b>Username </b>
+                <Typography.Paragraph style={{ display: "inline" }} copyable ellipsis>{credentials.user}</Typography.Paragraph>
+              </h3>
+              <h3 style={{ wordSpacing: 6 }}>
+                <b>Access Key </b>
+                <Typography.Paragraph style={{ display: "inline" }} copyable={{ text: credentials.pass }} ellipsis>*************************</Typography.Paragraph>
+              </h3>
             </Card>
             <div className="divider" />
             <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
@@ -194,7 +179,7 @@ const Settings = () => {
           </Col>
         </Row>
       </div>
-    </div>
+    </div >
   );
 };
 

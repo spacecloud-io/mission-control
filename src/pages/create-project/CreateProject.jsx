@@ -42,12 +42,15 @@ const CreateProject = () => {
       .finally(() => dispatch(decrement("pendingRequests")))
   };
 
-  const addDatabase = (alias, connectionString, defaultDBRules, selectedDB, dbName) => {
-    dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, dbName, (err) => {
-      if (!err) {
-        history.push(`/mission-control/projects/${projectId}`)
-      }
+  const addDatabase = (alias, connectionString, defaultDBRules, dbType, dbName) => {
+    dispatch(increment("pendingRequests"))
+    dbEnable(projects, projectId, alias, dbType, dbName, connectionString, defaultDBRules)
+    .then(() => {
+      history.push(`/mission-control/projects/${projectId}`)
+      notify("success", "Success", "Successfully added database")
     })
+    .catch(ex => notify("error", "Error adding database", ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const steps = [{

@@ -8,7 +8,7 @@ import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import embeddedIcon from '../../../assets/embeddedIcon.svg'
 import './create-db.css'
 import { useSelector } from 'react-redux';
-import { getProjectConfig } from "../../../utils"
+import { getProjectConfig, getDatabaseLabelFromType } from "../../../utils"
 import RadioCards from "../../radio-cards/RadioCards"
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import { Controlled as CodeMirror } from 'react-codemirror2';
@@ -85,18 +85,15 @@ const CreateDatabase = (props) => {
         <Form.Item noStyle shouldUpdate={(prev, curr) => prev.dbType != curr.dbType} dependencies={["dbType"]}>
           {() => {
             const dbType = form.getFieldValue("dbType")
+            const databaseLabel = getDatabaseLabelFromType(dbType)
+            let labelName = "Database name"
+            let labelDescription = `The logical database inside ${databaseLabel} that Space Cloud will connect to. Space Cloud will create this database if it doesn’t exist already`
+            if (dbType === dbTypes.POSTGRESQL || dbType === dbTypes.SQLSERVER) {
+              labelName = `${databaseLabel} schema`
+              labelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
+            }
             return (
-              dbType === "mongo" || dbType === "embedded" || dbType === "mysql" ? (
-                <div>
-                  <h4><b>Database Name</b></h4>
-                  <p>The logical database inside {dbType} that Space Cloud will connect to. Space Cloud will create this database if it doesn’t exist already</p>
-                </div>
-              ) : (
-                  <div>
-                    <h4><b>{dbType} schema </b></h4>
-                    <p>The schema inside the {dbType} that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already</p>
-                  </div>
-                )
+              <FormItemLabel name={labelName} description={labelDescription} />
             )
           }}
         </Form.Item>
@@ -124,34 +121,40 @@ const CreateDatabase = (props) => {
         }]}>
           <Input placeholder="eg: mongo" />
         </Form.Item>
-        {<h4><b>Example GraphQL query:</b> Query articles tables (Note the alias directive):</h4>}
         <div style={{ paddingBottom: 18 }}>
           <Form.Item noStyle shouldUpdate={(prev, curr) => prev.alias != curr.alias} dependencies={["alias"]}>
             {() => {
               const aliasValue = form.getFieldValue("alias")
-              console.log(aliasValue.length)
-              const data = aliasValue.length > 0 ? (gqlPrettier(
-                `{ query { 
-                  articles @${aliasValue} { 
-                  id 
-                  name 
-                }
-              }}`
-              )) : ("")
-              return (
-                <CodeMirror
-                  value={data}
-                  options={{
-                    mode: { name: "javascript", json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: true
-                  }}
-                />
-              )
+              try {
+                const data = aliasValue.length > 0 ? (gqlPrettier(
+                  `{ query { 
+                    articles @${aliasValue} { 
+                    id 
+                    name 
+                  }
+                }}`
+                )) : ("")
+                return (
+                  <React.Fragment>
+                  <FormItemLabel name="Example GraphQL query:" hint="Query articles tables (Note the alias directive):" />
+                    <CodeMirror
+                      value={data}
+                      options={{
+                        mode: { name: "javascript", json: true },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2,
+                        autofocus: true,
+                        readOnly: true
+                      }}
+                    />
+                  </React.Fragment>
+                )
+              } catch (error) {
+                return null
+              }
             }}
           </Form.Item>
         </div>

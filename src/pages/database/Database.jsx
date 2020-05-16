@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { useParams, Redirect } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { useParams, Redirect,  } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
 import { getProjectConfig, notify } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -11,8 +11,12 @@ import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
 import { dbEnable } from "./dbActions"
+import { increment, decrement } from "automate-redux"
 
 const Database = () => {
+
+  const dispatch = useDispatch()
+
   // Router params
   const { projectID, selectedDB } = useParams()
 
@@ -27,8 +31,13 @@ const Database = () => {
   const dbType = type ? type : selectedDB
 
   // Handlers
-  const handleEnable = (conn, rules) => {
-    dbEnable(projects, projectID, selectedDB, conn, rules, dbType)
+  const handleEnable = (conn, defaultCollectionRule) => {
+    const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    dispatch(increment("pendingRequests"))
+    dbEnable(projects, projectID, selectedDB, dbType, dbName, conn, defaultCollectionRule)
+    .then(() => notify("success", "Success", "Successfully enabled database"))
+    .catch(ex => notify("error", "Error enabling database", ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   if (enabled) {
@@ -65,7 +74,7 @@ const Database = () => {
       <Sidenav selectedItem="database" />
       <div className="page-content ">
         <div className="panel" style={{ margin: 24 }}>
-          <img src={graphic} style={{width: 120}} />
+          <img src={graphic} style={{ width: 120 }} />
           <h2 style={{ marginTop: 24 }}>{dbName}</h2>
           <p className="panel__description" style={{ marginBottom: 0 }}>{desc}</p>
           <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Start using</Button>
