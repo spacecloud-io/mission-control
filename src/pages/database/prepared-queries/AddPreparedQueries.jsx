@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
-import { useParams, useHistory, match } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
 import ReactGA from 'react-ga'
@@ -47,7 +47,7 @@ const AddPreparedQueries = () => {
 
 
   const handleSubmit = formValues => {
-    setPreparedQueries(projectID, selectedDB, formValues.name, formValues.args, sqlQuery, defaultPreparedQueryRule)
+    setPreparedQueries(projectID, selectedDB, formValues.id, formValues.args, sqlQuery, defaultPreparedQueryRule)
       .then(() => {
         history.goBack();
         notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)
@@ -86,10 +86,10 @@ const AddPreparedQueries = () => {
             <Row>
               <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
                 <Card style={{ padding: "24px" }}>
-                  <Form form={form} onFinish={handleSubmit} initialValues={{ 'name': preparedQuery.id, 'args': preparedQuery.args }}>
+                  <Form form={form} onFinish={handleSubmit} initialValues={{ id: preparedQuery.id, args: preparedQuery.args }}>
                     <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Name your prepared query </b></p>
                     <p style={{ fontSize: "14px", marginTop: 0 }}>Used to identify the prepared query in the GraphQL API</p>
-                    <Form.Item name="name" rules={[{
+                    <Form.Item name="id" rules={[{
                       validator: (_, value, cb) => {
                         if (!value) {
                           cb("Please input a name")
@@ -99,13 +99,15 @@ const AddPreparedQueries = () => {
                           cb(`Prepared query name can only contain alphanumeric characters and underscores!`)
                           return
                         }
-                        if (collectionNames.some(name => name.toLowerCase() === value.toLowerCase())) {
-                          cb("This name collides with an existing collection/table name. Please provide an unique name!")
-                          return
-                        }
-                        if (preparedQueryNames.some(name => name.toLowerCase() === value.toLowerCase())) {
-                          cb("This name collides with an existing prepared query name. Please provide an unique name!")
-                          return
+                        if (!preparedQueryId) {
+                          if (collectionNames.some(name => name.toLowerCase() === value.toLowerCase())) {
+                            cb("This name collides with an existing collection/table name. Please provide an unique name!")
+                            return
+                          }
+                          if (preparedQueryNames.some(name => name.toLowerCase() === value.toLowerCase())) {
+                            cb("This name collides with an existing prepared query name. Please provide an unique name!")
+                            return
+                          }
                         }
                         cb()
                       }
@@ -130,7 +132,7 @@ const AddPreparedQueries = () => {
                     /><br />
                     <p style={{ fontSize: "16px", marginBottom: 0 }}><b>Arguments</b> (Optional)</p>
                     <p style={{ fontSize: "14px", marginTop: 0 }}>Add the arguments from the GraphQL API that you want to access in the SQL query</p>
-                    <Form.List name="args" rules={[{ required: true, message: "Please input a name!" }]}>
+                    <Form.List name="args">
                       {(fields, { add, remove }) => {
                         return (
                           <div>
@@ -174,7 +176,7 @@ const AddPreparedQueries = () => {
                         );
                       }}
                     </Form.List>
-                    <Button type="primary" style={{ width: "100%" }} onClick={handleSubmit}>{preparedQueryId ? "Save" : "Add prepared query"}</Button>
+                    <Button type="primary" htmlType="submit" block>{preparedQueryId ? "Save" : "Add prepared query"}</Button>
                   </Form>
                 </Card>
               </Col>

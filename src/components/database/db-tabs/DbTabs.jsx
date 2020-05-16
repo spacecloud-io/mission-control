@@ -1,16 +1,12 @@
 import React from 'react';
 import { Tabs } from 'antd';
 import { Redirect } from 'react-router-dom';
-import { useSelector } from "react-redux";
 import "./db-tabs.css"
-import { getProjectConfig } from '../../../utils';
-import { dbTypes } from '../../../constants';
+import { canDatabaseHavePreparedQueries } from '../../../utils';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
-  const projects = useSelector(state => state.projects)
-  const dbType = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbType`, "")
-  const showPreparedQueriesTab = [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
+  const showPreparedQueriesTab = canDatabaseHavePreparedQueries(projectID, selectedDB)
   return (
     <div className="db-tabs">
       <Tabs defaultActiveKey={activeKey} >

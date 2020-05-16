@@ -535,6 +535,11 @@ export const getDBTypeFromAlias = (projectId, alias) => {
   return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
 }
 
+export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
+  const dbType = getDBTypeFromAlias(projectId, dbAlias)
+  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
+}
+
 
 export const dbIcons = (project, projectId, selectedDb) => {
 

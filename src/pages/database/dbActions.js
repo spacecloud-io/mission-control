@@ -1,11 +1,10 @@
 import store from "../../store"
-import { getProjectConfig, setProjectConfig, getEventingDB } from "../../utils"
+import { getProjectConfig, setProjectConfig, getEventingDB, canDatabaseHavePreparedQueries } from "../../utils"
 import { defaultDBRules, defaultEventRule, defaultPreparedQueryRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
 import history from '../../history';
-import PreparedQueries from "./prepared-queries/PreparedQueries"
 
 export const modifyColSchema = (projectId, dbName, colName, schema, setLoading) => {
   return new Promise((resolve, reject) => {
@@ -230,8 +229,11 @@ export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) 
       handleEventingConfig(projects, projectId, aliasName)
     }
     setColRule(projectId, aliasName, "default", rules, type, true)
-      .catch(ex => notify("error", "Error configuring default rules", ex))
-    setPreparedQueries(projectId, aliasName, "default", [], "", defaultPreparedQueryRule)
+      .catch(ex => notify("error", "Error configuring default rules for collections/tables", ex))
+    if (canDatabaseHavePreparedQueries(projectId, aliasName)) {
+      setPreparedQueries(projectId, aliasName, "default", [], "", defaultPreparedQueryRule)
+        .catch(ex => notify("error", "Error configuring default rules for prepared queries", ex))
+    }
   }).catch(ex => {
     notify("error", "Error enabling database", ex)
     if (cb) cb(ex)
