@@ -6,7 +6,7 @@ import ReactGA from 'react-ga';
 
 import { PlusOutlined } from '@ant-design/icons';
 
-import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm } from 'antd';
+import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
@@ -15,7 +15,7 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, getProjectConfig, parseDbConnString } from '../../../utils';
+import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
 import history from '../../../history';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
 import { defaultDBRules } from '../../../constants';
@@ -43,12 +43,13 @@ const Overview = () => {
 
   // Derived properties
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
-  const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
+  const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
   let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
   if (Object.keys(defaultRules).length === 0) {
     defaultRules = defaultDBRules
   }
   const { hostName, port } = parseDbConnString(connString);
+  const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
   const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== "event_logs" && col !== "invocation_logs")
   const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
   const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
@@ -118,17 +119,15 @@ const Overview = () => {
 
   const handleEditConnString = (conn) => {
     setConformLoading(true);
-    const dbType = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
-    setDBConfig(projectID, selectedDB, true, conn, dbType, false)
+    const dbType = getDBTypeFromAlias(projectID, selectedDB)
+    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    setDBConfig(projectID, selectedDB, true, conn, dbType, dbName, false)
       .then(() => {
-        notify("success", "Connection successful", `Connected to ${selectedDB} successfully`)
+        notify("success", "Connection successful", `Connected to ${dbType} successfully`)
         setEditConnModalVisible(false);
-        setConformLoading(false);
       })
-      .catch(() => {
-        notify("error", "Connection failed", ` Unable to connect ${selectedDB}. Make sure your connection string is correct.`)
-        setConformLoading(false);
-      })
+      .catch(() => notify("error", "Connection failed", ` Unable to connect to ${dbType}. Make sure your connection string is correct.`))
+      .finally(() => setConformLoading(false))
   }
   const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
   const trackedTableColumns = [
@@ -157,7 +156,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
-          <a onClick={() => handleViewQueriesClick(name)}>View Queries</a>
+          <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -196,9 +195,15 @@ const Overview = () => {
           <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
             <h3>Connection Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setEditConnModalVisible(true)}>(Edit)</a></h3>
-            <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="Host">{hostName}</Descriptions.Item>
-              <Descriptions.Item label="Port">{port}</Descriptions.Item>
+            <Descriptions bordered size="small">
+              <Descriptions.Item label="Host">
+                <Typography.Paragraph
+                  style={{ marginBottom: 0 }}
+                  copyable={hostString ? { text: hostString } : false}
+                  ellipsis>
+                  {connString.includes("secrets.") ? "********************" : hostString}
+                </Typography.Paragraph>
+              </Descriptions.Item>
               <Descriptions.Item label="Status" span={2}>
                 <Badge status="processing" text="Running" color={connected ? "green" : "red"} text={connected ? "connected" : "disconnected"} />
               </Descriptions.Item>

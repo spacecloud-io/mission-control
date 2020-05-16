@@ -14,13 +14,32 @@ const projects = [
       "db": {
         "postgres": {
           "type": 'postgres',
-          "conn": 'postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable',
+          "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+          "dbName": "public",
           "collections": {
             "users": {
               "isRealtimeEnabled": true,
               "rules": {},
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
             },
+            "default": {
+              "isRealtimeEnabled": false,
+              "rules": {
+                "create": {
+                  "rule": "deny"
+                },
+                "read": {
+                  "rule": "deny"
+                },
+                "update": {
+                  "rule": "deny"
+                },
+                "delete": {
+                  "rule": "deny"
+                }
+              },
+              "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            }
           },
           "preparedQueries": {
             "preparedQuery1": {
