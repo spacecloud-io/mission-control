@@ -57,7 +57,7 @@ const FileStorageConfig = () => {
     conn: conn,
     bucket: bucket,
     endpoint: endpoint,
-    credentials: (storeType && !secret) ? "direct": "secret", 
+    credentials: (storeType && !secret) ? "direct" : "secret",
     secret: initialSecretValue
   }
 
@@ -149,8 +149,8 @@ const FileStorageConfig = () => {
                   <FormItemLabel name="Credentials File" description="Credentials file is used to authorize Space Cloud to your bucket" />
                   <Form.Item name="credentials">
                     <Radio.Group>
-                      <Radio style={{ display: 'block' }} className="radio-align" value="secret">Load from Space Cloud Secrets <span style={{ fontWeight: 'bold' }}>(recommended method)</span></Radio>
-                      <Radio style={{ display: 'block', marginTop: "3%" }} className="radio-align" value="direct">Load Directly</Radio>
+                      <Radio style={{ display: 'block' }} value="secret">Load from Space Cloud Secrets <span style={{ fontWeight: 'bold' }}>(recommended method)</span></Radio>
+                      <Radio style={{ display: 'block', marginTop: 8 }} value="direct">Load Directly</Radio>
                     </Radio.Group>
                   </Form.Item>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "secret"}>
@@ -184,7 +184,7 @@ const FileStorageConfig = () => {
                   <Form.Item name="credentials">
                     <Radio.Group defaultValue="secret">
                       <Radio style={{ display: 'block' }} value="secret">Load from Space Cloud Secrets <span style={{ fontWeight: 'bold' }}>(recommended method)</span></Radio>
-                      <Radio style={{ display: 'block', marginTop: "3%" }} className="radio-align" value="direct">Load Directly</Radio>
+                      <Radio style={{ display: 'block', marginTop: 8 }} value="direct">Load Directly</Radio>
                     </Radio.Group>
                   </Form.Item>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "secret"}>
