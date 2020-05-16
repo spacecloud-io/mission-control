@@ -210,7 +210,7 @@ export const setPreparedQueries = (projectId, aliasName, id, args, sqlPreparedQu
     const config = { id: id, sql: sqlPreparedQueries, rule: rule, args: args }
     client.database.setPreparedQueries(projectId, aliasName, id, config)
       .then(() => {
-        const preparedQueries = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`)
+        const preparedQueries = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`, {})
         preparedQueries[id] = config
         setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, preparedQueries);
         resolve()
