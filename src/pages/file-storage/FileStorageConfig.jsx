@@ -41,7 +41,7 @@ const FileStorageConfig = () => {
     });
 
   useEffect(() => {
-    ReactGA.pageview("/projects/file-storage/config");
+    ReactGA.pageview("/projects/file-storage/configure");
   }, [])
 
   const { storeType, bucket, endpoint, conn, secret } = getProjectConfig(projects, projectID, "modules.fileStore", {})

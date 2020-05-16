@@ -56,7 +56,7 @@ const Rules = (props) => {
 
 	// Handlers
 	const handleFileConfig = () => {
-		history.push(`/mission-control/projects/${projectID}/file-storage/config`);
+		history.push(`/mission-control/projects/${projectID}/file-storage/configure`);
 	}
 
 	const handleConfig = (config) => {
