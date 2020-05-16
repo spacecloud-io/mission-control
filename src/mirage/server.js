@@ -95,6 +95,8 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
+      this.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
+      this.delete("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
 
       // FileStore endpoints
       this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk({ result: true }));

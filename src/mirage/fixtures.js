@@ -20,6 +20,20 @@ const projects = [
               "isRealtimeEnabled": true,
               "rules": {},
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            },
+          },
+          "preparedQueries": {
+            "preparedQuery1": {
+              "id": "preparedQuery1",
+              "sql": "select * from users",
+              "rule": { "rule": "allow" },
+              "args": ['args.args1']
+            },
+            "preparedQuery2": {
+              "id": "preparedQuery2",
+              "sql": "select * from posts",
+              "rule": { "rule": "deny" },
+              "args": ['args1', 'args2']
             }
           },
           "isPrimary": false,
