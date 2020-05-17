@@ -7,24 +7,30 @@ import CreateDatabase from '../../../components/database/create-database/CreateD
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import '../database.css';
+import { notify } from '../../../utils';
+import { decrement, increment } from 'automate-redux';
 
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
+  const dispatch = useDispatch()
   const projects = useSelector(state => state.projects)
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/add-db");
   }, [])
 
-  const addDb = (alias, connectionString, defaultDBRules, selectedDB) => {
-    dbEnable(projects, projectID, alias, connectionString, defaultDBRules, selectedDB, (err) => {
-      if (!err) {
-        history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
-      }
+  const addDb = (alias, connectionString, defaultDBRules, dbType, dbName) => {
+    dispatch(increment("pendingRequests"))
+    dbEnable(projects, projectID, alias, dbType, dbName, connectionString, defaultDBRules)
+    .then(() => {
+      history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
+      notify("success", "Success", "Successfully added database")
     })
+    .catch(ex => notify("error", "Error adding database", ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   return (

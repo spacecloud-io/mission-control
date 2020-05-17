@@ -1,10 +1,9 @@
 import store from "../../store"
-import { getProjectConfig, setProjectConfig, getEventingDB } from "../../utils"
+import { getProjectConfig, setProjectConfig, getEventingDB, canDatabaseHavePreparedQueries, getDBTypeFromAlias, getDefaultPreparedQueriesRule } from "../../utils"
 import { defaultDBRules, defaultEventRule } from "../../constants"
 import client from "../../client"
 import { increment, decrement, set, get } from "automate-redux"
 import { notify } from '../../utils';
-import history from '../../history';
 
 export const modifyColSchema = (projectId, dbName, colName, schema, setLoading) => {
   return new Promise((resolve, reject) => {
@@ -101,15 +100,15 @@ export const fetchDBConnState = (projectId, dbName) => {
   })
 }
 
-export const handleModify = (projectId, dbName) => {
+export const handleModify = (projectId, aliasName) => {
   return new Promise((resolve, reject) => {
     store.dispatch(increment("pendingRequests"))
-    let collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
+    let collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.collections`, {})
     let cols = {}
     Object.entries(collections).forEach(([colName, colConfig]) => {
       cols[colName] = { schema: colConfig.schema }
     })
-    client.database.modifySchema(projectId, dbName, cols).then(() => resolve())
+    client.database.modifySchema(projectId, aliasName, cols).then(() => resolve())
       .catch(ex => reject(ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
   })
@@ -131,13 +130,14 @@ export const handleReload = (projectId, dbName) => {
   })
 }
 
-export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoading) => {
+export const setDBConfig = (projectId, aliasName, enabled, conn, type, dbName, setLoading) => {
   if (setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
-    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type }).then(() => {
+    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type, dbName }).then(() => {
       setProjectConfig(projectId, `modules.db.${aliasName}.enabled`, enabled)
       setProjectConfig(projectId, `modules.db.${aliasName}.conn`, conn)
       setProjectConfig(projectId, `modules.db.${aliasName}.type`, type)
+      setProjectConfig(projectId, `modules.db.${aliasName}.dbName`, dbName)
       store.dispatch(set(`extraConfig.${projectId}.db.${aliasName}.connected`, true))
       if (enabled) {
         fetchCollections(projectId, aliasName, false).then(() => resolve()).catch(ex => reject(ex))
@@ -152,13 +152,11 @@ export const setDBConfig = (projectId, aliasName, enabled, conn, type, setLoadin
 
 export const removeDBConfig = (projectId, aliasName) => {
   return new Promise((resolve, reject) => {
-    store.dispatch(increment("pendingRequests"))
     client.database.removeDbConfig(projectId, aliasName).then(() => {
-      notify("success", "Success", "Removed database config successfully")
       const dbconfig = getProjectConfig(store.getState().projects, projectId, `modules.db`)
       const dbList = delete dbconfig[aliasName]
       store.dispatch(set(`extraConfig.${projectId}.db`, dbList))
-      history.push(`/mission-control/projects/${projectId}/database`)
+      resolve()
       const eventingDB = getEventingDB(projectId)
       if (aliasName === eventingDB) {
         client.eventing.setEventingConfig(projectId, { enabled: false, dbAlias: "" }).then(() => {
@@ -167,13 +165,8 @@ export const removeDBConfig = (projectId, aliasName) => {
           notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
         })
       }
-      resolve()
     })
-      .catch(ex => {
-        reject(ex)
-        notify("error", "Error removing database config", ex)
-      })
-      .finally(() => store.dispatch(decrement("pendingRequests")))
+      .catch(ex => reject(ex))
   })
 }
 
@@ -192,7 +185,7 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .then(() => {
       setProjectConfig(projectId, "modules.eventing.enabled", true)
       setProjectConfig(projectId, "modules.eventing.dbAlias", alias)
-      
+
       const defaultEventingSecurityRule = getProjectConfig(projects, projectId, "modules.eventing.securityRules.default")
       if (!defaultEventingSecurityRule) {
         setDefaultEventSecurityRule(projectId, "default", defaultEventRule)
@@ -203,20 +196,71 @@ const handleEventingConfig = (projects, projectId, alias) => {
     .finally(() => store.dispatch(decrement("pendingRequests")))
 }
 
-export const dbEnable = (projects, projectId, aliasName, conn, rules, type, cb) => {
-  store.dispatch(increment("pendingRequests"))
-  setDBConfig(projectId, aliasName, true, conn, type, false).then(() => {
-    notify("success", "Success", "Enabled database successfully")
-    if (cb) cb()
-    const dbconfig = getProjectConfig(projects, projectId, `modules.db`)
-    if (Object.keys(dbconfig).length === 0) {
-      handleEventingConfig(projects, projectId, aliasName)
-    }
-    setColRule(projectId, aliasName, "default", rules, type, true)
-      .catch(ex => notify("error", "Error configuring default rules", ex))
-  }).catch(ex => {
-    notify("error", "Error enabling database", ex)
-    if (cb) cb(ex)
+export const setPreparedQueries = (projectId, aliasName, id, args, sql, rule) => {
+  return new Promise((resolve, reject) => {
+    store.dispatch(increment("pendingRequests"));
+    const config = { id, sql, rule, args }
+    client.database.setPreparedQueries(projectId, aliasName, id, config)
+      .then(() => {
+        const preparedQueries = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.preparedQueries`, {})
+        preparedQueries[id] = config
+        setProjectConfig(projectId, `modules.db.${aliasName}.preparedQueries`, preparedQueries);
+        resolve()
+      })
+      .catch(ex => reject(ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")));
   })
-    .finally(() => store.dispatch(decrement("pendingRequests")))
+}
+
+export const dbEnable = (projects, projectId, aliasName, dbType, dbName, conn, defaultCollectionRule, defaultPreparedQueryRule) => {
+  if (!defaultPreparedQueryRule) defaultPreparedQueryRule = getDefaultPreparedQueriesRule(projectId, aliasName)
+  return new Promise((resolve, reject) => {
+    setDBConfig(projectId, aliasName, true, conn, dbType, dbName, false).then(() => {
+      resolve()
+      const dbconfig = getProjectConfig(projects, projectId, `modules.db`)
+      if (Object.keys(dbconfig).length === 0) {
+        handleEventingConfig(projects, projectId, aliasName)
+      }
+      setColRule(projectId, aliasName, "default", defaultCollectionRule, false, false)
+        .catch(ex => notify("error", "Error configuring default rules for collections/tables", ex))
+      if (canDatabaseHavePreparedQueries(projectId, aliasName)) {
+        setPreparedQueries(projectId, aliasName, "default", [], "", defaultPreparedQueryRule)
+          .catch(ex => notify("error", "Error configuring default rules for prepared queries", ex))
+      }
+    })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const changeDatabaseName = (projectId, aliasName, dbName) => {
+  return new Promise((resolve, reject) => {
+    const projects = store.getState().projects
+    const dbType = getDBTypeFromAlias(projectId, aliasName)
+    const conn = getProjectConfig(projects, projectId, `modules.db.${aliasName}.conn`, "")
+    const defaultCollectionRule = getProjectConfig(projects, projectId, `modules.db.${aliasName}.collections.default.rules`)
+
+    dbEnable(projects, projectId, aliasName, dbType, dbName, conn, defaultCollectionRule)
+      .then(() => {
+        handleModify(projectId, aliasName)
+          .then(() => resolve())
+          .catch(ex => reject(ex))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const changeDatabaseAliasName = (projectId, aliasName, newAliasName) => {
+  return new Promise((resolve, reject) => {
+    const projects = store.getState().projects
+    const { type, conn, dbName } = getProjectConfig(projects, projectId, `modules.db.${aliasName}`)
+    const defaultCollectionRule = getProjectConfig(projects, projectId, `modules.db.${aliasName}.collections.default.rules`, {})
+    const defaultPreparedQueryRule = getDefaultPreparedQueriesRule(projectId, aliasName)
+    removeDBConfig(projectId, aliasName)
+      .then(() => {
+        dbEnable(projects, projectId, newAliasName, type, dbName, conn, defaultCollectionRule, defaultPreparedQueryRule)
+          .then(() => resolve())
+          .catch(ex => reject(ex))
+      })
+      .catch(ex => reject(ex))
+  })
 }

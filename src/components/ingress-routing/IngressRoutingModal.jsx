@@ -261,10 +261,10 @@ const IngressRoutingModal = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.key, "scheme"]),
-                            ...fields.map(obj => ["targets", obj.key, "host"]),
-                            ...fields.map(obj => ["targets", obj.key, "port"]),
-                            ...fields.map(obj => ["targets", obj.key, "weight"]),
+                            ...fields.map(obj => ["targets", obj.name,"scheme"]),
+                            ...fields.map(obj => ["targets", obj.name,"host"]),
+                            ...fields.map(obj => ["targets", obj.name,"port"]),
+                            ...fields.map(obj => ["targets", obj.name,"weight"]),
                           ]
                           form.validateFields(fieldKeys)
                             .then(() => add({scheme: "http"}))

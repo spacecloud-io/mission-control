@@ -3,7 +3,7 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID, defaultPreparedQueryRule } from './constants';
 
 import store from "./store"
 import client from "./client"
@@ -535,6 +535,29 @@ export const getDBTypeFromAlias = (projectId, alias) => {
   return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
 }
 
+export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
+  const dbType = getDBTypeFromAlias(projectId, dbAlias)
+  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
+}
+
+export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
+  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbAliasName}.preparedQueries.default.rule`, defaultPreparedQueryRule)
+}
+
+export const getDatabaseLabelFromType = (dbType) => {
+  switch (dbType) {
+    case dbTypes.MONGO: 
+    return "MongoDB"
+    case dbTypes.POSTGRESQL: 
+    return "PostgreSQL"
+    case dbTypes.MYSQL: 
+    return "MySQL"
+    case dbTypes.SQLSERVER: 
+    return "SQL Server"
+    case dbTypes.EMBEDDED: 
+    return "Embedded"
+  }
+}
 
 export const dbIcons = (project, projectId, selectedDb) => {
 

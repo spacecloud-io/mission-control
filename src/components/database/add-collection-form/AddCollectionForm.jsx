@@ -53,7 +53,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(colName);
       try {
         handleSubmit(
           values.name,

@@ -14,12 +14,45 @@ const projects = [
       "db": {
         "postgres": {
           "type": 'postgres',
-          "conn": 'postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable',
+          "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+          "dbName": "public",
           "collections": {
             "users": {
               "isRealtimeEnabled": true,
               "rules": {},
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            },
+            "default": {
+              "isRealtimeEnabled": false,
+              "rules": {
+                "create": {
+                  "rule": "deny"
+                },
+                "read": {
+                  "rule": "deny"
+                },
+                "update": {
+                  "rule": "deny"
+                },
+                "delete": {
+                  "rule": "deny"
+                }
+              },
+              "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            }
+          },
+          "preparedQueries": {
+            "preparedQuery1": {
+              "id": "preparedQuery1",
+              "sql": "select * from users",
+              "rule": { "rule": "allow" },
+              "args": ['args.args1']
+            },
+            "preparedQuery2": {
+              "id": "preparedQuery2",
+              "sql": "select * from posts",
+              "rule": { "rule": "deny" },
+              "args": ['args1', 'args2']
             }
           },
           "isPrimary": false,
@@ -43,7 +76,28 @@ const projects = [
         "externalServices": {
           "auth": {
             "url": "localhost:3000",
-            "endpoints": {}
+            "endpoints": {
+              "login": {
+                "method":"POST",
+                "path":"/v1/login",
+                "kind":"simple",
+                "rule": {
+                  "rule": "allow"
+                }
+              },
+              "profile": {
+                "method":"GET",
+                "path":"/v1/profile/{args.id}",
+                "kind":"transform-go",
+                "rule": {
+                  "rule": "authenticated"
+                },
+                "type": "transform-go",
+                "outputFormat": "json",
+                "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+                "template":`{ "id": "args.id"}`
+              },
+            }
           }
         }
       },
@@ -184,6 +238,7 @@ const projects = [
         "storeType": "amazon-s3",
         "bucket": "my-bucket",
         "conn": "us-east-1",
+        "secret": "secrets.FileSecret.constants.json",
         "rules": [
           {
             "id": "Default Rule",

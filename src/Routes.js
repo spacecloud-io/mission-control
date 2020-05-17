@@ -16,7 +16,10 @@ import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
 import DBQueries from "./pages/database/queries/DBQueries";
 import AddDb from "./pages/database/add-db/AddDb";
+import PreparedQueries from './pages/database/prepared-queries/PreparedQueries';
+import AddPreparedQueries from './pages/database/prepared-queries/AddPreparedQueries';
 import FileStorage from "./pages/file-storage/FileStorage";
+import FileStorageConfig from "./pages/file-storage/FileStorageConfig";
 import EventingOverview from "./pages/eventing/EventingOverview";
 import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
@@ -25,6 +28,7 @@ import EventingSettings from "./pages/eventing/EventingSettings";
 import QueueEvent from "./pages/eventing/queue-event/QueueEvent";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
+import ConfigureEndpoint from "./pages/remote-services/ConfigureEndpoint";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
@@ -64,7 +68,11 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries" component={PreparedQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/add" component={AddPreparedQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/:preparedQueryId/edit" component={AddPreparedQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage/configure" component={FileStorageConfig} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
@@ -75,6 +83,8 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/queue-event" component={QueueEvent} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/add" component={ConfigureEndpoint} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/:endpointName/edit" component={ConfigureEndpoint} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/userman" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />

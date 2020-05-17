@@ -74,7 +74,7 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Global endpoints
       this.get("/config/env", () => ({ isProd: false, version: "0.17.0", clusterId: "cluster1", plan: "space-cloud-open--monthly", quotas: { maxDatabases: 1, maxProjects: 1 } }));
-      this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
+      this.get("/config/credentials", () => ({ pass: "123", user: "admin" }));
       this.get("/config/quotas", () => respondOk());
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/upgrade", () => respondOk());
@@ -95,6 +95,8 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
+      this.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
+      this.delete("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
 
       // FileStore endpoints
       this.get("/external/projects/:projectId/file-storage/connection-state", () => respondOk({ result: true }));

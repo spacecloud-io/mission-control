@@ -56,6 +56,9 @@ export const defaultEndpointRule = {
   rule: "allow"
 }
 
+export const defaultPreparedQueryRule = {
+  rule: "allow"
+}
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
     return productionURL
