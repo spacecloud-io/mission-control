@@ -76,7 +76,28 @@ const projects = [
         "externalServices": {
           "auth": {
             "url": "localhost:3000",
-            "endpoints": {}
+            "endpoints": {
+              "login": {
+                "method":"POST",
+                "path":"/v1/login",
+                "kind":"simple",
+                "rule": {
+                  "rule": "allow"
+                }
+              },
+              "profile": {
+                "method":"GET",
+                "path":"/v1/profile/{args.id}",
+                "kind":"transform-go",
+                "rule": {
+                  "rule": "authenticated"
+                },
+                "type": "transform-go",
+                "outputFormat": "json",
+                "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+                "template":`{ "id": "args.id"}`
+              },
+            }
           }
         }
       },
