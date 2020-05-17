@@ -1,7 +1,8 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { increment, decrement } from "automate-redux"
+import ReactGA from 'react-ga';
 import client from "../../client"
 import { getProjectConfig, setProjectConfig, notify } from "../../utils"
 
@@ -21,6 +22,10 @@ const RemoteServices = () => {
 
   // Global state
   const projects = useSelector(state => state.projects)
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/remote-services");
+  }, [])
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { increment, decrement } from "automate-redux"
@@ -44,7 +44,7 @@ const RemoteService = () => {
   const history = useHistory()
 
   useEffect(() => {
-    ReactGA.pageview("/projects/remote-services");
+    ReactGA.pageview("/projects/remote-services/endpoints");
   }, [])
 
   // Global state
