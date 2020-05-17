@@ -8,9 +8,17 @@ import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import embeddedIcon from '../../../assets/embeddedIcon.svg'
 import './create-db.css'
 import { useSelector } from 'react-redux';
-import { getProjectConfig } from "../../../utils"
+import { getProjectConfig, getDatabaseLabelFromType } from "../../../utils"
 import RadioCards from "../../radio-cards/RadioCards"
 import FormItemLabel from "../../form-item-label/FormItemLabel"
+import { Controlled as CodeMirror } from 'react-codemirror2';
+import 'codemirror/theme/material.css';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/javascript/javascript'
+import 'codemirror/addon/selection/active-line.js'
+import 'codemirror/addon/edit/matchbrackets.js'
+import 'codemirror/addon/edit/closebrackets.js'
+import gqlPrettier from 'graphql-prettier';
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
@@ -20,15 +28,15 @@ const CreateDatabase = (props) => {
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
 
-  const handleOnFinish = ({ alias, dbType, conn }) => {
-    props.handleSubmit(alias, conn, defaultDBRules, dbType)
+  const handleOnFinish = ({ alias, dbType, conn, dbName }) => {
+    props.handleSubmit(alias, conn, defaultDBRules, dbType, dbName)
   }
 
   const handleValuesChange = (changedValues) => {
     if (changedValues.dbType) {
       form.setFieldsValue({
         alias: changedValues.dbType,
-        conn: defaultDbConnectionStrings[changedValues.dbType]
+        conn: defaultDbConnectionStrings[changedValues.dbType],
       })
     }
   }
@@ -74,6 +82,24 @@ const CreateDatabase = (props) => {
           type="info"
           showIcon />
         <br />
+        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.dbType != curr.dbType} dependencies={["dbType"]}>
+          {() => {
+            const dbType = form.getFieldValue("dbType")
+            const databaseLabel = getDatabaseLabelFromType(dbType)
+            let labelName = "Database name"
+            let labelDescription = `The logical database inside ${databaseLabel} that Space Cloud will connect to. Space Cloud will create this database if it doesn’t exist already`
+            if (dbType === dbTypes.POSTGRESQL || dbType === dbTypes.SQLSERVER) {
+              labelName = `${databaseLabel} schema`
+              labelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
+            }
+            return (
+              <FormItemLabel name={labelName} description={labelDescription} />
+            )
+          }}
+        </Form.Item>
+        <Form.Item name="dbName" initialValue={props.projectId} rules={[{ required: true, message: 'Please input a Database Name' }]}>
+          <Input placeholder="" />
+        </Form.Item>
         <FormItemLabel name="Alias" description="Alias name is used in your frontend queries to identify your database" />
         <Form.Item name="alias" dependencies={["dbType"]} shouldUpdate="true" rules={[{
           validator: (_, value, cb) => {
@@ -95,6 +121,43 @@ const CreateDatabase = (props) => {
         }]}>
           <Input placeholder="eg: mongo" />
         </Form.Item>
+        <div style={{ paddingBottom: 18 }}>
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.alias != curr.alias} dependencies={["alias"]}>
+            {() => {
+              const aliasValue = form.getFieldValue("alias")
+              try {
+                const data = aliasValue.length > 0 ? (gqlPrettier(
+                  `{ query { 
+                    articles @${aliasValue} { 
+                    id 
+                    name 
+                  }
+                }}`
+                )) : ("")
+                return (
+                  <React.Fragment>
+                  <FormItemLabel name="Example GraphQL query:" hint="Query articles tables (Note the alias directive):" />
+                    <CodeMirror
+                      value={data}
+                      options={{
+                        mode: { name: "javascript", json: true },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2,
+                        autofocus: true,
+                        readOnly: true
+                      }}
+                    />
+                  </React.Fragment>
+                )
+              } catch (error) {
+                return null
+              }
+            }}
+          </Form.Item>
+        </div>
         <Form.Item>
           <Button type="primary" htmlType="submit" block>Add database</Button>
         </Form.Item>

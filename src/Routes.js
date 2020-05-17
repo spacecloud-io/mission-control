@@ -1,9 +1,8 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute } from "./utils";
+import { PrivateRoute, BillingRoute } from "./utils";
 import history from "./history";
 
-import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Welcome from "./pages/welcome/Welcome";
@@ -17,7 +16,10 @@ import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
 import DBQueries from "./pages/database/queries/DBQueries";
 import AddDb from "./pages/database/add-db/AddDb";
+import PreparedQueries from './pages/database/prepared-queries/PreparedQueries';
+import AddPreparedQueries from './pages/database/prepared-queries/AddPreparedQueries';
 import FileStorage from "./pages/file-storage/FileStorage";
+import FileStorageConfig from "./pages/file-storage/FileStorageConfig";
 import EventingOverview from "./pages/eventing/EventingOverview";
 import EventingRules from "./pages/eventing/EventingRules";
 import EventingSchema from "./pages/eventing/EventingSchema";
@@ -38,6 +40,11 @@ import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
 import Billing from './pages/billing/Billing';
+import BillingOverview from './pages/billing/BillingOverview';
+import BillingInvoices from './pages/billing/BillingInvoices';
+import UpgradeCluster from './pages/billing/UpgradeCluster';
+import ChangePlan from './pages/billing/ChangePlan';
+import ContactUs from './pages/billing/ContactUs';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
 
@@ -47,7 +54,6 @@ export default () => {
       <Switch>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
-        <Route path="/mission-control/email-action-handler" component={EmailActionHandler} />
         <Route exact path="/mission-control" component={Home} />
         <Route exact path="/mission-control/login" component={Login} />
         <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
@@ -63,7 +69,11 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/queries" component={DBQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries" component={PreparedQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/add" component={AddPreparedQueries} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/:preparedQueryId/edit" component={AddPreparedQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage/configure" component={FileStorageConfig} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
@@ -74,8 +84,8 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/queue-event" component={QueueEvent} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoint/add" component={AddEndpoint} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/:endpoint/edit" component={EditEndpoint} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/add" component={AddEndpoint} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/:endpoint/edit" component={EditEndpoint} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/userman" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
@@ -88,6 +98,11 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
       </Switch>

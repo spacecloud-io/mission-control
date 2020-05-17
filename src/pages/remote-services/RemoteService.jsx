@@ -44,9 +44,9 @@ const RemoteService = () => {
   const history = useHistory()
 
   useEffect(() => {
-		ReactGA.pageview("/projects/remote-services");
+    ReactGA.pageview("/projects/remote-services");
   }, [])
-  
+
   // Global state
   const projects = useSelector(state => state.projects)
 
@@ -61,7 +61,7 @@ const RemoteService = () => {
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
+    client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
       setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
       notify("success", "Success", "Removed endpoint successfully")
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
@@ -89,7 +89,7 @@ const RemoteService = () => {
       className: 'column-actions',
       render: (_, { name }) => (
         <span>
-          <a onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/${name}/edit`)}>Edit</a>
+          <a onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/${name}/edit`)}>Edit</a>
           <Popconfirm title={`This will remove this endpoint from this service. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
@@ -107,15 +107,15 @@ const RemoteService = () => {
         <div style={{ padding: "32px 32px 0" }}>
           {noOfEndpoints === 0 && <div style={{ marginTop: 24 }}>
             <div className="panel">
-              <img src={endpointImg} className="remote-img"/>
+              <img src={endpointImg} className="remote-img" />
               <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>A service can have multiple endpoints that can be accessed from the frontend.</p>
-              <Button style={{ marginTop: 16, marginBottom: 80 }} type="primary" className="action-rounded" onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoint/add`)}>Add first endpoint</Button>
+              <Button style={{ marginTop: 16, marginBottom: 80 }} type="primary" className="action-rounded" onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/add`)}>Add first endpoint</Button>
             </div>
           </div>}
           {noOfEndpoints > 0 && (
             <React.Fragment>
-              <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoint/add`)} type="primary">Add</Button></h3>
-              <Table columns={tableColumns} dataSource={endpointsTableData} />
+              <h3 style={{ display: "flex", justifyContent: "space-between" }}>Endpoints <Button onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/add`)} type="primary">Add</Button></h3>
+              <Table columns={tableColumns} dataSource={endpointsTableData} pagination={false} />
             </React.Fragment>
           )}
         </div>

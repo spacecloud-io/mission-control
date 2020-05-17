@@ -42,12 +42,15 @@ const CreateProject = () => {
       .finally(() => dispatch(decrement("pendingRequests")))
   };
 
-  const addDatabase = (alias, connectionString, defaultDBRules, selectedDB) => {
-    dbEnable(projects, projectId, alias, connectionString, defaultDBRules, selectedDB, (err) => {
-      if (!err) {
-        history.push(`/mission-control/projects/${projectId}`)
-      }
+  const addDatabase = (alias, connectionString, defaultDBRules, dbType, dbName) => {
+    dispatch(increment("pendingRequests"))
+    dbEnable(projects, projectId, alias, dbType, dbName, connectionString, defaultDBRules)
+    .then(() => {
+      history.push(`/mission-control/projects/${projectId}`)
+      notify("success", "Success", "Successfully added database")
     })
+    .catch(ex => notify("error", "Error adding database", ex))
+    .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const steps = [{
@@ -61,7 +64,7 @@ const CreateProject = () => {
           <br />
         </Col>
       </Row>
-      <center><Link to="/mission-control/welcome" style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</Link></center>
+      <center><a onClick={history.goBack} style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</a></center>
     </React.Fragment>
   },
   {

@@ -109,8 +109,8 @@ const AddSecret = props => {
                     <Button
                       onClick={() => {
                         const fieldKeys = [
-                          ...fields.map(obj => ["env", obj.key, "name"]),
-                          ...fields.map(obj => ["env", obj.key, "value"])
+                          ...fields.map(obj => ["env", obj.name,"name"]),
+                          ...fields.map(obj => ["env", obj.name,"value"])
                         ]
                         form.validateFields(fieldKeys)
                           .then(() => add())
@@ -223,8 +223,8 @@ const AddSecret = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["file", obj.key, "name"]),
-                            ...fields.map(obj => ["file", obj.key, "value"])
+                            ...fields.map(obj => ["file", obj.name,"name"]),
+                            ...fields.map(obj => ["file", obj.name,"value"])
                           ]
                           form.validateFields(fieldKeys)
                             .then(() => add())

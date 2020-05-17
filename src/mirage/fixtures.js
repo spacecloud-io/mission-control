@@ -14,12 +14,45 @@ const projects = [
       "db": {
         "postgres": {
           "type": 'postgres',
-          "conn": 'postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable',
+          "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+          "dbName": "public",
           "collections": {
             "users": {
               "isRealtimeEnabled": true,
               "rules": {},
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            },
+            "default": {
+              "isRealtimeEnabled": false,
+              "rules": {
+                "create": {
+                  "rule": "deny"
+                },
+                "read": {
+                  "rule": "deny"
+                },
+                "update": {
+                  "rule": "deny"
+                },
+                "delete": {
+                  "rule": "deny"
+                }
+              },
+              "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            }
+          },
+          "preparedQueries": {
+            "preparedQuery1": {
+              "id": "preparedQuery1",
+              "sql": "select * from users",
+              "rule": { "rule": "allow" },
+              "args": ['args.args1']
+            },
+            "preparedQuery2": {
+              "id": "preparedQuery2",
+              "sql": "select * from posts",
+              "rule": { "rule": "deny" },
+              "args": ['args1', 'args2']
             }
           },
           "isPrimary": false,
@@ -205,6 +238,7 @@ const projects = [
         "storeType": "amazon-s3",
         "bucket": "my-bucket",
         "conn": "us-east-1",
+        "secret": "secrets.FileSecret.constants.json",
         "rules": [
           {
             "id": "Default Rule",

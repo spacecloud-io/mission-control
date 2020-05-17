@@ -43,7 +43,7 @@ const EnableDBForm = ({ handleSubmit, handleCancel, initialValues }) => {
         <FormItemLabel name="Connection string" />
         <Form.Item name="conn" 
         rules={[{ required: true, message: 'Please provide a connection string!' }]}>
-            <Input placeholder="Enter connection string of your database" />
+            <Input.Password placeholder="Enter connection string of your database" />
         </Form.Item>
         <FormItemLabel name="Default rules" />
         <CodeMirror
