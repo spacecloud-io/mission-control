@@ -1,9 +1,9 @@
 import React from "react"
 
-export default function FormItemLabel({ name, description, hint }) {
+export default function FormItemLabel({ name, description, hint, extra }) {
   return (
     <p style={{ fontSize: "16px" }}>
-      <b>{name}</b> {hint && <span style={{ fontSize: "14px" }}>{hint}</span>}
+      <b>{name}</b> {hint && <span style={{ fontSize: "14px" }}>{hint}</span>} {extra}
       {description && <React.Fragment>
         <br />
         <span style={{

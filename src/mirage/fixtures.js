@@ -77,25 +77,25 @@ const projects = [
           "auth": {
             "url": "localhost:3000",
             "endpoints": {
-              "payment": {
-                "method":"GET",
-                "path":"/v1/payments",
-                "kind":"simple",
-                "rule":"create: { allow }",
-              },
               "login": {
                 "method":"POST",
                 "path":"/v1/login",
                 "kind":"simple",
-                "rule":"create: { allow }",
-                "token":"abcdefg"
+                "rule": {
+                  "rule": "allow"
+                }
               },
-              "template": {
+              "profile": {
                 "method":"GET",
-                "path":"/v1/template",
+                "path":"/v1/profile/{args.id}",
                 "kind":"transform-go",
-                "rule":"create: { allow }",
-                "template":`"test": { "allow" }`
+                "rule": {
+                  "rule": "authenticated"
+                },
+                "type": "transform-go",
+                "outputFormat": "json",
+                "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+                "template":`{ "id": "args.id"}`
               },
             }
           }

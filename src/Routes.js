@@ -28,8 +28,7 @@ import EventingSettings from "./pages/eventing/EventingSettings";
 import QueueEvent from "./pages/eventing/queue-event/QueueEvent";
 import RemoteServices from "./pages/remote-services/Index";
 import RemoteService from "./pages/remote-services/RemoteService";
-import AddEndpoint from "./pages/remote-services/AddEndpoint";
-import EditEndpoint from "./pages/remote-services/EditEndpoint";
+import ConfigureEndpoint from "./pages/remote-services/ConfigureEndpoint";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
@@ -84,8 +83,8 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/queue-event" component={QueueEvent} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services" component={RemoteServices} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName" component={RemoteService} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/add" component={AddEndpoint} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/:endpoint/edit" component={EditEndpoint} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/add" component={ConfigureEndpoint} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/remote-services/:serviceName/endpoints/:endpointName/edit" component={ConfigureEndpoint} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/userman" component={UserManagement} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/explorer"
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
