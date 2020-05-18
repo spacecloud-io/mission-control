@@ -3,18 +3,17 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID, defaultPreparedQueryRule } from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
 import gql from 'graphql-tag';
 import gqlPrettier from 'graphql-prettier';
 import { format } from 'prettier-package-json';
 import { LoremIpsum } from "lorem-ipsum";
+import jwt from 'jsonwebtoken';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -23,6 +22,28 @@ const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const lorem = new LoremIpsum();
+
+export function capitalizeFirstCharacter(str) {
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export const getJWTSecret = (state, projectId) => {
+  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
+  if (secrets.length === 0) return ""
+  return secrets[0].secret
+}
+
+export const generateToken = (state, projectId, claims) => {
+  const secret = getJWTSecret(state, projectId)
+  if (!secret) return ""
+  return jwt.sign(claims, secret);
+}
+
+export const generateInternalToken = (state, projectId) => {
+  const claims = { id: SPACE_CLOUD_USER_ID }
+  return generateToken(state, projectId, claims)
+};
 
 export const parseDbConnString = conn => {
   if (!conn) return {}
@@ -81,14 +102,14 @@ export const generateAESKey = () => btoa(generateId())
 export const generateProjectConfig = (projectId, name) => ({
   name: name,
   id: projectId,
-  secret: generateJWTSecret(),
+  secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
   contextTime: 5,
   modules: {
-    crud: {},
+    db: {},
     eventing: {},
-    auth: {},
-    services: {
+    userMan: {},
+    remoteServices: {
       externalServices: {}
     },
     fileStore: {
@@ -99,7 +120,7 @@ export const generateProjectConfig = (projectId, name) => ({
 })
 
 export const notify = (type, title, msg, duration) => {
-  notification[type]({ message: title, description: msg, duration: duration });
+  notification[type]({ message: title, description: msg.toString(), duration: duration });
 }
 
 export const getEventSourceFromType = (type, defaultValue) => {
@@ -124,7 +145,7 @@ export const getEventSourceFromType = (type, defaultValue) => {
 
 export const getEventSourceLabelFromType = (type) => {
   let source = getEventSourceFromType(type)
-  return source.charAt(0).toUpperCase() + source.slice(1)
+  return capitalizeFirstCharacter(source)
 }
 
 export const getFileStorageProviderLabelFromStoreType = (storeType) => {
@@ -160,32 +181,81 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
+export const getEventingDB = (projectId) => {
+  return getProjectConfig(store.getState().projects, projectId, "modules.eventing.dbAlias", "")
+}
+
 export const openProject = (projectId) => {
+  const projects = get(store.getState(), "projects", [])
+  const doesExist = projects.some(project => project.id === projectId)
+  if (!doesExist) {
+    // Check if some other projectExists. If not then redirect to the welcome page
+    if (projects.length === 0) {
+      history.push(`/mission-control/welcome`)
+      return
+    }
+    projectId = projects[0].id
+    notify("info", "Info", "Opened another existing project as the requested project does not exist")
+  }
   const currentURL = window.location.pathname
-  const projectURL = `/mission-control/projects/${projectId}`
+  const projectURL = `/mission-control/projects/${projectId}/`
   if (!currentURL.includes(projectURL)) {
     history.push(projectURL)
   }
-  const projects = get(store.getState(), "projects", [])
-  const config = projects.find(project => project.id === projectId)
-  if (!config) {
-    notify("error", "Error", "Project does not exist")
-    return
-  }
 }
 
+export const fetchBillingDetails = () => {
+  return new Promise((resolve, reject) => {
+    client.billing.fetchBillingDetails().then(({ details, amount }) => {
+      store.dispatch(set("billing", { status: true, details, balanceCredits: amount }))
+      resolve()
+    }).catch(ex => reject(ex))
+  })
+}
 
-export const fetchGlobalEntities = (token) => {
+export const fetchInvoices = (startingAfter) => {
+  return new Promise((resolve, reject) => {
+    client.billing.fetchInvoices(startingAfter).then((invoices) => {
+      const oldInvoices = store.getState().invoices
+      const newInvoices = [...oldInvoices, ...invoices]
+      const hasMore = invoices.length === 10
+      let invoicesMap = newInvoices.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
+      const uniqueInvoices = Object.values(invoicesMap)
+      const sortedInvoices = uniqueInvoices.sort((a, b) => a.number < b.number ? -1 : 1)
+      store.dispatch(set("invoices", sortedInvoices))
+      resolve(hasMore)
+    }).catch(ex => reject(ex))
+  })
+}
+
+export const fetchClusters = () => {
+  return new Promise((resolve, reject) => {
+    client.billing.fetchClusters().then((clusters) => {
+      store.dispatch(set("clusters", clusters))
+      resolve()
+    }).catch(ex => reject(ex))
+  })
+}
+
+export const fetchGlobalEntities = (token, spaceUpToken) => {
   // Save the new token value
   if (token) {
-    storeToken(token)
+    saveToken(token)
+  }
+
+  if (spaceUpToken) {
+    saveSpaceUpToken(spaceUpToken)
   }
 
   // Redirect if needed
-  redirectIfNeeded()
+  const { redirect, redirectUrl } = shouldRedirect()
+  if (redirect) {
+    history.push(redirectUrl)
+    return
+  }
 
-  // Fetch projects
-  if (shouldFetchProjects()) {
+  if (shouldFetchGlobalEntities()) {
+    // Fetch projects
     store.dispatch(increment("pendingRequests"))
     client.projects.getProjects().then(projects => {
       store.dispatch(set("projects", projects))
@@ -203,36 +273,31 @@ export const fetchGlobalEntities = (token) => {
       openProject(projectToBeOpened)
     }).catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
+
+    store.dispatch(increment("pendingRequests"))
+    client.fetchCredentials()
+      .then(data => store.dispatch(set("credentials", data)))
+      .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+
+    if (spaceUpToken) {
+      store.dispatch(increment("pendingRequests"))
+      fetchBillingDetails()
+        .catch(ex => console.log("Error fetching billing details", ex))
+        .finally(() => store.dispatch(decrement("pendingRequests")))
+    }
   }
 }
 
-const storeEnv = (enterpriseMode, isProd, version) => {
-  if (enterpriseMode !== undefined && enterpriseMode !== null) {
-    localStorage.setItem("enterprise", enterpriseMode.toString())
-  }
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("version", version))
-}
-
-const isProdMode = () => localStorage.getItem("isProd") === "true" ? true : false
-const isEnterprise = () => localStorage.getItem("enterprise") === "true" ? true : false
-const isEmailVerified = () => localStorage.getItem("isEmailVerified") === "true" ? true : false
-const getToken = () => localStorage.getItem("token")
-export const getFirebaseToken = () => localStorage.getItem("firebase-token")
-export const storeFirebaseToken = (token) => localStorage.set("firebase-token", token)
-
-const shouldFetchProjects = () => {
+function shouldFetchGlobalEntities() {
   const prodMode = isProdMode()
-  const enterprise = isEnterprise()
-  const emailVerified = isEmailVerified()
   const token = getToken()
 
   if (prodMode && !token) return false
-  if (enterprise && (!emailVerified || !token)) return false
   return true
 }
 
-const getTokenClaims = (token) => {
+function getTokenClaims(token) {
   const temp = token.split(".")
   const decoded = atob(temp[1])
   let claims = {}
@@ -245,39 +310,79 @@ const getTokenClaims = (token) => {
   return claims
 }
 
-const storeToken = (token) => {
+export function isProdMode() {
+  return localStorage.getItem("isProd") === "true" ? true : false
+}
+
+export function isBillingEnabled(state) {
+  return get(state, "billing.status", false)
+}
+
+export function isSignedIn() {
+  const spaceUpToken = getSpaceUpToken()
+  return spaceUpToken ? true : false
+}
+
+export function getClusterId(state) {
+  return get(state, "env.clusterId", undefined)
+}
+
+export function getClusterPlan(state) {
+  const plan = get(state, "env.plan", "space-cloud-open--monthly")
+  return plan ? plan : "space-cloud-open--monthly"
+}
+
+export function getToken() {
+  return localStorage.getItem("token")
+}
+export function getSpaceUpToken() {
+  return localStorage.getItem("spaceUpToken")
+}
+
+
+function storeToken(token) {
+  localStorage.setItem("token", token)
+}
+
+function storeSpaceUpToken(token) {
+  localStorage.setItem("spaceUpToken", token)
+}
+
+function saveToken(token) {
+  storeToken(token)
+  client.setToken(token)
+}
+
+function saveSpaceUpToken(token) {
   // Get claims of the token
-  const { email, name, isEmailVerified } = getTokenClaims(token)
+  const { email, name } = getTokenClaims(token)
 
   // Save token claims to local storage
   localStorage.setItem("email", email)
   localStorage.setItem("name", name)
-  localStorage.setItem("isEmailVerified", isEmailVerified ? "true" : "false")
 
   // Save token to local storage and set the token on the API
-  localStorage.setItem("token", token)
-  client.setToken(token)
+  storeSpaceUpToken(token)
 }
 
-const shouldRedirect = () => {
-  // Check if we are at a public route
+function saveEnv(isProd, version, clusterId, plan, quotas) {
+  localStorage.setItem("isProd", isProd.toString())
+  store.dispatch(set("env", { version, clusterId, plan, quotas }))
+}
+
+function isCurrentRoutePublic() {
   const path = window.location.pathname.split("/")[2]
-  if (path === "signup" || path === "signin" || path === "login" || path === "email-verification" || path === "email-action-handler") {
+  return (path === "login")
+}
+
+function shouldRedirect() {
+  // Check if we are at a public route
+  if (isCurrentRoutePublic()) {
     return { redirect: false, redirectUrl: "" }
   }
 
-  const enterpriseMode = localStorage.getItem("enterprise") === "true"
   const productionMode = localStorage.getItem("isProd") === "true"
-  const isEmailVerified = localStorage.getItem("isEmailVerified") === "true"
-  const token = localStorage.getItem("token")
-
-  if (enterpriseMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/signin" }
-  }
-
-  if (enterpriseMode && !isEmailVerified) {
-    return { redirect: true, redirectUrl: "/mission-control/email-verification" }
-  }
+  const token = getToken()
 
   if (productionMode && !token) {
     return { redirect: true, redirectUrl: "/mission-control/login" }
@@ -286,7 +391,7 @@ const shouldRedirect = () => {
   return { redirect: false, redirectUrl: "" }
 }
 
-const redirectIfNeeded = () => {
+function redirectIfNeeded() {
   const { redirect, redirectUrl } = shouldRedirect()
   if (redirect) {
     history.push(redirectUrl)
@@ -303,40 +408,18 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
-export const handleInvoices = () => {
-  client.billing.getBillingInvoices().then(res => {
-    if (res.status) {
-      store.dispatch(set("billing", res))
-    }
-  }).catch(ex => console.log(ex))
-}
-
-export const fetchCluster = () => {
-  client.clusters.getClusters()
-    .then(clusters => {
-      store.dispatch(set(`clusters`, clusters))
-    })
-    .catch(ex => notify("error", "Error fetching clusters", ex.toString()))
-}
-
-export const fetchCred = () => {
-  client.clusters.getCred().then(data => {
-    store.dispatch(set('cred', data))
-  })
-    .catch(ex => console.log(ex))
-}
-
 export const onAppLoad = () => {
-  client.fetchEnv().then(({ enterprise, isProd, version }) => {
+  client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
     // Store env
-    storeEnv(enterprise, isProd, version)
+    saveEnv(isProd, version, clusterId, plan, quotas)
 
     // Redirect if needed
     redirectIfNeeded()
 
-    const token = localStorage.getItem("token")
+    const token = getToken()
+    const spaceUpToken = getSpaceUpToken()
     if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, isProd, enterprise)).catch(ex => {
+      client.refreshToken(token).then(token => fetchGlobalEntities(token, spaceUpToken)).catch(ex => {
         console.log("Error refreshing token: ", ex.toString())
         localStorage.removeItem("token")
         redirectIfNeeded()
@@ -344,25 +427,73 @@ export const onAppLoad = () => {
       return
     }
 
-    if (enterprise) {
-      fetchCluster()
-      handleInvoices()
-    }
-
-    fetchCred()
-    fetchGlobalEntities(token, enterprise, isProd)
+    fetchGlobalEntities(token, spaceUpToken)
   })
 }
 
-export const enterpriseSignin = (token) => {
+export function enterpriseSignin(token) {
   return new Promise((resolve, reject) => {
-    storeFirebaseToken(token)
-    client.enterpriseSignin(token).then(newToken => {
-      fetchGlobalEntities(newToken, true, true)
-      resolve()
-    }).catch((error) => {
-      reject(error)
-    })
+    client.billing.signIn(token)
+      .then(newToken => {
+        saveSpaceUpToken(newToken)
+        fetchBillingDetails().finally(() => resolve())
+      })
+      .catch((error) => reject(error))
+  })
+}
+
+export function registerCluster(clusterName, doesExist = false) {
+  return new Promise((resolve, reject) => {
+    const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
+    if (isClusterIdAlreadySet) {
+      reject(new Error("This space cloud cluster is already registered"))
+      return
+    }
+
+    client.billing.registerCluster(clusterName, doesExist)
+      .then(({ ack, clusterId, clusterKey }) => {
+        if (!ack) {
+          resolve({ registered: false })
+          return
+        }
+
+        client.setClusterIdentity(clusterId, clusterKey)
+          .then(() => {
+            resolve({ registered: true, notifiedToCluster: true })
+            store.dispatch(set("env.clusterId", clusterId))
+            client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => saveEnv(isProd, version, clusterId, plan, quotas))
+          })
+          .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function setClusterPlan(plan) {
+  return new Promise((resolve, reject) => {
+    const clusterId = getClusterId(store.getState())
+    client.billing.setPlan(clusterId, plan)
+      .then((plan) => {
+        client.renewClusterLicense()
+          .then(() => {
+            store.dispatch(set("env.plan", plan))
+            resolve()
+          })
+          .catch(ex => reject(ex))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function applyCoupon(couponCode) {
+  return new Promise((resolve, reject) => {
+    client.billing.applyCoupon(couponCode)
+      .then((couponValue) => {
+        if (couponValue < 0) couponValue = couponValue * -1
+        store.dispatch(increment("billing.balanceCredits", couponValue))
+        resolve(couponValue)
+      })
+      .catch(ex => reject(ex))
   })
 }
 
@@ -382,18 +513,58 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.crud.${alias}.type`, alias)
+
+export const BillingRoute = ({ component: Component, ...rest }) => {
+  const billingEnabled = isBillingEnabled(store.getState())
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        !billingEnabled ? (
+          <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
+        ) : (
+            <PrivateRoute {...props} component={Component} />
+          )
+      }
+    />
+  )
 }
 
+export const getDBTypeFromAlias = (projectId, alias) => {
+  const projects = get(store.getState(), "projects", [])
+  return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
+}
+
+export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
+  const dbType = getDBTypeFromAlias(projectId, dbAlias)
+  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
+}
+
+export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
+  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbAliasName}.preparedQueries.default.rule`, defaultPreparedQueryRule)
+}
+
+export const getDatabaseLabelFromType = (dbType) => {
+  switch (dbType) {
+    case dbTypes.MONGO: 
+    return "MongoDB"
+    case dbTypes.POSTGRESQL: 
+    return "PostgreSQL"
+    case dbTypes.MYSQL: 
+    return "MySQL"
+    case dbTypes.SQLSERVER: 
+    return "SQL Server"
+    case dbTypes.EMBEDDED: 
+    return "Embedded"
+  }
+}
 
 export const dbIcons = (project, projectId, selectedDb) => {
 
-  const crudModule = getProjectConfig(project, projectId, "modules.crud", {})
+  const dbModule = getProjectConfig(project, projectId, "modules.db", {})
 
   let checkDB = ''
-  if (crudModule[selectedDb]) checkDB = crudModule[selectedDb].type
+  if (dbModule[selectedDb]) checkDB = dbModule[selectedDb].type
 
   var svg = mongoSvg
   switch (checkDB) {
@@ -422,7 +593,7 @@ const getProjects = state => state.projects
 
 export const getTrackedCollectionNames = (state, projectId, dbName) => {
   const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.crud.${dbName}.collections`, {})
+  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
   const trackedCollections = Object.keys(collections)
     .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
   return trackedCollections
@@ -478,7 +649,7 @@ const removeRegex = (value, dataresponse) => {
 }
 
 export const getSchemas = (projectId, dbName) => {
-  const collections = getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections`, {})
+  const collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
   let schemaDefinitions = {}
   Object.entries(collections).forEach(([_, { schema }]) => {
     if (schema) {
@@ -494,7 +665,7 @@ export const getSchemas = (projectId, dbName) => {
 }
 
 export const getSchema = (projectId, dbName, colName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.crud.${dbName}.collections.${colName}.schema`, "")
+  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections.${colName}.schema`, "")
 }
 
 // Returns nested field definitions for a type from flat schema definitions 
@@ -518,6 +689,11 @@ const getFieldsQuery = (fields) => {
     if (!field.hasNestedFields) {
       return field.name + "\n"
     }
+    const fieldsQuery = getFieldsQuery(field.fields)
+    if (!fieldsQuery) {
+      return field.name + "\n"
+    }
+
     return field.name + " {" + getFieldsQuery(field.fields) + "}"
   })
 

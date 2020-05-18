@@ -6,6 +6,7 @@
     bottom: 0;
     background-color: #002c39;
     position: fixed;
+    overflow-y: auto;
 }
 
 .create-project--content {
@@ -14,53 +15,53 @@
     transform: translateY(-50%);
 }
 
-.ant-card{
+.create-project .ant-card{
     border-radius: 10px;
 }
 
-.ant-steps-item-process > .ant-steps-item-container > 
+.create-project .ant-steps-item-process > .ant-steps-item-container > 
 .ant-steps-item-content > .ant-steps-item-title {
     color: #ffffff;
 }
 
-.ant-steps-item-finish > .ant-steps-item-container > 
+.create-project .ant-steps-item-finish > .ant-steps-item-container > 
 .ant-steps-item-content > .ant-steps-item-title{
     color: rgba(255, 255, 255, 0.6);
 }
 
-.ant-steps-item-wait > .ant-steps-item-container > 
+.create-project .ant-steps-item-wait > .ant-steps-item-container > 
 .ant-steps-item-content > .ant-steps-item-title{
     color: rgba(255, 255, 255, 0.6);
 }
 
-.ant-steps-item-process .ant-steps-item-icon {
+.create-project .ant-steps-item-process .ant-steps-item-icon {
     background: #ffffff;
     border-color: #ffffff;
 }
 
-.ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
+.create-project .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
     color: #002C39;
 }
 
-.ant-steps-item-wait .ant-steps-item-icon {
+.create-project .ant-steps-item-wait .ant-steps-item-icon {
     background: #002C39;
     border-color: #ffffff;
 }
 
-.ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+.create-project .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
     color: #fafafa;
 }
 
-.ant-steps-item-finish .ant-steps-item-icon {
+.create-project .ant-steps-item-finish .ant-steps-item-icon {
     background: #002C39;
     border-color: #ffffff;
 }
 
-.ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+.create-project .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
     color: #fafafa;
 }
 
-.ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title::after {
+.create-project .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title::after {
     background-color: #ffffff;
 }
 
@@ -96,7 +97,7 @@
 }
 
 .create-project .ant-input-affix-wrapper .ant-input:not(:first-child) {
-    padding-left: 40px;
+    padding-left: 8px;
 }
 
 @media screen and (max-width:768px) {
@@ -147,8 +148,4 @@
 .db-btn {
     width: 100%;
     margin-top: 4%;
-}
-
-.skip-link {
-    margin-left: 4%;
 }

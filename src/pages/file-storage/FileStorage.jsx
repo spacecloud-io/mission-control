@@ -4,11 +4,11 @@ import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import ConfigurationForm from "../../components/file-storage/ConfigurationForm"
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
 import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
+import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
@@ -16,6 +16,7 @@ import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
 
 const Rules = (props) => {
+	const history = useHistory();
 	// Router params
 	const { projectID } = useParams()
 
@@ -54,6 +55,10 @@ const Rules = (props) => {
 	}, [selectedRuleName, noOfRules])
 
 	// Handlers
+	const handleFileConfig = () => {
+		history.push(`/mission-control/projects/${projectID}/file-storage/configure`);
+	}
+
 	const handleConfig = (config) => {
 		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
@@ -120,7 +125,7 @@ const Rules = (props) => {
 		return <div style={{ marginTop: 24 }}>
 			<div className="panel">
 				<img src={securitySvg} width="240px" />
-				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/auth/authorization">View Docs.</a></p>
+				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/storage/filestore/securing-apis/">View Docs.</a></p>
 				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
 			</div>
 		</div>
@@ -134,12 +139,12 @@ const Rules = (props) => {
 					{!enabled && <div className="panel">
 						<img src={fileStorageSvg} />
 						<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Manage files on scalable storage backend via Space Cloud without server side code</p>
-						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={() => setConfigurationModalVisible(true)}>
+						<Button type="primary action-rounded" style={{ marginTop: 16 }} onClick={handleFileConfig}>
 							Get started
 						</Button>
 					</div>}
 					{enabled && <React.Fragment>
-						<h3>Provider Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setConfigurationModalVisible(true)}>(Edit)</a></h3>
+						<h3>Provider Details <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={handleFileConfig}>(Edit)</a></h3>
 						<Descriptions bordered>
 							<Descriptions.Item label="Provider">{getFileStorageProviderLabelFromStoreType(connConfig.storeType)}</Descriptions.Item>
 							<Descriptions.Item label="Status" >
@@ -173,10 +178,6 @@ const Rules = (props) => {
 							</div>
 						</React.Fragment>}
 					</React.Fragment>}
-					{configurationModalVisible && <ConfigurationForm
-						handleSubmit={handleConfig}
-						handleCancel={() => setConfigurationModalVisible(false)}
-						initialValues={connConfig} />}
 					{addRuleModalVisible && <AddRuleForm
 						handleSubmit={handleAddRule}
 						handleCancel={() => setAddRuleModalVisible(false)} />}

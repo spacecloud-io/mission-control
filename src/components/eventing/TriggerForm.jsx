@@ -1,7 +1,8 @@
 import React, { useState } from "react"
-
+import { useSelector, useDispatch } from "react-redux"
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Modal, Form, Checkbox } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { Form, AutoComplete, Checkbox, Tooltip, Button, Input } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -10,48 +11,92 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify, parseJSONSafely } from "../../utils";
+import { get, set } from "automate-redux";
+import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
+import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
-const TriggerForm = (props) => {
+const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken }) => {
+  const [form] = Form.useForm()
+  const [eventType, setEventType] = useState(initialEventType);
+
+  const dispatch = useDispatch()
+  const [generateTokenModalVisible, setGenerateTokenModalVisible] = useState(false)
   const [data, setData] = useState("{}")
   const [eventResponse, setEventResponse] = useState("")
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
-  const { getFieldDecorator } = props.form;
+  const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
+  const token = useSelector(state => get(state, "uiState.eventing.token", ""))
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    props.form.validateFields((err, fieldsValue) => {
-      if (!err) {
-        try {
-          props.handleSubmit(JSON.parse(data), fieldsValue["isSynchronous"]).then(res => {
-            notify("success", "Success", "Event successfully queued to Space Cloud")
-            setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
-            if (!triggeredEventOnce) setTriggeredEventOnce(true)
-          }).catch(ex => notify("error", "Error", ex.toString()))
-        } catch (ex) {
-          notify("error", "Error", ex.toString())
-        }
-      }
-    });
+  const getToken = () => useInternalToken ? internalToken : token
+  const setToken = token => {
+    dispatch(set("uiState.eventing.token", token))
+    form.setFieldsValue({ token })
   }
 
+  const handleSearch = (value) => setEventType(value)
 
+  const handleClickSubmit = e => {
+    form.validateFields().then(fieldsValue => {
+      try {
+        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken()).then(res => {
+          notify("success", "Success", "Event successfully queued to Space Cloud")
+          setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
+          if (!triggeredEventOnce) setTriggeredEventOnce(true)
+        }).catch(ex => notify("error", "Error", ex.toString()))
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
+      }
+    });
+  };
+
+  const formInitialValues = {
+    eventType: initialEventType,
+    isSynchronous: false,
+    bypassSecurityRules: useInternalToken,
+    token: token
+  }
+  
   return (
-    <Modal
-      title="Trigger Event"
-      visible={true}
-      okText={triggeredEventOnce ? "Trigger another event" : "Trigger"}
-      onCancel={props.handleCancel}
-      onOk={handleSubmit}
-    >
-      <Form layout="vertical" onSubmit={handleSubmit}>
-        <Form.Item>
-          {getFieldDecorator('isSynchronous', {
-            initialValue: false,
-            valuePropName: "checked"
-          })(
-            <Checkbox>Trigger event synchronously</Checkbox>
-          )}
+    <React.Fragment>
+      <Form layout="vertical" form={form} initialValues={formInitialValues}
+        onFinish={handleClickSubmit}>
+        <FormItemLabel name='Event Type' />
+        <Form.Item name="eventType" rules={[{ required: true, message: `Event type is required` }]}>
+          <AutoComplete
+            placeholder="Example: event-type"
+            onSearch={handleSearch}
+          >
+            {eventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
+              <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
+            ))}
+          </AutoComplete>
         </Form.Item>
+        <Form.Item name="isSynchronous" valuePropName="checked">
+          <Checkbox>Trigger event synchronously</Checkbox>
+        </Form.Item>
+        <Form.Item>
+          <Form.Item name="bypassSecurityRules" valuePropName="checked" noStyle>
+            <Checkbox onChange={e => dispatch(set("uiState.eventing.useInternalToken", e.target.checked))}>Bypass security rules</Checkbox>
+          </Form.Item>
+          <Tooltip
+            placement='bottomLeft'
+            title='Use an internal token generated by Space Cloud to bypass all security rules for this request '
+          >
+            <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+          </Tooltip>
+        </Form.Item>
+        <ConditionalFormBlock dependency="bypassSecurityRules" condition={() => !form.getFieldValue("bypassSecurityRules")} >
+          <div style={{ display: "flex" }}>
+            <Form.Item name="token" style={{ flex: 1 }}>
+              <Input.Password
+                value={token}
+                placeholder='JWT Token'
+                onChange={e => dispatch(set("uiState.eventing.token", e.target.value))}
+              />
+            </Form.Item>
+            <Button onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
+          </div>
+        </ConditionalFormBlock>
         <FormItemLabel name="Event data" description="JSON object" />
         <CodeMirror
           value={data}
@@ -68,17 +113,26 @@ const TriggerForm = (props) => {
             setData(value)
           }}
         />
-
+        <br />
+        <Form.Item>
+          <Button htmlType="submit">{triggeredEventOnce ? "Trigger another event" : "Trigger event"}</Button>
+        </Form.Item>
       </Form>
+      {generateTokenModalVisible && <GenerateTokenForm
+        handleCancel={() => setGenerateTokenModalVisible(false)}
+        handleSubmit={setToken}
+        initialToken={token}
+        secret={secret}
+      />}
       {eventResponse && <React.Fragment>
-        <br/>
+        <br />
         <FormItemLabel name="Response" />
         <pre>{eventResponse}</pre>
       </React.Fragment>}
-    </Modal>
+    </React.Fragment>
   );
 }
 
 
-export default Form.create({})(TriggerForm)
+export default TriggerForm
 

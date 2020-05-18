@@ -29,7 +29,7 @@ const Schema = () => {
   const dispatch = useDispatch()
 
   // Derived properties
-  const collections = getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {})
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
   const schemas = Object.entries(collections).filter(([name]) => name !== "event_logs" && name !== "invocation_logs" && name !== "default").reduce((prev, [name, col]) => Object.assign(prev, { [name]: col.schema }), {})
 
   // Handlers

@@ -30,10 +30,10 @@ const DeploymentsOverview = () => {
   );
   const dockerSecrets = totalSecrets
     .filter(obj => obj.type === "docker")
-    .map(obj => obj.name);
+    .map(obj => obj.id);
   const secrets = totalSecrets
     .filter(obj => obj.type !== "docker")
-    .map(obj => obj.name);
+    .map(obj => obj.id);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [deploymentClicked, setDeploymentClicked] = useState(null);
 
@@ -107,7 +107,7 @@ const DeploymentsOverview = () => {
       ports: task.ports,
       cpu: task.resources.cpu / 1000,
       memory: task.resources.memory,
-      gpuType: task.resources.gpu ? task.resources.gpu.type : "per-second",
+      gpuType: task.resources.gpu ? task.resources.gpu.type : "",
       gpuCount: task.resources.gpu ? task.resources.gpu.value : 0,
       min: obj.scale.minReplicas,
       max: obj.scale.maxReplicas,
@@ -279,7 +279,7 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} />
+              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
             </React.Fragment>
           )}
         </div>

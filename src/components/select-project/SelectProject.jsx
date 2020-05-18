@@ -1,16 +1,17 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { get, set, reset } from 'automate-redux';
-import client from "../../client";
-import store from "../../store"
-import history from "../../history";
-import { openProject, notify } from "../../utils"
+import { useSelector } from 'react-redux'
+import { useParams, useHistory } from "react-router-dom";
+import { openProject } from "../../utils"
 
-import { Modal, Icon, Button, Table } from 'antd'
-import Header from "../../components/header/Header"
+import { CheckOutlined } from '@ant-design/icons';
+
+import { Modal, Button, Table } from 'antd';
 import './select-project.css'
 
-function SelectProject(props) {
+function SelectProject({ visible, handleCancel }) {
+  const { projectID } = useParams();
+  const history = useHistory()
+  const projects = useSelector(state => state.projects.map(({ id, name }) => Object.assign({ id, name, selected: id === projectID })))
   const columns = [
     {
       title: '',
@@ -19,9 +20,9 @@ function SelectProject(props) {
       render: (_, record) => {
         return (
           <div>
-            {record.selected && <Icon type="check" className="checked" />}
+            {record.selected && <CheckOutlined className="checked" />}
           </div>
-        )
+        );
       },
 
       onCell: (record, _) => {
@@ -31,19 +32,18 @@ function SelectProject(props) {
       }
     },
     { title: 'Project Name', dataIndex: 'name', key: 'projectName' },
-    { title: 'ID', dataIndex: 'projectId', key: 'projectId' }
+    { title: 'ID', dataIndex: 'id', key: 'id' }
   ];
 
-  const projects = props.projects.map(project => Object.assign({}, project, { selected: project.projectId === props.projectId }))
   return (
     <div >
       <Modal className="select-project" footer={null} closable={false} bodyStyle={{ widtht: "800" }}
         title={<div className="modal-header">
           <h2 className="modal-title">Select a project</h2>
-          <Button onClick={props.handleCreateProject}>Create a project</Button>
+          <Button onClick={() => history.push("/mission-control/create-project")}>Create a project</Button>
         </div>}
-        visible={props.visible}
-        onCancel={props.handleCancel}
+        visible={visible}
+        onCancel={handleCancel}
         width={700}
       >
         <Table
@@ -55,11 +55,9 @@ function SelectProject(props) {
           onRow={(record) => {
             return {
               onClick: () => {
-                {
-                  if (!record.selected) {
-                    props.handleProjectChange(record.projectId)
-                    props.handleCancel()
-                  }
+                if (!record.selected) {
+                  openProject(record.id)
+                  handleCancel()
                 }
               }
             };
@@ -70,28 +68,5 @@ function SelectProject(props) {
   )
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    projectId: get(state, "config.id", ""),
-    projects: get(state, "projects", []).map(obj => Object.assign({}, { projectId: obj.id, name: obj.name })),
-    visible: ownProps.visible
-  }
-}
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    handleCreateProject: () => {
-      const mode = get(store.getState(), "operationConfig.mode", 0)
-      if (mode < 1) {
-        notify("info", "Info", "You need to upgrade to create multiple projects on the same cluster")
-        return
-      }
-      history.push("/mission-control/create-project")
-    },
-    handleProjectChange: openProject,
-    handleCancel: ownProps.handleCancel
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SelectProject);
+export default SelectProject;
 

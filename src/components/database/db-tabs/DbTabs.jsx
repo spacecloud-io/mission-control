@@ -1,10 +1,12 @@
 import React from 'react';
 import { Tabs } from 'antd';
-import { Redirect, useParams } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import "./db-tabs.css"
+import { canDatabaseHavePreparedQueries } from '../../../utils';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
+  const showPreparedQueriesTab = canDatabaseHavePreparedQueries(projectID, selectedDB)
   return (
     <div className="db-tabs">
       <Tabs defaultActiveKey={activeKey} >
@@ -15,6 +17,7 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
+<<<<<<< HEAD
         <TabPane tab='Browse' key='browse'>
           <Redirect
             to={{
@@ -22,6 +25,15 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
+=======
+        {showPreparedQueriesTab && <TabPane tab='Prepared queries' key='preparedQueries'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`
+            }}
+          />
+        </TabPane>}
+>>>>>>> v0.19.0
         <TabPane tab='Rules' key='rules'>
           <Redirect
             to={{
@@ -36,7 +48,7 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
-        <TabPane tab='Queries' key='queries'>
+        <TabPane tab='Sample queries' key='queries'>
           <Redirect
             to={{
               pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/queries`

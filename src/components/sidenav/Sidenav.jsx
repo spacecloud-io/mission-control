@@ -5,8 +5,10 @@ import './sidenav.css'
 import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
-import { Collapse, Divider, Icon, Button } from "antd";
+import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Collapse, Divider, Button } from "antd";
 import history from "../../history"
+import { capitalizeFirstCharacter, getClusterPlan } from '../../utils';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -30,17 +32,24 @@ const PanelItem = (props) => {
     </div>
   )
 }
-
+const getPlanName = (planId) => {
+  // Strip the monthly/yearly and inr details from the plan id
+  const temp = planId.split("--")[0]
+  // Remove the space-cloud- prefix
+  let plan = temp.replace("space-cloud-", "")
+  if (plan === "open") plan = "opensource"
+  // Make first letter of each word capital. eg my-custom -> My Custom
+  const planName = plan.split("-").map(s => capitalizeFirstCharacter(s)).join(" ")
+  return planName
+}
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const version = useSelector(state => state.version)
-  const enterpriseMode = localStorage.getItem('enterprise') === 'true';
+  const version = useSelector(state => state.env.version)
   const billingEnabled = useSelector(state => state.billing.status ? true : false)
-
-  const plan = enterpriseMode ? (billingEnabled ? "Premium" : "Free") : "Opensource"
-
+  const plan = useSelector(state => getClusterPlan(state))
+  const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
@@ -49,10 +58,7 @@ const Sidenav = (props) => {
     store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
   }
 
-  const handleClickUpgrade = () => {
-    if (enterpriseMode) history.push(`/mission-control/projects/${projectID}/billing`)
-    else window.open("https://console.spaceuptech.com/mission-control")
-  }
+  const handleClickUpgrade = () => history.push(`/mission-control/projects/${projectID}/billing`)
 
 
   return (
@@ -68,7 +74,7 @@ const Sidenav = (props) => {
             expandIconPosition="right"
             onChange={setActiveKeys}
             activeKey={sideNavActiveKeys}
-            expandIcon={({ isActive }) => <Icon type="down" rotate={isActive ? 180 : 0} />}>
+            expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}>
             <Panel header={<Header name="Storage" icon="dns" />} key="1">
               <Link to={`/mission-control/projects/${projectID}/database`} onClick={closeSidenav}>
                 <PanelItem name="Database" active={props.selectedItem === 'database'} />
@@ -90,17 +96,14 @@ const Sidenav = (props) => {
               <Link to={`/mission-control/projects/${projectID}/secrets`} onClick={closeSidenav}>
                 <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/routing`} onClick={closeSidenav}>
-                <PanelItem name="Routing" active={props.selectedItem === 'routing'} />
+              <Link to={`/mission-control/projects/${projectID}/ingress-routes`} onClick={closeSidenav}>
+                <PanelItem name="Ingress Routing" active={props.selectedItem === 'routing'} />
               </Link>
             </Panel>
           </Collapse>
-          <Link to={`/mission-control/projects/${projectID}/auth`} onClick={closeSidenav}>
-            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'auth'} />
+          <Link to={`/mission-control/projects/${projectID}/userman`} onClick={closeSidenav}>
+            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'userman'} />
           </Link>
-          {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/clusters`} onClick={closeSidenav}>
-            <SidenavItem name="Clusters" icon="cloud" active={props.selectedItem === 'clusters'} />
-          </Link>}
           <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
             <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
           </Link>
@@ -115,18 +118,18 @@ const Sidenav = (props) => {
           {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link> */}
-          {enterpriseMode && <Link to={`/mission-control/projects/${projectID}/billing`} onClick={closeSidenav}>
+          <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
             <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link>}
+          </Link>
         </div>
         <div className="sidenav-version">
-          <Icon type="info-circle" style={{ fontSize: "20px", fontWeight: "700" }} />
+          <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
-          <p className="plan">{plan} plan</p>
-          {!billingEnabled && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
+          <p className="plan">{planName} plan</p>
+          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
         </div>
       </div>
     </div>
-  )
+  );
 }
 export default Sidenav;

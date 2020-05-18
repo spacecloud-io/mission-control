@@ -4,10 +4,12 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
 	projects: [],
+	clusters: [],
 	serviceRoutes: {},
 	pendingRequests: 0,
 	uiState: {
 		selectedCollection: "",
+		showSigninModal: false,
 		showSidenav: false,
 		sideNavActiveKeys: ["1", "2"],
 		eventFilters: {
@@ -20,13 +22,20 @@ const initialState = {
       sorters: []
     }
 	},
-	clusters: [],
 	eventLogs: [],
-	cred: {},
+	credentials: {},
+	env: {
+		version: "",
+		clusterId: null,
+		plan: "space-cloud-open--monthly",
+		quotas: { maxDatabases: 1, maxProjects: 1 }
+	},
 	billing: {
 		status: false,
-		invoices: [{}]
-	}
+		balanceCredits: 0,
+		details: {}
+	},
+	invoices: []
 };
 
 // Generate reducers with the initial state and pass it to the redux store

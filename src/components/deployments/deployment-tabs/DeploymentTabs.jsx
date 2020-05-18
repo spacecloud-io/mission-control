@@ -15,10 +15,10 @@ export default ({ activeKey, projectID }) => {
             }}
           />
         </TabPane>
-        <TabPane tab='Rules' key='rules'>
+        <TabPane tab='Routes' key='routes'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/deployments/rules`
+              pathname: `/mission-control/projects/${projectID}/deployments/routes`
             }}
           />
         </TabPane>
