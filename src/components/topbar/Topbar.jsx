@@ -110,13 +110,11 @@ const Topbar = (props) => {
                 <img src={githubIcon} />
               </a>
             </Menu.Item>
-            <Divider type="vertical" style={{ height: "40px" }} />
             <Menu.Item>
               <Popover content={content} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: "center" }}>
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
-            <Divider type="vertical" style={{ height: "40px" }} />
             <Menu.Item>
               <Popover className="signin-popover" content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }} >
                 <img src={avatarSvg} />

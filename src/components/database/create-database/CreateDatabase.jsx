@@ -121,44 +121,43 @@ const CreateDatabase = (props) => {
         }]}>
           <Input placeholder="eg: mongo" />
         </Form.Item>
-        <div style={{ paddingBottom: 18 }}>
-          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.alias != curr.alias} dependencies={["alias"]}>
-            {() => {
-              const aliasValue = form.getFieldValue("alias")
-              try {
-                const data = aliasValue.length > 0 ? (gqlPrettier(
-                  `{ query { 
+        <Form.Item shouldUpdate={(prev, curr) => prev.alias != curr.alias} dependencies={["alias"]}>
+          {() => {
+            const aliasValue = form.getFieldValue("alias")
+            try {
+              const data = aliasValue.length > 0 ? (gqlPrettier(
+                `{ query { 
                     articles @${aliasValue} { 
                     id 
                     name 
                   }
                 }}`
-                )) : ("")
-                return (
-                  <React.Fragment>
+              )) : ("")
+              return (
+                <React.Fragment>
                   <FormItemLabel name="Example GraphQL query:" hint="Query articles tables (Note the alias directive):" />
-                    <CodeMirror
-                      value={data}
-                      options={{
-                        mode: { name: "javascript", json: true },
-                        lineNumbers: true,
-                        styleActiveLine: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        tabSize: 2,
-                        autofocus: true,
-                        readOnly: true
-                      }}
-                    />
-                  </React.Fragment>
-                )
-              } catch (error) {
-                return null
-              }
-            }}
-          </Form.Item>
-        </div>
-        <Form.Item>
+                  <CodeMirror
+                    value={data}
+                    className="add-database-code-mirror"
+                    options={{
+                      mode: { name: "javascript", json: true },
+                      lineNumbers: true,
+                      styleActiveLine: true,
+                      matchBrackets: true,
+                      autoCloseBrackets: true,
+                      tabSize: 2,
+                      autofocus: true,
+                      readOnly: true
+                    }}
+                  />
+                </React.Fragment>
+              )
+            } catch (error) {
+              return null
+            }
+          }}
+        </Form.Item>
+        <Form.Item noStyle>
           <Button type="primary" htmlType="submit" block>Add database</Button>
         </Form.Item>
       </Form>
