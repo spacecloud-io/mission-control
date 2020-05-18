@@ -17,7 +17,6 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
-<<<<<<< HEAD
         <TabPane tab='Browse' key='browse'>
           <Redirect
             to={{
@@ -25,7 +24,6 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
-=======
         {showPreparedQueriesTab && <TabPane tab='Prepared queries' key='preparedQueries'>
           <Redirect
             to={{
@@ -33,7 +31,6 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>}
->>>>>>> v0.19.0
         <TabPane tab='Rules' key='rules'>
           <Redirect
             to={{
