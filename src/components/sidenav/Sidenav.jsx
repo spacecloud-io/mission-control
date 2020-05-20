@@ -47,7 +47,6 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const version = useSelector(state => state.env.version)
-  const billingEnabled = useSelector(state => state.billing.status ? true : false)
   const plan = useSelector(state => getClusterPlan(state))
   const planName = getPlanName(plan)
   const closeSidenav = () => {

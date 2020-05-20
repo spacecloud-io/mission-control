@@ -45,12 +45,12 @@ const CreateProject = () => {
   const addDatabase = (alias, connectionString, defaultDBRules, dbType, dbName) => {
     dispatch(increment("pendingRequests"))
     dbEnable(projects, projectId, alias, dbType, dbName, connectionString, defaultDBRules)
-    .then(() => {
-      history.push(`/mission-control/projects/${projectId}`)
-      notify("success", "Success", "Successfully added database")
-    })
-    .catch(ex => notify("error", "Error adding database", ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
+      .then(() => {
+        history.push(`/mission-control/projects/${projectId}`)
+        notify("success", "Success", "Successfully added database")
+      })
+      .catch(ex => notify("error", "Error adding database", ex))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const steps = [{
@@ -73,7 +73,7 @@ const CreateProject = () => {
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <CreateDatabase projectId={projectId} handleSubmit={addDatabase} />
-          <center><Link to={`/mission-control/projects/${projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
+          <center style={{ marginTop: 16 }}><Link to={`/mission-control/projects/${projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
         </Col>
       </Row>
     </React.Fragment>
@@ -81,18 +81,16 @@ const CreateProject = () => {
 
   return (
     <div className="create-project">
-      <div className="create-project--content">
-        <Row>
-          <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
-            <Steps current={current} className="step-display" size="small">
-              {steps.map(item => (
-                <Step key={item.title} title={item.title} />
-              ))}
-            </Steps><br />
-          </Col>
-        </Row>
-        {steps[current].content}
-      </div>
+      <Row>
+        <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
+          <Steps current={current} className="step-display" size="small">
+            {steps.map(item => (
+              <Step key={item.title} title={item.title} />
+            ))}
+          </Steps><br />
+        </Col>
+      </Row>
+      {steps[current].content}
     </div>
   )
 }
