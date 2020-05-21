@@ -41,7 +41,7 @@ const Settings = () => {
   const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbAlias")
   const canDisableDB = eventingDB !== selectedDB
 
-  const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`, projectID)
+  const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`, projectID)
   const type = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
 
   // This is used to bind the form initial values on page reload. 
@@ -71,7 +71,7 @@ const Settings = () => {
   const handleDisable = () => {
     let conn = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
     let dbType = getDBTypeFromAlias(projectID, selectedDB)
-    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
     dispatch(increment("pendingRequests"))
     setDBConfig(projectID, selectedDB, false, conn, dbType, dbName, false)
       .then(() => {
@@ -160,7 +160,7 @@ const Settings = () => {
               type="info"
               showIcon />
             <Form layout="vertical" form={form} onFinish={handleChangeDBName} style={{ width: 300, marginTop: 16 }} initialValues={{ dbName: dbName }}>
-              <Form.Item name="dbName" initialValue={dbName} rules={[{ required: true, message: 'Please provide dbName' }]}>
+              <Form.Item name="dbName" initialValue={dbName} rules={[{ required: true, message: 'Please provide database/schema name' }]}>
                 <Input placeholder="" />
               </Form.Item>
               <Form.Item>

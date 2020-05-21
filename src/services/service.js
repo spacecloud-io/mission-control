@@ -162,12 +162,12 @@ class Service {
         client.mutate({
           mutation: gql`${graphqlQuery}`,
           variables: variables
-        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+        }).then(({ data, errors }) => resolve({ data, errors })).catch(ex => reject(ex))
       } else {
         client.query({
           query: gql`${graphqlQuery}`,
           variables: variables
-        }).then(result => resolve(result.data)).catch(ex => reject(ex))
+        }).then(({ data, errors }) => resolve({ data, errors })).catch(ex => reject(ex))
       }
     })
   }

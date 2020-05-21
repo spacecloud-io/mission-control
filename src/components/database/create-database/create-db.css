@@ -12,6 +12,11 @@
   width: 100%;
   margin-top: 4%;
 }
+
+.add-database-code-mirror > .CodeMirror {
+  height: 200px;
+}
+
 @media screen and (max-width: 768px) {
   .db-btn {
     margin-bottom: 60px;
