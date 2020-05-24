@@ -131,8 +131,7 @@ class Service {
 
   execSpaceAPI(projectId, code, token) {
     return new Promise((resolve, reject) => {
-      const url = process.env.REACT_APP_DISABLE_MOCK ? "http://localhost:4122" : undefined
-      const api = new API(projectId, url)
+      const api = new API(projectId, spaceCloudClusterOrigin)
       if (token) {
         api.setToken(token)
       }
