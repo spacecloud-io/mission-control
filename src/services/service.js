@@ -79,7 +79,7 @@ class Service {
           reject("Internal server error")
           return
         }
-        resolve(data)
+        resolve(data.result)
       }).catch(ex => reject(ex.toString()))
     })
   }

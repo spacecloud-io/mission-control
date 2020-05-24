@@ -248,19 +248,3 @@ export const changeDatabaseName = (projectId, aliasName, dbName) => {
       .catch(ex => reject(ex))
   })
 }
-
-export const changeDatabaseAliasName = (projectId, aliasName, newAliasName) => {
-  return new Promise((resolve, reject) => {
-    const projects = store.getState().projects
-    const { type, conn, name } = getProjectConfig(projects, projectId, `modules.db.${aliasName}`)
-    const defaultCollectionRule = getProjectConfig(projects, projectId, `modules.db.${aliasName}.collections.default.rules`, {})
-    const defaultPreparedQueryRule = getDefaultPreparedQueriesRule(projectId, aliasName)
-    removeDBConfig(projectId, aliasName)
-      .then(() => {
-        dbEnable(projects, projectId, newAliasName, type, name, conn, defaultCollectionRule, defaultPreparedQueryRule)
-          .then(() => resolve())
-          .catch(ex => reject(ex))
-      })
-      .catch(ex => reject(ex))
-  })
-}

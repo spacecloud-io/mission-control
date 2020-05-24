@@ -6,10 +6,11 @@ import BillingTabs from '../../components/billing/billing-tabs/BillingTabs';
 import PlanDetails from '../../components/billing/plan/PlanDetails';
 import BillingDetails from '../../components/billing/billing-details/BillingDetails';
 import SelectPlan from '../../components/billing/select-plan/SelectPlan';
-import { Row, Col } from 'antd';
+import ProjectPageLayout, { InnerTopBar, Content } from "../../components/project-page-layout/ProjectPageLayout"
+import { Row, Col, Card, Button, Space } from 'antd';
 import BalanceCredit from '../../components/billing/balance-credit/BalanceCredit';
 import ContactUsFab from "../../components/billing/contact-us/ContactUsFab";
-import { getClusterPlan } from '../../utils';
+import { getClusterPlan, getClusterId } from '../../utils';
 import { useSelector } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import './billing.css';
@@ -28,15 +29,19 @@ const BillingOverview = () => {
   const countryCode = useSelector(state => state.billing.details.country)
   const currencyNotation = countryCode === "IN" ? "₹" : "$"
   const plan = useSelector(state => getClusterPlan(state))
+  const clusterId = useSelector(state => getClusterId(state))
+  const clusterRegistered = clusterId ? true : false
+
+  const handleClickRegisterCluster = () => history.push(`/mission-control/projects/${projectID}/billing/register-cluster`)
 
   return (
     <div>
       <Topbar showProjectSelector />
       <Sidenav selectedItem="billing" />
-      <div className='page-content page-content--no-padding'>
+      <ProjectPageLayout>
         <BillingTabs activeKey="overview" projectID={projectID} />
-        <div className="billing-tab-content">
-          <Row gutter={48}>
+        <Content>
+          <Row gutter={48} style={{ height: 360 }}>
             <Col lg={{ span: 11 }}>
               <BillingDetails name={name} email={email} billingDetails={billingDetails} />
             </Col>
@@ -44,6 +49,16 @@ const BillingOverview = () => {
               <BalanceCredit currencyNotation={currencyNotation} balanceCredits={balanceCredits} />
             </Col>
           </Row>
+          {!clusterRegistered && <Row style={{ marginTop: 32 }}>
+            <Col lg={{ span: 24 }}>
+              <Card style={{ textAlign: "center" }}>
+                <Space size="large">
+                  <span>Register this cluster with your billing account</span>
+                  <Button type="primary" ghost onClick={handleClickRegisterCluster}>Register Cluster</Button>
+                </Space>
+              </Card>
+            </Col>
+          </Row>}
           <Row>
             {plan.startsWith("space-cloud-open") && <Col lg={{ span: 24 }}>
               <h3 style={{ marginBottom: "0", fontSize: "21px", marginTop: 24 }}>Upgrade cluster</h3>
@@ -57,9 +72,9 @@ const BillingOverview = () => {
               <PlanDetails plan={plan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/change-plan`)} />
             </Col>}
           </Row>
-        </div>
+        </Content>
         <ContactUsFab />
-      </div>
+      </ProjectPageLayout>
     </div>
   )
 }
