@@ -20,11 +20,11 @@ const RegisterCluster = (props) => {
       <Col xl={{ span: 10, offset: 7 }} lg={{ span: 18, offset: 3 }}>
         <Card style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', padding: '24px' }}>
           <Form onFinish={handleSubmit}>
-            <FormItemLabel name="Name this cluster" description="Cluster name is used to identify this cluster uniquely in your invoices" />
+            <FormItemLabel name="Name this cluster" description="Cluster name is used to uniquely identify this" />
             <Form.Item name="clusterName" rules={[{ required: true, message: 'Please input cluster name' }]}>
               <AutoComplete placeholder="e.g. Testing Cluster" dataSource={clusterNames} />
             </Form.Item>
-            <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: '24px' }} >Register cluster</Button>
+            <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: '24px' }}>Register cluster</Button>
           </Form>
         </Card>
       </Col>

@@ -120,7 +120,7 @@ const Overview = () => {
   const handleEditConnString = (conn) => {
     setConformLoading(true);
     const dbType = getDBTypeFromAlias(projectID, selectedDB)
-    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
     setDBConfig(projectID, selectedDB, true, conn, dbType, dbName, false)
       .then(() => {
         notify("success", "Connection successful", `Connected to ${dbType} successfully`)
