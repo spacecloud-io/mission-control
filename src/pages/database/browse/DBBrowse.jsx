@@ -34,7 +34,7 @@ const Browse = () => {
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
 
-  const collections = Object.keys(getProjectConfig(projects, projectID, `modules.crud.${selectedDB}.collections`, {}));
+  const collections = Object.keys(getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {}));
   const dbAlias = getProjectConfig(projects, projectID, `modules.eventing.dbType`);
   const api = new API(projectID, "http://localhost:4122");
   const db = api.DB(dbAlias);
@@ -82,13 +82,17 @@ const Browse = () => {
       let filtersCond = [];
       let sortersCond = [];
 
-      for(let el of filters){
-        filtersCond.push(cond(el.column, el.operation, el.value))
+      if(filters) {
+        for(let el of filters){
+          filtersCond.push(cond(el.column, el.operation, el.value))
+        }
       }
       
-      for(let el of sorters){
-        if (el.order === "descending") sortersCond.push(`-${el.column}`)
-        else sortersCond.push(el.column)
+      if(sorters) {
+        for(let el of sorters){
+          if (el.order === "descending") sortersCond.push(`-${el.column}`)
+          else sortersCond.push(el.column)
+        }
       }
 
       dispatch(increment("pendingRequests"));
@@ -145,10 +149,11 @@ const Browse = () => {
     db.insert(selectedCol).doc(docs).apply()
     .then(res => {
       if(res.status !== 200){
-        notify("error", "Error", "There was some error inserting a row", 3);
+        notify("error", "Error", res.data.error, 5);
         return;
       }
-      notify("success", "Successfully inserted a row!", "", 3);
+      notify("success", "Successfully inserted a row!", "", 5);
+      setCounter(counter+1);
     })
 
     setInsertRowFormVisibility(false);
@@ -175,6 +180,7 @@ const Browse = () => {
       return;
     }
     notify("success", `field ${column} successfully updated!`, "", 5);
+    setCounter(counter+1);
   }
 
   const  EditRow = values => {

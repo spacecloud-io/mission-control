@@ -1,18 +1,8 @@
-import React from 'react';
-import './edit-row-modal.css';
-import {
-  Modal,
-  Form,
-  Input,
-  Row,
-  Col,
-  Button,
-  Icon,
-  Select,
-  InputNumber,
-  DatePicker,
-} from 'antd';
-import FormItemLabel from '../../form-item-label/FormItemLabel';
+import React, {useState} from 'react';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker } from 'antd';
+import { MinusCircleOutlined } from '@ant-design/icons';
+import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
+import {generateId} from '../../../utils';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -20,429 +10,506 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import { generateId } from '../../../utils';
 
-let rows = 1;
-let arrays = 1;
+const jsoncode = [];
 const EditRowForm = (props) => {
-  const {
-    getFieldDecorator,
-    getFieldValue,
-    setFieldsValue,
-  } = props.form;
-
-  const handleSubmitClick = (e) => {
-    if (e) e.preventDefault();
-    props.form.validateFields((err, values) => {
-      if (!err) {
-        values.rows = values.rows.filter((val) => val);
-        values.rows.forEach((val, index) => {
-          if (val.datatype === 'array') {
-            values.rows[index].value = val.arrays
-              .filter((el) => el)
-              .map((el) => el.value);
-          }
-          if (val.datatype === 'json') {
-            values.rows[index].value = JSON.parse(val.value);
-          }
-        });
-        props.EditRow(values.rows);
-      }
-    });
+  const [form] = Form.useForm();
+  const [counter, setCounter] = useState(0);
+  const onFinish = () => {
+    form.validateFields().then(values => {
+      values.rows.forEach((val, index) => {
+        if(val.datatype === "array") {
+          values.rows[index].value = val.arrays.map(el => el.value);
+        }
+        if(val.datatype === "json") {
+          values.rows[index].value = JSON.parse(jsoncode[index])
+        }
+      })
+      props.EditRow(values.rows);
+    })
   };
 
-  const defaultRules = { required: true, message: 'Please fill this field' };
-  const initialKeys = [0];
-  //ARRAYS
-  const removeArray = (k) => {
-    const arrayKeys = getFieldValue('arrayKeys');
-    if (arrayKeys.length === 1) {
-      return;
-    }
-
-    setFieldsValue({
-      arrayKeys: arrayKeys.filter((key) => key !== k),
-    });
-  };
-
-  const addArray = () => {
-    const arrayKeys = getFieldValue('arrayKeys');
-    const nextKeys = arrayKeys.concat(arrays++);
-    setFieldsValue({
-      arrayKeys: nextKeys,
-    });
-  };
-
-  getFieldDecorator('arrayKeys', { initialValue: initialKeys });
-  const arrayKeys = getFieldValue('arrayKeys');
-
-  // ROWS
-  const removeRow = (k) => {
-    const rowKeys = getFieldValue('rowKeys');
-    if (rowKeys.length === 1) {
-      return;
-    }
-
-    setFieldsValue({
-      rowKeys: rowKeys.filter((key) => key !== k),
-    });
-  };
-
-  const rowAdd = () => {
-    const rowKeys = getFieldValue('rowKeys');
-    const nextKeys = rowKeys.concat(rows++);
-    setFieldsValue({
-      rowKeys: nextKeys,
-    });
-  };
-
-  getFieldDecorator('rowKeys', { initialValue: initialKeys });
-  const rowKeys = getFieldValue('rowKeys');
-  const formItemsRows = rowKeys.map((k, index) => (
-    <>
-      <Row key={k} gutter={12}>
-        <Col span={5}>
-          <Form.Item style={{ display: 'inline-block' }}>
-            {getFieldDecorator(`rows[${k}].column`, { rules: [defaultRules] })(
-              <Input placeholder='column' />
-            )}
-          </Form.Item>
-        </Col>
-        <Col span={5}>
-          <Form.Item style={{ display: 'inline-block', width: '100%' }}>
-            {getFieldDecorator(`rows[${k}].operation`, {
-              initialValue: 'set',
-            })(
-              <Select placeholder='operation'>
-                <Select.Option value='set'>Set</Select.Option>
-                {props.selectedDB === "mongo" && (
-                <Select.Option value='unset'>Unset</Select.Option>
-                )}
-                {props.selectedDB === "mongo" && (
-                <Select.Option value='rename'>Rename</Select.Option>
-                )}
-                <Select.Option value='inc'>Increment</Select.Option>
-                <Select.Option value='multiply'>Multiply</Select.Option>
-                <Select.Option value='min'>Min</Select.Option>
-                <Select.Option value='max'>Max</Select.Option>
-                <Select.Option value='currentDate'>Current Date</Select.Option>
-                <Select.Option value='currentTimestamp'>
-                  Current Timestamp
-                </Select.Option>
-                {props.selectedDB === "mongo" && (
-                <Select.Option value='push'>Push</Select.Option>
-                )}
-              </Select>
-            )}
-          </Form.Item>
-        </Col>
-        {
-        getFieldValue(`rows[${k}].operation`) === 'rename' ? (
-          <Col span={13}>
-            {getFieldDecorator(`rows[${k}].value`, {
-              rules: [defaultRules],
-            })(<Input placeholder='value' />)}
-          </Col>
-        ) : (
-          ''
-        )}
-        {getFieldValue(`rows[${k}].operation`) === 'inc' ||
-        getFieldValue(`rows[${k}].operation`) === 'multiply' ||
-        getFieldValue(`rows[${k}].operation`) === 'min' ||
-        getFieldValue(`rows[${k}].operation`) === 'max' ? (
-          <Col span={13}>
-            {getFieldDecorator(`rows[${k}].value`, {
-              rules: [defaultRules],
-            })(<InputNumber style={{ width: '100%' }} placeholder='value' />)}
-          </Col>
-        ) : (
-          ''
-        )}
-        {getFieldValue(`rows[${k}].operation`) === 'set' ||
-        getFieldValue(`rows[${k}].operation`) === 'push' ? (
-          <>
-            <Col span={5}>
-              <Form.Item style={{ display: 'inline-block', width: '100%' }}>
-                {getFieldDecorator(`rows[${k}].datatype`, {
-                  initialValue: 'string',
-                })(
-                  <Select placeholder='datatype'>
-                    <Select.Option value='id'>ID</Select.Option>
-                    <Select.Option value='string'>String</Select.Option>
-                    <Select.Option value='integer'>Integer</Select.Option>
-                    <Select.Option value='float'>Float</Select.Option>
-                    <Select.Option value='boolean'>Boolean</Select.Option>
-                    <Select.Option value='datetime'>Datetime</Select.Option>
-                    <Select.Option value='json'>json/object</Select.Option>
-                    <Select.Option value='array'>Array</Select.Option>
-                  </Select>
-                )}
-              </Form.Item>
-            </Col>
-            {getFieldValue(`rows[${k}].datatype`) !== 'array' && (
-              <Col span={8}>
-                <Form.Item
-                  style={{
-                    display: 'inline-block',
-                    width: '100%',
-                    border:
-                      getFieldValue(`rows[${k}].datatype`) === 'json'
-                        ? '1px solid #D9D9D9'
-                        : '',
-                  }}
-                >
-                  {getFieldValue(`rows[${k}].datatype`) === 'id' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      rules: [defaultRules],
-                    })(
-                      <Input
-                        placeholder='value'
-                        suffix={
-                          <Button
-                            type='link'
-                            onClick={() => {
-                              const field = `rows[${k}].value`;
-                              setFieldsValue({ [field]: generateId(17) });
-                            }}
-                          >
-                            Auto ID
-                          </Button>
+  return (
+    <Modal
+      title="Update row's value"
+      okText='Apply'
+      visible={props.visible}
+      cancelText='Cancel'
+      onCancel={props.handleCancel}
+      onOk={onFinish}
+      className='filter-sorter-modal'
+    >
+      <Form name='edit_row' form={form}>
+        <Form.List name='rows'>
+          {(fields, { add, remove }) => {
+            return (
+              <div>
+                {fields.map((field, index) => (
+                  <>
+                  <Row key={field.key} gutter={10}>
+                    <Col span={5}>
+                      <Form.Item
+                        name={[field.name, 'column']}
+                        key={[field.name, 'column']}
+                        style={{ display: 'inline-block' }}
+                        rules={[
+                          { required: true, message: 'Please enter column!' },
+                        ]}
+                      >
+                        <Input placeholder='column' />
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        name={[field.name, 'operation']}
+                        key={[field.name, 'operation']}
+                        style={{ display: 'inline-block', width: '100%' }}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please select operation!',
+                          },
+                        ]}
+                      >
+                        <Select placeholder='operation'>
+                          <Select.Option value='set'>Set</Select.Option>
+                          {props.selectedDB === "mongo" && (
+                          <Select.Option value='unset'>Unset</Select.Option>
+                          )}
+                          {props.selectedDB === "mongo" && (
+                          <Select.Option value='rename'>Rename</Select.Option>
+                          )}
+                          <Select.Option value='inc'>Increment</Select.Option>
+                          <Select.Option value='multiply'>Multiply</Select.Option>
+                          <Select.Option value='min'>Min</Select.Option>
+                          <Select.Option value='max'>Max</Select.Option>
+                          <Select.Option value='currentDate'>Current Date</Select.Option>
+                          <Select.Option value='currentTimestamp'>
+                            Current Timestamp
+                          </Select.Option>
+                          {props.selectedDB === "mongo" && (
+                          <Select.Option value='push'>Push</Select.Option>
+                          )}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "operation"]) === "rename"}>
+                      <Col span={12}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <Input placeholder='value' />
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock 
+                        shouldUpdate={true} 
+                        condition={() => 
+                          form.getFieldValue(["rows", field.name, "operation"]) === "inc" || 
+                          form.getFieldValue(["rows", field.name, "operation"]) === "multiply" ||
+                          form.getFieldValue(["rows", field.name, "operation"]) === "min" ||
+                          form.getFieldValue(["rows", field.name, "operation"]) === "max"
                         }
-                      />
-                    )}
-                  {getFieldValue(`rows[${k}].datatype`) === 'string' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      rules: [defaultRules],
-                    })(<Input placeholder='value' />)}
-                  {getFieldValue(`rows[${k}].datatype`) === 'integer' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      rules: [defaultRules],
-                    })(
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        placeholder='value'
-                      />
-                    )}
-                  {getFieldValue(`rows[${k}].datatype`) === 'float' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      rules: [defaultRules],
-                    })(
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        placeholder='value'
-                      />
-                    )}
-                  {getFieldValue(`rows[${k}].datatype`) === 'boolean' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      initialValue: true,
-                    })(
-                      <Select>
-                        <Select.Option value={true}>true</Select.Option>
-                        <Select.Option value={false}>false</Select.Option>
-                      </Select>
-                    )}
-                  {getFieldValue(`rows[${k}].datatype`) === 'datetime' &&
-                    getFieldDecorator(`rows[${k}].value`, {
-                      rules: [defaultRules],
-                    })(<DatePicker showTime />)}
-                  {getFieldValue(`rows[${k}].datatype`) === 'json' && (
-                    <>
-                      {getFieldDecorator(`rows[${k}].value`, {
-                        initialValue: '{}',
-                      })}
-                      <CodeMirror
-                        value={getFieldValue(`rows[${k}].value`)}
-                        style={{ width: '100%', border: '1px solid #D9D9D9' }}
-                        options={{
-                          mode: { name: 'javascript', json: true },
-                          lineNumbers: true,
-                          styleActiveLine: true,
-                          matchBrackets: true,
-                          autoCloseBrackets: true,
-                          tabSize: 2,
-                          autofocus: true,
-                        }}
-                        onBeforeChange={(editor, data, value) => {
-                          const key = `rows[${k}].value`;
-                          setFieldsValue({
-                            [key]: value,
-                          });
-                        }}
-                      />
+                      >
+                        <Col span={12}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <InputNumber style={{ width: '100%' }} placeholder='value' />
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                    <ConditionalFormBlock 
+                        shouldUpdate={true} 
+                        condition={() => 
+                        form.getFieldValue(["rows", field.name, "operation"]) === "set" || 
+                        form.getFieldValue(["rows", field.name, "operation"]) === "push"
+                      }
+                    >
+                      <>
+                    <Col span={5}>
+                      <Form.Item
+                        initialValue="string"
+                        name={[field.name, 'datatype']}
+                        key={[field.name, 'datatype']}
+                        style={{ display: 'inline-block', width: '100%' }}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please select datatype!',
+                          },
+                        ]}
+                      >
+                        <Select placeholder='datatype'>
+                          <Select.Option value='id'>ID</Select.Option>
+                          <Select.Option value='string'>String</Select.Option>
+                          <Select.Option value='integer'>Integer</Select.Option>
+                          <Select.Option value='float'>Float</Select.Option>
+                          <Select.Option value='boolean'>Boolean</Select.Option>
+                          <Select.Option value='datetime'>Datetime</Select.Option>
+                          <Select.Option value='json'>json/object</Select.Option>
+                          <Select.Option value='array'>Array</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "id"}>
+                      <Col span={7}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <Input 
+                            placeholder='value' 
+                            suffix={
+                              <Button type="link" onClick={() => {
+                                form.setFields([{name: ["rows", field.name, "value"], value: generateId(17)}])
+                              }}>Auto ID</Button>
+                            }
+                          />
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "string"}>
+                      <Col span={7}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <Input placeholder="value"/>
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "integer"}>
+                      <Col span={7}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <InputNumber placeholder="value" style={{width: "100%"}}/>
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "float"}>
+                      <Col span={7}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <InputNumber placeholder="value" style={{width: "100%"}}/>
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "boolean"}>
+                      <Col span={7}>
+                        <Form.Item
+                          initialValue={true}
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <Select>
+                            <Select.Option value={true}>true</Select.Option>
+                            <Select.Option value={false}>false</Select.Option>
+                          </Select>
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "datetime"}>
+                      <Col span={7}>
+                        <Form.Item
+                          name={[field.name, 'value']}
+                          key={[field.name, 'value']}
+                          style={{ display: 'inline-block', width: '100%' }}
+                          rules={[
+                            { required: true, message: 'Please enter value!' },
+                          ]}
+                        >
+                          <DatePicker showTime />
+                        </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
+                      <Col span={7} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
+                          <CodeMirror
+                           value={jsoncode[field.name] ? jsoncode[field.name] : ""}
+                           options={{
+                             mode: { name: 'javascript', json: true },
+                             lineNumbers: true,
+                             styleActiveLine: true,
+                             matchBrackets: true,
+                             autoCloseBrackets: true,
+                             tabSize: 2,
+                             autofocus: true
+                           }}
+                           onBeforeChange={(editor, data, value) => {                                                 
+                              jsoncode[field.name] = value;                           
+                             setCounter(counter+1);
+                           }}
+                         />
+                        </Col>
+                      </ConditionalFormBlock>
                     </>
-                  )}
-                </Form.Item>
-              </Col>
-            )}
-          </>
-        ) : (
-          ''
-        )}
-        <Col span={1}>
-          {index !== rowKeys.length - 1 && (
-            <Button
-              type='link'
-              style={{ color: 'black', padding: 0 }}
-              onClick={() => removeRow(k)}
-            >
-              <Icon type='close' />
-            </Button>
-          )}
-        </Col>
-      </Row>
-      {getFieldValue(`rows[${k}].datatype`) === 'array' && (
-        <div
-          style={{
-            margin: '0px 60px 25px',
-            padding: 16,
-            border: '1px solid #E8E8E8',
-          }}
-        >
-          {arrayKeys.map((n, index) => (
-            <Row key={n} gutter={16}>
-              <Col span={7}>
-                <Form.Item style={{ display: 'inline-block', width: '100%' }}>
-                  {getFieldDecorator(`rows[${k}].arrays[${n}].datatype`, {
-                    initialValue: 'string',
-                  })(
-                    <Select placeholder='datatype'>
-                      <Select.Option value='id'>ID</Select.Option>
-                      <Select.Option value='string'>String</Select.Option>
-                      <Select.Option value='integer'>Integer</Select.Option>
-                      <Select.Option value='float'>Float</Select.Option>
-                      <Select.Option value='boolean'>Boolean</Select.Option>
-                      <Select.Option value='datetime'>Datetime</Select.Option>
-                    </Select>
-                  )}
-                </Form.Item>
-                <br />
-                {index === arrayKeys.length - 1 && (
+                    </ConditionalFormBlock>
+                    <Col span={2}>
+                      <MinusCircleOutlined
+                        style={{ margin: '0 8px' }}
+                        onClick={() => {
+                          remove(field.name);
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                  <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "array"}>
+                  <Form.Item
+                    name={[field.name, 'arrays']}
+                    key={[field.name, 'arrays']}
+                    style={{ display: 'inline-block', width: '100%' }}
+                  >
+                    <Form.List name={[field.name, "arrays"]}>
+                      {(fields, {add, remove}) => {
+                        return (
+                          <div style={{ margin: "0px 60px 25px", padding: 16, border: '1px solid #E8E8E8' }}>
+                            {fields.map((arrField, index) => (
+                            <>
+                            <Row key={arrField.key} gutter={10}>
+                              <Col span={8}>
+                                <Form.Item
+                                 initialValue="string"
+                                 name={[arrField.name, 'datatype']}
+                                 key={[arrField.name, 'datatype']}
+                                 style={{ display: 'inline-block', width: '100%' }}
+                                 rules={[
+                                   {
+                                     required: true,
+                                     message: 'Please select datatype!',
+                                   },
+                                 ]}
+                                >
+                                  <Select placeholder='datatype'>
+                                    <Select.Option value='id'>ID</Select.Option>
+                                    <Select.Option value='string'>String</Select.Option>
+                                    <Select.Option value='integer'>Integer</Select.Option>
+                                    <Select.Option value='float'>Float</Select.Option>
+                                    <Select.Option value='boolean'>Boolean</Select.Option>
+                                    <Select.Option value='datetime'>Datetime</Select.Option>
+                                    <Select.Option value='json'>json/object</Select.Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col span={14}>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "id"}
+                                >
+                                  <Form.Item
+                                   name={[arrField.name, 'value']}
+                                   key={[arrField.name, 'value']}
+                                   style={{ display: 'inline-block', width: '100%' }}
+                                   rules={[
+                                    { required: true, message: 'Please enter value!' },
+                                   ]}
+                                  >
+                                    <Input 
+                                      placeholder='value' 
+                                      suffix={
+                                        <Button type="link" onClick={() => {
+                                          form.setFields([{name: ["rows", field.name, "arrays", arrField.name, "value"], value: generateId(17)}])
+                                        }}>Auto ID</Button>
+                                      }
+                                    />
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "string"}
+                                >
+                                  <Form.Item
+                                   name={[arrField.name, 'value']}
+                                   key={[arrField.name, 'value']}
+                                   style={{ display: 'inline-block', width: '100%' }}
+                                   rules={[
+                                     { required: true, message: 'Please enter value!' },
+                                   ]}
+                                  >
+                                    <Input placeholder="value"/>
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer"}
+                                >
+                                  <Form.Item
+                                   name={[arrField.name, 'value']}
+                                   key={[arrField.name, 'value']}
+                                   style={{ display: 'inline-block', width: '100%' }}
+                                   rules={[
+                                     { required: true, message: 'Please enter value!' },
+                                   ]}
+                                 >
+                                   <InputNumber placeholder="value" style={{width: "100%"}}/>
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float"}
+                                >
+                                  <Form.Item
+                                    name={[arrField.name, 'value']}
+                                    key={[arrField.name, 'value']}
+                                    style={{ display: 'inline-block', width: '100%' }}
+                                    rules={[
+                                      { required: true, message: 'Please enter value!' },
+                                    ]}
+                                  >
+                                    <InputNumber placeholder="value" style={{width: "100%"}}/>
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "boolean"}
+                                >
+                                  <Form.Item
+                                    initialValue={true}
+                                    name={[arrField.name, 'value']}
+                                    key={[arrField.name, 'value']}
+                                    style={{ display: 'inline-block', width: '100%' }}
+                                    rules={[
+                                      { required: true, message: 'Please enter value!' },
+                                    ]}
+                                  >
+                                    <Select>
+                                      <Select.Option value={true}>true</Select.Option>
+                                      <Select.Option value={false}>false</Select.Option>
+                                    </Select>
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                                <ConditionalFormBlock 
+                                 shouldUpdate={true} 
+                                 condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime"}
+                                >
+                                  <Form.Item
+                                    name={[arrField.name, 'value']}
+                                    key={[arrField.name, 'value']}
+                                    style={{ display: 'inline-block', width: '100%' }}
+                                    rules={[
+                                      { required: true, message: 'Please enter value!' },
+                                    ]}
+                                  >
+                                    <DatePicker showTime />
+                                  </Form.Item>
+                                </ConditionalFormBlock>
+                              </Col>
+                              <Col span={2}>
+                                <MinusCircleOutlined
+                                  style={{ margin: '0 8px' }}
+                                  onClick={() => {
+                                    remove(arrField.name);
+                                  }}
+                                />
+                              </Col>
+                            </Row>
+                            </>
+                            
+                          ))}
+                          <Form.Item>
+                            <Button
+                              type='link'
+                              style={{
+                                padding: 0,
+                                marginTop: -10,
+                                color: 'rgba(0, 0, 0, 0.6)',
+                              }}
+                              onClick={() => {
+                                 const fieldKeys = [
+                                  ...fields.map(obj => ["rows", field.name, "arrays", obj.name,"datatype"]),
+                                  ...fields.map(obj => ["rows", field.name, "arrays", obj.name,"value"])
+                                ]
+                                form.validateFields(fieldKeys)
+                                  .then(() => add())
+                                  .catch(ex => console.log("Exception", ex))
+                              }}
+                            >
+                              <span
+                                className='material-icons'
+                                style={{ position: 'relative', top: 5, marginRight: 5 }}
+                              >
+                                 add_circle
+                              </span>
+                              Add field
+                            </Button>
+                          </Form.Item>
+                        </div>
+                      )
+                    }}
+                  </Form.List>
+                  </Form.Item>
+                </ConditionalFormBlock>
+                </>
+                ))}
+                <Form.Item>
                   <Button
                     type='link'
-                    onClick={() => addArray()}
                     style={{
                       padding: 0,
                       marginTop: -10,
                       color: 'rgba(0, 0, 0, 0.6)',
                     }}
+                    onClick={() => {
+                      const fieldKeys = [
+                        ...fields.map(obj => ["rows", obj.name,"column"]),
+                        ...fields.map(obj => ["rows", obj.name,"operation"]),
+                        ...fields.map(obj => ["rows", obj.name,"value"])
+                      ]
+                      form.validateFields(fieldKeys)
+                        .then(() => add())
+                        .catch(ex => console.log("Exception", ex))
+                    }}
                   >
                     <span
-                      class='material-icons'
+                      className='material-icons'
                       style={{ position: 'relative', top: 5, marginRight: 5 }}
                     >
                       add_circle
                     </span>
                     Add field
                   </Button>
-                )}
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  style={{
-                    display: 'inline-block',
-                    width: '100%',
-                  }}
-                >
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) === 'id' &&
-                    getFieldDecorator(`rows[${k}].arrays[${n}].value`, {
-                      rules: [defaultRules],
-                    })(<Input placeholder='value' />)}
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) ===
-                    'string' &&
-                    getFieldDecorator(`rows[${k}].arrays[${n}].value`, {
-                      rules: [defaultRules],
-                    })(<Input placeholder='value' />)}
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) ===
-                    'integer' &&
-                    getFieldDecorator(`rows[${k}].arrays[${n}].value`, {
-                      rules: [defaultRules],
-                    })(
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        placeholder='value'
-                      />
-                    )}
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) ===
-                    'float' &&
-                    getFieldDecorator(`rows[${k}].arrays[${n}].value`, {
-                      rules: [defaultRules],
-                    })(
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        placeholder='value'
-                      />
-                    )}
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) ===
-                    'boolean' &&
-                    getFieldDecorator(`rows[${k}].arrays[${n}].value`, {
-                      initialValue: true,
-                    })(
-                      <Select>
-                        <Select.Option value={true}>true</Select.Option>
-                        <Select.Option value={false}>false</Select.Option>
-                      </Select>
-                    )}
-                  {getFieldValue(`rows[${k}].arrays[${n}].datatype`) ===
-                    'datetime' &&
-                    getFieldDecorator(
-                      `rows[${k}].arrays[${n}].value`,
-                      {}
-                    )(<DatePicker showTime />)}
                 </Form.Item>
-              </Col>
-              <Col span={3}>
-                {index !== arrayKeys.length - 1 && (
-                  <Button
-                    type='link'
-                    style={{ color: 'black' }}
-                    onClick={() => removeArray(n)}
-                  >
-                    <Icon type='close' />
-                  </Button>
-                )}
-              </Col>
-            </Row>
-          ))}
-        </div>
-      )}
-      {index === rowKeys.length - 1 && (
-        <Button
-          type='link'
-          onClick={() => rowAdd()}
-          style={{
-            padding: 0,
-            marginTop: -10,
-            color: 'rgba(0, 0, 0, 0.6)',
+              </div>
+            );
           }}
-        >
-          <span
-            class='material-icons'
-            style={{ position: 'relative', top: 5, marginRight: 5 }}
-          >
-            add_circle
-          </span>
-          Add field
-        </Button>
-      )}
-    </>
-  ));
-
-  return (
-    <Modal
-      title="Update a row's value"
-      okText='Save'
-      visible={props.visible}
-      cancelText='Cancel'
-      onCancel={props.handleCancel}
-      onOk={handleSubmitClick}
-      className='edit-row-modal'
-    >
-      <Form layout='vertical' onSubmit={handleSubmitClick}>
-        <FormItemLabel name='Row' />
-        {formItemsRows}
+        </Form.List>
       </Form>
     </Modal>
   );
 };
 
-export default Form.create({})(EditRowForm);
+export default EditRowForm;
