@@ -32,7 +32,7 @@ const Database = () => {
 
   // Handlers
   const handleEnable = (conn, defaultCollectionRule) => {
-    const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
     dispatch(increment("pendingRequests"))
     dbEnable(projects, projectID, selectedDB, dbType, dbName, conn, defaultCollectionRule)
     .then(() => notify("success", "Success", "Successfully enabled database"))

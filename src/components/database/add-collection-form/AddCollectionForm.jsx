@@ -16,11 +16,14 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
+  const defaultSchema = `type ${(initialValues && initialValues.name) ? initialValues.name : ""}{
+  ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
+}`
+
+  const initialSchema = (initialValues && initialValues.schema) ? initialValues.schema : defaultSchema
+
   if (!initialValues) {
     initialValues = {
-      schema: `type {
-  ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
-}`,
       rules: defaultRules,
       isRealtimeEnabled: true
     }
@@ -34,12 +37,12 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
-  const [schema, setSchema] = useState(initialValues.schema);
+  const [schema, setSchema] = useState(initialSchema);
   const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
-  const handleChangedValues = ({ name }) => {setcolName(name)};
+  const handleChangedValues = ({ name }) => { setcolName(name) };
   useEffect(() => {
-    if (schema) {
+    if (schema && colName) {
       const temp = schema.trim().slice(4).trim()
       const index = temp.indexOf("{")
       const newSchema = colName ? `type ${colName} ${temp.slice(index)}` : `type ${temp.slice(index)}`
@@ -77,12 +80,12 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
         confirmLoading={conformLoading}
-        onCancel={handleCancel} 
+        onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} 
-        initialValues={{
-          'name': initialValues.name,
-        }}>
+        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues}
+          initialValues={{
+            'name': initialValues.name,
+          }}>
           <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />
           <Form.Item name="name" rules={[{
             validator: (_, value, cb) => {

@@ -119,7 +119,7 @@ export const handleReload = (projectId, dbName) => {
     store.dispatch(increment("pendingRequests"))
     client.database.reloadSchema(projectId, dbName).then(collections => {
       const cols = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
-      Object.keys(collections).forEach(col => {
+      Object.keys(collections).filter(col => cols[col] ? true : false).forEach(col => {
         cols[col].schema = collections[col]
       })
       setProjectConfig(projectId, `modules.db.${dbName}.collections`, cols)
@@ -133,11 +133,11 @@ export const handleReload = (projectId, dbName) => {
 export const setDBConfig = (projectId, aliasName, enabled, conn, type, dbName, setLoading) => {
   if (setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
-    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type, dbName }).then(() => {
+    client.database.setDbConfig(projectId, aliasName, { enabled, conn, type, name: dbName }).then(() => {
       setProjectConfig(projectId, `modules.db.${aliasName}.enabled`, enabled)
       setProjectConfig(projectId, `modules.db.${aliasName}.conn`, conn)
       setProjectConfig(projectId, `modules.db.${aliasName}.type`, type)
-      setProjectConfig(projectId, `modules.db.${aliasName}.dbName`, dbName)
+      setProjectConfig(projectId, `modules.db.${aliasName}.name`, dbName)
       store.dispatch(set(`extraConfig.${projectId}.db.${aliasName}.connected`, true))
       if (enabled) {
         fetchCollections(projectId, aliasName, false).then(() => resolve()).catch(ex => reject(ex))
@@ -242,22 +242,6 @@ export const changeDatabaseName = (projectId, aliasName, dbName) => {
     dbEnable(projects, projectId, aliasName, dbType, dbName, conn, defaultCollectionRule)
       .then(() => {
         handleModify(projectId, aliasName)
-          .then(() => resolve())
-          .catch(ex => reject(ex))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export const changeDatabaseAliasName = (projectId, aliasName, newAliasName) => {
-  return new Promise((resolve, reject) => {
-    const projects = store.getState().projects
-    const { type, conn, dbName } = getProjectConfig(projects, projectId, `modules.db.${aliasName}`)
-    const defaultCollectionRule = getProjectConfig(projects, projectId, `modules.db.${aliasName}.collections.default.rules`, {})
-    const defaultPreparedQueryRule = getDefaultPreparedQueriesRule(projectId, aliasName)
-    removeDBConfig(projectId, aliasName)
-      .then(() => {
-        dbEnable(projects, projectId, newAliasName, type, dbName, conn, defaultCollectionRule, defaultPreparedQueryRule)
           .then(() => resolve())
           .catch(ex => reject(ex))
       })

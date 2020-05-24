@@ -7,7 +7,7 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { getProjectConfig, notify, getDatabaseLabelFromType, getDBTypeFromAlias, canDatabaseHavePreparedQueries } from '../../../utils';
-import { setDBConfig, handleReload, handleModify, removeDBConfig, changeDatabaseName, changeDatabaseAliasName, setPreparedQueries } from '../dbActions';
+import { setDBConfig, handleReload, handleModify, removeDBConfig, changeDatabaseName, setPreparedQueries } from '../dbActions';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -15,7 +15,6 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import gqlPrettier from 'graphql-prettier';
 import { dbTypes } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { decrement, increment } from 'automate-redux';
@@ -29,7 +28,6 @@ const Settings = () => {
 
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
-  const [form2] = Form.useForm();
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/settings");
@@ -41,7 +39,7 @@ const Settings = () => {
   const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbAlias")
   const canDisableDB = eventingDB !== selectedDB
 
-  const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`, projectID)
+  const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`, projectID)
   const type = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
 
   // This is used to bind the form initial values on page reload. 
@@ -65,13 +63,12 @@ const Settings = () => {
   const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
   const dbModule = getProjectConfig(projects, projectID, `modules.db`)
-  const dbAliasNames = (dbModule ? Object.keys(dbModule) : []).filter(value => value !== selectedDB);
 
   // Handlers
   const handleDisable = () => {
     let conn = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
     let dbType = getDBTypeFromAlias(projectID, selectedDB)
-    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.dbName`)
+    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
     dispatch(increment("pendingRequests"))
     setDBConfig(projectID, selectedDB, false, conn, dbType, dbName, false)
       .then(() => {
@@ -117,17 +114,6 @@ const Settings = () => {
       .finally(() => dispatch(decrement("pendingRequests")))
   }
 
-  const handleChangeAliasName = ({ aliasName }) => {
-    dispatch(increment("pendingRequests"))
-    changeDatabaseAliasName(projectID, selectedDB, aliasName)
-      .then(() => {
-        notify("success", "Success", "Successfully changed database alias name")
-        history.replace(`/mission-control/projects/${projectID}/database/${aliasName}/settings`)
-      })
-      .catch(ex => notify("error", "Error changing database alias name", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
-  }
-
   const handleChangeDefaultPreparedQueryRule = () => {
     try {
       setPreparedQueries(projectID, selectedDB, "default", [], "", JSON.parse(defaultPreparedQueryRuleString))
@@ -160,84 +146,17 @@ const Settings = () => {
               type="info"
               showIcon />
             <Form layout="vertical" form={form} onFinish={handleChangeDBName} style={{ width: 300, marginTop: 16 }} initialValues={{ dbName: dbName }}>
-              <Form.Item name="dbName" initialValue={dbName} rules={[{ required: true, message: 'Please provide dbName' }]}>
+              <Form.Item name="dbName" initialValue={dbName} rules={[{ required: true, message: 'Please provide database/schema name' }]}>
                 <Input placeholder="" />
               </Form.Item>
               <Form.Item>
                 <Button htmlType="submit">Save</Button>
               </Form.Item>
             </Form>
-            <Divider style={{ margin: "16px 0px" }} />
-            <FormItemLabel name="Alias name" description="Alias name is used in your frontend queries to identify your database" />
-            <Form layout="vertical" form={form1} onFinish={handleChangeAliasName}>
-              <div style={{ width: 300 }}>
-                <Form.Item name="aliasName"
-                  initialValue={selectedDB}
-                  rules={[{
-                    validator: (_, value, cb) => {
-                      if (!value) {
-                        cb("Please input an alias for your database")
-                        return
-                      }
-                      if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
-                        cb("Alias name can only contain alphanumeric characters and underscores!")
-                        return
-                      }
-                      const check = dbAliasNames.some(data => value === data);
-                      if (check) {
-                        cb("Alias name already taken by another database. Please provide an unique alias name!")
-                        return
-                      }
-                      cb()
-                    }
-                  }]}>
-                  <Input placeholder="" />
-                </Form.Item>
-              </div>
-              <Form.Item>
-                <Button htmlType="submit">Save</Button>
-              </Form.Item>
-              <div style={{ width: 600 }}>
-                <Form.Item noStyle shouldUpdate={(prev, curr) => prev.aliasName != curr.aliasName} dependencies={["aliasName"]}>
-                  {() => {
-                    const aliasValue = form1.getFieldValue("aliasName")
-                    try {
-                      const data = gqlPrettier(
-                        `{query { 
-                          articles @${aliasValue} { 
-                          id 
-                          name 
-                        }
-                      }}`
-                      )
-                      return (
-                        <React.Fragment>
-                          <FormItemLabel name="Example GraphQL query:" hint="Query articles tables (Note the alias directive):" />
-                          <CodeMirror
-                            value={data}
-                            options={{
-                              mode: { name: "javascript", json: true },
-                              lineNumbers: true,
-                              styleActiveLine: true,
-                              matchBrackets: true,
-                              autoCloseBrackets: true,
-                              tabSize: 2,
-                              autofocus: true
-                            }}
-                          />
-                        </React.Fragment>
-                      )
-                    } catch (error) {
-                      return null
-                    }
-                  }}
-                </Form.Item>
-              </div>
-            </Form>
             {canDatabaseHavePreparedQueries(projectID, selectedDB) &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
-                <Form layout="vertical" form={form2} onFinish={handleChangeDefaultPreparedQueryRule}>
+                <Form layout="vertical" form={form1} onFinish={handleChangeDefaultPreparedQueryRule}>
                   <FormItemLabel name="Default rules for prepared queries" />
                   <div style={{ width: 600 }}>
                     <Form.Item >
