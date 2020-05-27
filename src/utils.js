@@ -489,7 +489,7 @@ export function applyCoupon(couponCode) {
   return new Promise((resolve, reject) => {
     client.billing.applyCoupon(couponCode)
       .then((couponValue) => {
-        if (couponValue < 0) couponValue = couponValue * -1
+        if (couponValue > 0) couponValue = couponValue * -1 // store balance credits in redux as negative number. 
         store.dispatch(increment("billing.balanceCredits", couponValue))
         resolve(couponValue)
       })

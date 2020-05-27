@@ -8,8 +8,7 @@ const FAQ = (props) => {
       <h3 style={{ marginTop: "48px", marginBottom: "32px", fontSize: "21px" }}>Frequently asked questions</h3>
       <Collapse accordion>
         <Panel header="Is there a free trial?" key='1'>
-          <p>Space Cloud commercial edition does not have a free trial as of now. Instead we give free credits so that you can try out the commercial edition. Use this coupon code - <b>abc</b> while upgrading your cluster to get free credits😛</p>
-          {/* TODO: Provide a valid coupon code here */}
+          <p>Space Cloud commercial edition does not have a free trial as of now. Instead we give free credits so that you can try out the commercial edition. Use this coupon code - <b>i-love-spacecloud</b> while upgrading your cluster to get free credits😛</p>
         </Panel>
         <Panel header="Any discounts for startups, NGOs or academic institutes?" key='2'>
           <p>If you are a small team, we would love to help you!
