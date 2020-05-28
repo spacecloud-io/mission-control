@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import {generateId} from '../../../utils';
@@ -51,16 +51,27 @@ const EditRowForm = (props) => {
                       <Form.Item
                         name={[field.name, 'column']}
                         key={[field.name, 'column']}
-                        style={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block', width: '100%' }}
                         rules={[
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <Input placeholder='column' />
+                        <AutoComplete
+                         onBlur={(e) => {
+                          const column = props.schema.find(val => val.name === e.target.value);
+                            if (column) {
+                              form.setFields([{name: ["rows", field.name, "datatype"], value: column.type.toLowerCase()}])
+                            }
+                         }}  
+                         style={{width: "100%"}} 
+                         placeholder="column" 
+                         dataSource={props.schema.map(val => val.name)} 
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={5}>
                       <Form.Item
+                        initialValue="set"
                         name={[field.name, 'operation']}
                         key={[field.name, 'operation']}
                         style={{ display: 'inline-block', width: '100%' }}

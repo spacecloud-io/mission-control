@@ -609,6 +609,7 @@ const getDefType = (type, isArray) => {
 
 const getSimplifiedFieldDefinition = (def) => {
   const { isArray, fieldType } = getDefType(def.type)
+  const isRequired = def.type.kind === "NonNullType" ? true : false;
   const directives = def.directives
   const isPrimaryField = directives.some(dir => dir.name.value === "primary")
   const hasForeignKey = directives.some(dir => dir.name.value === "foreign")
@@ -632,7 +633,8 @@ const getSimplifiedFieldDefinition = (def) => {
     hasUniqueKey: hasUniqueKey,
     hasForeignKey: hasForeignKey,
     hasForeignKeyOn: hasForeignKeyOn,
-    hasNestedFields: hasNestedFields
+    hasNestedFields: hasNestedFields,
+    isRequired
   }
 }
 

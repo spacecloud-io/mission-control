@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
@@ -76,6 +76,12 @@ const Overview = () => {
     setClickedCol(colName)
     setAddColFormInEditMode(true)
     setAddColModalVisible(true)
+  }
+
+  const handleBrowseClick = (colName) => {
+    dispatch(set("uiState.selectedCollection", colName));
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
+
   }
 
   const handleCancelAddColModal = () => {
@@ -156,6 +162,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>

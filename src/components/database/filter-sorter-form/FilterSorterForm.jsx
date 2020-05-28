@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './filter-sorter-form.css';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import {generateId} from '../../../utils';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { reset } from 'automate-redux';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
@@ -19,6 +19,8 @@ const jsoncode = [];
 const FilterSorterForm = (props) => {
   const [form] = Form.useForm();
   const [counter, setCounter] = useState(0);
+  const filters = useSelector(state => state.uiState.explorer.filters);
+  const sorters = useSelector(state => state.uiState.explorer.sorters);
   const dispatch = useDispatch();
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -45,6 +47,7 @@ const FilterSorterForm = (props) => {
           dispatch(reset('uiState.explorer.sorters'));
           dispatch(reset('uiState.explorer.filters'));
           form.resetFields();
+          props.handleCancel();
         }
       }}
       cancelText='Reset filters & sorters'
@@ -52,7 +55,14 @@ const FilterSorterForm = (props) => {
       onOk={onFinish}
       className='filter-sorter-modal'
       >
-      <Form name='insert_row' form={form}>
+      <Form 
+       name='insert_row' 
+       form={form}
+       initialValues={{
+         filters: filters,
+         sorters: sorters
+       }}
+      >
         <FormItemLabel name="Filter"/>
         <Form.List name='filters'>
           {(fields, { add, remove }) => {
@@ -65,12 +75,22 @@ const FilterSorterForm = (props) => {
                       <Form.Item
                         name={[field.name, 'column']}
                         key={[field.name, 'column']}
-                        style={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block', width: '100%' }}
                         rules={[
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <Input placeholder='column' />
+                        <AutoComplete 
+                         onBlur={(e) => {
+                            const column = props.schema.find(val => val.name === e.target.value);
+                            if (column) {
+                              form.setFields([{name: ["filters", field.name, "datatype"], value: column.type.toLowerCase()}])
+                            }
+                         }} 
+                         style={{width: "100%"}} 
+                         placeholder="column" 
+                         dataSource={props.schema.map(val => val.name)} 
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={5}>

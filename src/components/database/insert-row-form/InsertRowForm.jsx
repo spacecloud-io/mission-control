@@ -29,6 +29,24 @@ const InsertRowForm = (props) => {
     })
   };
 
+  let initialRows = props.schema.map(val => (
+    {
+      column: val.name, 
+      datatype: val.type.toLowerCase()
+    }
+    ));
+
+    const isFieldRequired = (field) => {
+      const column = form.getFieldValue(["rows", field, "column"]);
+      const schema = props.schema.find(val => val.name === column);
+      if (schema) {
+        if (schema.isRequired) {
+          return { required: true, message: 'Please enter value!' }
+        }
+      }
+      return { required: false }
+    }
+
   return (
     <Modal
       title='Add a row'
@@ -39,7 +57,13 @@ const InsertRowForm = (props) => {
       onOk={onFinish}
       className='filter-sorter-modal'
     >
-      <Form name='insert_row' form={form}>
+      <Form 
+       name='insert_row' 
+       form={form}
+       initialValues={{
+         rows:  initialRows
+       }}
+      >
         <Form.List name='rows'>
           {(fields, { add, remove }) => {
             return (
@@ -56,12 +80,11 @@ const InsertRowForm = (props) => {
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <Input placeholder='column' />
+                        <Input placeholder='column' disabled />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item
-                        initialValue="string"
                         name={[field.name, 'datatype']}
                         key={[field.name, 'datatype']}
                         style={{ display: 'inline-block', width: '100%' }}
@@ -91,7 +114,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Input 
@@ -112,7 +135,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Input placeholder="value"/>
@@ -126,7 +149,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <InputNumber placeholder="value" style={{width: "100%"}}/>
@@ -140,7 +163,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <InputNumber placeholder="value" style={{width: "100%"}}/>
@@ -155,7 +178,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Select>
@@ -172,7 +195,7 @@ const InsertRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <DatePicker showTime style={{width: '100%'}}/>

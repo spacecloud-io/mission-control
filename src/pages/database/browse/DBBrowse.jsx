@@ -40,6 +40,12 @@ const Browse = () => {
     ReactGA.pageview("/projects/database/browse");
   }, [])
 
+  useEffect(() => {
+    if(collections.length > 0 && !selectedCol){
+      dispatch(set("uiState.selectedCollection", collections[0]))
+    }
+  }, [dispatch])
+
   const getColumnNames = rawData => {
     let columnNames = [];
     for (const row of rawData) {
@@ -52,7 +58,6 @@ const Browse = () => {
 
   useEffect(() => {
     if (selectedCol) {
-
       let hasUniqueKey = false;
       let uniqueKey = "";
 
@@ -262,7 +267,7 @@ const Browse = () => {
               style={{ width: 240, marginRight: 24 }}
               placeholder="Select a table"
               onChange={handleTableChange}
-              defaultValue={selectedCol ? selectedCol : undefined}
+              defaultValue={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}
             </Select>
@@ -292,6 +297,7 @@ const Browse = () => {
             visible={isFilterSorterFormVisible}
             handleCancel={() => setFilterSorterFormVisibility(false)}
             filterTable={filterTable}
+            schema={getSchemas(projectID, selectedDB)[selectedCol]}
           />
         )
       }
@@ -301,6 +307,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
+            schema={getSchemas(projectID, selectedDB)[selectedCol]}
           />
         )
       }
@@ -311,6 +318,7 @@ const Browse = () => {
             handleCancel={() => setEditRowFormVisibility(false)}
             EditRow={EditRow}
             selectedDB={selectedDB}
+            schema={getSchemas(projectID, selectedDB)[selectedCol]}
           />
         )
       }
