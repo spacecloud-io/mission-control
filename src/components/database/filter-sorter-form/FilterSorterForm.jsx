@@ -498,12 +498,16 @@ const FilterSorterForm = (props) => {
                       <Form.Item
                         name={[field.name, 'column']}
                         key={[field.name, 'column']}
-                        style={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block', width: "100%" }}
                         rules={[
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <Input placeholder='column' />
+                        <AutoComplete  
+                         style={{width: "100%"}} 
+                         placeholder="column" 
+                         dataSource={props.schema.map(val => val.name)} 
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={7}>

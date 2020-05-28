@@ -29,6 +29,11 @@ const EditRowForm = (props) => {
     })
   };
 
+  const initialRows = props.schema.map(val => ({
+    column: val.name,
+    value: props.data[val.name]
+  }))
+
   return (
     <Modal
       title="Update row's value"
@@ -39,7 +44,13 @@ const EditRowForm = (props) => {
       onOk={onFinish}
       className='filter-sorter-modal'
     >
-      <Form name='edit_row' form={form}>
+      <Form 
+       name='edit_row' 
+       form={form}
+       initialValues={{
+         rows: initialRows
+       }}
+      >
         <Form.List name='rows'>
           {(fields, { add, remove }) => {
             return (
@@ -82,7 +93,12 @@ const EditRowForm = (props) => {
                           },
                         ]}
                       >
-                        <Select placeholder='operation'>
+                        <Select 
+                         placeholder='operation'
+                         onChange={() => {
+                           form.setFields([{name: ["rows", field.name, "value"], value: ""}])
+                         }}
+                        >
                           <Select.Option value='set'>Set</Select.Option>
                           {props.selectedDB === "mongo" && (
                           <Select.Option value='unset'>Unset</Select.Option>

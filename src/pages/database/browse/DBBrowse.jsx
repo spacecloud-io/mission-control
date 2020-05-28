@@ -24,6 +24,7 @@ const Browse = () => {
   const [primaryKey, setPrimaryKey] = useState({ name: "", value: "" });
   const [column, setColumn] = useState([]);
   const [data, setData] = useState([]);
+  const [editRowData, setEditRowData] = useState();
   const [counter, setCounter] = useState(0);
 
   const { projectID, selectedDB } = useParams()
@@ -115,7 +116,7 @@ const Browse = () => {
             title: '',
             render: (record) => (
               <span>
-                <Button type="link" disabled={!hasUniqueKey} style={{ color: 'black' }} onClick={() => { setEditRowFormVisibility(true); setPrimaryKey({ name: uniqueKey, value: record[uniqueKey] }) }}>Edit</Button>
+                <Button type="link" disabled={!hasUniqueKey} style={{ color: 'black' }} onClick={() => { setEditRowFormVisibility(true); setEditRowData(record); setPrimaryKey({ name: uniqueKey, value: record[uniqueKey] }) }}>Edit</Button>
                 <Button type="link" disabled={!hasUniqueKey} style={{ color: "red" }} onClick={() => deleteRow(uniqueKey, record[uniqueKey])}>Delete</Button>
               </span>
             )
@@ -319,6 +320,7 @@ const Browse = () => {
             EditRow={EditRow}
             selectedDB={selectedDB}
             schema={getSchemas(projectID, selectedDB)[selectedCol]}
+            data={editRowData}
           />
         )
       }
