@@ -16,16 +16,15 @@ import { Button, Select, Icon, Table } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
 
+let column = [];
+let editRowData = {};
+let uniqueKeys = [];
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
   const [isEditRowFormVisible, setEditRowFormVisibility] = useState(false);
-  const [primaryKey, setPrimaryKey] = useState({ name: "", value: "" });
-  const [column, setColumn] = useState([]);
   const [data, setData] = useState([]);
-  const [editRowData, setEditRowData] = useState();
-  const [counter, setCounter] = useState(0);
 
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
@@ -47,40 +46,18 @@ const Browse = () => {
     }
   }, [dispatch])
 
-  const getColumnNames = rawData => {
-    let columnNames = [];
-    for (const row of rawData) {
-      for (const keys of Object.keys(row)) {
-        columnNames.push(keys);
-      }
-    }
-    return [...new Set(columnNames)].map(val => ({ key: val, title: val, dataIndex: val }))
+  const getUniqueKeys = () => {
+    uniqueKeys = [];
+    getSchemas(projectID, selectedDB)[selectedCol]
+      .forEach(val => {
+        if (val.isPrimaryField || val.hasUniqueKey) {
+          uniqueKeys.push(val.name);
+        }
+      })
   }
 
-  useEffect(() => {
+  const getTableData = () => {
     if (selectedCol) {
-      let hasUniqueKey = false;
-      let uniqueKey = "";
-
-      getSchemas(projectID, selectedDB)[selectedCol]
-        .forEach(val => {
-          if (val.isPrimaryField) {
-            hasUniqueKey = true;
-            uniqueKey = val.name;
-            return;
-          }
-        })
-
-      if (!hasUniqueKey) {
-        getSchemas(projectID, selectedDB)[selectedCol]
-          .forEach(val => {
-            if (val.hasUniqueKey) {
-              hasUniqueKey = true;
-              uniqueKey = val.name;
-              return;
-            }
-          })
-      }
 
       let filtersCond = [];
       let sortersCond = [];
@@ -110,24 +87,62 @@ const Browse = () => {
             return
           }
 
-          let columnNames = getColumnNames(data.result);
-          columnNames.unshift({
+          column = getColumnNames(data.result);
+          column.unshift({
             key: 'action',
             title: '',
             render: (record) => (
               <span>
-                <Button type="link" disabled={!hasUniqueKey} style={{ color: 'black' }} onClick={() => { setEditRowFormVisibility(true); setEditRowData(record); setPrimaryKey({ name: uniqueKey, value: record[uniqueKey] }) }}>Edit</Button>
-                <Button type="link" disabled={!hasUniqueKey} style={{ color: "red" }} onClick={() => deleteRow(uniqueKey, record[uniqueKey])}>Delete</Button>
+                <Button 
+                 type="link" 
+                 disabled={uniqueKeys.length === 0} 
+                 style={{ color: 'black' }} 
+                 onClick={() => { 
+                   setEditRowFormVisibility(true); 
+                   editRowData = record;
+                 }}
+                >
+                  Edit
+                </Button>
+                <Button 
+                 type="link" 
+                 disabled={uniqueKeys.length === 0} 
+                 style={{ color: "red" }} 
+                 onClick={() => {
+                  deleteRow(record)
+                  }
+                 }
+                >
+                  Delete
+                </Button>
               </span>
             )
           })
-
-          setColumn(columnNames)
           setData(data.result)
         })
         .finally(() => dispatch(decrement("pendingRequests")));
     }
-  }, [filters, sorters, selectedCol, counter])
+  }
+
+  const getColumnNames = rawData => {
+    let columnNames = [];
+    for (const row of rawData) {
+      for (const keys of Object.keys(row)) {
+        columnNames.push(keys);
+      }
+    }
+    return [...new Set(columnNames)].map(val => ({ key: val, title: val, dataIndex: val }))
+  }
+
+  useEffect(() => {
+    getTableData();
+  }, [filters, sorters, selectedCol])
+
+  useEffect(() => {
+    if(selectedCol) {
+      getUniqueKeys();
+    }
+  }, [selectedCol])
 
   // Handlers
   const handleTableChange = col => {
@@ -135,9 +150,6 @@ const Browse = () => {
   }
 
   const filterTable = ({ filters, sorters }) => {
-    console.log(filters)
-    console.log()
-    console.log(sorters)
 
     dispatch(set("uiState.explorer.filters", filters))
     dispatch(set("uiState.explorer.sorters", sorters))
@@ -157,16 +169,19 @@ const Browse = () => {
           return;
         }
         notify("success", "Successfully inserted a row!", "", 5);
-        setCounter(counter + 1);
+        getTableData();
       })
 
     setInsertRowFormVisibility(false);
   }
 
-  const deleteRow = (uniqueKey, value) => {
-    const whereClause = cond(uniqueKey, "==", value)
+  const deleteRow = (record) => {
+    const whereClause = [];
+    uniqueKeys.forEach(val => {
+      whereClause.push(cond(val, "==", record[val]))
+    })
     db.delete(selectedCol)
-      .where(whereClause)
+      .where(...whereClause)
       .apply()
       .then(({ status }) => {
         if (status !== 200) {
@@ -174,79 +189,125 @@ const Browse = () => {
           return;
         }
         notify("success", "Row deleted successfully", "", 5)
-        setCounter(counter + 1);
+        getTableData();
       })
   }
 
-  const notifyMessage = (status, data, column) => {
-    if (status !== 200) {
-      notify("error", data.error, "", 5);
-      return;
-    }
-    notify("success", `field ${column} successfully updated!`, "", 5);
-    setCounter(counter + 1);
-  }
-
   const EditRow = values => {
-    console.log(values);
-    const whereClause = cond(primaryKey.name, "==", primaryKey.value)
+    const whereClause = [];
+    uniqueKeys.forEach(val => {
+      whereClause.push(cond(val, "==", editRowData[val]))
+    })
+    const row = db.update(selectedCol).where(whereClause);
+    let set = {};
+    let remove = {};
+    let rename = {};
+    let inc = {};
+    let mul = {};
+    let min = {};
+    let max = {};
+    let push = {};
+    let currentDate = [];
+    let currentTimestamp = [];
 
     for (let row of values) {
       switch (row.operation) {
         case "set":
-          db.update(selectedCol).where(whereClause).set({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          set[row.column] = row.value;
           break;
 
         case "unset":
-          db.update(selectedCol).where(whereClause).remove({ [row.column]: "" }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          remove[row.column] = "";
           break;
 
         case "rename":
-          db.update(selectedCol).where(whereClause).rename({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          rename[row.column] = row.value;
           break;
 
         case "inc":
-          db.update(selectedCol).where(whereClause).inc({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          inc[row.column] = row.value;
           break;
 
         case "multiply":
-          db.update(selectedCol).where(whereClause).mul({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          mul[row.column] = row.value;
           break;
 
         case "min":
-          db.update(selectedCol).where(whereClause).min({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          min[row.column] = row.value;
           break;
 
         case "max":
-          db.update(selectedCol).where(whereClause).max({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          max[row.column] = row.value;
           break;
 
         case "currentDate":
-          db.update(selectedCol).where(whereClause).currentDate(row.column).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          currentDate.push(row.column);
           break;
 
         case "currentTimestamp":
-          db.update(selectedCol).where(whereClause).currentTimestamp(row.column).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          currentTimestamp.push(row.column);
           break;
 
         case "push":
-          db.update(selectedCol).where(whereClause).push({ [row.column]: row.value }).apply()
-            .then(({ status, data }) => notifyMessage(status, data, row.column))
+          push[row.column] = row.value;
           break;
       }
     }
 
+    if (Object.keys(set).length !== 0) {
+      row.set(set);
+    }
+
+    if (Object.keys(remove).length !== 0) {
+      row.remove(remove);
+    }
+
+    if (Object.keys(rename).length !== 0) {
+      row.rename(rename);
+    }
+
+    if (Object.keys(inc).length !== 0) {
+      row.inc(inc);
+    }
+
+    if (Object.keys(mul).length !== 0) {
+      row.mul(mul);
+    }
+
+    if (Object.keys(min).length !== 0) {
+      row.min(min);
+    }
+
+    if (Object.keys(max).length !== 0) {
+      row.max(max);
+    }
+
+    if (Object.keys(push).length !== 0) {
+      row.push(push);
+    }
+
+    if (currentDate.length !== 0) {
+      currentDate.forEach(val => {
+        row.currentDate(val);
+      })
+    }
+
+    if (currentTimestamp.length !== 0) {
+      currentTimestamp.forEach(val => {
+        row.currentTimestamp(val);
+      })
+    }
+
+    row.apply()
+    .then(({status, data}) => { 
+      if (status !== 200) {
+        notify("error", data.error, "", 5);
+        return;
+      }
+      notify("success", `Row successfully updated!`, "", 5);
+      getTableData();
+    })
     setEditRowFormVisibility(false);
-    setCounter(counter + 1);
   }
 
   return (

@@ -15,10 +15,9 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
-const jsoncode = [];
 const FilterSorterForm = (props) => {
   const [form] = Form.useForm();
-  const [counter, setCounter] = useState(0);
+  const [json, setJson] = useState({});
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const dispatch = useDispatch();
@@ -29,7 +28,7 @@ const FilterSorterForm = (props) => {
           values.filters[index].value = val.arrays.map(el => el.value);
         }
         if(val.datatype === "json") {
-          values.filters[index].value = JSON.parse(jsoncode[index])
+          values.filters[index].value = JSON.parse(json[index])
         }
       })
      props.filterTable(values)
@@ -242,7 +241,7 @@ const FilterSorterForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "json"}>
                       <Col span={7} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
                           <CodeMirror
-                           value={jsoncode[field.name] ? jsoncode[field.name] : ""}
+                           value={json[field.name] ? json[field.name] : ""}
                            options={{
                              mode: { name: 'javascript', json: true },
                              lineNumbers: true,
@@ -253,8 +252,7 @@ const FilterSorterForm = (props) => {
                              autofocus: true
                            }}
                            onBeforeChange={(editor, data, value) => {                                                 
-                              jsoncode[field.name] = value;                           
-                             setCounter(counter+1);
+                              setJson(Object.assign({}, json, {[field.name] : value}))
                            }}
                          />
                         </Col>

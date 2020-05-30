@@ -11,10 +11,9 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
-const jsoncode = [];
 const EditRowForm = (props) => {
   const [form] = Form.useForm();
-  const [counter, setCounter] = useState(0);
+  const [json, setJson] = useState({});
   const onFinish = () => {
     form.validateFields().then(values => {
       values.rows.forEach((val, index) => {
@@ -22,7 +21,7 @@ const EditRowForm = (props) => {
           values.rows[index].value = val.arrays.map(el => el.value);
         }
         if(val.datatype === "json") {
-          values.rows[index].value = JSON.parse(jsoncode[index])
+          values.rows[index].value = JSON.parse(json[index])
         }
       })
       props.EditRow(values.rows);
@@ -31,7 +30,8 @@ const EditRowForm = (props) => {
 
   const initialRows = props.schema.map(val => ({
     column: val.name,
-    value: props.data[val.name]
+    datatype: val.type.toLowerCase(),
+    value:  val.type === "DateTime" ? undefined : props.data[val.name]
   }))
 
   return (
@@ -287,7 +287,7 @@ const EditRowForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
                       <Col span={7} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
                           <CodeMirror
-                           value={jsoncode[field.name] ? jsoncode[field.name] : ""}
+                           value={json[field.name] ? json[field.name] : ""}
                            options={{
                              mode: { name: 'javascript', json: true },
                              lineNumbers: true,
@@ -297,9 +297,8 @@ const EditRowForm = (props) => {
                              tabSize: 2,
                              autofocus: true
                            }}
-                           onBeforeChange={(editor, data, value) => {                                                 
-                              jsoncode[field.name] = value;                           
-                             setCounter(counter+1);
+                           onBeforeChange={(editor, data, value) => {
+                             setJson(Object.assign({}, json, {[field.name] : value}))
                            }}
                          />
                         </Col>

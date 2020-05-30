@@ -11,9 +11,8 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
-const jsoncode = [];
 const InsertRowForm = (props) => {
-  const [counter, setCounter] = useState(0);
+  const [json, setJson] = useState({});
   const [form] = Form.useForm();
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -22,7 +21,7 @@ const InsertRowForm = (props) => {
          values.rows[index].value = val.arrays.map(el => el.value);
        }
        if(val.datatype === "json") {
-         values.rows[index].value = JSON.parse(jsoncode[index]);
+         values.rows[index].value = JSON.parse(json[index]);
        }
      })
       props.insertRow(values.rows);
@@ -205,7 +204,7 @@ const InsertRowForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
                       <Col span={10} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
                           <CodeMirror
-                           value={jsoncode[field.name] ? jsoncode[field.name] : ""}
+                           value={json[field.name] ? json[field.name] : ""}
                            options={{
                              mode: { name: 'javascript', json: true },
                              lineNumbers: true,
@@ -215,11 +214,8 @@ const InsertRowForm = (props) => {
                              tabSize: 2,
                              autofocus: true
                            }}
-                           onBeforeChange={(editor, data, value) => {                             
-                      
-                              jsoncode[field.name] = value;
-                             
-                             setCounter(counter+1);
+                           onBeforeChange={(editor, data, value) => {                           
+                              setJson(Object.assign({}, json, {[field.name] : value}))
                            }}
                          />
                         </Col>
