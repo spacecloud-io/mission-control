@@ -229,17 +229,6 @@ const Overview = () => {
               </div>
             </div>}
             {connected && <React.Fragment>
-              {/* {trackedCollectionsToShow.length === 0 && <div className="empty-state">
-                <div className="empty-state__graphic">
-                  <i className="material-icons-outlined" style={{ fontSize: 120, color: "#52C41A" }}>check_circle</i>
-                </div>
-                <p className="empty-state__description">Your database is set up!</p>
-                <p className="empty-state__action-text">Add a table for easy schema and access management</p>
-                <div className="empty-state__action-bar">
-                  <Button className="action-rounded" type="primary" onClick={handleAddClick}>Add table</Button>
-                </div>
-              </div>} */}
-              {/* {trackedCollectionsToShow.length > 0 && ( */}
                 <div>
                   <div style={{ marginTop: '32px' }}>
                     <span className='collections'>
@@ -254,7 +243,6 @@ const Overview = () => {
                     <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} bordered locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' />}}/>
                   </div>
                 </div>
-              {/* )} */}
               {unTrackedCollectionsToShow.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
