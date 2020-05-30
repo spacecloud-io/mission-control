@@ -176,7 +176,7 @@ class Database {
     })
   }
 
-  setUntrackCollection(projectId, dbName, colName) {
+  untrackCollection(projectId, dbName, colName) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/schema/inspect`)
         .then(({ status, data }) => {

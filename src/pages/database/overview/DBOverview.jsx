@@ -4,8 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
-import { PlusOutlined } from '@ant-design/icons';
-
 import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -17,8 +15,8 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
 import history from '../../../history';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, setUntrackCollection } from '../dbActions';
-import { defaultDBRules } from '../../../constants';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
+import { defaultDBRules, dbTypes } from '../../../constants';
 
 
 const Overview = () => {
@@ -42,6 +40,7 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
+  const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
   let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
@@ -56,7 +55,6 @@ const Overview = () => {
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
 
-  console.log(unTrackedCollectionsToShow)
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
@@ -99,7 +97,7 @@ const Overview = () => {
   }
 
   const handleUntrackClick = (colName) => {
-    setUntrackCollection(projectID, selectedDB, colName)
+    untrackCollection(projectID, selectedDB, colName)
     .then(() => notify("success", "Success", `Sucessfully untracked ${colName} collection`))
     .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
   }
@@ -136,7 +134,7 @@ const Overview = () => {
       .catch(() => notify("error", "Connection failed", ` Unable to connect to ${dbType}. Make sure your connection string is correct.`))
       .finally(() => setConformLoading(false))
   }
-  const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
+  const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
   const trackedTableColumns = [
     {
       title: 'Name',
