@@ -46,7 +46,7 @@ const ChangePlan = () => {
             padding: "0 16px"
           }}>
             <Button type="link" onClick={history.goBack}>
-            <LeftOutlined />
+              <LeftOutlined />
                 Go back
             </Button>
             <span style={{ marginLeft: '35%' }}>
@@ -61,7 +61,7 @@ const ChangePlan = () => {
                 <SelectPlan
                   selectedPlan={selectedPlan}
                   handleSelectPlan={handleSelectPlan}
-                  handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
+                  handleContactUs={(subject) => history.push(`/mission-control/projects/${projectID}/billing/contact-us`, { subject })} />
               </Col>
             </Row>
           </div>

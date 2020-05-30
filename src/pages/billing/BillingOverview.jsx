@@ -66,7 +66,7 @@ const BillingOverview = () => {
               <SelectPlan
                 selectedPlan={plan}
                 handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })}
-                handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
+                handleContactUs={(subject) => history.push(`/mission-control/projects/${projectID}/billing/contact-us`, { subject })} />
             </Col>}
             {!plan.startsWith("space-cloud-open") && <Col lg={{ span: 11 }}>
               <PlanDetails plan={plan} handleChangePlan={() => history.push(`/mission-control/projects/${projectID}/billing/change-plan`)} />

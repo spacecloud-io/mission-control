@@ -138,6 +138,7 @@ const projects = [
                   }
                 },
                 "docker": {
+                  "cmd": ["node ./index.js"],
                   "image": "asd",
                   "secret": "DockerHubSecret",
                   "imagePullPolicy": "always"

@@ -56,7 +56,7 @@ const Billing = () => {
             <SelectPlan
               selectedPlan={selectedPlan}
               handleSelectPlan={(plan) => history.push(`/mission-control/projects/${projectID}/billing/upgrade-cluster`, { plan })}
-              handleContactUs={() => history.push(`/mission-control/projects/${projectID}/billing/contact-us`)} />
+              handleContactUs={(subject) => history.push(`/mission-control/projects/${projectID}/billing/contact-us`, { subject })} />
           </Col>
           <Col lg={{ span: 18 }}>
             <FAQ handleDiscount={handleDiscount} />
