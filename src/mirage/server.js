@@ -91,8 +91,9 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", () => respondOk());
+      this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/inspect", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/inspect", () => respondOk());
-      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk());
+      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result:["xyz", "abc", "users"] }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
