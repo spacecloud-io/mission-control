@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
-import { get, set } from 'automate-redux';
+import { get, set, del } from 'automate-redux';
 import jwt from 'jsonwebtoken';
 import client from '../../../client';
 import { SPACE_CLOUD_USER_ID } from '../../../constants';
@@ -14,6 +14,8 @@ import '../explorer.css';
 import { getProjectConfig } from '../../../utils';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
+import { useSelector, useDispatch } from 'react-redux';
+
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
 
@@ -24,6 +26,9 @@ const generateAdminToken = secret => {
 const Graphql = props => {
 
   const { projectID } = useParams();
+
+  const dispatch = useDispatch();
+
 
   const [generateTokenModal, setGenerateTokenModal] = useState(false)
 
@@ -42,6 +47,11 @@ const Graphql = props => {
       graphQLParams.variables,
       getToken()
     );
+  }
+
+  const query = useSelector(state => state.uiState.query)
+  const removeQuery = () => {
+    dispatch(del('uiState.query'))
   }
 
   return (
@@ -82,6 +92,8 @@ const Graphql = props => {
           }
           <div className='graphql' style={{ marginTop: 10 }}>
             <GraphiQL
+              onEditQuery={removeQuery}
+              query={query}
               fetcher={graphQLParams =>
                 graphQLFetcher(graphQLParams, props.projectId)
               }

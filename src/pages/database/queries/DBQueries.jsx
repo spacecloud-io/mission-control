@@ -2,14 +2,15 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
-import { set } from 'automate-redux';
+import { set, increment, decrement } from 'automate-redux';
 
-import { Row, Col, Select, Alert } from 'antd';
+import { Row, Col, Select, Alert, Button, Checkbox } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import QueryBlock from "../../../components/db-query/QueryBlock";
-import { generateGraphQLQueries, getTrackedCollectionNames, getSchema } from '../../../utils';
+import { generateGraphQLQueries, getTrackedCollectionNames, getSchema, variableFlag } from '../../../utils';
+import { getSchema1, generateDBSchemaASTs } from '../../../graphql'
 
 import bookReadingSvg from "../../../assets/bookReading.svg"
 
@@ -24,10 +25,20 @@ const Queries = () => {
 
   // Handlers
   const handleSelect = (colName) => {
-    dispatch(set("uiState.selectedCollection", colName))}
+    dispatch(set("uiState.selectedCollection", colName))
+  }
+
+  const handleRedirect = () => {
+    dispatch(set("uiState.query", queries.get.req))
+  }
 
   const queries = generateGraphQLQueries(projectID, selectedDB, selectedCol)
   const schema = getSchema(projectID, selectedDB, selectedCol)
+
+  // const testSchema = getSchema1("type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}")
+  // console.log(testSchema);
+  const testSchema = generateDBSchemaASTs(selectedDB, projectID)
+  console.log(testSchema);
 
   useEffect(() => {
     if (trackedCollections.length > 0 && (!selectedCol || !trackedCollections.some(col => col === selectedCol))) {
@@ -37,16 +48,16 @@ const Queries = () => {
 
   const NoTableEmptyState = () => {
     return <div>
-    <div className="panel" style={{ margin: 24 }}>
-      <img src={bookReadingSvg} style={{ width: 240 }} />
-      <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Queries tab provide customized documentation on the GraphQL queries for a particular table/collection</p>
+      <div className="panel" style={{ margin: 24 }}>
+        <img src={bookReadingSvg} style={{ width: 240 }} />
+        <p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Queries tab provide customized documentation on the GraphQL queries for a particular table/collection</p>
+      </div>
+      <Row>
+        <Col sm={{ span: 24 }} lg={{ span: 16, offset: 4 }}>
+          <Alert message="Note" description={`No tracked tables yet. You first need to add a table/collection in order to see its auto generated GraphQL documentation.`} type="info" showIcon />
+        </Col>
+      </Row>
     </div>
-    <Row>
-      <Col sm={{ span: 24 }} lg={{ span: 16, offset: 4 }}>
-        <Alert message="Note"  description={`No tracked tables yet. You first need to add a table/collection in order to see its auto generated GraphQL documentation.`} type="info"  showIcon  />
-      </Col>
-    </Row>
-  </div>
   }
 
   const NoSchemaEmptyState = () => {
@@ -57,11 +68,18 @@ const Queries = () => {
       </div>
       <Row>
         <Col sm={{ span: 24 }} lg={{ span: 16, offset: 4 }}>
-          <Alert message="Note"  description={`You first need to describe the schema for ${selectedDB} in order to see its auto generated GraphQL documentation.`} type="info"  showIcon  />
+          <Alert message="Note" description={`You first need to describe the schema for ${selectedDB} in order to see its auto generated GraphQL documentation.`} type="info" showIcon />
         </Col>
       </Row>
     </div>
   }
+
+  const onChange = (e) => {
+    variableFlag(e.target.checked);
+  }
+
+  
+  
 
   return (
     <React.Fragment>
@@ -94,6 +112,8 @@ const Queries = () => {
                   type="info"
                   showIcon
                 />
+                <Checkbox onChange={onChange}>Checkbox</Checkbox>
+                <Button type="primary" onClick={handleRedirect}>Query</Button>
                 <p className="query-font">Queries</p>
                 <p className="query-font-small">Fetch records from {selectedCol} table with filters:</p>
                 <Row gutter={48}>

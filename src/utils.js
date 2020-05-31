@@ -723,6 +723,11 @@ const generateFieldsValue = (fields, options = {}, parentTypes = []) => {
   }).reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: curr.value }), {})
 }
 
+let flag = false;
+export const variableFlag = (applyFilter) => {
+  flag = applyFilter;
+}
+
 export const generateGraphQLQueries = (projectId, dbName, colName) => {
   const queries = {
     get: { req: '', res: '' },
@@ -742,7 +747,7 @@ export const generateGraphQLQueries = (projectId, dbName, colName) => {
   const nonIdentifyingFields = fields.filter(field => !field.isPrimaryField && !field.hasUniqueKey)
   const whereClause = identifyingFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
   queries.get.req = gqlPrettier(removeRegex(`query { 
-    ${colName}(where: ${JSON.stringify(whereClause)}) @${dbName} {
+    ${colName} ${flag ? ` (where: ${JSON.stringify(whereClause)} )` : ''} @${dbName} {
       ${getFieldsQuery(fields)}
     }
    }`, 0))

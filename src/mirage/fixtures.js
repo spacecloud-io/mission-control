@@ -39,6 +39,11 @@ const projects = [
                 }
               },
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
+            },
+            "pokemon": {
+              "schema": 'type pokemon {\n  id: ID! @primary\n  name: String!\n  trainer_id: ID! @foreign(table: "trainer", field: "id")\n}',
+              "rules": {},
+              "isRealtimeEnabled": true
             }
           },
           "preparedQueries": {
