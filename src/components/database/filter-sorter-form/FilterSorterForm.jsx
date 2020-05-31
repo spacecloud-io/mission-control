@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './filter-sorter-form.css';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import {generateId} from '../../../utils';
@@ -18,6 +18,8 @@ import 'codemirror/addon/edit/closebrackets.js';
 const FilterSorterForm = (props) => {
   const [form] = Form.useForm();
   const [json, setJson] = useState({});
+  const [columnValue, setColumnValue] = useState("");
+
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const dispatch = useDispatch();
@@ -79,7 +81,9 @@ const FilterSorterForm = (props) => {
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <AutoComplete 
+                        <AutoComplete
+                         onSearch={(e) => setColumnValue(e)}
+                         onFocus={e => setColumnValue(e.target.value)} 
                          onBlur={(e) => {
                             const column = props.schema.find(val => val.name === e.target.value);
                             if (column) {
@@ -88,8 +92,15 @@ const FilterSorterForm = (props) => {
                          }} 
                          style={{width: "100%"}} 
                          placeholder="column" 
-                         dataSource={props.schema.map(val => val.name)} 
-                        />
+                        >
+                          {
+                            props.schema.filter(data => (data.name.toLowerCase().indexOf(columnValue.toLowerCase()) !== -1)).map(data => (
+                              <AutoComplete.Option key={data.name} value={data.name}>
+                                {data.name}
+                              </AutoComplete.Option>
+                            ))
+                          }
+                        </AutoComplete>
                       </Form.Item>
                     </Col>
                     <Col span={5}>
@@ -131,7 +142,10 @@ const FilterSorterForm = (props) => {
                           },
                         ]}
                       >
-                        <Select placeholder='datatype'>
+                        <Select 
+                         placeholder='data type'
+                         onChange={() => form.setFields([{name: ["filters", field.name, "value"], value: null}])}
+                        >
                           <Select.Option value='id'>ID</Select.Option>
                           <Select.Option value='string'>String</Select.Option>
                           <Select.Option value='integer'>Integer</Select.Option>
@@ -258,12 +272,16 @@ const FilterSorterForm = (props) => {
                         </Col>
                       </ConditionalFormBlock>
                     <Col span={2}>
-                      <MinusCircleOutlined
-                        style={{ margin: '0 8px' }}
-                        onClick={() => {
-                          remove(field.name);
-                        }}
-                      />
+                      <Popconfirm
+                       title="Are you sure delete this?"
+                        onConfirm={() => remove(field.name)}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <MinusCircleOutlined
+                          style={{ margin: '0 8px' }}
+                        />
+                      </Popconfirm>
                     </Col>
                   </Row>
                   <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "array"}>
@@ -407,12 +425,16 @@ const FilterSorterForm = (props) => {
                                 </ConditionalFormBlock>
                               </Col>
                               <Col span={2}>
-                                <MinusCircleOutlined
-                                  style={{ margin: '0 8px' }}
-                                  onClick={() => {
-                                    remove(arrField.name);
-                                  }}
-                                />
+                              <Popconfirm
+                               title="Are you sure delete this?"
+                               onConfirm={() => remove(arrField.name)}
+                               okText="Yes"
+                               cancelText="No"
+                              >
+                               <MinusCircleOutlined
+                                 style={{ margin: '0 8px' }}
+                               />
+                              </Popconfirm>
                               </Col>
                             </Row>
                             </>
@@ -527,13 +549,16 @@ const FilterSorterForm = (props) => {
                       </Form.Item>
                     </Col>
                     <Col span={2}>
-                      <MinusCircleOutlined
-                        className='dynamic-delete-button'
-                        style={{ margin: '0 8px' }}
-                        onClick={() => {
-                          remove(field.name);
-                        }}
-                      />
+                      <Popconfirm
+                       title="Are you sure delete this?"
+                       onConfirm={() => remove(field.name)}
+                       okText="Yes"
+                       cancelText="No"
+                      >
+                        <MinusCircleOutlined
+                          style={{ margin: '0 8px' }}
+                        />
+                      </Popconfirm>
                     </Col>
                   </Row>
                 ))}

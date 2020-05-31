@@ -12,7 +12,7 @@ import InsertRowForm from "../../../components/database/insert-row-form/InsertRo
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
 import { notify, getSchemas, getTrackedCollectionNames } from '../../../utils';
-import { Button, Select, Icon, Table } from "antd";
+import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
 
@@ -56,6 +56,17 @@ const Browse = () => {
       })
   }
 
+  const booleanColumns = () => {
+    const columns = [];
+    getSchemas(projectID, selectedDB)[selectedCol]
+    .forEach(val => {
+      if (val.type === "Boolean") {
+        columns.push(val.name)
+      }
+    })
+    return columns;
+  }
+
   const getTableData = () => {
     if (selectedCol) {
 
@@ -83,11 +94,12 @@ const Browse = () => {
         .then(({ status, data }) => {
           if (status !== 200) {
             notify("error", "Error", data.error, 5);
+            column = getColumnNames();
             setData([]);
             return
           }
 
-          column = getColumnNames(data.result);
+          column = getColumnNames();
           column.unshift({
             key: 'action',
             title: '',
@@ -104,34 +116,47 @@ const Browse = () => {
                 >
                   Edit
                 </Button>
-                <Button 
-                 type="link" 
-                 disabled={uniqueKeys.length === 0} 
-                 style={{ color: "red" }} 
-                 onClick={() => {
-                  deleteRow(record)
-                  }
-                 }
+                <Popconfirm
+                 title="Are you sure delete this row?"
+                 onConfirm={() => deleteRow(record)}
+                 okText="Yes"
+                 cancelText="No"
                 >
-                  Delete
-                </Button>
+                  <Button 
+                   type="link" 
+                   disabled={uniqueKeys.length === 0} 
+                   style={{ color: "red" }} 
+                  >
+                    Delete
+                  </Button>
+                </Popconfirm>
               </span>
             )
           })
-          setData(data.result)
+          const columnsWithTypeBoolean = booleanColumns();
+          if (columnsWithTypeBoolean.length === 0) {
+            setData(data.result)
+          }
+          else {
+            data.result.forEach(val => {
+              columnsWithTypeBoolean.forEach(el => {
+                val[el] = val[el] === 1 ? "true" : "false"
+              })
+            })
+            setData(data.result);
+          }
         })
         .finally(() => dispatch(decrement("pendingRequests")));
     }
   }
 
-  const getColumnNames = rawData => {
+  const getColumnNames = () => {
     let columnNames = [];
-    for (const row of rawData) {
-      for (const keys of Object.keys(row)) {
-        columnNames.push(keys);
-      }
-    }
-    return [...new Set(columnNames)].map(val => ({ key: val, title: val, dataIndex: val }))
+    getSchemas(projectID, selectedDB)[selectedCol]
+      .forEach(val => {
+        columnNames.push(val.name)
+      })
+    return columnNames.map(val => ({ key: val, title: val, dataIndex: val }))
   }
 
   useEffect(() => {
@@ -198,7 +223,7 @@ const Browse = () => {
     uniqueKeys.forEach(val => {
       whereClause.push(cond(val, "==", editRowData[val]))
     })
-    const row = db.update(selectedCol).where(whereClause);
+    const row = db.update(selectedCol).where(...whereClause);
     let set = {};
     let remove = {};
     let rename = {};
@@ -335,12 +360,6 @@ const Browse = () => {
             </Select>
             <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
             <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
-            {
-              data.length === 0 && (
-                <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Select a collection</p>
-              )
-            }
-            {data.length !== 0 && (
               <Table
                 className="db-browse-table"
                 columns={column}
@@ -349,7 +368,6 @@ const Browse = () => {
                 bordered
                 pagination={false}
               />
-            )}
           </div>
         </div>
       </div>

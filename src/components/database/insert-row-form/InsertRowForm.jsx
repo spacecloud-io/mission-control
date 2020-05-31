@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import {generateId} from '../../../utils';
@@ -13,6 +13,8 @@ import 'codemirror/addon/edit/closebrackets.js';
 
 const InsertRowForm = (props) => {
   const [json, setJson] = useState({});
+  const [columnValue, setColumnValue] = useState("");
+
   const [form] = Form.useForm();
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -74,12 +76,31 @@ const InsertRowForm = (props) => {
                       <Form.Item
                         name={[field.name, 'column']}
                         key={[field.name, 'column']}
-                        style={{ display: 'inline-block' }}
+                        style={{ display: 'inline-block', width: '100%' }}
                         rules={[
                           { required: true, message: 'Please enter column!' },
                         ]}
                       >
-                        <Input placeholder='column' disabled />
+                        <AutoComplete
+                         onSearch={(e) => setColumnValue(e)}
+                         onFocus={e => setColumnValue(e.target.value)} 
+                         onBlur={(e) => {
+                            const column = props.schema.find(val => val.name === e.target.value);
+                            if (column) {
+                              form.setFields([{name: ["rows", field.name, "datatype"], value: column.type.toLowerCase()}])
+                            }
+                         }} 
+                         style={{width: "100%"}} 
+                         placeholder="column" 
+                        >
+                          {
+                            props.schema.filter(data => (data.name.toLowerCase().indexOf(columnValue.toLowerCase()) !== -1)).map(data => (
+                              <AutoComplete.Option key={data.name} value={data.name}>
+                                {data.name}
+                              </AutoComplete.Option>
+                            ))
+                          }
+                        </AutoComplete>
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -94,7 +115,10 @@ const InsertRowForm = (props) => {
                           },
                         ]}
                       >
-                        <Select placeholder='datatype'>
+                        <Select 
+                         placeholder='data type'
+                         onChange={() => form.setFields([{name: ["rows", field.name, "value"], value: null}])}
+                        >
                           <Select.Option value='id'>ID</Select.Option>
                           <Select.Option value='string'>String</Select.Option>
                           <Select.Option value='integer'>Integer</Select.Option>
@@ -221,12 +245,16 @@ const InsertRowForm = (props) => {
                         </Col>
                       </ConditionalFormBlock>
                     <Col span={2}>
-                      <MinusCircleOutlined
-                        style={{ margin: '0 8px' }}
-                        onClick={() => {
-                          remove(field.name);
-                        }}
-                      />
+                      <Popconfirm
+                       title="Are you sure delete this?"
+                        onConfirm={() => remove(field.name)}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <MinusCircleOutlined
+                          style={{ margin: '0 8px' }}
+                        />
+                      </Popconfirm>
                     </Col>
                   </Row>
                   <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "array"}>
@@ -370,12 +398,16 @@ const InsertRowForm = (props) => {
                                   </ConditionalFormBlock>
                                 </Col>
                                 <Col span={2}>
+                                <Popconfirm
+                                 title="Are you sure delete this?"
+                                 onConfirm={() => remove(arrField.name)}
+                                 okText="Yes"
+                                 cancelText="No"
+                                >
                                   <MinusCircleOutlined
                                     style={{ margin: '0 8px' }}
-                                    onClick={() => {
-                                      remove(arrField.name);
-                                    }}
                                   />
+                                </Popconfirm>
                                 </Col>
                               </Row>
                               </>

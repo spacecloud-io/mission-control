@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import {generateId} from '../../../utils';
+import moment from 'moment';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -14,6 +15,8 @@ import 'codemirror/addon/edit/closebrackets.js';
 const EditRowForm = (props) => {
   const [form] = Form.useForm();
   const [json, setJson] = useState({});
+  const [columnValue, setColumnValue] = useState("");
+
   const onFinish = () => {
     form.validateFields().then(values => {
       values.rows.forEach((val, index) => {
@@ -23,6 +26,9 @@ const EditRowForm = (props) => {
         if(val.datatype === "json") {
           values.rows[index].value = JSON.parse(json[index])
         }
+        if(val.datatype === "boolean" && typeof val.value === "string") {
+          val.value = val.value === "true" ? true : false
+        }
       })
       props.EditRow(values.rows);
     })
@@ -31,7 +37,7 @@ const EditRowForm = (props) => {
   const initialRows = props.schema.map(val => ({
     column: val.name,
     datatype: val.type.toLowerCase(),
-    value:  val.type === "DateTime" ? undefined : props.data[val.name]
+    value:  val.type === "DateTime" ? moment(props.data[val.name]) : props.data[val.name]
   }))
 
   return (
@@ -68,16 +74,25 @@ const EditRowForm = (props) => {
                         ]}
                       >
                         <AutoComplete
+                         onSearch={(e) => setColumnValue(e)}
+                         onFocus={e => setColumnValue(e.target.value)} 
                          onBlur={(e) => {
-                          const column = props.schema.find(val => val.name === e.target.value);
+                            const column = props.schema.find(val => val.name === e.target.value);
                             if (column) {
                               form.setFields([{name: ["rows", field.name, "datatype"], value: column.type.toLowerCase()}])
                             }
-                         }}  
+                         }} 
                          style={{width: "100%"}} 
                          placeholder="column" 
-                         dataSource={props.schema.map(val => val.name)} 
-                        />
+                        >
+                          {
+                            props.schema.filter(data => (data.name.toLowerCase().indexOf(columnValue.toLowerCase()) !== -1)).map(data => (
+                              <AutoComplete.Option key={data.name} value={data.name}>
+                                {data.name}
+                              </AutoComplete.Option>
+                            ))
+                          }
+                        </AutoComplete>
                       </Form.Item>
                     </Col>
                     <Col span={5}>
@@ -177,7 +192,10 @@ const EditRowForm = (props) => {
                           },
                         ]}
                       >
-                        <Select placeholder='datatype'>
+                        <Select 
+                         placeholder='data type'
+                         onChange={() => form.setFields([{name: ["rows", field.name, "value"], value: null}])}
+                        >
                           <Select.Option value='id'>ID</Select.Option>
                           <Select.Option value='string'>String</Select.Option>
                           <Select.Option value='integer'>Integer</Select.Option>
@@ -306,12 +324,16 @@ const EditRowForm = (props) => {
                     </>
                     </ConditionalFormBlock>
                     <Col span={2}>
-                      <MinusCircleOutlined
-                        style={{ margin: '0 8px' }}
-                        onClick={() => {
-                          remove(field.name);
-                        }}
-                      />
+                      <Popconfirm
+                       title="Are you sure delete this?"
+                        onConfirm={() => remove(field.name)}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <MinusCircleOutlined
+                          style={{ margin: '0 8px' }}
+                        />
+                      </Popconfirm>
                     </Col>
                   </Row>
                   <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "array"}>
@@ -455,12 +477,16 @@ const EditRowForm = (props) => {
                                 </ConditionalFormBlock>
                               </Col>
                               <Col span={2}>
-                                <MinusCircleOutlined
-                                  style={{ margin: '0 8px' }}
-                                  onClick={() => {
-                                    remove(arrField.name);
-                                  }}
-                                />
+                                <Popconfirm
+                                 title="Are you sure delete this?"
+                                 onConfirm={() => remove(arrField.name)}
+                                 okText="Yes"
+                                 cancelText="No"
+                                >
+                                  <MinusCircleOutlined
+                                   style={{ margin: '0 8px' }}
+                                  />
+                                </Popconfirm>
                               </Col>
                             </Row>
                             </>
