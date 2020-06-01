@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import {generateId} from '../../../utils';
+import {generateId, notify} from '../../../utils';
 import moment from 'moment';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
@@ -11,34 +11,62 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
+import { useEffect } from 'react';
 
 const EditRowForm = (props) => {
   const [form] = Form.useForm();
   const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
+  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+
+  useEffect(() => {
+    let doc = {};
+    props.schema.forEach((val, index) => {
+      if (val.type === "JSON" || !primitives.includes(val.type.toLowerCase())) {
+        doc = Object.assign(doc, {[index] : props.data[val.name]})
+      }
+    })
+    setJson(Object.assign({}, doc));
+  }, [])
+
   const onFinish = () => {
     form.validateFields().then(values => {
+      try {
       values.rows.forEach((val, index) => {
         if(val.datatype === "array") {
           values.rows[index].value = val.arrays.map(el => el.value);
         }
-        if(val.datatype === "json") {
-          values.rows[index].value = JSON.parse(json[index])
+        if(val.datatype === "json" || !primitives.includes(val.datatype)) {
+          values.rows[index].value = !json[index] ? "" : JSON.parse(json[index]);
         }
         if(val.datatype === "boolean" && typeof val.value === "string") {
           val.value = val.value === "true" ? true : false
         }
       })
-      props.EditRow(values.rows);
+      props.editRow(values.rows);
+    } catch (ex) {
+      notify("error", "Error", ex.toString())
+    }
     })
   };
 
   const initialRows = props.schema.map(val => ({
     column: val.name,
     datatype: val.type.toLowerCase(),
-    value:  val.type === "DateTime" ? moment(props.data[val.name]) : props.data[val.name]
+    value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
   }))
+  
+  const isFieldRequired = (field) => {
+    const column = form.getFieldValue(["rows", field, "column"]);
+    const schema = props.schema.find(val => val.name === column);
+    if (schema) {
+      if (schema.isRequired) {
+        return { required: true, message: 'Please enter value!' }
+      }
+    }
+    return { required: false }
+  }
 
   return (
     <Modal
@@ -181,7 +209,6 @@ const EditRowForm = (props) => {
                       <>
                     <Col span={5}>
                       <Form.Item
-                        initialValue="string"
                         name={[field.name, 'datatype']}
                         key={[field.name, 'datatype']}
                         style={{ display: 'inline-block', width: '100%' }}
@@ -214,7 +241,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Input 
@@ -235,7 +262,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Input placeholder="value"/>
@@ -249,7 +276,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <InputNumber placeholder="value" style={{width: "100%"}}/>
@@ -263,7 +290,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <InputNumber placeholder="value" style={{width: "100%"}}/>
@@ -278,7 +305,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <Select>
@@ -295,7 +322,7 @@ const EditRowForm = (props) => {
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
                           rules={[
-                            { required: true, message: 'Please enter value!' },
+                            isFieldRequired(field.name)
                           ]}
                         >
                           <DatePicker showTime />
@@ -304,6 +331,28 @@ const EditRowForm = (props) => {
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
                       <Col span={7} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
+                          <CodeMirror
+                           value={json[field.name] ? json[field.name] : ""}
+                           options={{
+                             mode: { name: 'javascript', json: true },
+                             lineNumbers: true,
+                             styleActiveLine: true,
+                             matchBrackets: true,
+                             autoCloseBrackets: true,
+                             tabSize: 2,
+                             autofocus: true
+                           }}
+                           onBeforeChange={(editor, data, value) => {
+                             setJson(Object.assign({}, json, {[field.name] : value}))
+                           }}
+                         />
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock 
+                       shouldUpdate={true} 
+                       condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
+                      >
+                        <Col span={7} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
                           <CodeMirror
                            value={json[field.name] ? json[field.name] : ""}
                            options={{

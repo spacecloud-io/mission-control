@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import {generateId} from '../../../utils';
+import {generateId, notify} from '../../../utils';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -12,21 +12,27 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 
 const InsertRowForm = (props) => {
+  const [form] = Form.useForm();
   const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
-  const [form] = Form.useForm();
+  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+
   const onFinish = () => {
     form.validateFields().then(values => {
+      try {
      values.rows.forEach((val, index) => {
        if(val.datatype === "array") {
          values.rows[index].value = val.arrays.map(el => el.value);
        }
-       if(val.datatype === "json") {
-         values.rows[index].value = JSON.parse(json[index]);
+       if(val.datatype === "json" || !primitives.includes(val.datatype)) {
+         values.rows[index].value = !json[index] ? "" : JSON.parse(json[index]);
        }
      })
       props.insertRow(values.rows);
+      } catch (ex) {
+        notify("error", "Error", ex.toString())
+      }
     })
   };
 
@@ -41,7 +47,10 @@ const InsertRowForm = (props) => {
       const column = form.getFieldValue(["rows", field, "column"]);
       const schema = props.schema.find(val => val.name === column);
       if (schema) {
-        if (schema.isRequired) {
+        if (schema.type === "ID") {
+          return { required: false }
+        }
+        else if (schema.isRequired) {
           return { required: true, message: 'Please enter value!' }
         }
       }
@@ -240,6 +249,28 @@ const InsertRowForm = (props) => {
                            }}
                            onBeforeChange={(editor, data, value) => {                           
                               setJson(Object.assign({}, json, {[field.name] : value}))
+                           }}
+                         />
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock 
+                       shouldUpdate={true} 
+                       condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
+                      >
+                        <Col span={10} style={{border: '1px solid #D9D9D9', marginBottom: 15}}>
+                          <CodeMirror
+                           value={json[field.name] ? json[field.name] : ""}
+                           options={{
+                             mode: { name: 'javascript', json: true },
+                             lineNumbers: true,
+                             styleActiveLine: true,
+                             matchBrackets: true,
+                             autoCloseBrackets: true,
+                             tabSize: 2,
+                             autofocus: true
+                           }}
+                           onBeforeChange={(editor, data, value) => {
+                             setJson(Object.assign({}, json, {[field.name] : value}))
                            }}
                          />
                         </Col>

@@ -35,6 +35,9 @@ const Browse = () => {
   const collections = useSelector(state => getTrackedCollectionNames(state, projectID, selectedDB))
   const api = new API(projectID, spaceCloudClusterOrigin);
   const db = api.DB(selectedDB);
+  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+
+  const colSchema = getSchemas(projectID, selectedDB)[selectedCol];
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/browse");
@@ -44,11 +47,12 @@ const Browse = () => {
     if(collections.length > 0 && !selectedCol){
       dispatch(set("uiState.selectedCollection", collections[0]))
     }
-  }, [dispatch])
+  }, [dispatch, collections])
 
   const getUniqueKeys = () => {
     uniqueKeys = [];
-    getSchemas(projectID, selectedDB)[selectedCol]
+    if(!colSchema) return;
+    colSchema
       .forEach(val => {
         if (val.isPrimaryField || val.hasUniqueKey) {
           uniqueKeys.push(val.name);
@@ -58,9 +62,20 @@ const Browse = () => {
 
   const booleanColumns = () => {
     const columns = [];
-    getSchemas(projectID, selectedDB)[selectedCol]
+    colSchema
     .forEach(val => {
       if (val.type === "Boolean") {
+        columns.push(val.name)
+      }
+    })
+    return columns;
+  }
+
+  const jsonColumns = () => {
+    const columns = [];
+    colSchema
+    .forEach(val => {
+      if (val.type === "JSON" || !primitives.includes(val.type.toLowerCase())) {
         columns.push(val.name)
       }
     })
@@ -133,18 +148,24 @@ const Browse = () => {
               </span>
             )
           })
+
           const columnsWithTypeBoolean = booleanColumns();
-          if (columnsWithTypeBoolean.length === 0) {
-            setData(data.result)
-          }
-          else {
+          if (columnsWithTypeBoolean.length > 0) {
             data.result.forEach(val => {
               columnsWithTypeBoolean.forEach(el => {
-                val[el] = val[el] === 1 ? "true" : "false"
+                val[el] = val[el]  ? "true" : "false"
               })
             })
-            setData(data.result);
           }
+          const columnsWithJSON = jsonColumns();
+          if (columnsWithJSON.length > 0) {
+            data.result.forEach(val => {
+              columnsWithJSON.forEach(el => {
+                val[el] = JSON.stringify(val[el], null, "\t")
+              })
+            })
+          }
+          setData(data.result);
         })
         .finally(() => dispatch(decrement("pendingRequests")));
     }
@@ -152,7 +173,8 @@ const Browse = () => {
 
   const getColumnNames = () => {
     let columnNames = [];
-    getSchemas(projectID, selectedDB)[selectedCol]
+    if (!colSchema) return;
+    colSchema
       .forEach(val => {
         columnNames.push(val.name)
       })
@@ -187,6 +209,7 @@ const Browse = () => {
     for (let row of values) {
       docs[row.column] = row.value;
     }
+    console.log(docs);
     db.insert(selectedCol).doc(docs).apply()
       .then(res => {
         if (res.status !== 200) {
@@ -218,7 +241,7 @@ const Browse = () => {
       })
   }
 
-  const EditRow = values => {
+  const editRow = values => {
     const whereClause = [];
     uniqueKeys.forEach(val => {
       whereClause.push(cond(val, "==", editRowData[val]))
@@ -358,8 +381,12 @@ const Browse = () => {
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}
             </Select>
-            <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
-            <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
+            {colSchema && (
+              <>
+              <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
+              <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
+              </>
+            )}
               <Table
                 className="db-browse-table"
                 columns={column}
@@ -377,7 +404,7 @@ const Browse = () => {
             visible={isFilterSorterFormVisible}
             handleCancel={() => setFilterSorterFormVisibility(false)}
             filterTable={filterTable}
-            schema={getSchemas(projectID, selectedDB)[selectedCol]}
+            schema={colSchema}
           />
         )
       }
@@ -387,7 +414,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
-            schema={getSchemas(projectID, selectedDB)[selectedCol]}
+            schema={colSchema}
           />
         )
       }
@@ -396,9 +423,9 @@ const Browse = () => {
           <EditRowForm
             visible={isEditRowFormVisible}
             handleCancel={() => setEditRowFormVisibility(false)}
-            EditRow={EditRow}
+            editRow={editRow}
             selectedDB={selectedDB}
-            schema={getSchemas(projectID, selectedDB)[selectedCol]}
+            schema={colSchema}
             data={editRowData}
           />
         )

@@ -3,7 +3,7 @@ import './filter-sorter-form.css';
 import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import {generateId} from '../../../utils';
+import {generateId, notify} from '../../../utils';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { useDispatch, useSelector } from 'react-redux';
 import { reset } from 'automate-redux';
@@ -20,20 +20,26 @@ const FilterSorterForm = (props) => {
   const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
+  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const dispatch = useDispatch();
   const onFinish = () => {
     form.validateFields().then(values => {
+      try {
       values.filters.forEach((val, index) => {
         if(val.datatype === "array") {
           values.filters[index].value = val.arrays.map(el => el.value);
         }
-        if(val.datatype === "json") {
-          values.filters[index].value = JSON.parse(json[index])
+        if(val.datatype === "json" || !primitives.includes(val.datatype)) {
+          values.filters[index].value = !json[index] ? "" : JSON.parse(json[index]);
         }
       })
      props.filterTable(values)
+    } catch (ex) {
+      notify("error", "Error", ex.toString())
+    }
     })
   };
 
