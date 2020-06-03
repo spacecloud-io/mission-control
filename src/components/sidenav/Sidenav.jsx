@@ -111,8 +111,8 @@ const Sidenav = (props) => {
           <SidenavItem name="Guides" icon="import_contacts" active={props.selectedItem === 'guides'} />
         </Link> */}
           <Divider />
-          <Link to={`/mission-control/projects/${projectID}/settings`} onClick={closeSidenav}>
-            <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
+          <Link to={`/mission-control/projects/${projectID}/settings/projects`} onClick={closeSidenav}>
+            <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'project-settings'} />
           </Link>
           {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />

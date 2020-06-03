@@ -74,7 +74,6 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Global endpoints
       this.get("/config/env", () => ({ isProd: false, version: "0.17.0", clusterId: "cluster1", plan: "space-cloud-open--monthly", quotas: { maxDatabases: 1, maxProjects: 1 } }));
-      this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
       this.get("/config/quotas", () => respondOk());
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/upgrade", () => respondOk());
@@ -84,6 +83,10 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/projects", (schema) => schema.projects.all());
       this.post("/config/projects/:projectId", () => respondOk());
       this.delete("/config/projects/:projectId", () => respondOk());
+      
+      // cluster Endpoint
+      this.get("/config/cluster", () => respondOk({ result: fixtures.clusters }));
+      this.post("/config/cluster", () => respondOk());
 
       // Database endpoints
       this.get("/external/projects/:projectId/database/:dbName/connection-state", () => respondOk({ result: true }));
@@ -91,7 +94,8 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/mutate", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", () => respondOk());
-      this.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/inspect", () => respondOk());
+      this.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => respondOk());
+      this.delete("/config/projects/:projectId/database/:dbName/collections/:colName/schema/untrack", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/inspect", () => respondOk());
       this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result:["xyz", "abc", "users"] }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());

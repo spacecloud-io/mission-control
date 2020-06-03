@@ -1,4 +1,4 @@
-.projectSetting-page .divider {
+.setting-content .divider {
   background: #e4e4e4;
   height: 1px;
   margin-top: 24px;
@@ -15,4 +15,8 @@
 
 .projectSetting-page h2 {
   margin-bottom: 8px;
+}
+
+.setting-content {
+  padding: 32px;
 }

@@ -3,27 +3,27 @@ import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector, useDispatch } from "react-redux";
 import { get, set, increment, decrement } from "automate-redux";
-
+import SettingsTabs from "../../components/settings/settings-tabs/SettingsTabs";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import SecretConfigure from "../../components/configure/SecretConfigure";
+import SecretConfigure from "../../components/settings/projects/SecretConfigure";
 import "./settings.css";
 import { getProjectConfig, notify, setProjectConfig, openProject } from "../../utils";
 import client from "../../client";
 import { Button, Row, Col, Card, Typography } from "antd";
 import store from "../../store";
 import history from "../../history";
-import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
-import AESConfigure from "../../components/configure/AESConfigure";
-import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
-import DockerRegistry from "../../components/configure/DockerRegistry";
+import WhitelistedDomains from "../../components/settings/projects/WhiteListedDomains";
+import AESConfigure from "../../components/settings/projects/AESConfigure";
+import GraphQLTimeout from "../../components/settings/projects/GraphQLTimeout";
+import DockerRegistry from "../../components/settings/projects/DockerRegistry";
 
-const Settings = () => {
+const ProjectSettings = () => {
   // Router params
   const { projectID } = useParams();
 
   useEffect(() => {
-    ReactGA.pageview("/projects/settings");
+    ReactGA.pageview("/projects/settings/project-settings");
   }, []);
 
   const dispatch = useDispatch();
@@ -41,8 +41,7 @@ const Settings = () => {
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
-  const credentials = useSelector(state => state.credentials)
-
+  
   const domains = getProjectConfig(
     projects,
     projectID,
@@ -140,24 +139,14 @@ const Settings = () => {
   };
 
   return (
-    <div className="projectSetting-page">
+    <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="settings" />
-      <div className="page-content">
+      <Sidenav selectedItem='project-settings' />
+      <div className='page-content page-content--no-padding'>
+        <SettingsTabs activeKey="project" projectID={projectID} />
+        <div className="setting-content">
         <Row>
           <Col lg={{ span: 12 }}>
-            <h2>Credentials</h2>
-            <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}>
-                <b>Username </b>
-                <Typography.Paragraph style={{ display: "inline" }} copyable ellipsis>{credentials.user}</Typography.Paragraph>
-              </h3>
-              <h3 style={{ wordSpacing: 6 }}>
-                <b>Access Key </b>
-                <Typography.Paragraph style={{ display: "inline" }} copyable={{ text: credentials.pass }} ellipsis>*************************</Typography.Paragraph>
-              </h3>
-            </Card>
-            <div className="divider" />
             <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
             <div className="divider" />
             <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
@@ -179,8 +168,9 @@ const Settings = () => {
           </Col>
         </Row>
       </div>
-    </div >
+      </div>
+    </React.Fragment>
   );
 };
 
-export default Settings;
+export default ProjectSettings;

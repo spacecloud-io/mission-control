@@ -4,7 +4,7 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
 	projects: [],
-	clusters: [],
+	clusters: {},
 	serviceRoutes: {},
 	pendingRequests: 0,
 	uiState: {

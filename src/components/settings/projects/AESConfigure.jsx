@@ -1,6 +1,6 @@
 import React from 'react'
 import { Input, Button, Form } from 'antd';
-import { generateAESKey } from "../../utils";
+import { generateAESKey } from "../../../utils";
 
 const AESConfigure = ({ loading, aesKey, handleSubmit }) => {
   const [form] = Form.useForm();

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
-import FormItemLabel from "../../components/form-item-label/FormItemLabel";
-import { generateJWTSecret, notify } from '../../utils';
+import FormItemLabel from "../../form-item-label/FormItemLabel";
+import { generateJWTSecret, notify } from '../../../utils';
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();

@@ -273,12 +273,12 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
       openProject(projectToBeOpened)
     }).catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
-
-    store.dispatch(increment("pendingRequests"))
-    client.fetchCredentials()
-      .then(data => store.dispatch(set("credentials", data)))
-      .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
+      
+      store.dispatch(increment("pendingRequests"))
+      client.clusters.getClustersConfig()
+        .then(data => store.dispatch(set("clusters", data)))
+        .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
+        .finally(() => store.dispatch(decrement("pendingRequests")))
 
     if (spaceUpToken) {
       store.dispatch(increment("pendingRequests"))
