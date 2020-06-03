@@ -612,13 +612,13 @@ const getSimplifiedFieldDefinition = (def) => {
   const isRequired = def.type.kind === "NonNullType" ? true : false;
   const directives = def.directives
   const isPrimaryField = directives.some(dir => dir.name.value === "primary")
-  const hasForeignKey = directives.some(dir => dir.name.value === "foreign")
-  const hasUniqueKey = directives.some(dir => dir.name.value === "unique")
-  let hasForeignKeyOn = null
-  if (hasForeignKey) {
+  const hasForeignConstraint = directives.some(dir => dir.name.value === "foreign")
+  const hasUniqueConstraint = directives.some(dir => dir.name.value === "unique")
+  let hasForeignConstraintOn = null
+  if (hasForeignConstraint) {
     const foreignDirective = directives.find(dir => dir.name.value === "foreign")
     const tableArgument = foreignDirective.arguments.find(ar => ar.name.value === "table")
-    hasForeignKeyOn = tableArgument.value.value
+    hasForeignConstraintOn = tableArgument.value.value
   }
   let hasNestedFields = false
   if (fieldType !== "ID" && fieldType !== "String" && fieldType !== "Integer" && fieldType !== "Float"
@@ -629,10 +629,10 @@ const getSimplifiedFieldDefinition = (def) => {
     name: def.name.value,
     type: fieldType,
     isArray: isArray,
-    isPrimaryField: isPrimaryField,
-    hasUniqueKey: hasUniqueKey,
-    hasForeignKey: hasForeignKey,
-    hasForeignKeyOn: hasForeignKeyOn,
+    isPrimary: isPrimaryField,
+    hasUniqueConstraint: hasUniqueConstraint,
+    hasForeignConstraint: hasForeignConstraint,
+    hasForeignConstraintOn: hasForeignConstraintOn,
     hasNestedFields: hasNestedFields,
     isRequired
   }
@@ -710,10 +710,10 @@ const generateFieldsValue = (fields, options = {}, parentTypes = []) => {
     generateDependentForeignKeys: true
   }
   const { generateNestedValues, skipForeignDirectives, generateDependentNestedFields, generateDependentForeignKeys } = Object.assign({}, defaultOptions, options)
-  let newFields = !generateDependentNestedFields ? fields.filter(field => !(field.hasNestedFields && fields.some(f => f.hasForeignKey && f.hasForeignKeyOn === field.type))) : fields
+  let newFields = !generateDependentNestedFields ? fields.filter(field => !(field.hasNestedFields && fields.some(f => f.hasForeignConstraint && f.hasForeignConstraintOn === field.type))) : fields
   newFields = !generateNestedValues ? fields.filter(field => !field.hasNestedFields) : newFields
-  newFields = skipForeignDirectives ? newFields.filter(field => !field.hasForeignKey) : newFields
-  newFields = !generateDependentForeignKeys ? newFields.filter(field => !(field.hasForeignKey && parentTypes.some(t => t === field.hasForeignKeyOn))) : newFields
+  newFields = skipForeignDirectives ? newFields.filter(field => !field.hasForeignConstraint) : newFields
+  newFields = !generateDependentForeignKeys ? newFields.filter(field => !(field.hasForeignConstraint && parentTypes.some(t => t === field.hasForeignConstraintOn))) : newFields
   return newFields.map(field => {
     if (field.hasNestedFields) {
       const value = field.isArray ? [
@@ -739,9 +739,9 @@ export const generateGraphQLQueries = (projectId, dbName, colName) => {
   const schemas = getSchemas(projectId, dbName)
   const fields = getNestedFieldDefinitions(schemas, colName)
   const primaryFields = fields.filter(field => field.isPrimaryField)
-  const uniqueFields = fields.filter(field => field.hasUniqueKey)
+  const uniqueFields = fields.filter(field => field.hasUniqueConstraint)
   const identifyingFields = primaryFields.length ? primaryFields : uniqueFields
-  const nonIdentifyingFields = fields.filter(field => !field.isPrimaryField && !field.hasUniqueKey)
+  const nonIdentifyingFields = fields.filter(field => !field.isPrimaryField && !field.hasUniqueConstraint)
   const whereClause = identifyingFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
   queries.get.req = gqlPrettier(removeRegex(`query { 
     ${colName}(where: ${JSON.stringify(whereClause)}) @${dbName} {

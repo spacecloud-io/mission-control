@@ -47,7 +47,7 @@ const InsertRowForm = (props) => {
       const column = form.getFieldValue(["rows", field, "column"]);
       const schema = props.schema.find(val => val.name === column);
       if (schema) {
-        if (schema.type === "ID") {
+        if (schema.type === "ID" || schema.hasCreatedAtDirective) {
           return { required: false }
         }
         else if (schema.isRequired) {
@@ -125,7 +125,7 @@ const InsertRowForm = (props) => {
                         ]}
                       >
                         <Select 
-                         placeholder='data type'
+                         placeholder='Data type'
                          onChange={() => form.setFields([{name: ["rows", field.name, "value"], value: null}])}
                         >
                           <Select.Option value='id'>ID</Select.Option>
@@ -134,7 +134,7 @@ const InsertRowForm = (props) => {
                           <Select.Option value='float'>Float</Select.Option>
                           <Select.Option value='boolean'>Boolean</Select.Option>
                           <Select.Option value='datetime'>Datetime</Select.Option>
-                          <Select.Option value='json'>json/object</Select.Option>
+                          <Select.Option value='json'>JSON/Object</Select.Option>
                           <Select.Option value='array'>Array</Select.Option>
                         </Select>
                       </Form.Item>
@@ -321,7 +321,7 @@ const InsertRowForm = (props) => {
                                       <Select.Option value='float'>Float</Select.Option>
                                       <Select.Option value='boolean'>Boolean</Select.Option>
                                       <Select.Option value='datetime'>Datetime</Select.Option>
-                                      <Select.Option value='json'>json/object</Select.Option>
+                                      <Select.Option value='json'>JSON/Object</Select.Option>
                                     </Select>
                                   </Form.Item>
                                 </Col>
