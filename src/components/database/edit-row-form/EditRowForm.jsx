@@ -51,11 +51,14 @@ const EditRowForm = (props) => {
     })
   };
 
-  const initialRows = props.schema.map(val => ({
-    column: val.name,
-    datatype: val.type.toLowerCase(),
-    value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
-  }))
+  const initialRows = props.schema.map(val => {
+    const dataType = val.type.toLowerCase();
+    return {
+      column: val.name,
+      datatype: !primitives.includes(dataType) ? "json": dataType,
+      value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+    }
+  })
   
   const isFieldRequired = (field) => {
     const column = form.getFieldValue(["rows", field, "column"]);

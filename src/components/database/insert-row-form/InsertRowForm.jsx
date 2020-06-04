@@ -36,12 +36,13 @@ const InsertRowForm = (props) => {
     })
   };
 
-  let initialRows = props.schema.map(val => (
-    {
+  let initialRows = props.schema.map(val => {
+    const dataType = val.type.toLowerCase();
+    return {
       column: val.name, 
-      datatype: val.type.toLowerCase()
+      datatype: !primitives.includes(dataType) ? "json": dataType
     }
-    ));
+  });
 
     const isFieldRequired = (field) => {
       const column = form.getFieldValue(["rows", field, "column"]);
