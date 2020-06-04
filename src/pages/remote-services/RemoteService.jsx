@@ -10,6 +10,7 @@ import { Button, Table, Popconfirm } from "antd";
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
+import { endpointTypes } from "../../constants"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -52,7 +53,7 @@ const RemoteService = () => {
 
   // Derived state
   const endpoints = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints`, {})
-  const endpointsTableData = Object.entries(endpoints).map(([name, { path, method }]) => ({ name, method, path }))
+  const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => ({ name, method, path, kind }))
   const noOfEndpoints = endpointsTableData.length
 
   const handleDelete = (name) => {
@@ -74,14 +75,25 @@ const RemoteService = () => {
       key: 'name'
     },
     {
+      title: 'Endpoint type',
+      render: (_, { kind = endpointTypes.INTERNAL }) => {
+        switch (kind) {
+          case endpointTypes.INTERNAL:
+            return "Internal"
+          case endpointTypes.EXTERNAL:
+            return "External"
+          case endpointTypes.PREPARED:
+            return "Space Cloud"
+        }
+      }
+    },
+    {
       title: 'Method',
-      dataIndex: 'method',
-      key: 'method'
+      render: (_, { kind, method }) => kind === endpointTypes.PREPARED ? "POST" : method
     },
     {
       title: 'Path',
-      dataIndex: 'path',
-      key: 'path'
+      render: (_, { kind, path }) => kind === endpointTypes.PREPARED ? `http://localhost:4122/v1/api/${projectID}/graphql` : path
     },
     {
       title: 'Actions',

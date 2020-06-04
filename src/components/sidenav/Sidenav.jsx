@@ -117,15 +117,15 @@ const Sidenav = (props) => {
           {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
           <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
         </Link> */}
-          <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
+          {/* <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
             <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link>
+          </Link> */}
         </div>
         <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
-          <p className="plan">{planName} plan</p>
-          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>}
+          {/* <p className="plan">{planName} plan</p>
+          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>} */}
         </div>
       </div>
     </div>

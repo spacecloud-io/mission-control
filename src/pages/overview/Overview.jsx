@@ -45,7 +45,7 @@ function Overview() {
               </Col>
             </Row>
             {selectedPlan.startsWith("space-cloud-open") && <Col lg={{ span: 24 }} style={{ marginTop: "3%" }}>
-              <UpgradeCard handleClickUpgrade={handleClickUpgrade} />
+              {/* <UpgradeCard handleClickUpgrade={handleClickUpgrade} /> */}
             </Col>}
           </Col>
         </Row>

@@ -1,3 +1,9 @@
+export const endpointTypes = {
+  INTERNAL: "internal",
+  EXTERNAL: "external",
+  PREPARED: "prepared"
+}
+
 export const dbTypes = {
   MONGO: "mongo",
   POSTGRESQL: "postgres",

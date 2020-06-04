@@ -80,22 +80,31 @@ const projects = [
               "login": {
                 "method":"POST",
                 "path":"/v1/login",
-                "kind":"simple",
                 "rule": {
                   "rule": "allow"
                 }
               },
-              "profile": {
+              "externalEndpoint": {
                 "method":"GET",
-                "path":"/v1/profile/{args.id}",
-                "kind":"transform-go",
+                "path":"https://foo.com/bar",
+                "kind":"external",
                 "rule": {
                   "rule": "authenticated"
                 },
-                "type": "transform-go",
+                "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+                "requestTemplate":`{ "id": "args.id"}`,
+                "responseTemplate": `{ "key1": "res.val1"}`
+              },
+              "preparedQuery": {
+                "kind":"prepared",
+                "rule": {
+                  "rule": "authenticated"
+                },
                 "outputFormat": "json",
                 "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
-                "template":`{ "id": "args.id"}`
+                "graphTemplate": `query { users @db }`,
+                "requestTemplate":`{ "id": "args.id"}`,
+                "responseTemplate": `{ "key1": "res.val1"}`
               },
             }
           }
