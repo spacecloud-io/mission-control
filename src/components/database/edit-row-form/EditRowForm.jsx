@@ -53,10 +53,30 @@ const EditRowForm = (props) => {
 
   const initialRows = props.schema.map(val => {
     const dataType = val.type.toLowerCase();
-    return {
-      column: val.name,
-      datatype: !primitives.includes(dataType) ? "json": dataType,
-      value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+    if (!val.isArray) {
+      return {
+        column: val.name,
+        datatype: !primitives.includes(dataType) ? "json": dataType,
+        value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+      }
+    } else {
+      if (props.data[val.name]) {
+        return {
+          column: val.name,
+          datatype: 'array',
+          arrays: props.data[val.name].split(",").map(el => (
+            {
+              datatype: dataType,
+              value: el
+            }
+          ))
+        }
+      } else {
+        return {
+          column: val.name,
+          datatype: 'array'
+        }
+      }
     }
   })
   
@@ -403,6 +423,7 @@ const EditRowForm = (props) => {
                             <Row key={arrField.key} gutter={10}>
                               <Col span={8}>
                                 <Form.Item
+                                 initialValue="string"
                                  name={[arrField.name, 'datatype']}
                                  key={[arrField.name, 'datatype']}
                                  style={{ display: 'inline-block', width: '100%' }}

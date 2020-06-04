@@ -77,6 +77,7 @@ const Browse = () => {
         .sort(...sortersCond)
         .apply()
         .then(({ status, data }) => {
+          console.log(data.result);
           if (status !== 200) {
             notify("error", "Error", data.error, 5);
             setData([]);
@@ -89,13 +90,16 @@ const Browse = () => {
                 obj[key] = value.toString()
                 return
               }
-              if (typeof value === "object" && value !== null) {
+              if (typeof value === "object" && !Array.isArray(value) && value !== null) {
                 obj[key] = JSON.stringify(value, null, 2)
                 return
               }
+              if (typeof value === "object" && Array.isArray(value) && value !== null) {
+                obj[key] = value.toString()
+              }
             })
           })
-
+          
           setData(data.result);
         })
         .finally(() => dispatch(decrement("pendingRequests")));
@@ -170,7 +174,7 @@ const Browse = () => {
     for (let row of values) {
       docs[row.column] = row.value;
     }
-    console.log(docs);
+
     db.insert(selectedCol).doc(docs).apply()
       .then(res => {
         if (res.status !== 200) {

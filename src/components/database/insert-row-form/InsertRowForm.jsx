@@ -40,7 +40,7 @@ const InsertRowForm = (props) => {
     const dataType = val.type.toLowerCase();
     return {
       column: val.name, 
-      datatype: !primitives.includes(dataType) ? "json": dataType
+      datatype: val.isArray ? "array" : !primitives.includes(dataType) ? "json": dataType
     }
   });
 
@@ -206,7 +206,6 @@ const InsertRowForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "boolean"}>
                       <Col span={10}>
                         <Form.Item
-                          initialValue={true}
                           name={[field.name, 'value']}
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
@@ -214,7 +213,7 @@ const InsertRowForm = (props) => {
                             isFieldRequired(field.name)
                           ]}
                         >
-                          <Select>
+                          <Select placeholder="value">
                             <Select.Option value={true}>true</Select.Option>
                             <Select.Option value={false}>false</Select.Option>
                           </Select>
@@ -398,7 +397,6 @@ const InsertRowForm = (props) => {
                                    condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "boolean"}
                                   >
                                     <Form.Item
-                                      initialValue={true}
                                       name={[arrField.name, 'value']}
                                       key={[arrField.name, 'value']}
                                       style={{ display: 'inline-block', width: '100%' }}
@@ -406,7 +404,7 @@ const InsertRowForm = (props) => {
                                         { required: true, message: 'Please enter value!' },
                                       ]}
                                     >
-                                      <Select>
+                                      <Select placeholder="value">
                                         <Select.Option value={true}>true</Select.Option>
                                         <Select.Option value={false}>false</Select.Option>
                                       </Select>
