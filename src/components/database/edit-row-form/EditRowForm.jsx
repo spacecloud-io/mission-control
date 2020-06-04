@@ -38,7 +38,7 @@ const EditRowForm = (props) => {
           values.rows[index].value = val.arrays.map(el => el.value);
         }
         if(val.datatype === "json" || !primitives.includes(val.datatype)) {
-          values.rows[index].value = !json[index] ? "" : JSON.parse(json[index]);
+          values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
         }
         if(val.datatype === "boolean" && typeof val.value === "string") {
           val.value = val.value === "true" ? true : false
@@ -342,8 +342,7 @@ const EditRowForm = (props) => {
                              styleActiveLine: true,
                              matchBrackets: true,
                              autoCloseBrackets: true,
-                             tabSize: 2,
-                             autofocus: true
+                             tabSize: 2
                            }}
                            onBeforeChange={(editor, data, value) => {
                              setJson(Object.assign({}, json, {[field.name] : value}))
@@ -364,8 +363,7 @@ const EditRowForm = (props) => {
                              styleActiveLine: true,
                              matchBrackets: true,
                              autoCloseBrackets: true,
-                             tabSize: 2,
-                             autofocus: true
+                             tabSize: 2
                            }}
                            onBeforeChange={(editor, data, value) => {
                              setJson(Object.assign({}, json, {[field.name] : value}))

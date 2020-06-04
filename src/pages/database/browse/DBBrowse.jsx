@@ -339,7 +339,7 @@ const Browse = () => {
               style={{ width: 240, marginRight: 24 }}
               placeholder="Select a table"
               onChange={handleTableChange}
-              defaultValue={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
+              value={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}
             </Select>
