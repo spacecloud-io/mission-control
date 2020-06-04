@@ -93,7 +93,7 @@ const FilterSorterForm = (props) => {
                          onBlur={(e) => {
                             const column = props.schema.find(val => val.name === e.target.value);
                             if (column) {
-                              form.setFields([{name: ["filters", field.name, "datatype"], value: column.type.toLowerCase()}])
+                              form.setFields([{name: ["filters", field.name, "datatype"], value: column.isArray ? 'array' : column.type.toLowerCase()}])
                             }
                          }} 
                          style={{width: "100%"}} 

@@ -51,11 +51,24 @@ const EditRowForm = (props) => {
     })
   };
 
-  const initialRows = props.schema.map(val => ({
-    column: val.name,
-    datatype: val.type.toLowerCase(),
-    value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
-  }))
+  const initialRows = props.schema.map(val => {
+    if (!val.isArray) {
+      return {
+        column: val.name,
+        datatype: val.type.toLowerCase(),
+        value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+      }
+    } else {
+      return {
+        column: val.name,
+        datatype: "array",
+        arrays: props.data[val.name].split(",").map(el => ({
+          datatype: typeof el,
+          value: el
+        }))
+      }
+    }
+  })
   
   const isFieldRequired = (field) => {
     const column = form.getFieldValue(["rows", field, "column"]);
@@ -300,7 +313,6 @@ const EditRowForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "boolean"}>
                       <Col span={7}>
                         <Form.Item
-                          initialValue={true}
                           name={[field.name, 'value']}
                           key={[field.name, 'value']}
                           style={{ display: 'inline-block', width: '100%' }}
@@ -400,7 +412,6 @@ const EditRowForm = (props) => {
                             <Row key={arrField.key} gutter={10}>
                               <Col span={8}>
                                 <Form.Item
-                                 initialValue="string"
                                  name={[arrField.name, 'datatype']}
                                  key={[arrField.name, 'datatype']}
                                  style={{ display: 'inline-block', width: '100%' }}
@@ -495,7 +506,6 @@ const EditRowForm = (props) => {
                                  condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "boolean"}
                                 >
                                   <Form.Item
-                                    initialValue={true}
                                     name={[arrField.name, 'value']}
                                     key={[arrField.name, 'value']}
                                     style={{ display: 'inline-block', width: '100%' }}

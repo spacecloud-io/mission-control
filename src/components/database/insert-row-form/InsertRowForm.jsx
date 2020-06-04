@@ -39,7 +39,7 @@ const InsertRowForm = (props) => {
   let initialRows = props.schema.map(val => (
     {
       column: val.name, 
-      datatype: val.type.toLowerCase()
+      datatype: val.isArray ? "array" : val.type.toLowerCase()
     }
     ));
 

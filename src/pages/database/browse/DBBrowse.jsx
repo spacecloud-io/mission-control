@@ -82,6 +82,15 @@ const Browse = () => {
     return columns;
   }
 
+  const arrayColumns = () => {
+    const columns = [];
+    colSchema
+    .forEach(val => {
+      if (val.isArray) columns.push(val.name)
+    })
+    return columns;
+  }
+
   const getTableData = () => {
     if (selectedCol) {
 
@@ -161,7 +170,15 @@ const Browse = () => {
           if (columnsWithJSON.length > 0) {
             data.result.forEach(val => {
               columnsWithJSON.forEach(el => {
-                val[el] = JSON.stringify(val[el], null, "\t")
+                if (val[el]) val[el] = JSON.stringify(val[el], null, "\t")
+              })
+            })
+          }
+          const columnsWithArray = arrayColumns();
+          if (columnsWithArray.length > 0) {
+            data.result.forEach(val => {
+              columnsWithArray.forEach(el => {
+                if (val[el]) val[el] = val[el].toString()
               })
             })
           }
