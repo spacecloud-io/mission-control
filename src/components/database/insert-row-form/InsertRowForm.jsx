@@ -26,7 +26,7 @@ const InsertRowForm = (props) => {
          values.rows[index].value = val.arrays.map(el => el.value);
        }
        if(val.datatype === "json" || !primitives.includes(val.datatype)) {
-         values.rows[index].value = !json[index] ? "" : JSON.parse(json[index]);
+         values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
        }
      })
       props.insertRow(values.rows);
@@ -36,18 +36,19 @@ const InsertRowForm = (props) => {
     })
   };
 
-  let initialRows = props.schema.map(val => (
-    {
+  let initialRows = props.schema.map(val => {
+    const dataType = val.type.toLowerCase();
+    return {
       column: val.name, 
-      datatype: val.isArray ? "array" : val.type.toLowerCase()
+      datatype: !primitives.includes(dataType) ? "json": dataType
     }
-    ));
+  });
 
     const isFieldRequired = (field) => {
       const column = form.getFieldValue(["rows", field, "column"]);
       const schema = props.schema.find(val => val.name === column);
       if (schema) {
-        if (schema.type === "ID") {
+        if (schema.type === "ID" || schema.hasCreatedAtDirective) {
           return { required: false }
         }
         else if (schema.isRequired) {
@@ -125,7 +126,7 @@ const InsertRowForm = (props) => {
                         ]}
                       >
                         <Select 
-                         placeholder='data type'
+                         placeholder='Data type'
                          onChange={() => form.setFields([{name: ["rows", field.name, "value"], value: null}])}
                         >
                           <Select.Option value='id'>ID</Select.Option>
@@ -134,7 +135,7 @@ const InsertRowForm = (props) => {
                           <Select.Option value='float'>Float</Select.Option>
                           <Select.Option value='boolean'>Boolean</Select.Option>
                           <Select.Option value='datetime'>Datetime</Select.Option>
-                          <Select.Option value='json'>json/object</Select.Option>
+                          <Select.Option value='json'>JSON/Object</Select.Option>
                           <Select.Option value='array'>Array</Select.Option>
                         </Select>
                       </Form.Item>
@@ -244,8 +245,7 @@ const InsertRowForm = (props) => {
                              styleActiveLine: true,
                              matchBrackets: true,
                              autoCloseBrackets: true,
-                             tabSize: 2,
-                             autofocus: true
+                             tabSize: 2
                            }}
                            onBeforeChange={(editor, data, value) => {                           
                               setJson(Object.assign({}, json, {[field.name] : value}))
@@ -321,7 +321,7 @@ const InsertRowForm = (props) => {
                                       <Select.Option value='float'>Float</Select.Option>
                                       <Select.Option value='boolean'>Boolean</Select.Option>
                                       <Select.Option value='datetime'>Datetime</Select.Option>
-                                      <Select.Option value='json'>json/object</Select.Option>
+                                      <Select.Option value='json'>JSON/Object</Select.Option>
                                     </Select>
                                   </Form.Item>
                                 </Col>

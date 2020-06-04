@@ -38,7 +38,7 @@ const EditRowForm = (props) => {
           values.rows[index].value = val.arrays.map(el => el.value);
         }
         if(val.datatype === "json" || !primitives.includes(val.datatype)) {
-          values.rows[index].value = !json[index] ? "" : JSON.parse(json[index]);
+          values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
         }
         if(val.datatype === "boolean" && typeof val.value === "string") {
           val.value = val.value === "true" ? true : false
@@ -52,21 +52,11 @@ const EditRowForm = (props) => {
   };
 
   const initialRows = props.schema.map(val => {
-    if (!val.isArray) {
-      return {
-        column: val.name,
-        datatype: val.type.toLowerCase(),
-        value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
-      }
-    } else {
-      return {
-        column: val.name,
-        datatype: "array",
-        arrays: props.data[val.name].split(",").map(el => ({
-          datatype: typeof el,
-          value: el
-        }))
-      }
+    const dataType = val.type.toLowerCase();
+    return {
+      column: val.name,
+      datatype: !primitives.includes(dataType) ? "json": dataType,
+      value:  val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
     }
   })
   
@@ -74,7 +64,10 @@ const EditRowForm = (props) => {
     const column = form.getFieldValue(["rows", field, "column"]);
     const schema = props.schema.find(val => val.name === column);
     if (schema) {
-      if (schema.isRequired) {
+      if (schema.type === "ID" || schema.hasUpdatedAtDirective) {
+        return { required: false }
+      }
+      else if (schema.isRequired) {
         return { required: true, message: 'Please enter value!' }
       }
     }
@@ -233,7 +226,7 @@ const EditRowForm = (props) => {
                         ]}
                       >
                         <Select 
-                         placeholder='data type'
+                         placeholder='Data type'
                          onChange={() => form.setFields([{name: ["rows", field.name, "value"], value: null}])}
                         >
                           <Select.Option value='id'>ID</Select.Option>
@@ -242,7 +235,7 @@ const EditRowForm = (props) => {
                           <Select.Option value='float'>Float</Select.Option>
                           <Select.Option value='boolean'>Boolean</Select.Option>
                           <Select.Option value='datetime'>Datetime</Select.Option>
-                          <Select.Option value='json'>json/object</Select.Option>
+                          <Select.Option value='json'>JSON/Object</Select.Option>
                           <Select.Option value='array'>Array</Select.Option>
                         </Select>
                       </Form.Item>
@@ -351,8 +344,7 @@ const EditRowForm = (props) => {
                              styleActiveLine: true,
                              matchBrackets: true,
                              autoCloseBrackets: true,
-                             tabSize: 2,
-                             autofocus: true
+                             tabSize: 2
                            }}
                            onBeforeChange={(editor, data, value) => {
                              setJson(Object.assign({}, json, {[field.name] : value}))
@@ -373,8 +365,7 @@ const EditRowForm = (props) => {
                              styleActiveLine: true,
                              matchBrackets: true,
                              autoCloseBrackets: true,
-                             tabSize: 2,
-                             autofocus: true
+                             tabSize: 2
                            }}
                            onBeforeChange={(editor, data, value) => {
                              setJson(Object.assign({}, json, {[field.name] : value}))
@@ -429,7 +420,7 @@ const EditRowForm = (props) => {
                                     <Select.Option value='float'>Float</Select.Option>
                                     <Select.Option value='boolean'>Boolean</Select.Option>
                                     <Select.Option value='datetime'>Datetime</Select.Option>
-                                    <Select.Option value='json'>json/object</Select.Option>
+                                    <Select.Option value='json'>JSON/Object</Select.Option>
                                   </Select>
                                 </Form.Item>
                               </Col>

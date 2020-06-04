@@ -47,6 +47,7 @@ export const deleteCol = (projectId, dbName, colName) => {
       const newCollections = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
       delete newCollections[colName]
       setProjectConfig(projectId, `modules.db.${dbName}.collections`, newCollections)
+      store.dispatch(set("uiState.selectedCollection", ""))
       const allCollectionsList = get(store.getState(), `extraConfig.${projectId}.db.${dbName}.collections`, [])
         .filter(col => col !== colName)
       store.dispatch(set(`extraConfig.${projectId}.db.${dbName}.collections`, allCollectionsList))

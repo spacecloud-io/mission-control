@@ -11,14 +11,18 @@ import FilterSorterForm from "../../../components/database/filter-sorter-form/Fi
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
-import { notify, getSchemas, getTrackedCollectionNames } from '../../../utils';
+import { notify, getTrackedCollectionNames, getProjectConfig } from '../../../utils';
+import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
 
-let column = [];
 let editRowData = {};
-let uniqueKeys = [];
+
+const getUniqueKeys = (colSchemaFields = []) => {
+  return colSchemaFields.filter(val => val.isPrimary || val.hasUniqueConstraint).map(val => val.name)
+}
+
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
@@ -32,64 +36,21 @@ const Browse = () => {
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
+  const collectionSchemaString = useSelector(state => getProjectConfig(state.projects, projectID, `modules.db.${selectedDB}.collections.${selectedCol}.schema`))
   const collections = useSelector(state => getTrackedCollectionNames(state, projectID, selectedDB))
   const api = new API(projectID, spaceCloudClusterOrigin);
   const db = api.DB(selectedDB);
-  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
-
-  const colSchema = getSchemas(projectID, selectedDB)[selectedCol];
-
+  const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];
+  const uniqueKeys = getUniqueKeys(colSchemaFields)
   useEffect(() => {
     ReactGA.pageview("/projects/database/browse");
   }, [])
 
   useEffect(() => {
-    if(collections.length > 0 && !selectedCol){
+    if (collections.length > 0 && !selectedCol) {
       dispatch(set("uiState.selectedCollection", collections[0]))
     }
   }, [dispatch, collections])
-
-  const getUniqueKeys = () => {
-    uniqueKeys = [];
-    if(!colSchema) return;
-    colSchema
-      .forEach(val => {
-        if (val.isPrimaryField || val.hasUniqueKey) {
-          uniqueKeys.push(val.name);
-        }
-      })
-  }
-
-  const booleanColumns = () => {
-    const columns = [];
-    colSchema
-    .forEach(val => {
-      if (val.type === "Boolean") {
-        columns.push(val.name)
-      }
-    })
-    return columns;
-  }
-
-  const jsonColumns = () => {
-    const columns = [];
-    colSchema
-    .forEach(val => {
-      if (val.type === "JSON" || !primitives.includes(val.type.toLowerCase())) {
-        columns.push(val.name)
-      }
-    })
-    return columns;
-  }
-
-  const arrayColumns = () => {
-    const columns = [];
-    colSchema
-    .forEach(val => {
-      if (val.isArray) columns.push(val.name)
-    })
-    return columns;
-  }
 
   const getTableData = () => {
     if (selectedCol) {
@@ -118,84 +79,67 @@ const Browse = () => {
         .then(({ status, data }) => {
           if (status !== 200) {
             notify("error", "Error", data.error, 5);
-            column = getColumnNames();
             setData([]);
             return
           }
 
-          column = getColumnNames();
-          column.unshift({
-            key: 'action',
-            title: '',
-            render: (record) => (
-              <span>
-                <Button 
-                 type="link" 
-                 disabled={uniqueKeys.length === 0} 
-                 style={{ color: 'black' }} 
-                 onClick={() => { 
-                   setEditRowFormVisibility(true); 
-                   editRowData = record;
-                 }}
-                >
-                  Edit
-                </Button>
-                <Popconfirm
-                 title="Are you sure delete this row?"
-                 onConfirm={() => deleteRow(record)}
-                 okText="Yes"
-                 cancelText="No"
-                >
-                  <Button 
-                   type="link" 
-                   disabled={uniqueKeys.length === 0} 
-                   style={{ color: "red" }} 
-                  >
-                    Delete
-                  </Button>
-                </Popconfirm>
-              </span>
-            )
+          data.result.forEach(obj => {
+            Object.entries(obj).forEach(([key, value]) => {
+              if (typeof value === "boolean") {
+                obj[key] = value.toString()
+                return
+              }
+              if (typeof value === "object" && value !== null) {
+                obj[key] = JSON.stringify(value, null, 2)
+                return
+              }
+            })
           })
 
-          const columnsWithTypeBoolean = booleanColumns();
-          if (columnsWithTypeBoolean.length > 0) {
-            data.result.forEach(val => {
-              columnsWithTypeBoolean.forEach(el => {
-                val[el] = val[el]  ? "true" : "false"
-              })
-            })
-          }
-          const columnsWithJSON = jsonColumns();
-          if (columnsWithJSON.length > 0) {
-            data.result.forEach(val => {
-              columnsWithJSON.forEach(el => {
-                if (val[el]) val[el] = JSON.stringify(val[el], null, "\t")
-              })
-            })
-          }
-          const columnsWithArray = arrayColumns();
-          if (columnsWithArray.length > 0) {
-            data.result.forEach(val => {
-              columnsWithArray.forEach(el => {
-                if (val[el]) val[el] = val[el].toString()
-              })
-            })
-          }
           setData(data.result);
         })
         .finally(() => dispatch(decrement("pendingRequests")));
     }
   }
 
-  const getColumnNames = () => {
-    let columnNames = [];
-    if (!colSchema) return;
-    colSchema
-      .forEach(val => {
-        columnNames.push(val.name)
-      })
-    return columnNames.map(val => ({ key: val, title: val, dataIndex: val }))
+  const getColumnNames = (colSchemaFields = [], data) => {
+    const fieldColumns = colSchemaFields.map(({ name }) => ({ key: name, title: name, dataIndex: name }))
+    const actionColumn = {
+      key: "action",
+      render: (record) => {
+        return (
+          <span>
+            <Button
+              type="link"
+              disabled={uniqueKeys.length === 0}
+              style={{ color: 'black' }}
+              onClick={() => {
+                setEditRowFormVisibility(true);
+                editRowData = record;
+              }}
+            >
+              Edit
+                </Button>
+            <Popconfirm
+              title="Are you sure delete this row?"
+              onConfirm={() => deleteRow(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                type="link"
+                disabled={uniqueKeys.length === 0}
+                style={{ color: "red" }}
+              >
+                Delete
+                  </Button>
+            </Popconfirm>
+          </span>
+        )
+      }
+    }
+    if (data && data.length > 0) return [actionColumn, ...fieldColumns]
+    return fieldColumns
   }
 
   useEffect(() => {
@@ -203,7 +147,7 @@ const Browse = () => {
   }, [filters, sorters, selectedCol])
 
   useEffect(() => {
-    if(selectedCol) {
+    if (selectedCol) {
       getUniqueKeys();
     }
   }, [selectedCol])
@@ -364,17 +308,18 @@ const Browse = () => {
     }
 
     row.apply()
-    .then(({status, data}) => { 
-      if (status !== 200) {
-        notify("error", data.error, "", 5);
-        return;
-      }
-      notify("success", `Row successfully updated!`, "", 5);
-      getTableData();
-    })
+      .then(({ status, data }) => {
+        if (status !== 200) {
+          notify("error", data.error, "", 5);
+          return;
+        }
+        notify("success", `Row successfully updated!`, "", 5);
+        getTableData();
+      })
     setEditRowFormVisibility(false);
   }
 
+  const tableColumns = getColumnNames(colSchemaFields, data)
   return (
     <React.Fragment>
       <Topbar
@@ -394,24 +339,24 @@ const Browse = () => {
               style={{ width: 240, marginRight: 24 }}
               placeholder="Select a table"
               onChange={handleTableChange}
-              defaultValue={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
+              value={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}
             </Select>
-            {colSchema && (
+            {colSchemaFields && (
               <>
-              <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
-              <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
+                <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
+                <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
               </>
             )}
-              <Table
-                className="db-browse-table"
-                columns={column}
-                dataSource={data}
-                style={{ marginTop: 21 }}
-                bordered
-                pagination={false}
-              />
+            <Table
+              className="db-browse-table"
+              columns={tableColumns}
+              dataSource={data}
+              style={{ marginTop: 21 }}
+              bordered
+              pagination={false}
+            />
           </div>
         </div>
       </div>
@@ -421,7 +366,7 @@ const Browse = () => {
             visible={isFilterSorterFormVisible}
             handleCancel={() => setFilterSorterFormVisibility(false)}
             filterTable={filterTable}
-            schema={colSchema}
+            schema={colSchemaFields}
           />
         )
       }
@@ -431,7 +376,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
-            schema={colSchema}
+            schema={colSchemaFields}
           />
         )
       }
@@ -442,7 +387,7 @@ const Browse = () => {
             handleCancel={() => setEditRowFormVisibility(false)}
             editRow={editRow}
             selectedDB={selectedDB}
-            schema={colSchema}
+            schema={colSchemaFields}
             data={editRowData}
           />
         )
