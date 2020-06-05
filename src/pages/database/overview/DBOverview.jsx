@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
@@ -80,7 +80,6 @@ const Overview = () => {
   const handleBrowseClick = (colName) => {
     dispatch(set("uiState.selectedCollection", colName));
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
-
   }
 
   const handleCancelAddColModal = () => {
