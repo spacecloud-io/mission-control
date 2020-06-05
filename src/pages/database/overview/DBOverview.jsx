@@ -4,9 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get, set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
-import { PlusOutlined } from '@ant-design/icons';
-
-import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography } from 'antd';
+import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
@@ -17,8 +15,8 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
 import history from '../../../history';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState } from '../dbActions';
-import { defaultDBRules } from '../../../constants';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
+import { defaultDBRules, dbTypes } from '../../../constants';
 
 
 const Overview = () => {
@@ -42,6 +40,7 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
+  const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
   let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
@@ -103,6 +102,12 @@ const Overview = () => {
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
   }
 
+  const handleUntrackClick = (colName) => {
+    untrackCollection(projectID, selectedDB, colName)
+    .then(() => notify("success", "Success", `Sucessfully untracked ${colName} collection`))
+    .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
+  }
+
   const handleTrackCollections = (collections) => {
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
       .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
@@ -135,7 +140,7 @@ const Overview = () => {
       .catch(() => notify("error", "Connection failed", ` Unable to connect to ${dbType}. Make sure your connection string is correct.`))
       .finally(() => setConformLoading(false))
   }
-  const label = selectedDB === 'mongo' ? 'Collection' : 'Table'
+  const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
   const trackedTableColumns = [
     {
       title: 'Name',
@@ -164,6 +169,7 @@ const Overview = () => {
           <a onClick={() => handleEditClick(name)}>Edit</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
+          <a onClick={() => handleUntrackClick(name)}>Untrack</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
           </Popconfirm>
@@ -185,6 +191,9 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleTrackCollections([name])}>Track</a>
+          <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
+            <a style={{ color: "red" }}>Delete</a>
+          </Popconfirm>
         </span>
       )
     }
@@ -227,32 +236,20 @@ const Overview = () => {
               </div>
             </div>}
             {connected && <React.Fragment>
-              {trackedCollectionsToShow.length === 0 && <div className="empty-state">
-                <div className="empty-state__graphic">
-                  <i className="material-icons-outlined" style={{ fontSize: 120, color: "#52C41A" }}>check_circle</i>
-                </div>
-                <p className="empty-state__description">Your database is set up!</p>
-                <p className="empty-state__action-text">Add a table for easy schema and access management</p>
-                <div className="empty-state__action-bar">
-                  <Button className="action-rounded" type="primary" onClick={handleAddClick}>Add table</Button>
-                </div>
-              </div>}
-              {trackedCollectionsToShow.length > 0 && (
                 <div>
                   <div style={{ marginTop: '32px' }}>
                     <span className='collections'>
-                      {label}s
+                     Tracked {label}s
                     </span>
-                    <Button style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                    <Button style={{ float: "right" }} type="primary"
                       onClick={handleAddClick}>
-                      <PlusOutlined /> Add {label}
+                      Add {label}
                     </Button>
                   </div>
                   <div style={{ marginTop: '32px' }}>
-                    <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} />
+                    <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} bordered locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' />}}/>
                   </div>
                 </div>
-              )}
               {unTrackedCollectionsToShow.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
@@ -261,13 +258,13 @@ const Overview = () => {
                         Untracked {label}s
                     </span>
                       <Button
-                        style={{ float: "right" }} type="primary" className="secondary-action" ghost
+                        style={{ float: "right" }} type="primary" ghost
                         onClick={() => handleTrackCollections(unTrackedCollections)}>
-                        <PlusOutlined /> Track All
+                        Track All
                     </Button>
                     </div>
                     <div style={{ marginTop: '32px' }}>
-                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} />
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} bordered/>
                     </div>
                   </Col>
                 </Row>

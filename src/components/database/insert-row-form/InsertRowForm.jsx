@@ -23,7 +23,7 @@ const InsertRowForm = (props) => {
       try {
      values.rows.forEach((val, index) => {
        if(val.datatype === "array") {
-         values.rows[index].value = val.arrays.map(el => el.value);
+         values.rows[index].value = val.arrays ? val.arrays.map(el => el.value): []
        }
        if(val.datatype === "json" || !primitives.includes(val.datatype)) {
          values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
@@ -313,14 +313,13 @@ const InsertRowForm = (props) => {
                                      },
                                    ]}
                                   >
-                                    <Select placeholder='datatype'>
+                                    <Select placeholder='Data type'>
                                       <Select.Option value='id'>ID</Select.Option>
                                       <Select.Option value='string'>String</Select.Option>
                                       <Select.Option value='integer'>Integer</Select.Option>
                                       <Select.Option value='float'>Float</Select.Option>
                                       <Select.Option value='boolean'>Boolean</Select.Option>
                                       <Select.Option value='datetime'>Datetime</Select.Option>
-                                      <Select.Option value='json'>JSON/Object</Select.Option>
                                     </Select>
                                   </Form.Item>
                                 </Col>

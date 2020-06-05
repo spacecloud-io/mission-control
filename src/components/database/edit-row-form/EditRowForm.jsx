@@ -441,7 +441,6 @@ const EditRowForm = (props) => {
                                     <Select.Option value='float'>Float</Select.Option>
                                     <Select.Option value='boolean'>Boolean</Select.Option>
                                     <Select.Option value='datetime'>Datetime</Select.Option>
-                                    <Select.Option value='json'>JSON/Object</Select.Option>
                                   </Select>
                                 </Form.Item>
                               </Col>

@@ -213,6 +213,21 @@ export const setPreparedQueries = (projectId, aliasName, id, args, sql, rule) =>
   })
 }
 
+export const untrackCollection = (projectId, aliasName, colName) => {
+  return new Promise((resolve, reject) => {
+    store.dispatch(increment("pendingRequests"));
+    client.database.untrackCollection(projectId, aliasName, colName)
+      .then(() => {
+        const collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${aliasName}.collections`, [])
+        delete collections[colName]
+        setProjectConfig(projectId, `modules.db.${aliasName}.collections`, collections);
+        resolve()
+      })
+      .catch(ex => reject(ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")));
+  })
+}
+
 export const dbEnable = (projects, projectId, aliasName, dbType, dbName, conn, defaultCollectionRule, defaultPreparedQueryRule) => {
   if (!defaultPreparedQueryRule) defaultPreparedQueryRule = getDefaultPreparedQueriesRule(projectId, aliasName)
   return new Promise((resolve, reject) => {
