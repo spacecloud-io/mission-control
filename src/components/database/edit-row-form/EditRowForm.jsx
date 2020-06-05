@@ -35,7 +35,7 @@ const EditRowForm = (props) => {
       try {
         values.rows.forEach((val, index) => {
           if (val.datatype === "array") {
-            values.rows[index].value = val.arrays.map(el => el.value);
+            values.rows[index].value = val.arrays ? val.arrays.map(el => el.value) : [];
           }
           if (val.datatype === "json" || !primitives.includes(val.datatype)) {
             values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);

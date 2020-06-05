@@ -46,46 +46,34 @@ const Browse = () => {
     ReactGA.pageview("/projects/database/browse");
   }, [])
 
+  // Auto select first collection if no collection is selected
   useEffect(() => {
     if (collections.length > 0 && !selectedCol) {
       dispatch(set("uiState.selectedCollection", collections[0]))
     }
-  }, [dispatch, collections])
+  }, [selectedCol, collections])
 
   const getTableData = () => {
     if (selectedCol) {
 
-      let filtersCond = [];
-      let sortersCond = [];
-
-      if (filters) {
-        for (let el of filters) {
-          filtersCond.push(cond(el.column, el.operation, el.value))
-        }
-      }
-
-      if (sorters) {
-        for (let el of sorters) {
-          if (el.order === "descending") sortersCond.push(`-${el.column}`)
-          else sortersCond.push(el.column)
-        }
-      }
+      const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
+      const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
       dispatch(increment("pendingRequests"));
       db.get(selectedCol)
-        .where(...filtersCond)
-        .sort(...sortersCond)
+        .where(...filterConditions)
+        .sort(...sortConditions)
         .apply()
         .then(({ status, data }) => {
-          console.log(data.result);
           if (status !== 200) {
-            notify("error", "Error", data.error, 5);
+            notify("error", "Error fetching data", data.error, 5);
             setData([]);
             return
           }
 
           data.result.forEach(obj => {
             Object.entries(obj).forEach(([key, value]) => {
+              // Stringifying certain data types to render them in table 
               if (typeof value === "boolean") {
                 obj[key] = value.toString()
                 return
@@ -99,15 +87,17 @@ const Browse = () => {
               }
             })
           })
-          
+
           setData(data.result);
         })
+        .catch(ex => notify("error", "Error fetching data", ex, 5))
         .finally(() => dispatch(decrement("pendingRequests")));
     }
   }
 
+  // Get all the possible columns for the table based on the schema and data fetched
   const getColumnNames = (colSchemaFields = [], data = []) => {
-    const dataFields = data.length > 0 ? Object.keys(data[0]): []
+    const dataFields = data.length > 0 ? Object.keys(data[0]) : []
     const schemaFields = colSchemaFields.map(obj => obj.name)
     const fields = [...new Set([...dataFields, ...schemaFields])]
     const fieldColumns = fields.map((name) => ({ key: name, title: name, dataIndex: name }))
@@ -145,19 +135,15 @@ const Browse = () => {
         )
       }
     }
-    if (data && data.length > 0) return [actionColumn, ...fieldColumns]
+    if (data.length > 0) return [actionColumn, ...fieldColumns]
     return fieldColumns
   }
 
+  // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
     getTableData();
   }, [filters, sorters, selectedCol])
 
-  useEffect(() => {
-    if (selectedCol) {
-      getUniqueKeys();
-    }
-  }, [selectedCol])
 
   // Handlers
   const handleTableChange = col => {
@@ -165,7 +151,6 @@ const Browse = () => {
   }
 
   const filterTable = ({ filters, sorters }) => {
-
     dispatch(set("uiState.explorer.filters", filters))
     dispatch(set("uiState.explorer.sorters", sorters))
 
@@ -173,48 +158,49 @@ const Browse = () => {
   }
 
   const insertRow = values => {
-    let docs = {};
+    let doc = {};
     for (let row of values) {
-      docs[row.column] = row.value;
+      doc[row.column] = row.value;
     }
 
-    db.insert(selectedCol).doc(docs).apply()
+    dispatch(increment("pendingRequests"));
+    db.insert(selectedCol).doc(doc).apply()
       .then(res => {
         if (res.status !== 200) {
-          notify("error", "Error", res.data.error, 5);
+          notify("error", "Error inserting row", res.data.error, 5);
           return;
         }
-        notify("success", "Successfully inserted a row!", "", 5);
+        notify("success", "Success", "Successfully inserted a row!", 5);
         getTableData();
       })
-
-    setInsertRowFormVisibility(false);
+      .catch(ex => notify("error", "Error inserting row", ex, 5))
+      .finally(() => {
+        setInsertRowFormVisibility(false)
+        dispatch(decrement("pendingRequests"));
+      })
   }
 
   const deleteRow = (record) => {
-    const whereClause = [];
-    uniqueKeys.forEach(val => {
-      whereClause.push(cond(val, "==", record[val]))
-    })
+    const conditions = uniqueKeys.map(key => cond(key, "==", record[key]))
+    dispatch(increment("pendingRequests"));
     db.delete(selectedCol)
-      .where(...whereClause)
+      .where(...conditions)
       .apply()
-      .then(({ status }) => {
-        if (status !== 200) {
-          notify("error", "There was some error in deleting the row", "", 5)
+      .then((res) => {
+        if (res.status !== 200) {
+          notify("error", "Error deleting row", res.data.error, 5)
           return;
         }
-        notify("success", "Row deleted successfully", "", 5)
+        notify("success", "Success", "Row deleted successfully", 5)
         getTableData();
       })
+      .catch(ex => notify("error", "Error deleting row", ex, 5))
+      .finally(() => dispatch(decrement("pendingRequests")))
   }
 
   const editRow = values => {
-    const whereClause = [];
-    uniqueKeys.forEach(val => {
-      whereClause.push(cond(val, "==", editRowData[val]))
-    })
-    const row = db.update(selectedCol).where(...whereClause);
+    const conditions = uniqueKeys.map(key => cond(key, "==", editRowData[key]))
+    const updateOperation = db.update(selectedCol).where(...conditions);
     let set = {};
     let remove = {};
     let rename = {};
@@ -271,59 +257,64 @@ const Browse = () => {
     }
 
     if (Object.keys(set).length !== 0) {
-      row.set(set);
+      updateOperation.set(set);
     }
 
     if (Object.keys(remove).length !== 0) {
-      row.remove(remove);
+      updateOperation.remove(remove);
     }
 
     if (Object.keys(rename).length !== 0) {
-      row.rename(rename);
+      updateOperation.rename(rename);
     }
 
     if (Object.keys(inc).length !== 0) {
-      row.inc(inc);
+      updateOperation.inc(inc);
     }
 
     if (Object.keys(mul).length !== 0) {
-      row.mul(mul);
+      updateOperation.mul(mul);
     }
 
     if (Object.keys(min).length !== 0) {
-      row.min(min);
+      updateOperation.min(min);
     }
 
     if (Object.keys(max).length !== 0) {
-      row.max(max);
+      updateOperation.max(max);
     }
 
     if (Object.keys(push).length !== 0) {
-      row.push(push);
+      updateOperation.push(push);
     }
 
     if (currentDate.length !== 0) {
       currentDate.forEach(val => {
-        row.currentDate(val);
+        updateOperation.currentDate(val);
       })
     }
 
     if (currentTimestamp.length !== 0) {
       currentTimestamp.forEach(val => {
-        row.currentTimestamp(val);
+        updateOperation.currentTimestamp(val);
       })
     }
 
-    row.apply()
+    dispatch(increment("pendingRequests"));
+    updateOperation.apply()
       .then(({ status, data }) => {
         if (status !== 200) {
-          notify("error", data.error, "", 5);
+          notify("error", "Error updating row", data.error, 5);
           return;
         }
-        notify("success", `Row successfully updated!`, "", 5);
+        notify("success", "Success", "Row updated successfully!", 5);
         getTableData();
       })
-    setEditRowFormVisibility(false);
+      .catch(ex => notify("error", "Error updating row", ex, 5))
+      .finally(() => {
+        setEditRowFormVisibility(false);
+        dispatch(decrement("pendingRequests"));
+      })
   }
 
   const tableColumns = getColumnNames(colSchemaFields, data)
