@@ -11,7 +11,7 @@ import FilterSorterForm from "../../../components/database/filter-sorter-form/Fi
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
-import { notify, getTrackedCollectionNames, getProjectConfig } from '../../../utils';
+import { notify, getTrackedCollectionNames, getProjectConfig, getDBTypeFromAlias } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
@@ -33,6 +33,7 @@ const Browse = () => {
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
 
+  const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
@@ -202,7 +203,7 @@ const Browse = () => {
     const conditions = uniqueKeys.map(key => cond(key, "==", editRowData[key]))
     const updateOperation = db.update(selectedCol).where(...conditions);
     let set = {};
-    let remove = {};
+    let remove = [];
     let rename = {};
     let inc = {};
     let mul = {};
@@ -212,6 +213,7 @@ const Browse = () => {
     let currentDate = [];
     let currentTimestamp = [];
 
+    console.log("Values", values)
     for (let row of values) {
       switch (row.operation) {
         case "set":
@@ -219,7 +221,7 @@ const Browse = () => {
           break;
 
         case "unset":
-          remove[row.column] = "";
+          remove.push(row.column)
           break;
 
         case "rename":
@@ -260,8 +262,8 @@ const Browse = () => {
       updateOperation.set(set);
     }
 
-    if (Object.keys(remove).length !== 0) {
-      updateOperation.remove(remove);
+    if (remove.length !== 0) {
+      updateOperation.remove(...remove);
     }
 
     if (Object.keys(rename).length !== 0) {
@@ -384,7 +386,7 @@ const Browse = () => {
             visible={isEditRowFormVisible}
             handleCancel={() => setEditRowFormVisibility(false)}
             editRow={editRow}
-            selectedDB={selectedDB}
+            selectedDB={selectedDBType}
             schema={colSchemaFields}
             data={editRowData}
           />

@@ -12,6 +12,7 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { useEffect } from 'react';
+import { dbTypes } from '../../../constants';
 
 const EditRowForm = (props) => {
   const [form] = Form.useForm();
@@ -169,11 +170,8 @@ const EditRowForm = (props) => {
                             }}
                           >
                             <Select.Option value='set'>Set</Select.Option>
-                            {props.selectedDB === "mongo" && (
+                            {props.selectedDB === dbTypes.MONGO && (
                               <Select.Option value='unset'>Unset</Select.Option>
-                            )}
-                            {props.selectedDB === "mongo" && (
-                              <Select.Option value='rename'>Rename</Select.Option>
                             )}
                             <Select.Option value='inc'>Increment</Select.Option>
                             <Select.Option value='multiply'>Multiply</Select.Option>
@@ -183,7 +181,7 @@ const EditRowForm = (props) => {
                             <Select.Option value='currentTimestamp'>
                               Current Timestamp
                           </Select.Option>
-                            {props.selectedDB === "mongo" && (
+                            {props.selectedDB === dbTypes.MONGO && (
                               <Select.Option value='push'>Push</Select.Option>
                             )}
                           </Select>
