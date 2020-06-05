@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './filter-sorter-form.css';
 import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -60,7 +59,7 @@ const FilterSorterForm = (props) => {
       cancelText='Reset filters & sorters'
       onCancel={props.handleCancel}
       onOk={onFinish}
-      className='filter-sorter-modal'
+      width={900}
       >
       <Form 
        name='insert_row' 

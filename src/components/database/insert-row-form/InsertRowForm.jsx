@@ -66,7 +66,7 @@ const InsertRowForm = (props) => {
       cancelText='Cancel'
       onCancel={props.handleCancel}
       onOk={onFinish}
-      className='filter-sorter-modal'
+      width={900}
     >
       <Form 
        name='insert_row' 
