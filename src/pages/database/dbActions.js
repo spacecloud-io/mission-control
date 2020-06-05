@@ -120,7 +120,9 @@ export const handleReload = (projectId, dbName) => {
     client.database.reloadSchema(projectId, dbName).then(collections => {
       const cols = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
       Object.keys(collections).filter(col => cols[col] ? true : false).forEach(col => {
-        cols[col].schema = collections[col]
+        if (cols[col]) {
+          cols[col].schema = collections[col]
+        }
       })
       setProjectConfig(projectId, `modules.db.${dbName}.collections`, cols)
       resolve()
