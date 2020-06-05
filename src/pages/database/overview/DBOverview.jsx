@@ -77,6 +77,11 @@ const Overview = () => {
     setAddColModalVisible(true)
   }
 
+  const handleBrowseClick = (colName) => {
+    dispatch(set("uiState.selectedCollection", colName));
+    history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
+  }
+
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false)
     setAddColFormInEditMode(false)
@@ -161,6 +166,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>

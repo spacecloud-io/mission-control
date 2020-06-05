@@ -11,6 +11,7 @@ import Overview from "./pages/overview/Overview";
 import DatabaseModulePage from "./pages/database/Index";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
+import DBBrowse from "./pages/database/browse/DBBrowse";
 import DBRules from "./pages/database/rules/DBRules";
 import DBSchema from "./pages/database/schema/DBSchema";
 import DBSettings from "./pages/database/settings/DBSettings";
@@ -65,6 +66,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/browse" component={DBBrowse} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/rules" component={DBRules} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/schema" component={DBSchema} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/settings" component={DBSettings} />
