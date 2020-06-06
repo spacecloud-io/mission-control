@@ -1,14 +1,16 @@
 import store from "./store";
 import { getProjectConfig } from "./utils";
 import gql from "graphql-tag";
+import gqlPrettier from 'graphql-prettier';
+import { format } from 'prettier-package-json';
 
 const getDefType = (type, isArray, required) => {
   isArray = isArray ? true : type.kind === "ListType";
-  required = required ? true: type.kind === "NonNullType"; 
+  required = required ? true : type.kind === "NonNullType";
   if (type.type) {
     return getDefType(type.type, isArray, required);
   }
-  return { isArray, fieldType: type.name.value, required};
+  return { isArray, fieldType: type.name.value, required };
 };
 
 const generateSchemaASTFromGraphQLSchemaDefinition = (def) => {
@@ -90,6 +92,51 @@ export const generateSchemaAST = (schemaString) => {
   return schemaAST;
 };
 
+const generateGraphQLArgsString = (args = []) => {
+  if (args.length === 0) {
+    return ""
+  }
+  const argsKeyValuePairs = args.map(arg => `${arg.name}: ${JSON.stringify(arg.value)}`)
+  return `(${argsKeyValuePairs.join(",")})`
+}
+
+const generateFieldQuery = (field) => {
+  const { name, args, directives = [], fields = []} = field
+  const directivesString = directives.length === 0 ? "" : " " + directives.map(obj => `@${obj.name}${generateGraphQLArgsString(obj.args)}`).join(" ")
+  let fieldString = `${name}${generateGraphQLArgsString(args)}${directivesString}`
+  if (fields.length > 0) {
+    fieldString = fieldString + `{
+      ${fields.map(field => generateFieldQuery(field)).join("\n")}
+    }`
+  }
+  return fieldString
+}
+
+// Removes all redundant commas and quotes from the GraphQL string
+const removeRegex = (value, dataresponse) => {
+  let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
+  let removeClosingComma = /\,(?=\s*?[\}\]])/g;
+  let removeQuotes = /"([^"]+)"/g;
+  value = value.replace(removeOpeningComma, '');
+  value = value.replace(removeClosingComma, '');
+  if (dataresponse) value = format(JSON.parse(value))
+  else value = value.replace(removeQuotes, '$1')
+  return value
+}
+
+export const generateGraphQLQueryFromGraphQLAST = (ast = { queryType: "query", fields: [] }) => {
+  const query = `${ast.queryType} {
+    ${ast.fields.map(field => generateFieldQuery(field)).join("\n")}
+  }`
+
+  let result = gqlPrettier(removeRegex(query, 0))
+  if (ast.queryType === "query") {
+    result = "query " + result
+  }
+
+  return result
+}
+
 export const generateDBSchemaAST = (dbAliasName, projectID) => {
   const collections = getProjectConfig(store.getState().projects, projectID, `modules.db.${dbAliasName}.collections`, {});
   const schemaAST = Object.values(collections).reduce((prev, { schema }) => {
@@ -136,5 +183,4 @@ export const generateGraphqlASTs = (schemaString, dbAliasName, queryType) => {
     queryType: queryType,
     rootFields: [graphqlField]
   }
-
-} 
+}

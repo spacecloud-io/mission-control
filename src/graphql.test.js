@@ -1,4 +1,4 @@
-import { generateSchemaAST } from "./graphql";
+import { generateSchemaAST, generateGraphQLQueryFromGraphQLAST } from "./graphql";
 
 describe("generateSchemaAST method", () => {
   it("generates correct schema AST from a GraphQL schema string", () => {
@@ -289,3 +289,29 @@ describe("generateSchemaAST method", () => {
     expect(generateSchemaAST()).toEqual({})
   })
 });
+
+describe("generateGraphQLQueryFromGraphQLAST method", () => {
+  it("generates the correct graphql query string", () => {
+    const ast1 = {
+      queryType: "query",
+      fields: [
+        {
+          name: "users",
+          args: [
+            { name: "where", value: { id: "$id", address: "$address" } },
+            { name: "skip", value: "$skip" }
+          ],
+          directives: [
+            { name: "db" }
+          ]
+        }
+      ]
+    }
+
+    const queryString1 = `query {
+  users(where: {id: $id, address: $address}, skip: $skip) @db
+}`
+
+    expect(generateGraphQLQueryFromGraphQLAST(ast1)).toEqual(queryString1)
+  })
+})
