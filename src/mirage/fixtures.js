@@ -82,7 +82,9 @@ const projects = [
                 "path":"/v1/login",
                 "rule": {
                   "rule": "allow"
-                }
+                },
+                "headers": [{"key": "headerKey1", "value": "headerValue1"},
+                            {"key": "headerKey2", "value": "headerValue2"}],
               },
               "externalEndpoint": {
                 "method":"GET",
@@ -240,7 +242,10 @@ const projects = [
               "port": 443,
               "weight": 60
             }
-          ]
+          ],
+          "rules": { "rule": "allow" },
+          "headers": [{"key": "headerKey1", "value": "headerValue1"},
+                            {"key": "headerKey2", "value": "headerValue2"}],
         }
       ],
       "fileStore": {

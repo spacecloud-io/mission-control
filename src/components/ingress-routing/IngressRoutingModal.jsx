@@ -1,16 +1,28 @@
-import React from "react";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form } from "antd";
+import React, { useState } from "react";
+import { DeleteOutlined, PlusOutlined, CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons';
+import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form, Collapse } from "antd";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import { notify } from "../../utils";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import { defaultIngressRoutingRule } from '../../constants';
+import { Controlled as CodeMirror } from 'react-codemirror2';
+import 'codemirror/theme/material.css';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/selection/active-line.js';
+import 'codemirror/addon/edit/matchbrackets.js';
+import 'codemirror/addon/edit/closebrackets.js';
 
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const IngressRoutingModal = props => {
   const [form] = Form.useForm();
 
   const initialValues = props.initialValues;
+  const { headers=[], rules } = initialValues ? initialValues : {};
+  const initialRule = rules ? rules : defaultIngressRoutingRule;
+  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const children = [];
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
@@ -26,7 +38,7 @@ const IngressRoutingModal = props => {
         message.error("Sum of all the target weights should be 100")
         return
       }
-      props.handleSubmit(values).then(() => {
+      props.handleSubmit(values, JSON.parse(ruleData)).then(() => {
         notify("success", "Success", "Saved routing config successfully");
         props.handleCancel();
       });
@@ -70,6 +82,8 @@ const IngressRoutingModal = props => {
             "allowedHosts": initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
             "allowSpecificMethods": initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
             "allowedMethods": initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
+            "setHeaders": headers.length > 0 ? true : false,
+            "headers": headers.length > 0 ? headers : [{ key: "", value: ""}],
             targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }]
           }}>
           <FormItemLabel name="Route matching type" />
@@ -280,6 +294,109 @@ const IngressRoutingModal = props => {
               }}
             </Form.List>
           </React.Fragment>
+          <FormItemLabel name='Rule' />
+            <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+              <CodeMirror
+                value={ruleData}
+                options={{
+                  mode: { name: 'javascript', json: true },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2,
+                  autofocus: true,
+                }}
+                onBeforeChange={(editor, data, value) => {
+                  setRuleData(value);
+                }}
+              />
+            </Form.Item>
+          <Collapse
+              style={{ background: "white" }}
+              bordered={false}
+              expandIcon={({ isActive }) => (
+                <CaretRightOutlined rotate={isActive ? 90 : 0} />
+              )}
+            >
+              <Panel
+                header='Advanced'
+                key='1'
+              >
+                <FormItemLabel name='Set headers' />
+                <Form.Item name='setHeaders' valuePropName='checked'>
+                  <Checkbox checked={headers.length > 0 ? true : false}>
+                  Set the value of headers in the request
+              </Checkbox>
+                </Form.Item>
+                <ConditionalFormBlock
+                  dependency='setHeaders'
+                  condition={() => form.getFieldValue('setHeaders') === true}
+                >
+                  <FormItemLabel name='Headers' />
+                  <Form.List name="headers">
+                      {(fields, { add, remove }) => {
+                        return (
+                          <div>
+                            {fields.map((field, index) => (
+                              <React.Fragment>
+                                <Row key={field}>
+                                <Col span={10}>
+                                  <Form.Item name={[field.name, "key"]} 
+                                    key={[field.name, "key"]} 
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header key" }]}>
+                                    <Input
+                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                      placeholder="Header key"
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col span={10}>
+                                  <Form.Item
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    name={[field.name, "value"]}
+                                    key={[field.name, "value"]}
+                                  >
+                                    <Input
+                                      placeholder="Header value"
+                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                  <Col span={3}>
+                                    <Button
+                                      onClick={() => remove(field.name)}
+                                      style={{ marginRight: "2%", float: "left" }}>
+                                      <DeleteOutlined />
+                                    </Button>
+                                  </Col>
+                                </Row>
+                              </React.Fragment>
+                            ))}
+                            <Form.Item>
+                              <Button
+                                onClick={() => {
+                                  const fieldKeys = [
+                                    ...fields.map(obj => ["headers", obj.name,"key"]),
+                                    ...fields.map(obj => ["headers", obj.name,"value"]),
+                                  ]
+                                  form.validateFields(fieldKeys)
+                                    .then(() => add())
+                                    .catch(ex => console.log("Exception", ex))
+                                }}
+                                style={{ marginRight: "2%", float: "left" }}
+                              >
+                                <PlusOutlined /> Add header</Button>
+                            </Form.Item>
+                          </div>
+                        );
+                      }}
+                    </Form.List>
+                </ConditionalFormBlock>
+              </Panel>
+            </Collapse>
         </Form>
       </Modal>
     </div>

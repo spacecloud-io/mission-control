@@ -15,7 +15,7 @@ import 'codemirror/mode/go/go';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import { CaretRightOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
 
 const { Option } = Select;
@@ -48,7 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
   const { projectID, serviceName } = useParams();
   const projects = useSelector((state) => state.projects);
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers=[]  } = initialValues ? initialValues : {}
   const initialRule = rule ? rule : defaultEndpointRule
   const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
@@ -72,11 +72,13 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     path: path,
     overrideToken: token ? true : false,
     token: token,
+    setHeaders: headers.length > 0 ? true : false,
+    headers: headers.length > 0 ? headers : [{ key: "", value: ""}],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
 
-  const handleFinish = ({ kind, name, method, path, token, applyTransformations, overrideToken, outputFormat }) => {
+  const handleFinish = ({ kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders }) => {
     try {
       handleSubmit(
         kind,
@@ -88,7 +90,8 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
         (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
-        kind === endpointTypes.PREPARED ? graphTemplateData : ""
+        kind === endpointTypes.PREPARED ? graphTemplateData : "",
+        setHeaders ? headers : undefined,
       )
     } catch (error) {
       notify("error", "Error", error)
@@ -330,6 +333,78 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                     </Form.Item>
                     <Button onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
                   </Input.Group>
+                </ConditionalFormBlock>
+                <FormItemLabel name='Set headers' />
+                <Form.Item name='setHeaders' valuePropName='checked'>
+                  <Checkbox checked={headers.length > 0 ? true : false}>
+                  Set the value of headers in the request
+              </Checkbox>
+                </Form.Item>
+                <ConditionalFormBlock
+                  dependency='setHeaders'
+                  condition={() => form.getFieldValue('setHeaders') === true}
+                >
+                  <FormItemLabel name='Headers' />
+                  <Form.List name="headers">
+                      {(fields, { add, remove }) => {
+                        return (
+                          <div>
+                            {fields.map((field, index) => (
+                              <React.Fragment>
+                                <Row key={field}>
+                                <Col span={10}>
+                                  <Form.Item name={[field.name, "key"]} 
+                                    key={[field.name, "key"]} 
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header key" }]}>
+                                    <Input
+                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                      placeholder="Header key"
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col span={10}>
+                                  <Form.Item
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    name={[field.name, "value"]}
+                                    key={[field.name, "value"]}
+                                  >
+                                    <Input
+                                      placeholder="Header value"
+                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                  <Col span={3}>
+                                    <Button
+                                      onClick={() => remove(field.name)}
+                                      style={{ marginRight: "2%", float: "left" }}>
+                                      <DeleteOutlined />
+                                    </Button>
+                                  </Col>
+                                </Row>
+                              </React.Fragment>
+                            ))}
+                            <Form.Item>
+                              <Button
+                                onClick={() => {
+                                  const fieldKeys = [
+                                    ...fields.map(obj => ["headers", obj.name,"key"]),
+                                    ...fields.map(obj => ["headers", obj.name,"value"]),
+                                  ]
+                                  form.validateFields(fieldKeys)
+                                    .then(() => add())
+                                    .catch(ex => console.log("Exception", ex))
+                                }}
+                                style={{ marginRight: "2%", float: "left" }}
+                              >
+                                <PlusOutlined /> Add header</Button>
+                            </Form.Item>
+                          </div>
+                        );
+                      }}
+                    </Form.List>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
                   <FormItemLabel name='Apply transformations' />

@@ -57,7 +57,9 @@ function Routing() {
     routeType: obj.source.type,
     rewrite: obj.source.rewrite,
     allowedMethods: obj.source.methods,
-    targets: obj.targets
+    targets: obj.targets,
+    headers: obj.headers,
+    rules: obj.rules
   }));
 
   const len = routes.length;
@@ -66,7 +68,7 @@ function Routing() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
-  const handleSubmit = (routeId, values) => {
+  const handleSubmit = (routeId, values, rule) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
       const config = {
@@ -78,7 +80,9 @@ function Routing() {
           rewrite: values.rewrite,
           type: values.routeType
         },
-        targets: values.targets
+        targets: values.targets,
+        rules: rule,
+        headers: values.headers
       };
       client.routing
         .setRoutingConfig(projectID, config.id, config)
@@ -213,7 +217,7 @@ function Routing() {
         </div>
         {modalVisible && (
           <IngressRoutingModal
-            handleSubmit={values => handleSubmit(routeClicked, values)}
+            handleSubmit={(values, rule) => handleSubmit(routeClicked, values, rule)}
             services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}
