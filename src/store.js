@@ -5,6 +5,7 @@ import { generateReducers } from "automate-redux";
 const initialState = {
 	projects: [],
 	clusters: [],
+	clusterConfig: {},
 	serviceRoutes: {},
 	pendingRequests: 0,
 	uiState: {
@@ -23,7 +24,6 @@ const initialState = {
     }
 	},
 	eventLogs: [],
-	credentials: {},
 	env: {
 		version: "",
 		clusterId: null,

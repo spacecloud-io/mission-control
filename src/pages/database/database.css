@@ -132,22 +132,6 @@
     color: rgba(3, 27, 78, 0.7);
 }
 
-.ant-tabs-tab {
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 25px;
-    color: black;
-}
-
-.ant-tabs-tab-active {
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 25px;
-    color: black;
-}
-
 .flex-blox {
     display: flex;
 }
@@ -191,7 +175,7 @@
 }
 
 .db-tab-content {
-    padding: 32px 32px 0;
+    padding: 32px;
 }
 
 .add-db-tab {

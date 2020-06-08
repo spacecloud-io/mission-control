@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Input, Button, Modal, Select, Radio, Form } from 'antd';
-import FormItemLabel from "../form-item-label/FormItemLabel";
-import RadioCards from "../radio-cards/RadioCards";
-import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import FormItemLabel from "../../form-item-label/FormItemLabel";
+import RadioCards from "../../radio-cards/RadioCards";
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 
 const { Option } = Select
 
