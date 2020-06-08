@@ -9,6 +9,7 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/go/go';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
