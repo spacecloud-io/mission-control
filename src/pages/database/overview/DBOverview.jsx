@@ -15,7 +15,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
 import history from '../../../history';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
+import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection, handleCollectionReload } from '../dbActions';
 import { defaultDBRules, dbTypes } from '../../../constants';
 
 
@@ -96,6 +96,12 @@ const Overview = () => {
     }
   }
 
+  const handleReload = (colName) => {
+    handleCollectionReload(projectID, selectedDB, colName)
+      .then(() => notify("success", "Success", "Reloaded schema successfully"))
+      .catch(ex => notify("error", "Error", ex))
+  }
+
   const handleViewQueriesClick = (colName) => {
     dispatch(set("uiState.selectedCollection", colName))
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/queries`);
@@ -168,6 +174,7 @@ const Overview = () => {
           <a onClick={() => handleEditClick(name)}>Edit</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
+          <a onClick={() => handleReload(name)}>Reload schema</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>

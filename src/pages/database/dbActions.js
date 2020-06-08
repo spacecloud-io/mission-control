@@ -131,6 +131,18 @@ export const handleReload = (projectId, dbName) => {
   })
 }
 
+export const handleCollectionReload = (projectId, dbName, colName) => {
+  return new Promise((resolve, reject) => {
+    store.dispatch(increment("pendingRequests"))
+    client.database.reloadCollectionSchema(projectId, dbName, colName).then(newSchema => {
+      setProjectConfig(projectId, `modules.db.${dbName}.collections.${colName}.schema`, newSchema)
+      resolve()
+    })
+      .catch(ex => reject(ex))
+      .finally(() => store.dispatch(decrement("pendingRequests")))
+  })
+}
+
 export const setDBConfig = (projectId, aliasName, enabled, conn, type, dbName, setLoading) => {
   if (setLoading) store.dispatch(increment("pendingRequests"))
   return new Promise((resolve, reject) => {
