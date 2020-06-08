@@ -50,14 +50,19 @@ function Routing() {
     return { name: obj.id, ports };
   });
 
-  const data = routes.map(obj => ({
-    id: obj.id,
-    allowedHosts: obj.source.hosts,
-    url: obj.source.url,
-    routeType: obj.source.type,
-    rewrite: obj.source.rewrite,
-    allowedMethods: obj.source.methods,
-    targets: obj.targets
+  const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
+    id: id,
+    allowedHosts: source.hosts,
+    url: source.url,
+    routeType: source.type,
+    rewrite: source.rewrite,
+    allowedMethods: source.methods,
+    targets: targets,
+    headers: modify.headers,
+    requestTemplate: modify.requestTemplate,
+    responseTemplate: modify.responseTemplate,
+    outputFormat: modify.outputFormat,
+    rule: rule
   }));
 
   const len = routes.length;
@@ -78,7 +83,14 @@ function Routing() {
           rewrite: values.rewrite,
           type: values.routeType
         },
-        targets: values.targets
+        targets: values.targets,
+        rule: values.rule,
+        modify: {
+          headers: values.headers,
+          requestTemplate: values.requestTemplate,
+          responseTemplate: values.responseTemplate,
+          outputFormat: values.outputFormat
+        }
       };
       client.routing
         .setRoutingConfig(projectID, config.id, config)
@@ -213,7 +225,7 @@ function Routing() {
         </div>
         {modalVisible && (
           <IngressRoutingModal
-            handleSubmit={values => handleSubmit(routeClicked, values)}
+            handleSubmit={(values) => handleSubmit(routeClicked, values)}
             services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}

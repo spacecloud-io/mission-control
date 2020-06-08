@@ -1,35 +1,71 @@
-import React from "react";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form } from "antd";
+import React, { useState } from "react";
+import { DeleteOutlined, PlusOutlined, CaretRightOutlined } from '@ant-design/icons';
+import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form, Collapse, Alert } from "antd";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import { notify } from "../../utils";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import { defaultIngressRoutingRule } from '../../constants';
+import { Controlled as CodeMirror } from 'react-codemirror2';
+import 'codemirror/theme/material.css';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/go/go';
+import 'codemirror/addon/selection/active-line.js';
+import 'codemirror/addon/edit/matchbrackets.js';
+import 'codemirror/addon/edit/closebrackets.js';
 
 const { Option } = Select;
+const { Panel } = Collapse;
+
+function AlertMsgApplyTransformations() {
+  return (
+    <div>
+      <b>Info</b> <br />
+      Describe the transformed request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+        <b>Go templates</b>
+      </a>. Space Cloud will execute the specified template to generate the new request/response.
+    </div>
+  );
+}
 
 const IngressRoutingModal = props => {
   const [form] = Form.useForm();
 
   const initialValues = props.initialValues;
+  const initialRule = (initialValues) ? initialValues.rule : defaultIngressRoutingRule;
+  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
+  const [requestTemplateData, setRequestTemplateData] = useState(initialValues ? initialValues.requestTemplate : "");
+  const [responseTemplateData, setResponseTemplateData] = useState(initialValues ? initialValues.responseTemplate : "");
   const children = [];
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      delete values["allowSpecificHosts"];
-      delete values["allowSpecificMethods"];
-      delete values["performRewrite"];
-      delete values["targetKeys"];
-      if (!values.allowedHosts) values.allowedHosts = ["*"]
-      if (!values.allowedMethods) values.allowedMethods = ["*"]
-      values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
-      const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
-      if (weightSum !== 100) {
-        message.error("Sum of all the target weights should be 100")
-        return
+      try {
+        delete values["allowSpecificHosts"];
+        delete values["allowSpecificMethods"];
+        delete values["performRewrite"];
+        if (!values.setHeaders) values.headers = []
+        delete values["setHeaders"];
+        if (values.applyTransformations) {
+          values.requestTemplate = requestTemplateData
+          values.responseTemplate = responseTemplateData
+        }
+        delete values["applyTransformations"]
+        if (!values.allowedHosts) values.allowedHosts = ["*"]
+        if (!values.allowedMethods) values.allowedMethods = ["*"]
+        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
+        const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
+        if (weightSum !== 100) {
+          message.error("Sum of all the target weights should be 100")
+          return
+        }
+        values.rule = ruleData ? JSON.parse(ruleData) : undefined
+        props.handleSubmit(values).then(() => {
+          notify("success", "Success", "Saved routing config successfully");
+          props.handleCancel();
+        });
+      } catch (error) {
+        notify("error", "Error", error)
       }
-      props.handleSubmit(values).then(() => {
-        notify("success", "Success", "Saved routing config successfully");
-        props.handleCancel();
-      });
     })
   };
 
@@ -61,16 +97,19 @@ const IngressRoutingModal = props => {
       >
         <Form layout="vertical" form={form}
           initialValues={{
-            "routeType": initialValues ? initialValues.routeType :
-              "prefix", "url": initialValues ? initialValues.url : "",
-            "url": initialValues ? initialValues.url : "",
-            "performRewrite": initialValues && initialValues.rewrite ? true : false,
-            "rewrite": initialValues ? initialValues.rewrite : "",
-            "allowSpecificHosts": initialValues && checkHost(initialValues.allowedHosts) ? true : false,
-            "allowedHosts": initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
-            "allowSpecificMethods": initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
-            "allowedMethods": initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
-            targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }]
+            routeType: initialValues ? initialValues.routeType : "prefix",
+            url: initialValues ? initialValues.url : "",
+            performRewrite: initialValues && initialValues.rewrite ? true : false,
+            rewrite: initialValues ? initialValues.rewrite : "",
+            allowSpecificHosts: initialValues && checkHost(initialValues.allowedHosts) ? true : false,
+            allowedHosts: initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
+            allowSpecificMethods: initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
+            allowedMethods: initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
+            targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }],
+            setHeaders: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? true : false,
+            headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers : [{ key: "", value: "" }],
+            applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
+            outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
           }}>
           <FormItemLabel name="Route matching type" />
           <Form.Item name="routeType" rules={[{ required: true, message: "Route type is required" }]}>
@@ -261,13 +300,13 @@ const IngressRoutingModal = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.name,"scheme"]),
-                            ...fields.map(obj => ["targets", obj.name,"host"]),
-                            ...fields.map(obj => ["targets", obj.name,"port"]),
-                            ...fields.map(obj => ["targets", obj.name,"weight"]),
+                            ...fields.map(obj => ["targets", obj.name, "scheme"]),
+                            ...fields.map(obj => ["targets", obj.name, "host"]),
+                            ...fields.map(obj => ["targets", obj.name, "port"]),
+                            ...fields.map(obj => ["targets", obj.name, "weight"]),
                           ]
                           form.validateFields(fieldKeys)
-                            .then(() => add({scheme: "http"}))
+                            .then(() => add({ scheme: "http" }))
                             .catch(ex => console.log("Exception", ex))
                         }}
                         style={{ marginTop: -10 }}
@@ -280,6 +319,169 @@ const IngressRoutingModal = props => {
               }}
             </Form.List>
           </React.Fragment>
+          <FormItemLabel name='Rule' />
+          <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+            <CodeMirror
+              value={ruleData}
+              options={{
+                mode: { name: 'javascript', json: true },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2,
+                autofocus: true,
+              }}
+              onBeforeChange={(editor, data, value) => {
+                setRuleData(value);
+              }}
+            />
+          </Form.Item>
+          <Collapse
+            style={{ background: "white" }}
+            bordered={false}
+            expandIcon={({ isActive }) => (
+              <CaretRightOutlined rotate={isActive ? 90 : 0} />
+            )}
+          >
+            <Panel
+              header='Advanced'
+              key='1'
+            >
+              <FormItemLabel name='Set headers' />
+              <Form.Item name='setHeaders' valuePropName='checked'>
+                <Checkbox>
+                  Set the value of headers in the request
+              </Checkbox>
+              </Form.Item>
+              <ConditionalFormBlock
+                dependency='setHeaders'
+                condition={() => form.getFieldValue('setHeaders') === true}
+              >
+                <FormItemLabel name='Headers' />
+                <Form.List name="headers">
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field, index) => (
+                          <React.Fragment>
+                            <Row key={field}>
+                              <Col span={10}>
+                                <Form.Item name={[field.name, "key"]}
+                                  key={[field.name, "key"]}
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header key" }]}>
+                                  <Input
+                                    style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                    placeholder="Header key"
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={10}>
+                                <Form.Item
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header value" }]}
+                                  name={[field.name, "value"]}
+                                  key={[field.name, "value"]}
+                                >
+                                  <Input
+                                    placeholder="Header value"
+                                    style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={3}>
+                                <Button
+                                  onClick={() => remove(field.name)}
+                                  style={{ marginRight: "2%", float: "left" }}>
+                                  <DeleteOutlined />
+                                </Button>
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            onClick={() => {
+                              const fieldKeys = [
+                                ...fields.map(obj => ["headers", obj.name, "key"]),
+                                ...fields.map(obj => ["headers", obj.name, "value"]),
+                              ]
+                              form.validateFields(fieldKeys)
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
+                            }}
+                            style={{ marginRight: "2%", float: "left" }}
+                          >
+                            <PlusOutlined /> Add header</Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
+              </ConditionalFormBlock>
+              <FormItemLabel name='Apply transformations' />
+              <Form.Item name='applyTransformations' valuePropName='checked'>
+                <Checkbox>
+                  Transform the request and/or response using templates
+                  </Checkbox>
+              </Form.Item>
+              <ConditionalFormBlock
+                dependency='applyTransformations'
+                condition={() => form.getFieldValue('applyTransformations') === true}
+              >
+                <Alert
+                  message={<AlertMsgApplyTransformations />}
+                  type='info'
+                  showIcon
+                  style={{ marginBottom: 21 }}
+                />
+                <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+                <Form.Item name="outputFormat">
+                  <Select style={{ width: 96 }}>
+                    <Option value='yaml'>YAML</Option>
+                    <Option value='json'>JSON</Option>
+                  </Select>
+                </Form.Item>
+                <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
+                <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+                  <CodeMirror
+                    value={requestTemplateData}
+                    options={{
+                      mode: { name: 'go' },
+                      lineNumbers: true,
+                      styleActiveLine: true,
+                      matchBrackets: true,
+                      autoCloseBrackets: true,
+                      tabSize: 2,
+                      autofocus: true,
+                    }}
+                    onBeforeChange={(editor, data, value) => {
+                      setRequestTemplateData(value);
+                    }}
+                  />
+                </Form.Item>
+                <FormItemLabel name="Response template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
+                <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+                  <CodeMirror
+                    value={responseTemplateData}
+                    options={{
+                      mode: { name: 'go' },
+                      lineNumbers: true,
+                      styleActiveLine: true,
+                      matchBrackets: true,
+                      autoCloseBrackets: true,
+                      tabSize: 2,
+                      autofocus: false,
+                    }}
+                    onBeforeChange={(editor, data, value) => {
+                      setResponseTemplateData(value);
+                    }}
+                  />
+                </Form.Item>
+              </ConditionalFormBlock>
+            </Panel>
+          </Collapse>
         </Form>
       </Modal>
     </div>
