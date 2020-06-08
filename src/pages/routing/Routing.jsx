@@ -50,16 +50,19 @@ function Routing() {
     return { name: obj.id, ports };
   });
 
-  const data = routes.map(obj => ({
-    id: obj.id,
-    allowedHosts: obj.source.hosts,
-    url: obj.source.url,
-    routeType: obj.source.type,
-    rewrite: obj.source.rewrite,
-    allowedMethods: obj.source.methods,
-    targets: obj.targets,
-    headers: obj.headers,
-    rules: obj.rules
+  const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
+    id: id,
+    allowedHosts: source.hosts,
+    url: source.url,
+    routeType: source.type,
+    rewrite: source.rewrite,
+    allowedMethods: source.methods,
+    targets: targets,
+    headers: modify.headers,
+    requestTemplate: modify.requestTemplate,
+    responseTemplate: modify.responseTemplate,
+    outputFormat: modify.outputFormat,
+    rule: rule
   }));
 
   const len = routes.length;
@@ -68,7 +71,7 @@ function Routing() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
-  const handleSubmit = (routeId, values, rule) => {
+  const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
       const config = {
@@ -81,8 +84,13 @@ function Routing() {
           type: values.routeType
         },
         targets: values.targets,
-        rules: rule,
-        headers: values.headers
+        rule: values.rule,
+        modify: {
+          headers: values.headers,
+          requestTemplate: values.requestTemplate,
+          responseTemplate: values.responseTemplate,
+          outputFormat: values.outputFormat
+        }
       };
       client.routing
         .setRoutingConfig(projectID, config.id, config)
@@ -217,7 +225,7 @@ function Routing() {
         </div>
         {modalVisible && (
           <IngressRoutingModal
-            handleSubmit={(values, rule) => handleSubmit(routeClicked, values, rule)}
+            handleSubmit={(values) => handleSubmit(routeClicked, values)}
             services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}

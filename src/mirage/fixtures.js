@@ -83,8 +83,10 @@ const projects = [
                 "rule": {
                   "rule": "allow"
                 },
-                "headers": [{"key": "headerKey1", "value": "headerValue1"},
-                            {"key": "headerKey2", "value": "headerValue2"}],
+                "headers": [
+                  { "key": "headerKey1", "value": "headerValue1" },
+                  { "key": "headerKey2", "value": "headerValue2" }
+                ]
               },
               "externalEndpoint": {
                 "method":"GET",
@@ -238,14 +240,20 @@ const projects = [
             },
             {
               "scheme": "https",
-              "host": "qwertyu",
+              "host": "qwerty",
               "port": 443,
               "weight": 60
             }
           ],
-          "rules": { "rule": "allow" },
-          "headers": [{"key": "headerKey1", "value": "headerValue1"},
-                            {"key": "headerKey2", "value": "headerValue2"}],
+          "rule": { "rule": "allow" },
+          "modify": {
+            "headers": [
+              { "key": "headerKey1", "value": "headerValue1" },
+              { "key": "headerKey2", "value": "headerValue2" }
+            ],
+            "outputFormat": "json",
+            "requestTemplate": "{\"yo\": \"lo\"}"
+          }
         }
       ],
       "fileStore": {

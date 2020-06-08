@@ -48,7 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
   const { projectID, serviceName } = useParams();
   const projects = useSelector((state) => state.projects);
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers=[]  } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
   const initialRule = rule ? rule : defaultEndpointRule
   const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
@@ -73,7 +73,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     overrideToken: token ? true : false,
     token: token,
     setHeaders: headers.length > 0 ? true : false,
-    headers: headers.length > 0 ? headers : [{ key: "", value: ""}],
+    headers: headers.length > 0 ? headers : [{ key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
@@ -334,48 +334,49 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                     <Button onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
                   </Input.Group>
                 </ConditionalFormBlock>
-                <FormItemLabel name='Set headers' />
-                <Form.Item name='setHeaders' valuePropName='checked'>
-                  <Checkbox checked={headers.length > 0 ? true : false}>
-                  Set the value of headers in the request
-              </Checkbox>
-                </Form.Item>
-                <ConditionalFormBlock
-                  dependency='setHeaders'
-                  condition={() => form.getFieldValue('setHeaders') === true}
-                >
-                  <FormItemLabel name='Headers' />
-                  <Form.List name="headers">
+                <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
+                  <FormItemLabel name='Set headers' />
+                  <Form.Item name='setHeaders' valuePropName='checked'>
+                    <Checkbox checked={headers.length > 0 ? true : false}>
+                      Set the value of headers in the request
+                  </Checkbox>
+                  </Form.Item>
+                  <ConditionalFormBlock
+                    dependency='setHeaders'
+                    condition={() => form.getFieldValue('setHeaders') === true}
+                  >
+                    <FormItemLabel name='Headers' />
+                    <Form.List name="headers">
                       {(fields, { add, remove }) => {
                         return (
                           <div>
                             {fields.map((field, index) => (
                               <React.Fragment>
                                 <Row key={field}>
-                                <Col span={10}>
-                                  <Form.Item name={[field.name, "key"]} 
-                                    key={[field.name, "key"]} 
-                                    validateTrigger={["onChange", "onBlur"]}
-                                    rules={[{ required: true, message: "Please input header key" }]}>
-                                    <Input
-                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                      placeholder="Header key"
-                                    />
-                                  </Form.Item>
-                                </Col>
-                                <Col span={10}>
-                                  <Form.Item
-                                    validateTrigger={["onChange", "onBlur"]}
-                                    rules={[{ required: true, message: "Please input header value" }]}
-                                    name={[field.name, "value"]}
-                                    key={[field.name, "value"]}
-                                  >
-                                    <Input
-                                      placeholder="Header value"
-                                      style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                    />
-                                  </Form.Item>
-                                </Col>
+                                  <Col span={10}>
+                                    <Form.Item name={[field.name, "key"]}
+                                      key={[field.name, "key"]}
+                                      validateTrigger={["onChange", "onBlur"]}
+                                      rules={[{ required: true, message: "Please input header key" }]}>
+                                      <Input
+                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                        placeholder="Header key"
+                                      />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={10}>
+                                    <Form.Item
+                                      validateTrigger={["onChange", "onBlur"]}
+                                      rules={[{ required: true, message: "Please input header value" }]}
+                                      name={[field.name, "value"]}
+                                      key={[field.name, "value"]}
+                                    >
+                                      <Input
+                                        placeholder="Header value"
+                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
+                                      />
+                                    </Form.Item>
+                                  </Col>
                                   <Col span={3}>
                                     <Button
                                       onClick={() => remove(field.name)}
@@ -390,8 +391,8 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                               <Button
                                 onClick={() => {
                                   const fieldKeys = [
-                                    ...fields.map(obj => ["headers", obj.name,"key"]),
-                                    ...fields.map(obj => ["headers", obj.name,"value"]),
+                                    ...fields.map(obj => ["headers", obj.name, "key"]),
+                                    ...fields.map(obj => ["headers", obj.name, "value"]),
                                   ]
                                   form.validateFields(fieldKeys)
                                     .then(() => add())
@@ -405,8 +406,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                         );
                       }}
                     </Form.List>
-                </ConditionalFormBlock>
-                <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
+                  </ConditionalFormBlock>
                   <FormItemLabel name='Apply transformations' />
                   <Form.Item name='applyTransformations' valuePropName='checked'>
                     <Checkbox>
