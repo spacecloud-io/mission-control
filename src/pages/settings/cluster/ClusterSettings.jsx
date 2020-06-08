@@ -36,7 +36,7 @@ const ClusterSettings = () => {
       .setConfig(Object.assign({}, globalConfig, { email: newEmail }))
       .then(() => {
         store.dispatch(set("clusterConfig.email", newEmail));
-        notify("success", "Success", "Changed letsEncrypt email successfully");
+        notify("success", "Success", "Changed LetsEncrypt email successfully");
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
@@ -48,7 +48,7 @@ const ClusterSettings = () => {
       .setConfig(Object.assign({}, globalConfig, { telemetry: newTelemetry }))
       .then(() => {
         store.dispatch(set("clusterConfig.telemetry", newTelemetry));
-        notify("success", "Success", "Changed telemetry successfully");
+        notify("success", "Success", `${newTelemetry ? "Enabled": "Disabled"} telemetry successfully`);
       })
       .catch(ex => notify("error", "Error", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
