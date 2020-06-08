@@ -2,7 +2,6 @@ import React from 'react';
 import { Typography, Card } from 'antd';
 
 const Credentials = ({credentials = {}}) => {
-  //const credentials = props.credentials;
   
   return (
     <React.Fragment>

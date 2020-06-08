@@ -85,7 +85,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId", () => respondOk());
       
       // cluster Endpoint
-      this.get("/config/cluster", () => respondOk({ result: fixtures.clusters }));
+      this.get("/config/cluster", () => respondOk({ result: fixtures.clusterConfig }));
       this.post("/config/cluster", () => respondOk());
 
       // Database endpoints

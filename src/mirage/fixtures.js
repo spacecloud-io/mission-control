@@ -276,7 +276,7 @@ const projects = [
   }
 ]
 
-const clusters = 
+const clusterConfig = 
   {
     "email": "admin@gmail.com",
     "telemetry": true, 
@@ -354,4 +354,4 @@ const eventLogs = [
     "status": "failed"
   }
 ]
-export default { projects, clusters, serviceRoutes, eventLogs }
+export default { projects, clusterConfig, serviceRoutes, eventLogs }

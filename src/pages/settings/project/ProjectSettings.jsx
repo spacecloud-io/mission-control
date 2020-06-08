@@ -1,29 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector, useDispatch } from "react-redux";
 import { get, set, increment, decrement } from "automate-redux";
-import SettingsTabs from "../../components/settings/settings-tabs/SettingsTabs";
-import Sidenav from "../../components/sidenav/Sidenav";
-import Topbar from "../../components/topbar/Topbar";
-import SecretConfigure from "../../components/settings/projects/SecretConfigure";
-import "./settings.css";
-import { getProjectConfig, notify, setProjectConfig, openProject } from "../../utils";
-import client from "../../client";
-import { Button, Row, Col, Card, Typography } from "antd";
-import store from "../../store";
-import history from "../../history";
-import WhitelistedDomains from "../../components/settings/projects/WhiteListedDomains";
-import AESConfigure from "../../components/settings/projects/AESConfigure";
-import GraphQLTimeout from "../../components/settings/projects/GraphQLTimeout";
-import DockerRegistry from "../../components/settings/projects/DockerRegistry";
+import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
+import Sidenav from "../../../components/sidenav/Sidenav";
+import Topbar from "../../../components/topbar/Topbar";
+import SecretConfigure from "../../../components/settings/project/SecretConfigure";
+import { getProjectConfig, notify, setProjectConfig, openProject } from "../../../utils";
+import client from "../../../client";
+import { Button, Row, Col, Divider } from "antd";
+import store from "../../../store";
+import history from "../../../history";
+import WhitelistedDomains from "../../../components/settings/project/WhiteListedDomains";
+import AESConfigure from "../../../components/settings/project/AESConfigure";
+import GraphQLTimeout from "../../../components/settings/project/GraphQLTimeout";
+import DockerRegistry from "../../../components/settings/project/DockerRegistry";
+import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 
 const ProjectSettings = () => {
   // Router params
   const { projectID } = useParams();
 
   useEffect(() => {
-    ReactGA.pageview("/projects/settings/project-settings");
+    ReactGA.pageview("/projects/settings/project");
   }, []);
 
   const dispatch = useDispatch();
@@ -36,12 +36,11 @@ const ProjectSettings = () => {
   const { modules, ...globalConfig } = selectedProject
 
   // Derived properties
-  const projectName = globalConfig.name;
   const secrets = globalConfig.secrets ? globalConfig.secrets : []
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
-  
+
   const domains = getProjectConfig(
     projects,
     projectID,
@@ -141,34 +140,34 @@ const ProjectSettings = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='project-settings' />
-      <div className='page-content page-content--no-padding'>
+      <Sidenav selectedItem='settings' />
+      <ProjectPageLayout>
         <SettingsTabs activeKey="project" projectID={projectID} />
-        <div className="setting-content">
-        <Row>
-          <Col lg={{ span: 12 }}>
-            <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
-            <div className="divider" />
-            <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
-            <div className="divider" />
-            <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
-            <div className="divider" />
-            <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
-            <div className="divider" />
-            <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
-            <div className="divider" />
-            <h2>Delete Project</h2>
-            <p>
-              Delete this project config. All services running in this project
-              will be stopped and deleted.
+        <Content>
+          <Row>
+            <Col lg={{ span: 12 }}>
+              <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
+              <Divider />
+              <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
+              <Divider />
+              <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
+              <Divider />
+              <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
+              <Divider />
+              <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
+              <Divider />
+              <h2>Delete Project</h2>
+              <p>
+                Delete this project config. All services running in this project
+                will be stopped and deleted.
              </p>
-            <Button type="danger" onClick={removeProjectConfig}>
-              Remove
+              <Button type="danger" onClick={removeProjectConfig}>
+                Remove
           </Button>
-          </Col>
-        </Row>
-      </div>
-      </div>
+            </Col>
+          </Row>
+        </Content>
+      </ProjectPageLayout>
     </React.Fragment>
   );
 };

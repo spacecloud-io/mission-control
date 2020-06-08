@@ -275,8 +275,8 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
       .finally(() => store.dispatch(decrement("pendingRequests")))
       
       store.dispatch(increment("pendingRequests"))
-      client.clusters.getClustersConfig()
-        .then(data => store.dispatch(set("clusters", data)))
+      client.clusterConfig.getConfig()
+        .then(data => store.dispatch(set("clusterConfig", data)))
         .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
         .finally(() => store.dispatch(decrement("pendingRequests")))
 

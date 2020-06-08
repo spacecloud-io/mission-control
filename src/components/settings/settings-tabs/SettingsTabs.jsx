@@ -11,14 +11,14 @@ export default ({ activeKey, projectID }) => {
         <TabPane tab='Project settings' key='project'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/settings/projects`
+              pathname: `/mission-control/projects/${projectID}/settings/project`
             }}
           />
         </TabPane>
         <TabPane tab='Cluster settings' key='cluster'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/settings/clusters`
+              pathname: `/mission-control/projects/${projectID}/settings/cluster`
             }}
           />
         </TabPane>

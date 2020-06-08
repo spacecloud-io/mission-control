@@ -1,9 +1,9 @@
-class Clusters {
+class ClusterConfig {
   constructor(client) {
     this.client = client
   }
 
-  getClustersConfig() {
+  getConfig() {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/cluster`)
         .then(({ status, data }) => {
@@ -17,7 +17,7 @@ class Clusters {
     })
   }
 
-  setClustersConfig(clusterConfig) {
+  setConfig(clusterConfig) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/cluster`, clusterConfig)
         .then(({ status, data }) => {
@@ -33,4 +33,4 @@ class Clusters {
 
 }
 
-export default Clusters
+export default ClusterConfig
