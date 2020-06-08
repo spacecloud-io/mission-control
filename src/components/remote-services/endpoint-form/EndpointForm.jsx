@@ -337,7 +337,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
                   <FormItemLabel name='Set headers' />
                   <Form.Item name='setHeaders' valuePropName='checked'>
-                    <Checkbox checked={headers.length > 0 ? true : false}>
+                    <Checkbox>
                       Set the value of headers in the request
                   </Checkbox>
                   </Form.Item>
