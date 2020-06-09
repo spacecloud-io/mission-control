@@ -172,6 +172,146 @@ const projects = [
                 "service": "s4"
               }
             ]
+          },
+          {
+            "id": "service2",
+            "version": "v1",
+            "projectId": "todoapp",
+            "scale": {
+              "replicas": 0,
+              "minReplicas": 0,
+              "maxReplicas": 10,
+              "concurrency": 50,
+              "mode": "per-second"
+            },
+            "tasks": [
+              {
+                "id": "service1",
+                "ports": [
+                  {
+                    "protocol": "http",
+                    "port": 8080,
+                    "name": "http"
+                  },
+                  {
+                    "protocol": "http",
+                    "port": 8081,
+                    "name": "http"
+                  }
+                ],
+                "resources": {
+                  "cpu": 200,
+                  "memory": 200,
+                  "gpu": {
+                    "type": "amd",
+                    "value": 25
+                  }
+                },
+                "docker": {
+                  "image": "asd",
+                  "secret": "DockerHubSecret",
+                  "imagePullPolicy": "always"
+                },
+                "secrets": [
+                  "EnvSecret"
+                ],
+                "env": {
+                  "f00": "bar",
+                  "key1": "val1"
+                },
+                "runtime": "image"
+              }
+            ],
+            "whitelists": [
+              {
+                "projectId": "todoapp",
+                "service": "s1"
+              },
+              {
+                "projectId": "todoapp",
+                "service": "s2"
+              }
+            ],
+            "upstreams": [
+              {
+                "projectId": "todoapp",
+                "service": "s3"
+              },
+              {
+                "projectId": "myapp",
+                "service": "s4"
+              }
+            ]
+          },
+          {
+            "id": "service2",
+            "version": "v2",
+            "projectId": "todoapp",
+            "scale": {
+              "replicas": 0,
+              "minReplicas": 0,
+              "maxReplicas": 10,
+              "concurrency": 50,
+              "mode": "per-second"
+            },
+            "tasks": [
+              {
+                "id": "service1",
+                "ports": [
+                  {
+                    "protocol": "http",
+                    "port": 8080,
+                    "name": "http"
+                  },
+                  {
+                    "protocol": "http",
+                    "port": 8081,
+                    "name": "http"
+                  }
+                ],
+                "resources": {
+                  "cpu": 200,
+                  "memory": 200,
+                  "gpu": {
+                    "type": "amd",
+                    "value": 25
+                  }
+                },
+                "docker": {
+                  "image": "asd",
+                  "secret": "DockerHubSecret",
+                  "imagePullPolicy": "always"
+                },
+                "secrets": [
+                  "EnvSecret"
+                ],
+                "env": {
+                  "f00": "bar",
+                  "key1": "val1"
+                },
+                "runtime": "image"
+              }
+            ],
+            "whitelists": [
+              {
+                "projectId": "todoapp",
+                "service": "s1"
+              },
+              {
+                "projectId": "todoapp",
+                "service": "s2"
+              }
+            ],
+            "upstreams": [
+              {
+                "projectId": "todoapp",
+                "service": "s3"
+              },
+              {
+                "projectId": "myapp",
+                "service": "s4"
+              }
+            ]
           }
         ]
       },
@@ -354,4 +494,35 @@ const eventLogs = [
     "status": "failed"
   }
 ]
-export default { projects, clusterConfig, serviceRoutes, eventLogs }
+
+const deploymentStatuses = [
+  {
+    "service1": {
+      "v1": {
+    desiredReplicas: 3,
+      replicas: [
+        { id: "fghj2345kj", status: "running"},
+        { id: "ghjk3456av", status: "failed"},
+        { id: "ghjksd9122", status: "starting"}
+      ]
+    }
+   }
+  },
+  {
+    "service2": {
+      "v1": {
+       desiredReplicas: 5,
+       replicas: [
+         { id: "fghj2345kj", status: "running"},
+         { id: "ghjk3456av", status: "pending"}
+       ]
+      },   
+      "v2": {
+      desiredReplicas: 1,
+      replicas: []
+    }   
+    }
+  }
+]
+
+export default { projects, clusterConfig, serviceRoutes, eventLogs, deploymentStatuses }

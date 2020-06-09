@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Tag } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
@@ -10,12 +10,14 @@ import AddDeploymentForm from "../../../components/deployments/add-deployment/Ad
 import client from "../../../client";
 import source_code from "../../../assets/source_code.svg";
 import { getProjectConfig, setProjectConfig, notify } from "../../../utils";
-import { increment, decrement } from "automate-redux";
+import { increment, decrement, set } from "automate-redux";
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
+  const deploymentStatus = useSelector(state => state.deploymentStatus);
   const deployments = getProjectConfig(
     projects,
     projectID,
@@ -37,8 +39,17 @@ const DeploymentsOverview = () => {
   const [modalVisibility, setModalVisibility] = useState(false);
   const [deploymentClicked, setDeploymentClicked] = useState(null);
 
+  const getStatus = () => {
+    dispatch(increment("pendingRequests"));
+    client.deployments.fetchDeploymentStatus(projectID)
+    .then(res => dispatch(set("deploymentStatus", res)))
+    .catch(ex => notify("error", "Error", ex, 5))
+    .finally(() => dispatch(decrement("pendingRequests")));
+  }
+
   useEffect(() => {
     ReactGA.pageview("/projects/deployments/overview");
+    getStatus();
   }, []);
 
   const tableColumns = [
@@ -53,27 +64,24 @@ const DeploymentsOverview = () => {
       key: "version"
     },
     {
-      title: "Service Type",
-      dataIndex: "serviceType",
-      key: "serviceType",
-      render: (text, record) => {
-        switch (text) {
-          case "image":
-            return "Docker";
-          default:
-            return "Custom Code";
-        }
-      }
-    },
-    {
-      title: "Replicas",
-      dataIndex: "replicas",
-      key: "replicas"
-    },
-    {
       title: "Private URL",
       key: "url",
       render: (_, record) => `${record.id}.${projectID}.svc.cluster.local`
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (row) => {
+        const percent = row.totalReplicas / row.desiredReplicas * 100;
+        if (percent >= 80) return <Tag icon={<CheckCircleOutlined />} color="success">Healthy</Tag>
+        else if (percent < 80 && percent > 0) return <Tag icon={<ExclamationCircleOutlined />} color="warning" >Unhealthy</Tag>
+        else return <Tag icon={<CloseCircleOutlined />} color="error">Dead</Tag>
+      }
+    },
+    {
+      title: "Health",
+      key: "health",
+      render: (row) => `${row.totalReplicas}/${row.desiredReplicas}`
     },
     {
       title: "Actions",
@@ -121,7 +129,10 @@ const DeploymentsOverview = () => {
         }))
         : [],
       whitelists: obj.whitelists,
-      upstreams: obj.upstreams
+      upstreams: obj.upstreams,
+      desiredReplicas: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].desiredReplicas : 0,
+      totalReplicas: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].replicas.length : 0,
+      deploymentStatus: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].replicas : []
     };
   });
 
@@ -232,6 +243,41 @@ const DeploymentsOverview = () => {
     setDeploymentClicked(null);
   };
 
+  const expandedRowRender = (record) => {
+    const column = [
+      {
+        title: 'Replica',
+        dataIndex: 'id',
+        key: 'Replica'
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        render: (row) => {
+          const status = row.charAt(0).toUpperCase() + row.slice(1);
+         if(status === "Running") return <span style={{color: '#52c41a'}}><CheckCircleOutlined/> {status}</span>
+         else if(status === "Failed") return <span style={{color: '#f5222d'}}><CloseCircleOutlined/> {status}</span>
+         else return <span style={{color: '#fa8c16'}}><ExclamationCircleOutlined/> {status}</span>
+        }
+      },
+      {
+        title: 'Action',
+        key: 'Action',
+        render: () => <Button type="link" style={{color: "#008dff"}}>View logs</Button>
+      }
+    ]
+  
+    return (
+      <Table
+        style={{width: '50%'}}
+        columns={column}
+        dataSource={record.deploymentStatus}
+        pagination={false}
+        title={() => 'Replicas'}
+      />)
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -279,7 +325,13 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
+              <Table 
+               bordered={true} 
+               columns={tableColumns} 
+               dataSource={data} 
+               rowKey={(record) => record.id + record.version} 
+               expandedRowRender={expandedRowRender}
+              />
             </React.Fragment>
           )}
         </div>

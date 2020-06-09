@@ -4,9 +4,10 @@ import { generateReducers } from "automate-redux";
 // Initial state of redux
 const initialState = {
 	projects: [],
-	clusters: [],
-	clusterConfig: {},
-	serviceRoutes: {},
+  clusters: [],
+  clusterConfig: {},
+  serviceRoutes: {},
+  deploymentStatus: [],
 	pendingRequests: 0,
 	uiState: {
 		selectedCollection: "",
@@ -24,6 +25,7 @@ const initialState = {
     }
 	},
 	eventLogs: [],
+	credentials: {},
 	env: {
 		version: "",
 		clusterId: null,

@@ -59,13 +59,15 @@ export function makeServer({ environment = "development" } = {}) {
       project: Model,
       serviceRoute: Model,
       eventLog: Model,
+      deploymentStatus: Model
     },
 
     fixtures: fixtures,
 
     serializers: {
       project: RestSerializer.extend({ keyForCollection() { return "result" } }),
-      serviceRoute: RestSerializer.extend({ keyForCollection() { return "result" } })
+      serviceRoute: RestSerializer.extend({ keyForCollection() { return "result" } }),
+      deploymentStatus: RestSerializer.extend({ keyForCollection() { return "result" } })
     },
 
     routes() {
@@ -74,6 +76,7 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Global endpoints
       this.get("/config/env", () => ({ isProd: false, version: "0.17.0", clusterId: "cluster1", plan: "space-cloud-open--monthly", quotas: { maxDatabases: 1, maxProjects: 1 } }));
+      this.get("/config/credentials", () => ({ result: { pass: "123", user: "admin" } }));
       this.get("/config/quotas", () => respondOk());
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/upgrade", () => respondOk());
@@ -83,7 +86,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/projects", (schema) => schema.projects.all());
       this.post("/config/projects/:projectId", () => respondOk());
       this.delete("/config/projects/:projectId", () => respondOk());
-      
+
       // cluster Endpoint
       this.get("/config/cluster", () => respondOk({ result: fixtures.clusterConfig }));
       this.post("/config/cluster", () => respondOk());
@@ -124,6 +127,7 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Deployment endpoints
       this.get("/runner/:projectId/service-routes", (schema) => schema.serviceRoutes.all());
+      this.get("/runner/:projectId/services/status", (schema) => schema.deploymentStatuses.all());
       this.post("/runner/:projectId/services/:serviceId/:version", () => respondOk());
       this.post("/runner/:projectId/service-routes/:serviceId", () => respondOk());
       this.delete("/runner/:projectId/services/:serviceId/:version", () => respondOk());
