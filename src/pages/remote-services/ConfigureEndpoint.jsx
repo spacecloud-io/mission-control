@@ -24,10 +24,10 @@ const ConfigureEndpoint = () => {
     ReactGA.pageview(`/projects/remote-services/endpoints/${endpointName ? "edit" : "add"}`);
   }, []);
 
-  const handleSaveEndpoint = (name, method, path, rule, token, kind, template, outputFormat) => {
+  const handleSaveEndpoint = (kind, name, method, path, rule, token, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers) => {
     const serviceConfig = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
     const isEndpointPresent = endpoints[name] ? true : false
-    const newEndpoints = Object.assign({}, endpoints, { [name]: { path, method, rule, token, kind, template, outputFormat } })
+    const newEndpoints = Object.assign({}, endpoints, { [name]: { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     dispatch(increment("pendingRequests"))
     client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig)

@@ -115,11 +115,11 @@ const Topbar = (props) => {
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
-            <Menu.Item>
+            {/* <Menu.Item>
               <Popover className="signin-popover" content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }} >
                 <img src={avatarSvg} />
               </Popover>
-            </Menu.Item>
+            </Menu.Item> */}
           </Menu>
         </div>
       </div>

@@ -103,9 +103,9 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
+        {/* <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/overview" component={BillingOverview} />
-        <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} />
+        <BillingRoute exact path="/mission-control/projects/:projectID/billing/invoices" component={BillingInvoices} /> */}
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
         <BillingRoute exact path="/mission-control/projects/:projectID/billing/register-cluster" component={RegisterCluster} />
