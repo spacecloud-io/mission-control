@@ -1,29 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector, useDispatch } from "react-redux";
 import { get, set, increment, decrement } from "automate-redux";
+import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
+import Sidenav from "../../../components/sidenav/Sidenav";
+import Topbar from "../../../components/topbar/Topbar";
+import SecretConfigure from "../../../components/settings/project/SecretConfigure";
+import { getProjectConfig, notify, setProjectConfig, openProject } from "../../../utils";
+import client from "../../../client";
+import { Button, Row, Col, Divider } from "antd";
+import store from "../../../store";
+import history from "../../../history";
+import WhitelistedDomains from "../../../components/settings/project/WhiteListedDomains";
+import AESConfigure from "../../../components/settings/project/AESConfigure";
+import GraphQLTimeout from "../../../components/settings/project/GraphQLTimeout";
+import DockerRegistry from "../../../components/settings/project/DockerRegistry";
+import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 
-import Sidenav from "../../components/sidenav/Sidenav";
-import Topbar from "../../components/topbar/Topbar";
-import SecretConfigure from "../../components/configure/SecretConfigure";
-import "./settings.css";
-import { getProjectConfig, notify, setProjectConfig, openProject } from "../../utils";
-import client from "../../client";
-import { Button, Row, Col, Card, Typography } from "antd";
-import store from "../../store";
-import history from "../../history";
-import WhitelistedDomains from "../../components/configure/WhiteListedDomains";
-import AESConfigure from "../../components/configure/AESConfigure";
-import GraphQLTimeout from "../../components/configure/GraphQLTimeout";
-import DockerRegistry from "../../components/configure/DockerRegistry";
-
-const Settings = () => {
+const ProjectSettings = () => {
   // Router params
   const { projectID } = useParams();
 
   useEffect(() => {
-    ReactGA.pageview("/projects/settings");
+    ReactGA.pageview("/projects/settings/project");
   }, []);
 
   const dispatch = useDispatch();
@@ -36,12 +36,10 @@ const Settings = () => {
   const { modules, ...globalConfig } = selectedProject
 
   // Derived properties
-  const projectName = globalConfig.name;
   const secrets = globalConfig.secrets ? globalConfig.secrets : []
   const aesKey = globalConfig.aesKey
   const contextTime = globalConfig.contextTime
   const dockerRegistry = globalConfig.dockerRegistry
-  const credentials = useSelector(state => state.credentials)
 
   const domains = getProjectConfig(
     projects,
@@ -140,47 +138,38 @@ const Settings = () => {
   };
 
   return (
-    <div className="projectSetting-page">
+    <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="settings" />
-      <div className="page-content">
-        <Row>
-          <Col lg={{ span: 12 }}>
-            <h2>Credentials</h2>
-            <Card style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ wordSpacing: 6 }}>
-                <b>Username </b>
-                <Typography.Paragraph style={{ display: "inline" }} copyable ellipsis>{credentials.user}</Typography.Paragraph>
-              </h3>
-              <h3 style={{ wordSpacing: 6 }}>
-                <b>Access Key </b>
-                <Typography.Paragraph style={{ display: "inline" }} copyable={{ text: credentials.pass }} ellipsis>*************************</Typography.Paragraph>
-              </h3>
-            </Card>
-            <div className="divider" />
-            <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
-            <div className="divider" />
-            <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
-            <div className="divider" />
-            <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
-            <div className="divider" />
-            <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
-            <div className="divider" />
-            <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
-            <div className="divider" />
-            <h2>Delete Project</h2>
-            <p>
-              Delete this project config. All services running in this project
-              will be stopped and deleted.
+      <Sidenav selectedItem='settings' />
+      <ProjectPageLayout>
+        <SettingsTabs activeKey="project" projectID={projectID} />
+        <Content>
+          <Row>
+            <Col lg={{ span: 12 }}>
+              <DockerRegistry dockerRegistry={dockerRegistry} handleSubmit={handleDockerRegistry} />
+              <Divider />
+              <SecretConfigure secrets={secrets} handleSetSecrets={handleSetSecrets} />
+              <Divider />
+              <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
+              <Divider />
+              <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
+              <Divider />
+              <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
+              <Divider />
+              <h2>Delete Project</h2>
+              <p>
+                Delete this project config. All services running in this project
+                will be stopped and deleted.
              </p>
-            <Button type="danger" onClick={removeProjectConfig}>
-              Remove
+              <Button type="danger" onClick={removeProjectConfig}>
+                Remove
           </Button>
-          </Col>
-        </Row>
-      </div>
-    </div >
+            </Col>
+          </Row>
+        </Content>
+      </ProjectPageLayout>
+    </React.Fragment>
   );
 };
 
-export default Settings;
+export default ProjectSettings;

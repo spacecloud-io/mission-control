@@ -15,6 +15,7 @@ import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
 import Billing from "./billing";
+import ClusterConfig from "./clusterConfig";
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -36,6 +37,7 @@ class Service {
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
     this.billing = new Billing(this.enterpriseClient, this.spaceSiteClient)
+    this.clusterConfig = new ClusterConfig(this.client)
     if (token) this.client.setToken(token);
   }
 

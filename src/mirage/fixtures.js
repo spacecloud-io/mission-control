@@ -276,6 +276,12 @@ const projects = [
   }
 ]
 
+const clusterConfig = 
+  {
+    "email": "admin@gmail.com",
+    "telemetry": true, 
+    "credentials": { "user": "admin", "pass": "123" }
+  }
 
 const serviceRoutes = [
   {
@@ -348,4 +354,4 @@ const eventLogs = [
     "status": "failed"
   }
 ]
-export default { projects, serviceRoutes, eventLogs }
+export default { projects, clusterConfig, serviceRoutes, eventLogs }

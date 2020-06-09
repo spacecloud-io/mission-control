@@ -35,7 +35,8 @@ import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOvervie
 import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
 import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
-import Settings from "./pages/settings/Settings";
+import ProjectSettings from "./pages/settings/project/ProjectSettings";
+import ClusterSettings from "./pages/settings/cluster/ClusterSettings";
 import Routing from './pages/routing/Routing';
 import Guides from './pages/guides/Guides';
 import Teams from './pages/teams/Teams';
@@ -76,7 +77,10 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/prepared-queries/:preparedQueryId/edit" component={AddPreparedQueries} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage" component={FileStorage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/file-storage/configure" component={FileStorageConfig} />
-        <PrivateRoute exact path="/mission-control/projects/:projectID/settings" component={Settings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings"
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/settings/cluster" component={ClusterSettings} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />
