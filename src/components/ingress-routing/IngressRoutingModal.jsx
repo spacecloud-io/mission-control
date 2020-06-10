@@ -119,15 +119,15 @@ const IngressRoutingModal = props => {
             </Select>
           </Form.Item>
           <ConditionalFormBlock dependency="routeType" condition={() => form.getFieldValue("routeType") === "prefix"}>
-            <FormItemLabel name="URL" />
-            <Form.Item name="url" rules={[{ required: true, message: "Please provide URL" }]}>
-              <Input placeholder="The exact URL of incoming request (eg:/v1/foo/bar)" />
-            </Form.Item>
-          </ConditionalFormBlock>
-          <ConditionalFormBlock dependency="routeType" condition={() => form.getFieldValue("routeType") === "exact"}>
             <FormItemLabel name="Prefix" />
             <Form.Item name="url" rules={[{ required: true, message: "Please provide prefix" }]}>
               <Input placeholder="Prefix for incoming request (eg:/v1/)" />
+            </Form.Item>
+          </ConditionalFormBlock>
+          <ConditionalFormBlock dependency="routeType" condition={() => form.getFieldValue("routeType") === "exact"}>
+            <FormItemLabel name="URL" />
+            <Form.Item name="url" rules={[{ required: true, message: "Please provide URL" }]}>
+              <Input placeholder="The exact URL of incoming request (eg:/v1/foo/bar)" />
             </Form.Item>
           </ConditionalFormBlock>
           <FormItemLabel name="Rewrite" />
