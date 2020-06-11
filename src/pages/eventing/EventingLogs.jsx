@@ -12,7 +12,7 @@ import {
 import { Button, Table } from "antd";
 import '../../index.css';
 import client from "../../client";
-import { getProjectConfig, notify, parseJSONSafely } from "../../utils";
+import { getProjectConfig, notify, parseJSONSafely, generateInternalToken } from "../../utils";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
@@ -51,12 +51,13 @@ const EventingLogs = () => {
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const [hasMoreEventLogs, setHasMoreEventLogs] = useState(true);
   const projects = useSelector(state => state.projects);
+  const adminToken = useSelector(state => generateInternalToken(state, projectID))
 
   useEffect(() => {
     if (projects.length > 0) {
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
       dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
         .then(res => dispatch(set("eventLogs", res)))
         .catch(ex => notify("error", "Error loading event logs", ex.toString()))
         .finally(() => dispatch(decrement("pendingRequests")))
@@ -122,7 +123,7 @@ const EventingLogs = () => {
   const loadFunc = () => {
     if (projects.length > 0) {
       const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType)
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => adminToken)
         .then(res => {
           if (res.length < 100) {
             setHasMoreEventLogs(false);
@@ -137,7 +138,7 @@ const EventingLogs = () => {
   const handleRefresh = () => {
     const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType)
+    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
       .then(res => dispatch(set("eventLogs", res)))
       .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))

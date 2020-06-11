@@ -78,7 +78,9 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
 
-  const handleFinish = ({ kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders }) => {
+  const handleFinish = (values) => {
+    values = Object.assign({}, formInitialValues, values)
+    const { kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders } = values
     try {
       handleSubmit(
         kind,
