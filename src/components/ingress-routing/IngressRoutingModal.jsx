@@ -37,37 +37,6 @@ const IngressRoutingModal = props => {
   const [requestTemplateData, setRequestTemplateData] = useState(initialValues ? initialValues.requestTemplate : "");
   const [responseTemplateData, setResponseTemplateData] = useState(initialValues ? initialValues.responseTemplate : "");
   const children = [];
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      try {
-        delete values["allowSpecificHosts"];
-        delete values["allowSpecificMethods"];
-        delete values["performRewrite"];
-        if (!values.setHeaders) values.headers = []
-        delete values["setHeaders"];
-        if (values.applyTransformations) {
-          values.requestTemplate = requestTemplateData
-          values.responseTemplate = responseTemplateData
-        }
-        delete values["applyTransformations"]
-        if (!values.allowedHosts) values.allowedHosts = ["*"]
-        if (!values.allowedMethods) values.allowedMethods = ["*"]
-        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
-        const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
-        if (weightSum !== 100) {
-          message.error("Sum of all the target weights should be 100")
-          return
-        }
-        values.rule = ruleData ? JSON.parse(ruleData) : undefined
-        props.handleSubmit(values).then(() => {
-          notify("success", "Success", "Saved routing config successfully");
-          props.handleCancel();
-        });
-      } catch (error) {
-        notify("error", "Error", error)
-      }
-    })
-  };
 
   const checkHost = (host) => {
     if (host.length === 1 && host[0] === "*") {
@@ -85,6 +54,56 @@ const IngressRoutingModal = props => {
     }
   }
 
+  const formInitialValues = {
+    routeType: initialValues ? initialValues.routeType : "prefix",
+    url: initialValues ? initialValues.url : "",
+    performRewrite: initialValues && initialValues.rewrite ? true : false,
+    rewrite: initialValues ? initialValues.rewrite : "",
+    allowSpecificHosts: initialValues && checkHost(initialValues.allowedHosts) ? true : false,
+    allowedHosts: initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
+    allowSpecificMethods: initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
+    allowedMethods: initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
+    targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }],
+    setHeaders: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? true : false,
+    headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers : [{ key: "", value: "" }],
+    applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
+    outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
+  }
+
+  const handleSubmitClick = e => {
+    form.validateFields().then(values => {
+      values = Object.assign({}, formInitialValues, values)
+      try {
+        if (!values.allowSpecificHosts) values.allowedHosts = ["*"]
+        if (!values.allowSpecificMethods) values.allowedMethods = ["*"]
+        if (!values.performRewrite) values.rewrite = undefined
+        if (!values.setHeaders) values.headers = []
+        if (values.applyTransformations) {
+          values.requestTemplate = requestTemplateData
+          values.responseTemplate = responseTemplateData
+        }
+        values.rule = ruleData ? JSON.parse(ruleData) : undefined
+        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
+        const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
+        if (weightSum !== 100) {
+          message.error("Sum of all the target weights should be 100")
+          return
+        }
+        delete values["allowSpecificHosts"];
+        delete values["allowSpecificMethods"];
+        delete values["performRewrite"];
+        delete values["setHeaders"];
+        delete values["applyTransformations"]
+        props.handleSubmit(values).then(() => {
+          notify("success", "Success", "Saved routing config successfully");
+          props.handleCancel();
+        });
+      } catch (error) {
+        notify("error", "Error", error)
+      }
+    })
+  };
+
   return (
     <div>
       <Modal
@@ -96,21 +115,7 @@ const IngressRoutingModal = props => {
         onOk={handleSubmitClick}
       >
         <Form layout="vertical" form={form}
-          initialValues={{
-            routeType: initialValues ? initialValues.routeType : "prefix",
-            url: initialValues ? initialValues.url : "",
-            performRewrite: initialValues && initialValues.rewrite ? true : false,
-            rewrite: initialValues ? initialValues.rewrite : "",
-            allowSpecificHosts: initialValues && checkHost(initialValues.allowedHosts) ? true : false,
-            allowedHosts: initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
-            allowSpecificMethods: initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
-            allowedMethods: initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
-            targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }],
-            setHeaders: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? true : false,
-            headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers : [{ key: "", value: "" }],
-            applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
-            outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
-          }}>
+          initialValues={formInitialValues}>
           <FormItemLabel name="Route matching type" />
           <Form.Item name="routeType" rules={[{ required: true, message: "Route type is required" }]}>
             <Select style={{ width: 200 }}>
