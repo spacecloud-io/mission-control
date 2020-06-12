@@ -33,6 +33,7 @@ import ConfigureEndpoint from "./pages/remote-services/ConfigureEndpoint";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
+import DeploymentsLogs from "./pages/deployments/logs/DeploymentLogs";
 import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "./pages/settings/project/ProjectSettings";
@@ -101,6 +102,7 @@ export default () => {
           component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/deployments/overview`} />} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/logs" component={DeploymentsLogs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/guides" component={Guides} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/teams" component={Teams} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing" component={Billing} />

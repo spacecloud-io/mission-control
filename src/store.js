@@ -22,7 +22,8 @@ const initialState = {
     explorer: {
       filters: [],
       sorters: []
-    }
+    },
+    deployment: []
 	},
 	eventLogs: [],
 	credentials: {},

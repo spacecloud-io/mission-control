@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
 import { Button, Table, Popconfirm, Tag } from "antd";
@@ -15,6 +15,7 @@ import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } f
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
+  const history = useHistory();
   const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const deploymentStatus = useSelector(state => state.deploymentStatus);
@@ -42,7 +43,10 @@ const DeploymentsOverview = () => {
   const getStatus = () => {
     dispatch(increment("pendingRequests"));
     client.deployments.fetchDeploymentStatus(projectID)
-    .then(res => dispatch(set("deploymentStatus", res)))
+    .then(res => {
+      res.forEach(obj => delete obj.id)
+      dispatch(set("deploymentStatus", res))
+    })
     .catch(ex => notify("error", "Error", ex, 5))
     .finally(() => dispatch(decrement("pendingRequests")));
   }
@@ -264,7 +268,17 @@ const DeploymentsOverview = () => {
       {
         title: 'Action',
         key: 'Action',
-        render: () => <Button type="link" style={{color: "#008dff"}}>View logs</Button>
+        render: (row) => 
+          <Button 
+           type="link" 
+           style={{color: "#008dff"}} 
+           onClick={() => {
+            dispatch(set("uiState.deployment", [record.id, record.version, row.id])) 
+            history.push(`/mission-control/projects/${projectID}/deployments/logs`);
+           }}
+          >
+            View logs
+          </Button>
       }
     ]
   

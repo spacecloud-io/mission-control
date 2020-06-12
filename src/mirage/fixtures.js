@@ -116,7 +116,7 @@ const projects = [
             },
             "tasks": [
               {
-                "id": "service1",
+                "id": "task1",
                 "ports": [
                   {
                     "protocol": "http",
@@ -186,7 +186,7 @@ const projects = [
             },
             "tasks": [
               {
-                "id": "service1",
+                "id": "task2",
                 "ports": [
                   {
                     "protocol": "http",
@@ -256,7 +256,7 @@ const projects = [
             },
             "tasks": [
               {
-                "id": "service1",
+                "id": "task2",
                 "ports": [
                   {
                     "protocol": "http",
