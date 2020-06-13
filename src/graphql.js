@@ -1,8 +1,10 @@
 import store from "./store";
-import { getProjectConfig } from "./utils";
+import { getProjectConfig, generateId } from "./utils";
 import gql from "graphql-tag";
 import gqlPrettier from 'graphql-prettier';
 import { format } from 'prettier-package-json';
+import { LoremIpsum } from "lorem-ipsum";
+const lorem = new LoremIpsum();
 
 const getDefType = (type, isArray, required) => {
   isArray = isArray ? true : type.kind === "ListType";
@@ -100,8 +102,9 @@ const generateGraphQLArgsString = (args = []) => {
   return `(${argsKeyValuePairs.join(",")})`
 }
 
+// Generates a graphql string for a field along with its arguments and directives
 const generateFieldQuery = (field) => {
-  const { name, args, directives = [], fields = []} = field
+  const { name, args, directives = [], fields = [] } = field
   const directivesString = directives.length === 0 ? "" : " " + directives.map(obj => `@${obj.name}${generateGraphQLArgsString(obj.args)}`).join(" ")
   let fieldString = `${name}${generateGraphQLArgsString(args)}${directivesString}`
   if (fields.length > 0) {
@@ -148,39 +151,116 @@ export const generateDBSchemaAST = (dbAliasName, projectID) => {
   return schemaAST
 }
 
-export const generateGraphqlASTs = (schemaString, dbAliasName, queryType) => {
-  const def = gql(schemaString).definitions.filter(
-    (obj) => obj.kind === "ObjectTypeDefinition"
-  );
-  const graphqlField = {
-    name: def.name.value,
-    args: [
-      {
-        name: "where",
-        value: "$where"
-      },
-      {
-        name: "limit",
-        value: "$limit"
-      },
-      {
-        name: "limit",
-        value: "$limit"
-      },
-      {
-        name: "docs",
-        value: "$docs"
-      }
-    ],
-    directives: [
-      {
-        name: dbAliasName
-      }
-    ],
-    fields: [graphqlField]
+const generateRandomValue = (type) => {
+  if (process.env.NODE_ENV === "test") {
+    switch (type) {
+      case "ID":
+        return "0ujsszwN8NRY24YaXiTIE2VWDTS"
+      case "String":
+        return "lorem ipsum"
+      case "Integer":
+        return 25
+      case "Float":
+        return 4.5
+      case "Boolean":
+        return true
+      case "DateTime":
+        return "2018-11-13T03:15:45.108Z"
+      case "JSON":
+        return { foo: "bar" }
+      default:
+        return type
+    }
+  } else {
+    switch (type) {
+      case "ID":
+        return generateId(6)
+      case "String":
+        return lorem.generateWords(2)
+      case "Integer":
+        return Math.ceil(Math.random() * 100)
+      case "Float":
+        return Number((Math.random() * 100).toFixed(2))
+      case "Boolean":
+        return true
+      case "DateTime":
+        return new Date().toISOString()
+      case "JSON":
+        return { foo: "bar" }
+      default:
+        return type
+    }
   }
-  return {
-    queryType: queryType,
-    rootFields: [graphqlField]
+}
+
+export const generateRandomFieldValues = (fields = []) => {
+  return fields.reduce((prev, { name, type, isArray, hasNestedFields, fields }) => {
+    if (hasNestedFields) {
+      return Object.assign({}, prev, {
+        [name]: generateRandomFieldValues(fields)
+      })
+    }
+    const value = generateRandomValue(type)
+    return Object.assign({}, prev, {
+      [name]: isArray ? [value] : value
+    })
+  }, {})
+}
+
+// Gets the primary fields. If no primary fields are present then it returns the unique fields.
+const getPrimaryOrUniqueFields = (fields = []) => {
+  const primaryFields = fields.filter(field => field.isPrimary)
+  if (primaryFields.length > 0) {
+    return primaryFields
   }
+  return fields.filter(field => field.hasUniqueConstraint)
+}
+
+const generateWhereClause = (fields) => {
+  const primaryFields = getPrimaryOrUniqueFields(fields)
+  const clause = primaryFields.reduce((prev, { name, type }) => {
+    return Object.assign({}, prev, {
+      [name]: type === "JSON" ? { _contains: `$${name}` } : { _eq: `$${name}` }
+    })
+  }, {})
+  const params = generateRandomFieldValues(primaryFields)
+  return { clause, params }
+}
+
+export const generateSampleQueryDBDelete = (schemaASTs, schemaName, dbAliasName, applyFilters) => {
+  let variables = {}
+  let whereClause = {}
+  const fields = schemaASTs[schemaName] ? schemaASTs[schemaName] : []
+  if (applyFilters) {
+    const res = generateWhereClause(fields)
+    whereClause = res.clause
+    variables = res.params
+  }
+  let args = []
+  if (applyFilters) {
+    args.push({
+      name: "where",
+      value: whereClause
+    })
+  }
+  const graphQLRequestAST = {
+    queryType: "mutation",
+    fields: [
+      {
+        name: `delete_${schemaName}`,
+        directives: [{ name: dbAliasName }],
+        args: args,
+        fields: [{ name: "status" }, { name: "error" }]
+      }
+    ]
+  }
+  const query = generateGraphQLQueryFromGraphQLAST(graphQLRequestAST)
+  const response = {
+    data: {
+      [`delete_${schemaName}`]: {
+        status: 200
+      }
+    }
+  }
+  return { query, variables, response }
 }

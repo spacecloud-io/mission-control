@@ -1,4 +1,4 @@
-import { generateSchemaAST, generateGraphQLQueryFromGraphQLAST } from "./graphql";
+import { generateSchemaAST, generateGraphQLQueryFromGraphQLAST, generateRandomFieldValues, generateSampleQueryDBDelete } from "./graphql";
 
 describe("generateSchemaAST method", () => {
   it("generates correct schema AST from a GraphQL schema string", () => {
@@ -303,15 +303,191 @@ describe("generateGraphQLQueryFromGraphQLAST method", () => {
           ],
           directives: [
             { name: "db" }
+          ],
+          fields: [
+            {
+              name: "id"
+            },
+            {
+              name: "name"
+            }
           ]
         }
       ]
     }
 
     const queryString1 = `query {
-  users(where: {id: $id, address: $address}, skip: $skip) @db
+  users(where: {id: $id, address: $address}, skip: $skip) @db {
+    id
+    name
+  }
 }`
 
     expect(generateGraphQLQueryFromGraphQLAST(ast1)).toEqual(queryString1)
+  })
+})
+
+describe("generateRandomFieldValues method", () => {
+  it("generates the values for nested fields", () => {
+    const fields = [
+      {
+        name: "id",
+        hasNestedFields: true,
+        fields: [
+          {
+            name: "_eq",
+            type: "ID"
+          }
+        ]
+      }
+    ]
+    const result = {
+      id: {
+        _eq: "0ujsszwN8NRY24YaXiTIE2VWDTS"
+      }
+    }
+    expect(generateRandomFieldValues(fields)).toEqual(result)
+  })
+  it("generates the values for array of literal values", () => {
+    const fields = [
+      {
+        name: "id",
+        type: "String",
+        isArray: true
+      }
+    ]
+    const result = {
+      id: ["lorem ipsum"]
+    }
+    expect(generateRandomFieldValues(fields)).toEqual(result)
+  })
+
+  it("generates correct values for all types", () => {
+    const fields = [
+      {
+        name: "k1",
+        type: "ID"
+      },
+      {
+        name: "k2",
+        type: "String"
+      },
+      {
+        name: "k3",
+        type: "Integer"
+      },
+      {
+        name: "k4",
+        type: "Float"
+      },
+      {
+        name: "k5",
+        type: "Boolean"
+      },
+      {
+        name: "k6",
+        type: "DateTime"
+      },
+      {
+        name: "k7",
+        type: "JSON"
+      },
+    ]
+    const result = {
+      k1: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+      k2: "lorem ipsum",
+      k3: 25,
+      k4: 4.5,
+      k5: true,
+      k6: "2018-11-13T03:15:45.108Z",
+      k7: {
+        foo: "bar"
+      }
+    }
+    expect(generateRandomFieldValues(fields)).toEqual(result)
+  })
+})
+
+describe("generateSampleQueryDBDelete method", () => {
+  it("generates proper delete query without filters", () => {
+    const schemaASTs = {
+      users: [
+        {
+          name: "id",
+          type: "ID",
+          isPrimary: true
+        },
+        {
+          name: "name",
+          type: "String",
+          isPrimary: false
+        },
+        {
+          name: "email",
+          type: "ID",
+          isPrimary: false,
+          hasUniqueConstraint: true
+        }
+      ]
+    }
+    const result = {
+      query: `mutation {
+  delete_users @db {
+    status
+    error
+  }
+}`,
+      variables: {},
+      response: {
+        data: {
+          delete_users: {
+            status: 200
+          }
+        }
+      }
+    }
+    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db", false)).toEqual(result)
+  })
+
+  it("generates proper delete query filters", () => {
+    const schemaASTs = {
+      users: [
+        {
+          name: "id",
+          type: "ID",
+          isPrimary: true
+        },
+        {
+          name: "name",
+          type: "String",
+          isPrimary: false
+        },
+        {
+          name: "email",
+          type: "ID",
+          isPrimary: false,
+          hasUniqueConstraint: true
+        }
+      ]
+    }
+    const result = {
+      query: `mutation {
+  delete_users(where: {id: {_eq: $id}}) @db {
+    status
+    error
+  }
+}`,
+      variables: {
+        id: "0ujsszwN8NRY24YaXiTIE2VWDTS"
+      },
+      response: {
+        data: {
+          delete_users: {
+            status: 200
+          }
+        }
+      }
+    }
+    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db", true)).toEqual(result)
   })
 })
