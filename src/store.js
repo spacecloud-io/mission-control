@@ -17,11 +17,15 @@ const initialState = {
 			status: ["processed", "staged", "failed"],
 			showName: false,
 			showDate: false
-    },
-    explorer: {
-      filters: [],
-      sorters: []
-    }
+		},
+		explorer: {
+			filters: [],
+			sorters: []
+		},
+		graphiql: {
+			query: '',
+			variables: ''
+		}
 	},
 	eventLogs: [],
 	env: {
