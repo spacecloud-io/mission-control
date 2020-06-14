@@ -3,7 +3,9 @@ import { useSelector } from 'react-redux'
 import { useParams, useHistory } from "react-router-dom";
 import { openProject } from "../../utils"
 
-import { Modal, Icon, Button, Table } from 'antd'
+import { CheckOutlined } from '@ant-design/icons';
+
+import { Modal, Button, Table } from 'antd';
 import './select-project.css'
 
 function SelectProject({ visible, handleCancel }) {
@@ -18,9 +20,9 @@ function SelectProject({ visible, handleCancel }) {
       render: (_, record) => {
         return (
           <div>
-            {record.selected && <Icon type="check" className="checked" />}
+            {record.selected && <CheckOutlined className="checked" />}
           </div>
-        )
+        );
       },
 
       onCell: (record, _) => {

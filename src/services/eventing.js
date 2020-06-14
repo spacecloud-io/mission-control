@@ -1,29 +1,21 @@
 import gql from 'graphql-tag';
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { HttpLink } from 'apollo-link-http';
-import Client from "./client"
+import { createRESTClient, createGraphQLClient } from "./client";
+import { spaceCloudClusterOrigin } from "../constants"
 
 class Eventing {
   constructor(client) {
     this.client = client
   }
 
-  fetchEventLogs(projectId, {status, showName, name, showDate, startDate, endDate}, lastEventDate, dbType){
+  fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType, getToken) {
+    let uri = `/v1/api/${projectId}/graphql`
+    if (spaceCloudClusterOrigin) {
+      uri = "http://localhost:4122" + uri;
+    }
+    const graphqlClient = createGraphQLClient(uri, getToken)
     return new Promise((resolve, reject) => {
-      let uri = `/v1/api/${projectId}/graphql`
-      if (process.env.NODE_ENV !== "production") {
-        uri = "http://localhost:4122" + uri;
-      }
-    const cache = new InMemoryCache({ addTypename: false });
-    const link = new HttpLink({ uri: uri });
-    const graphqlClient = new ApolloClient({
-      cache: cache,
-      link: link
-    });
-
-    graphqlClient.query({
-      query: gql`
+      graphqlClient.query({
+        query: gql`
         query {
           event_logs (
             sort: ["-event_ts"],
@@ -52,8 +44,8 @@ class Eventing {
           }
         }
       `,
-      variables: {status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
-    }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
+        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+      }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }
 
@@ -72,7 +64,7 @@ class Eventing {
   }
 
   queueEvent(projectId, event, token) {
-    const client = new Client()
+    const client = createRESTClient(spaceCloudClusterOrigin)
     if (token) client.setToken(token)
     return new Promise((resolve, reject) => {
       client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
@@ -89,7 +81,7 @@ class Eventing {
 
   setTriggerRule(projectId, triggerName, triggerRule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, {id: triggerName, ...triggerRule})
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, { id: triggerName, ...triggerRule })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)
@@ -131,7 +123,7 @@ class Eventing {
 
   setSecurityRule(projectId, type, rule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, {...rule, id: type})
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, { ...rule, id: type })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)

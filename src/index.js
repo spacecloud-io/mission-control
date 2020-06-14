@@ -4,13 +4,17 @@ import { Provider } from "react-redux";
 import store from "./store";
 import { onAppLoad } from './utils';
 import App from './App';
+import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
 
 import ReactGA from 'react-ga';
-import { defaultDbConnectionStrings } from './constants';
-if (process.env.NODE_ENV === "production")  {
+if (process.env.NODE_ENV === "production") {
   ReactGA.initialize('UA-104521884-3');
+}
+
+if (process.env.NODE_ENV !== 'production' && !process.env.REACT_APP_DISABLE_MOCK) {
+  makeServer();
 }
 
 ReactDOM.render(

@@ -140,6 +140,8 @@ const DeploymentsOverview = () => {
 
   const handleSubmit = (type, values) => {
     return new Promise((resolve, reject) => {
+      const c = deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version)
+      const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
       dispatch(increment("pendingRequests"));
       const serviceId = values.id;
 
@@ -168,7 +170,8 @@ const DeploymentsOverview = () => {
             docker: {
               image: values.dockerImage,
               secret: values.dockerSecret,
-              imagePullPolicy: values.imagePullPolicy
+              imagePullPolicy: values.imagePullPolicy,
+              cmd: dockerCommands
             },
             secrets: values.secrets,
             env: values.env
@@ -279,7 +282,7 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} />
+              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
             </React.Fragment>
           )}
         </div>

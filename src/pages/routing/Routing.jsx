@@ -6,7 +6,7 @@ import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
-import RoutingRule from "../../components/routing/routingRule";
+import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
 import { set, increment, decrement } from "automate-redux";
 import client from "../../client";
 import {
@@ -50,14 +50,19 @@ function Routing() {
     return { name: obj.id, ports };
   });
 
-  const data = routes.map(obj => ({
-    id: obj.id,
-    allowedHosts: obj.source.hosts,
-    url: obj.source.url,
-    routeType: obj.source.type,
-    rewrite: obj.source.rewrite,
-    allowedMethods: obj.source.methods,
-    targets: obj.targets
+  const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
+    id: id,
+    allowedHosts: source.hosts,
+    url: source.url,
+    routeType: source.type,
+    rewrite: source.rewrite,
+    allowedMethods: source.methods,
+    targets: targets,
+    headers: modify.headers,
+    requestTemplate: modify.requestTemplate,
+    responseTemplate: modify.responseTemplate,
+    outputFormat: modify.outputFormat,
+    rule: rule
   }));
 
   const len = routes.length;
@@ -78,7 +83,14 @@ function Routing() {
           rewrite: values.rewrite,
           type: values.routeType
         },
-        targets: values.targets
+        targets: values.targets,
+        rule: values.rule,
+        modify: {
+          headers: values.headers,
+          requestTemplate: values.requestTemplate,
+          responseTemplate: values.responseTemplate,
+          outputFormat: values.outputFormat
+        }
       };
       client.routing
         .setRoutingConfig(projectID, config.id, config)
@@ -212,8 +224,8 @@ function Routing() {
           )}
         </div>
         {modalVisible && (
-          <RoutingRule
-            handleSubmit={values => handleSubmit(routeClicked, values)}
+          <IngressRoutingModal
+            handleSubmit={(values) => handleSubmit(routeClicked, values)}
             services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}
