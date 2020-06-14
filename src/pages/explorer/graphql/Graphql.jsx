@@ -43,7 +43,6 @@ const Graphql = props => {
       getToken()
     );
   }
-
   return (
     <div className='explorer'>
       <Topbar showProjectSelector />
@@ -82,6 +81,8 @@ const Graphql = props => {
           }
           <div className='graphql' style={{ marginTop: 10 }}>
             <GraphiQL
+              query={props.query}
+              variables={props.variables}
               fetcher={graphQLParams =>
                 graphQLFetcher(graphQLParams, props.projectId)
               }
@@ -107,6 +108,8 @@ const mapStateToProps = (state, ownProps) => {
   return {
     secret: secrets.length > 0 ? secrets[0].secret : "",
     projectId: projectId,
+    query: state.uiState.graphiql.query,
+    variables: state.uiState.graphiql.variables,
     useAdminToken: get(
       state,
       'uiState.explorer.useAdminToken',
