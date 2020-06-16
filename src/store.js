@@ -7,7 +7,7 @@ const initialState = {
   clusters: [],
   clusterConfig: {},
   serviceRoutes: {},
-  deploymentStatus: [],
+  deploymentStatus: {},
 	pendingRequests: 0,
 	uiState: {
 		selectedCollection: "",
@@ -22,8 +22,7 @@ const initialState = {
     explorer: {
       filters: [],
       sorters: []
-    },
-    deployment: []
+    }
 	},
 	eventLogs: [],
 	credentials: {},

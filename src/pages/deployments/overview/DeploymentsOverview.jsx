@@ -43,10 +43,7 @@ const DeploymentsOverview = () => {
   const getStatus = () => {
     dispatch(increment("pendingRequests"));
     client.deployments.fetchDeploymentStatus(projectID)
-    .then(res => {
-      res.forEach(obj => delete obj.id)
-      dispatch(set("deploymentStatus", res))
-    })
+    .then(res => dispatch(set("deploymentStatus", res)))
     .catch(ex => notify("error", "Error", ex, 5))
     .finally(() => dispatch(decrement("pendingRequests")));
   }
@@ -134,9 +131,9 @@ const DeploymentsOverview = () => {
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams,
-      desiredReplicas: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].desiredReplicas : 0,
-      totalReplicas: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].replicas.length : 0,
-      deploymentStatus: deploymentStatus.find(val => val[obj.id]) ? deploymentStatus.find(val => val[obj.id])[obj.id][obj.version].replicas : []
+      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].desiredReplicas : 0,
+      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].replicas.length : 0,
+      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].replicas : []
     };
   });
 
@@ -218,6 +215,7 @@ const DeploymentsOverview = () => {
               newDeployments
             );
           }
+          getStatus();
           resolve();
         })
         .catch(ex => reject(ex))
@@ -251,12 +249,12 @@ const DeploymentsOverview = () => {
     const column = [
       {
         title: 'Replica',
-        dataIndex: 'id',
+        dataIndex: 'ID',
         key: 'Replica'
       },
       {
         title: 'Status',
-        dataIndex: 'status',
+        dataIndex: 'Status',
         key: 'status',
         render: (row) => {
           const status = row.charAt(0).toUpperCase() + row.slice(1);
@@ -273,8 +271,8 @@ const DeploymentsOverview = () => {
            type="link" 
            style={{color: "#008dff"}} 
            onClick={() => {
-            dispatch(set("uiState.deployment", [record.id, record.version, row.id])) 
-            history.push(`/mission-control/projects/${projectID}/deployments/logs`);
+            const task = deployments.find(({id, version}) => id === record.id && version === record.version).tasks[0].id
+            history.push(`/mission-control/projects/${projectID}/deployments/logs`, {id: record.id, version: record.version, replica: row.ID, task: task});
            }}
           >
             View logs
@@ -284,7 +282,6 @@ const DeploymentsOverview = () => {
   
     return (
       <Table
-        style={{width: '50%'}}
         columns={column}
         dataSource={record.deploymentStatus}
         pagination={false}

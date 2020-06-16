@@ -59,6 +59,22 @@ class Deployments {
     })
   }
 
+  async fetchDeploymentLogs(projectId, id, task, replica, callback) {
+    const response = await fetch(`http://192.168.99.100:4122/v1/runner/${projectId}/services/logs/${id}/${task}/${replica}`)
+    const body = response.body
+    const decoder = new TextDecoder('utf-8')
+    const writableStream = new WritableStream({
+      write(chunk) {
+        callback(decoder.decode(chunk))
+      },
+      close() {
+        console.log('closed!!!')
+      }
+    });
+
+    body.pipeTo(writableStream)
+  }
+
   setDeploymentRoutes(projectId, serviceId, routes) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/service-routes/${serviceId}`, { routes: routes })
