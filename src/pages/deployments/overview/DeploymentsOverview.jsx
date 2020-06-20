@@ -140,7 +140,7 @@ const DeploymentsOverview = () => {
 
   const handleSubmit = (type, values) => {
     return new Promise((resolve, reject) => {
-      const c = deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version)
+      const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
       const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
       dispatch(increment("pendingRequests"));
       const serviceId = values.id;

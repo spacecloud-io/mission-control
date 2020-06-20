@@ -104,7 +104,7 @@ export const generateProjectConfig = (projectId, name) => ({
   id: projectId,
   secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
-  contextTime: 5,
+  contextTimeGraphQL: 5,
   modules: {
     db: {},
     eventing: {},
