@@ -46,7 +46,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "start:no-mock": "REACT_APP_DISABLE_MOCK='true' react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
