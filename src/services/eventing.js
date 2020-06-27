@@ -44,7 +44,7 @@ class Eventing {
           }
         }
       `,
-        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-).*` }
       }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }

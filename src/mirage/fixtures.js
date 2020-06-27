@@ -9,7 +9,7 @@ const projects = [
       }
     ],
     "aesKey": "ZDA4Y2FiNWQxNzIzNGI4MmJhNTM2YzUzZGFjNTJmOTc=",
-    "contextTime": 5,
+    "contextTimeGraphQL": 5,
     "modules": {
       "db": {
         "postgres": {

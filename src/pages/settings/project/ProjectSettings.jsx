@@ -38,7 +38,7 @@ const ProjectSettings = () => {
   // Derived properties
   const secrets = globalConfig.secrets ? globalConfig.secrets : []
   const aesKey = globalConfig.aesKey
-  const contextTime = globalConfig.contextTime
+  const contextTimeGraphQL = globalConfig.contextTimeGraphQL
   const dockerRegistry = globalConfig.dockerRegistry
 
   const domains = getProjectConfig(
@@ -86,12 +86,12 @@ const ProjectSettings = () => {
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
-  const handleContextTime = contextTime => {
+  const handleContextTimeGraphQL = contextTimeGraphQL => {
     dispatch(increment("pendingRequests"));
     client.projects
-      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { contextTime: contextTime }))
+      .setProjectGlobalConfig(projectID, Object.assign({}, globalConfig, { contextTimeGraphQL: contextTimeGraphQL }))
       .then(() => {
-        setProjectConfig(projectID, "contextTime", contextTime);
+        setProjectConfig(projectID, "contextTimeGraphQL", contextTimeGraphQL);
         notify("success", "Success", "Changed GraphQL timeout successfully");
       })
       .catch(ex => notify("error", "Error", ex))
@@ -152,7 +152,7 @@ const ProjectSettings = () => {
               <Divider />
               <AESConfigure aesKey={aesKey} handleSubmit={handleAES} loading={loading} />
               <Divider />
-              <GraphQLTimeout contextTimeGraphQL={contextTime} handleSubmit={handleContextTime} loading={loading} />
+              <GraphQLTimeout contextTimeGraphQL={contextTimeGraphQL} handleSubmit={handleContextTimeGraphQL} loading={loading} />
               <Divider />
               <WhitelistedDomains domains={domains} handleSubmit={handleDomains} loading={loading} />
               <Divider />
