@@ -13,7 +13,7 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
+import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias, setProjectConfig } from '../../../utils';
 import history from '../../../history';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
 import { defaultDBRules, dbTypes } from '../../../constants';
@@ -55,6 +55,17 @@ const Overview = () => {
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
 
+  const bc = new BroadcastChannel('builder');
+  useEffect(() => {
+    bc.onmessage = (ev) => {
+      if (ev.data.to === "module") {
+        console.log(ev.data.rules);
+        notify("success", "Success", "Edited rules successfully");
+        setProjectConfig(projectID, `modules.db.${selectedDB}.collections.${ev.data.name}.rules`, ev.data.rules)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
@@ -80,6 +91,20 @@ const Overview = () => {
   const handleBrowseClick = (colName) => {
     dispatch(set("uiState.selectedCollection", colName));
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
+  }
+
+  const handleSecureClick = (colName) => {
+    const rule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.${colName}.rules`, {})
+    setTimeout(() => {
+      bc.postMessage({
+        to: "editor",
+        module: "database",
+        name: colName,
+        rules: {
+          ...rule
+        }
+      });
+    }, 1000)
   }
 
   const handleCancelAddColModal = () => {
@@ -166,6 +191,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a target="_blank" href={`/mission-control/projects/${projectID}/security-rules/editor`} onClick={() => handleSecureClick(name)}>Secure</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>

@@ -49,6 +49,7 @@ import RegisterCluster from './pages/billing/RegisterCluster';
 import ContactUs from './pages/billing/ContactUs';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import RulesEditor from './pages/security-rules/RulesEditor';
 
 export default () => {
   return (
@@ -112,6 +113,7 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/security-rules/editor" component={RulesEditor} />
       </Switch>
     </Router>
   );
