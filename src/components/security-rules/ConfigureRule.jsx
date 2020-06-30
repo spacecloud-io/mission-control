@@ -29,13 +29,13 @@ import FormItem from 'antd/lib/form/FormItem';
 const ConfigureRule = (props) => {
   const [form] = Form.useForm();
   const [selectedDb, setSelectedDb] = useState();
-  const [value, setValue] = useState('');
+  const [col, setCol] = useState('');
   const [findQuery, setFindQuery] = useState("{}");
   const { projectID } = useParams();
 
   const projects = useSelector((state) => state.projects);
   console.log(props.selectedRule);
-  const { id, rule, type, f1, f2, error } = props.selectedRule;
+  const { id, rule, type, f1, f2, error, fields, field, value } = props.selectedRule;
 
   const dbModuleFetch = getProjectConfig(projects, projectID, 'modules.db', {});
   const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
@@ -56,7 +56,7 @@ const ConfigureRule = (props) => {
   const trackedCollections = Object.keys(collections);
   const data = trackedCollections.filter(
     (name) =>
-      name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs' && name.includes(value)
+      name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs' && name.includes(col)
   );
 
   const rules = [
@@ -114,8 +114,6 @@ const ConfigureRule = (props) => {
       if (values.type === 'number') {
         if (/\d/.test(values.value)) {
           values.value = parseInt(values.value);
-        } else if (/\d/.test(values.value)) {
-          values.f2 = parseInt(values.value);
         } else {
           notify('error', 'Error', 'No number literal in either operand');
           return;
@@ -148,7 +146,7 @@ const ConfigureRule = (props) => {
   };
 
   const handleSelectDatabase = (value) => setSelectedDb(value);
-  const handleSearch = (value) => setValue(value);
+  const handleSearch = (value) => setCol(value);
 
   return (
     <Drawer
@@ -168,6 +166,11 @@ const ConfigureRule = (props) => {
           f1,
           eval: props.selectedRule.eval,
           f2,
+          fields,
+          field,
+          value,
+          errorMsg: error ? true : false,
+          error
         }}
       >
         <FormItemLabel name='Rule Type' />

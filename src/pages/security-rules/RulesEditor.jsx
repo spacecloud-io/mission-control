@@ -10,10 +10,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import { notify, getProjectConfig } from '../../utils';
-import Builder from '../../components/security-rules/Builder';
-import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { notify } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import Graph from 'react-graph-vis';
@@ -33,11 +30,11 @@ const RulesEditor = (props) => {
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [rule, setRule] = useState({});
+  const [value, setValue] = useState('');
   const [name, setName] = useState('');
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
   const [network, setNetwork] = useState();
-  const [value, setValue] = useState('');
 
   const nodes = [];
   const edges = [];
@@ -73,7 +70,7 @@ const RulesEditor = (props) => {
         if (clauses[i].rule === 'or' || clauses[i].rule === 'and') {
           nestedNodes(clauses[i].clauses, childId);
         }
-        if (clauses[i].rule === 'query' || clauses[i].rule === 'remove') {
+        if (clauses[i].rule === 'query' || clauses[i].rule === 'remove' || clauses[i].rule === 'force') {
           clauseNodes(clauses[i].clause, childId);
         }
       } else {
@@ -111,7 +108,7 @@ const RulesEditor = (props) => {
     edges.push({ from: name, to: `${key}Rule` });
     edges.push({ from: `${key}Rule`, to: key });
 
-    if (value.rule === 'query' || value.rule === 'remove') {
+    if (value.rule === 'query' || value.rule === 'remove' || value.rule === 'force') {
       clauseNodes(value.clause, key);
     }
 
@@ -276,7 +273,13 @@ const RulesEditor = (props) => {
   : 'builder';
 
 const onTabChange = (tab) => {
-  localStorage.setItem('rules:editor', tab);
+  try {
+    const parsedRule = JSON.parse(value);
+    localStorage.setItem('rules:editor', tab);
+    setRule(parsedRule);
+  } catch (ex) {
+    notify("error", "Error", ex.toString());
+  }
 };
 
 // Prettify JSON code
@@ -338,7 +341,7 @@ const onSaveChanges = () => {
       <Topbar />
       {Object.keys(rule).length > 0 && (
         <div className='editor-page'>
-          <Tabs defaultActiveKey={tab} onChange={onTabChange} animated={false}>
+          <Tabs defaultActiveKey={tab} activeKey={localStorage.getItem("rules:editor")} onChange={onTabChange} animated={false}>
             <Tabs.TabPane
               tab='Builder'
               key='builder'
