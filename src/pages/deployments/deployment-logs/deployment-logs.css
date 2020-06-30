@@ -1,0 +1,14 @@
+.terminal-wrapper {
+  background-color: #292929;
+  color: #FFFF;
+  width: 100%;
+  padding: 16px;
+}
+
+.info {
+  color:#72D4D7;
+}
+
+.erro {
+  color: red;
+}
