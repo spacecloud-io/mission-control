@@ -16,8 +16,8 @@ import AESConfigure from "../../../components/settings/project/AESConfigure";
 import GraphQLTimeout from "../../../components/settings/project/GraphQLTimeout";
 import DockerRegistry from "../../../components/settings/project/DockerRegistry";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
-import { loadLetsEncryptConfig, setWhiteListedDomains } from "../../../operations/letsencrypt";
-import { setAesKey, setDockerRegistry, setContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
+import { loadLetsEncryptConfig, saveWhiteListedDomains } from "../../../operations/letsencrypt";
+import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
 
 const ProjectSettings = () => {
   // Router params
@@ -74,7 +74,7 @@ const ProjectSettings = () => {
 
   const handleAES = aesKey => {
     incrementPendingRequests()
-    setAesKey(projectID, aesKey)
+    saveAesKey(projectID, aesKey)
       .then(() => notify("success", "Success", "Changed AES key successfully"))
       .catch(ex => notify("error", "Error changing AES key", ex))
       .finally(() => decrementPendingRequests());
@@ -82,7 +82,7 @@ const ProjectSettings = () => {
 
   const handleDockerRegistry = dockerRegistry => {
     incrementPendingRequests()
-    setDockerRegistry(projectID, dockerRegistry)
+    saveDockerRegistry(projectID, dockerRegistry)
       .then(() => notify("success", "Success", "Changed docker registry successfully"))
       .catch(ex => notify("error", "Error changing docker registry", ex))
       .finally(() => decrementPendingRequests());
@@ -90,7 +90,7 @@ const ProjectSettings = () => {
 
   const handleContextTimeGraphQL = contextTimeGraphQL => {
     incrementPendingRequests()
-    setContextTimeGraphQL(projectID, contextTimeGraphQL)
+    saveContextTimeGraphQL(projectID, contextTimeGraphQL)
       .then(() => notify("success", "Success", "Changed context time successfully"))
       .catch(ex => notify("error", "Error changing context time", ex))
       .finally(() => decrementPendingRequests());
@@ -114,7 +114,7 @@ const ProjectSettings = () => {
 
   const handleDomains = domains => {
     incrementPendingRequests()
-    setWhiteListedDomains(projectID, domains)
+    saveWhiteListedDomains(projectID, domains)
       .then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
       .catch(ex => notify("error", "Error saving domains", ex))
       .finally(() => decrementPendingRequests());

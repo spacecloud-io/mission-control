@@ -9,15 +9,12 @@ import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
 import RoutingModal from "../../../components/deployments/routing-modal/RoutingModal"
 import routingSvg from "../../../assets/routing.svg";
-import client from "../../../client";
 import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
-import { increment, decrement, set } from "automate-redux";
-import { loadServiceRoutes, setServiceRoutes } from "../../../operations/deployments";
+import { loadServiceRoutes, saveServiceRoutes } from "../../../operations/deployments";
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const deployments = getProjectConfig(
     projects,
@@ -95,7 +92,7 @@ const DeploymentsRoutes = () => {
         targets
       }
       const routes = [routeConfig, ...serviceRoutes[serviceId].filter(obj => obj.source.port !== port)]
-      setServiceRoutes(projectID, serviceId, routes)
+      saveServiceRoutes(projectID, serviceId, routes)
         .then(() => {
           notify("success", "Success", "Saved service routes successfully")
           resolve()
@@ -111,7 +108,7 @@ const DeploymentsRoutes = () => {
   const handleDelete = (serviceId, port) => {
     incrementPendingRequests()
     const routes = serviceRoutes[serviceId].filter(obj => obj.source.port !== port)
-    setServiceRoutes(projectID, serviceId, routes)
+    saveServiceRoutes(projectID, serviceId, routes)
       .then(() => notify("success", "Success", "Successfully deleted service route"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());

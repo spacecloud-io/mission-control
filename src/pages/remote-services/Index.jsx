@@ -8,7 +8,7 @@ import { Button, Table, Popconfirm } from "antd"
 import ServiceForm from "../../components/remote-services/service-form/ServiceForm"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
-import { setRemoteService, deleteRemoteService } from "../../operations/remoteServices"
+import { saveRemoteService, deleteRemoteService } from "../../operations/remoteServices"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
 
@@ -50,7 +50,7 @@ const RemoteServices = () => {
       const serviceConfig = services[name]
       const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
       incrementPendingRequests()
-      setRemoteService(projectID, name, newServiceConfig)
+      saveRemoteService(projectID, name, newServiceConfig)
         .then(() => {
           notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
           resolve()

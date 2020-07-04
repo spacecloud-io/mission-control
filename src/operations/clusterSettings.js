@@ -13,7 +13,7 @@ export const loadClusterSettings = () => {
   })
 }
 
-export const setClusterSetting = (key, value) => {
+export const saveClusterSetting = (key, value) => {
   return new Promise((resolve, reject) => {
     const { credentials, ...config } = get(store.getState(), "clusterConfig", {})
     const newConfig = Object.assign({}, config, { [key]: value })

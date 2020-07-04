@@ -10,7 +10,7 @@ import AddDeploymentForm from "../../../components/deployments/add-deployment/Ad
 import source_code from "../../../assets/source_code.svg";
 import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { decrement } from "automate-redux";
-import { setService, deleteService } from "../../../operations/deployments";
+import { deleteService, saveService } from "../../../operations/deployments";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -185,7 +185,7 @@ const DeploymentsOverview = () => {
         upstreams: values.upstreams
       };
       incrementPendingRequests()
-      setService(projectID, config.id, config.version, config)
+      saveService(projectID, config.id, config.version, config)
         .then(() => {
           notify("success", "Success", "Saved service config successfully")
           resolve()

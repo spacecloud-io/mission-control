@@ -33,7 +33,7 @@ export const loadServices = (projectId) => {
   })
 }
 
-export const setService = (projectId, serviceId, version, serviceConfig) => {
+export const saveService = (projectId, serviceId, version, serviceConfig) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentConfig(projectId, serviceId, version, serviceConfig)
       .then(() => {
@@ -59,7 +59,7 @@ export const deleteService = (projectId, serviceId, version) => {
   })
 }
 
-export const setServiceRoutes = (projectId, serviceId, serviceRoutes) => {
+export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentRoutes(projectId, serviceId, serviceRoutes)
       .then(() => {

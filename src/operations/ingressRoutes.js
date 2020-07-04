@@ -14,7 +14,7 @@ export const loadIngressRoutes = (projectId) => {
   })
 }
 
-export const setIngressRoute = (projectId, routeId, config) => {
+export const saveIngressRoute = (projectId, routeId, config) => {
   return new Promise((resolve, reject) => {
     client.routing.setRoutingConfig(projectId, routeId, config)
       .then(() => {

@@ -6,13 +6,11 @@ import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
 import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
-import { getProjectConfig, setProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
-import client from "../../client";
-import { useSelector, useDispatch } from "react-redux";
-import { increment, decrement } from "automate-redux";
+import { useSelector } from "react-redux";
 import './secretDetail.css';
-import { setSecretKey, deleteSecretKey, setRootPath } from "../../operations/secrets";
+import { saveSecretKey, deleteSecretKey, saveRootPath } from "../../operations/secrets";
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -28,7 +26,6 @@ const getLabelFromSecretType = type => {
 const SecretDetails = () => {
   const history = useHistory();
   const { projectID, secretId } = useParams();
-  const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
   let secret = secrets.find(obj => obj.id === secretId);
@@ -51,7 +48,7 @@ const SecretDetails = () => {
   const handleSetSecretKey = (key, value) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setSecretKey(projectID, secretId, key, value)
+      saveSecretKey(projectID, secretId, key, value)
         .then(() => {
           notify("success", "Success", "Saved secret key successfully");
           resolve()
@@ -88,7 +85,7 @@ const SecretDetails = () => {
   const handleUpdateRootpath = (path) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setRootPath(projectID, secretId, path)
+      saveRootPath(projectID, secretId, path)
         .then(() => {
           notify("success", "Success", "Saved root path successfully");
           resolve()

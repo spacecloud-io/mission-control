@@ -11,7 +11,7 @@ import { Button, Card, Input, Radio, Form, Alert, Cascader, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
-import { setFileStoreConfig } from '../../operations/fileStore';
+import { saveFileStoreConfig } from '../../operations/fileStore';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -76,7 +76,7 @@ const FileStorageConfig = () => {
     incrementPendingRequests()
     const newConfig = { enabled: true, ...values }
 
-    setFileStoreConfig(projectID, newConfig)
+    saveFileStoreConfig(projectID, newConfig)
       .then(() => {
         notify("success", "Success", "Configured file storage successfully")
         form.resetFields();

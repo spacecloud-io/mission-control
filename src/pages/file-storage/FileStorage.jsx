@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
-import { get, set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { get } from "automate-redux";
+import { getProjectConfig, notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
-import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
-import { loadFileStoreConnState, setFileStoreRule, deleteFileStoreRule, setFileStoreConfig } from '../../operations/fileStore';
+import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig } from '../../operations/fileStore';
 
-const Rules = (props) => {
+const Rules = () => {
 	const history = useHistory();
 	// Router params
 	const { projectID } = useParams()
-
-	const dispatch = useDispatch()
 
 	// Global state
 	const projects = useSelector(state => state.projects)
@@ -63,7 +60,7 @@ const Rules = (props) => {
 	const handleConfig = (config) => {
 		const newConfig = { enabled: true, ...config }
 		incrementPendingRequests()
-		setFileStoreConfig(projectID, newConfig)
+		saveFileStoreConfig(projectID, newConfig)
 			.then(() => notify("success", "Success", "Configured file storage successfully"))
 			.catch(ex => notify("error", "Error configuring file storage", ex))
 			.finally(() => decrementPendingRequests())
@@ -71,7 +68,7 @@ const Rules = (props) => {
 
 	const handleSaveRule = (rule) => {
 		incrementPendingRequests()
-		setFileStoreRule(projectID, selectedRuleName, rule)
+		saveFileStoreRule(projectID, selectedRuleName, rule)
 			.then(() => notify("success", "Success", "Saved rule successfully"))
 			.catch(ex => notify("error", "Error saving rule", ex))
 			.finally(() => decrementPendingRequests())
@@ -79,7 +76,7 @@ const Rules = (props) => {
 
 	const handleAddRule = (ruleName, rule) => {
 		incrementPendingRequests()
-		setFileStoreRule(projectID, ruleName, rule)
+		saveFileStoreRule(projectID, ruleName, rule)
 			.then(() => notify("success", "Success", "Added rule successfully"))
 			.catch(ex => notify("error", "Error adding rule", ex))
 			.finally(() => decrementPendingRequests())

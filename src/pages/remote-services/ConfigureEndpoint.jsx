@@ -7,7 +7,7 @@ import ProjectPageLayout, { Content, InnerTopBar } from "../../components/projec
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EndpointForm from '../../components/remote-services/endpoint-form/EndpointForm';
-import { setRemoteService } from '../../operations/remoteServices';
+import { saveRemoteService } from '../../operations/remoteServices';
 
 const ConfigureEndpoint = () => {
   // Router params
@@ -27,7 +27,7 @@ const ConfigureEndpoint = () => {
     const newEndpoints = Object.assign({}, endpoints, { [name]: { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     incrementPendingRequests()
-    setRemoteService(projectID, serviceName, newServiceConfig)
+    saveRemoteService(projectID, serviceName, newServiceConfig)
       .then(() => {
         notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
         history.goBack()

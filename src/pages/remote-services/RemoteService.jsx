@@ -9,7 +9,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
 import { endpointTypes } from "../../constants"
-import { setRemoteService } from "../../operations/remoteServices"
+import { saveRemoteService } from "../../operations/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -60,7 +60,7 @@ const RemoteService = () => {
     delete newEndpoints[name]
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     incrementPendingRequests()
-    setRemoteService(projectID, serviceName, newServiceConfig)
+    saveRemoteService(projectID, serviceName, newServiceConfig)
       .then(() => notify("success", "Success", "Removed endpoint successfully"))
       .catch((ex) => notify("error", "Error removing endpoint", ex))
       .finally(() => decrementPendingRequests())

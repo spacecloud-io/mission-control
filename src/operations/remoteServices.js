@@ -14,7 +14,7 @@ export const loadRemoteServices = (projectId) => {
   })
 }
 
-export const setRemoteService = (projectId, serviceId, config) => {
+export const saveRemoteService = (projectId, serviceId, config) => {
   return new Promise((resolve, reject) => {
     client.remoteServices.setServiceConfig(projectId, serviceId, config)
       .then(() => {

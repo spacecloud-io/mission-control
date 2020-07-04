@@ -58,7 +58,7 @@ export const loadEventingTriggers = (projectId) => {
   })
 }
 
-export const setEventingSecurityRule = (projectId, eventType, securityRule) => {
+export const saveEventingSecurityRule = (projectId, eventType, securityRule) => {
   return new Promise((resolve, reject) => {
     client.eventing.setSecurityRule(projectId, eventType, securityRule)
       .then(() => {
@@ -80,7 +80,7 @@ export const deleteEventingSecurityRule = (projectId, eventType) => {
   })
 }
 
-export const setEventingSchema = (projectId, eventType, schema) => {
+export const saveEventingSchema = (projectId, eventType, schema) => {
   return new Promise((resolve, reject) => {
     client.eventing.setEventSchema(projectId, eventType, schema)
       .then(() => {
@@ -102,7 +102,7 @@ export const deleteEventingSchema = (projectId, eventType) => {
   })
 }
 
-export const setEventingConfig = (projectId, enabled, dbAliasName) => {
+export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
   return new Promise((resolve, reject) => {
     const eventingConfig = { enabled, dbAlias: dbAliasName }
     client.eventing.setEventingConfig(projectId, eventingConfig)
@@ -115,7 +115,7 @@ export const setEventingConfig = (projectId, enabled, dbAliasName) => {
           const defaultEventingSecurityRule = get(store.getState(), "eventingRules.default", {})
           const defaultEventingSecurityRuleExists = Object.keys(defaultEventingSecurityRule).length > 0
           if (!defaultEventingSecurityRuleExists) {
-            setEventingSecurityRule(projectId, "default", defaultEventRule)
+            saveEventingSecurityRule(projectId, "default", defaultEventRule)
               .catch(ex => console.error("Error setting default eventing rule while setting eventing config" + ex.toString()))
           }
         }
@@ -124,7 +124,7 @@ export const setEventingConfig = (projectId, enabled, dbAliasName) => {
   })
 }
 
-export const setEventingTriggerRule = (projectId, triggerName, type, url, retries, timeout, options) => {
+export const saveEventingTriggerRule = (projectId, triggerName, type, url, retries, timeout, options) => {
   const triggerRule = { type, url, retries, timeout, options }
   return new Promise((resolve, reject) => {
     client.eventing.setTriggerRule(projectId, triggerName, triggerRule)
@@ -157,3 +157,6 @@ export const triggerCustomEvent = (projectId, type, payload, isSynchronous, toke
 }
 
 
+// Getters && setters
+
+export const getEventingDbAliasName = (state) => get(state, "eventingConfig", "")

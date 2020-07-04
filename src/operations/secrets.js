@@ -14,7 +14,7 @@ export const loadSecrets = (projectId) => {
   })
 }
 
-export const setSecret = (projectId, secretConfig) => {
+export const saveSecret = (projectId, secretConfig) => {
   return new Promise((resolve, reject) => {
     client.secrets.setSecret(projectId, secretConfig)
       .then(() => {
@@ -40,7 +40,7 @@ export const deleteSecret = (projectId, secretId) => {
   })
 }
 
-export const setSecretKey = (projectId, secretId, key, value) => {
+export const saveSecretKey = (projectId, secretId, key, value) => {
   return new Promise((resolve, reject) => {
     client.secrets.setSecretKey(projectId, secretId, key, value)
       .then(() => {
@@ -75,7 +75,7 @@ export const deleteSecretKey = (projectId, secretId, key) => {
   })
 }
 
-export const setRootPath = (projectId, secretId, rootPath) => {
+export const saveRootPath = (projectId, secretId, rootPath) => {
   return new Promise((resolve, reject) => {
     client.secrets.setRootPath(projectId, secretId, rootPath)
       .then(() => {

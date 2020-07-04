@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useParams, Redirect, } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
+import { useSelector } from "react-redux"
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
@@ -10,23 +10,18 @@ import mongodb from '../../assets/mongodb.svg'
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings } from "../../constants"
-import { enableDb } from "../../operations/database"
+import { enableDb, getDbConfig } from "../../operations/database"
 
 const Database = () => {
-
-  const dispatch = useDispatch()
 
   // Router params
   const { projectID, selectedDB } = useParams()
 
-  // Global state
-  const projects = useSelector(state => state.projects)
-
   // Component state
   const [modalVisible, setModalVisible] = useState(false)
 
-  // Dervied properties
-  const { enabled, type, conn } = getProjectConfig(projects, projectID, `modules.db.${selectedDB}`, {})
+  // Global state
+  const { enabled, type, conn } = useSelector(state => getDbConfig(state, selectedDB))
   const dbType = type ? type : selectedDB
 
   // Handlers

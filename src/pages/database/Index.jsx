@@ -1,18 +1,16 @@
 import React, { useEffect } from 'react'
 import { Redirect, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import ReactGA from 'react-ga';
 
 import './database.css'
 import '../../index.css'
-import { loadDbSchemas, loadDbConfig, loadDbRules } from '../../operations/database';
-import { increment, decrement } from 'automate-redux';
-import { notify } from '../../utils';
+import { loadDbSchemas, loadDbConfig, loadDbRules, getDbsConfig } from '../../operations/database';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 
 const Database = () => {
   const { projectID } = useParams()
-  const dispatch = useDispatch()
-  const dbConfig = useSelector(state => state.dbConfig)
+  const dbConfig = useSelector(state => getDbsConfig(state))
   const dbAliasNames = Object.keys(dbConfig)
   const activeDB = dbAliasNames.find(dbAliasName => {
     return dbConfig[dbAliasName].enabled
@@ -23,20 +21,20 @@ const Database = () => {
   }, [])
 
   useEffect(() => {
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     loadDbConfig(projectID)
       .catch(ex => notify("error", "Error fetching database config", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
 
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     loadDbSchemas(projectID)
       .catch(ex => notify("error", "Error fetching database schemas", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
 
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     loadDbRules(projectID)
       .catch(ex => notify("error", "Error fetching database rules", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }, [projectID])
 
   if (activeDB) {

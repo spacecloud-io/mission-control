@@ -10,7 +10,7 @@ import { getSecretType, getProjectConfig, incrementPendingRequests, decrementPen
 import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notify } from "../../utils";
-import { setSecret, deleteSecret } from "../../operations/secrets";
+import { saveSecret, deleteSecret } from "../../operations/secrets";
 
 const Secrets = () => {
   const history = useHistory();
@@ -30,7 +30,7 @@ const Secrets = () => {
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setSecret(projectID, secretConfig)
+      saveSecret(projectID, secretConfig)
         .then(() => {
           notify("success", "Success", "Saved secret successfully")
           resolve()

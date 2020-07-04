@@ -176,9 +176,6 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
-export const getEventingDB = (projectId) => {
-  return getProjectConfig(store.getState().projects, projectId, "modules.eventing.dbAlias", "")
-}
 
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])

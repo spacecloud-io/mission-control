@@ -13,7 +13,7 @@ export const loadLetsEncryptConfig = (projectId) => {
   })
 }
 
-export const setWhiteListedDomains = (projectId, domains) => {
+export const saveWhiteListedDomains = (projectId, domains) => {
   return new Promise((resolve, reject) => {
     client.letsencrypt.setConfig(projectId, { domains: domains })
       .then(() => {

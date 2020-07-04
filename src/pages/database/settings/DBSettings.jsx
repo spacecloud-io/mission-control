@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
 import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { getProjectConfig, notify, getDatabaseLabelFromType, canDatabaseHavePreparedQueries, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, setPreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb } from "../../../operations/database"
+import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType } from "../../../operations/database"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -17,13 +17,13 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { dbTypes } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
+import { getEventingDbAliasName } from '../../../operations/eventing';
 
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
   const history = useHistory()
-  const dispatch = useDispatch()
 
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
@@ -35,11 +35,11 @@ const Settings = () => {
   const projects = useSelector(state => state.projects)
 
   // Derived properties
-  const eventingDB = getProjectConfig(projects, projectID, "modules.eventing.dbAlias")
+  const eventingDB = useSelector(state => getEventingDbAliasName(state))
   const canDisableDB = eventingDB !== selectedDB
 
-  const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`, projectID)
-  const type = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.type`)
+  const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
+  const type = useSelector(state => getDbType(state, selectedDB))
 
   // This is used to bind the form initial values on page reload. 
   // On page reload the redux is intially empty leading the form initial values to be empty. 
@@ -118,7 +118,7 @@ const Settings = () => {
   const handleChangeDefaultPreparedQueryRule = () => {
     try {
       incrementPendingRequests()
-      setPreparedQuerySecurityRule(projectID, selectedDB, "default", JSON.parse(defaultPreparedQueryRuleString))
+      savePreparedQuerySecurityRule(projectID, selectedDB, "default", JSON.parse(defaultPreparedQueryRuleString))
         .then(() => notify("success", "Success", "Successfully changed default security rules of prepared queries"))
         .catch(ex => notify("error", "Error changing default security rules of prepared queries", ex))
         .finally(() => decrementPendingRequests())

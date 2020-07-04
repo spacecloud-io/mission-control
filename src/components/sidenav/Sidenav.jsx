@@ -6,9 +6,8 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider, Button } from "antd";
-import history from "../../history"
-import { capitalizeFirstCharacter, getClusterPlan } from '../../utils';
+import { Collapse, Divider } from "antd";
+import { capitalizeFirstCharacter } from '../../utils';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -47,8 +46,6 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const version = useSelector(state => state.env.version)
-  const plan = useSelector(state => getClusterPlan(state))
-  const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
@@ -56,9 +53,6 @@ const Sidenav = (props) => {
   const setActiveKeys = (activeKeys) => {
     store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
   }
-
-  const handleClickUpgrade = () => history.push(`/mission-control/projects/${projectID}/billing`)
-
 
   return (
     <div className="sidenav-container">

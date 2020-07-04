@@ -8,19 +8,16 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import {
   getProjectConfig,
   notify,
-  setProjectConfig,
   getEventSourceFromType,
   incrementPendingRequests,
   decrementPendingRequests
 } from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
-import { set, get, increment, decrement } from "automate-redux";
-import store from "../../store";
-import client from "../../client";
+import { set } from "automate-redux";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
-import { deleteEventingSchema, setEventingSchema } from "../../operations/eventing";
+import { deleteEventingSchema, saveEventingSchema } from "../../operations/eventing";
 
 const EventingSchema = () => {
   // Router params
@@ -88,7 +85,7 @@ const EventingSchema = () => {
   const handleAddSchema = (type, schema) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setEventingSchema(projectID, type, schema)
+      saveEventingSchema(projectID, type, schema)
         .then(() => {
           notify("success", "Success", "Saved event schema successfully")
           resolve()

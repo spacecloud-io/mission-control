@@ -11,8 +11,7 @@ import mailIcon from '../../assets/mailIcon.svg'
 import CollapseHeader from './CollapseHeader'
 import './user-management.css'
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import { setUserManConfig, loadUserManConfig } from '../../operations/userMan';
-import { get } from 'automate-redux';
+import { saveUserManConfig, loadUserManConfig, getEmailConfig } from '../../operations/userMan';
 const { Panel } = Collapse;
 
 //const Panel = Collapse.Panel;
@@ -31,12 +30,12 @@ const UserManagement = () => {
       .finally(() => decrementPendingRequests())
   }, [projectID])
 
-  const emailConfig = useSelector(state => get(state, "userMan.email", {}))
+  const emailConfig = useSelector(state => getEmailConfig(state))
 
   // Handlers
   const handleProviderConfig = (provider, config) => {
     incrementPendingRequests()
-    setUserManConfig(projectID, provider, config)
+    saveUserManConfig(projectID, provider, config)
       .then(() => notify("success", "Success", "Saved user management config successfully"))
       .catch(ex => notify("error", "Error saving user management config", ex))
       .finally(() => decrementPendingRequests())

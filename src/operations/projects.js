@@ -40,7 +40,7 @@ export const deleteProject = (projectId) => {
   })
 }
 
-const setProjectSetting = (projectId, key, value) => {
+const saveProjectSetting = (projectId, key, value) => {
   return new Promise((resolve, reject) => {
     const projects = store.getState().projects
     const oldProjectConfig = projects.find(obj => obj.id === projectId)
@@ -55,24 +55,24 @@ const setProjectSetting = (projectId, key, value) => {
   })
 }
 
-export const setContextTimeGraphQL = (projectId, contextTimeGraphQL) => setProjectSetting(projectId, "contextTimeGraphQL", contextTimeGraphQL)
+export const saveContextTimeGraphQL = (projectId, contextTimeGraphQL) => saveProjectSetting(projectId, "contextTimeGraphQL", contextTimeGraphQL)
 
-export const setDockerRegistry = (projectId, dockerRegistry) => setProjectSetting(projectId, "dockerRegistry", dockerRegistry)
+export const saveDockerRegistry = (projectId, dockerRegistry) => saveProjectSetting(projectId, "dockerRegistry", dockerRegistry)
 
-export const setAesKey = (projectId, aesKey) => setProjectSetting(projectId, "aesKey", aesKey)
+export const saveAesKey = (projectId, aesKey) => saveProjectSetting(projectId, "aesKey", aesKey)
 
 export const addSecret = (projectId, secret, isPrimary) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
   const newSecret = { secret, isPrimary }
   const newSecrets = [...oldSecrets, newSecret]
-  return setProjectSetting(projectId, "secrets", newSecrets)
+  return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 
 export const changePrimarySecret = (projectId, secret) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const newSecrets = secrets.map(obj => Object.assign({}, obj, { isPrimary: obj.secret === secret ? true : false }))
-  return setProjectSetting(projectId, "secrets", newSecrets)
+  return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 
 export const removeSecret = (projectId, secret) => {
@@ -80,5 +80,5 @@ export const removeSecret = (projectId, secret) => {
   const newSecrets = secrets.filter((obj) => obj.secret !== secret)
   const primarySecretPresent = newSecrets.some(obj => obj.isPrimary)
   if (!primarySecretPresent && newSecrets.length > 0) newSecrets[0].isPrimary = true
-  return setProjectSetting(projectId, "secrets", newSecrets)
+  return saveProjectSetting(projectId, "secrets", newSecrets)
 }

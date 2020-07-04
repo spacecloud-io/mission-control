@@ -12,7 +12,7 @@ import history from '../../../history';
 import client from '../../../client';
 import { notify, getProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { defaultPreparedQueryRule } from '../../../constants';
-import { deletePreparedQuery, setPreparedQuerySecurityRule } from '../../../operations/database'
+import { deletePreparedQuery, savePreparedQuerySecurityRule } from '../../../operations/database'
 
 
 
@@ -41,7 +41,7 @@ const PreparedQueries = () => {
   const handleSecureSubmit = (rule) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setPreparedQuerySecurityRule(projectID, selectedDB, clickedQuery, rule)
+      savePreparedQuerySecurityRule(projectID, selectedDB, clickedQuery, rule)
         .then(() => resolve())
         .catch(ex => reject(ex))
         .finally(() => decrementPendingRequests())

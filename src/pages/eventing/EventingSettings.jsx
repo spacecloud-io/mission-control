@@ -1,20 +1,17 @@
 import React, { useEffect } from 'react';
 import { useParams, } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { get, set, increment, decrement } from "automate-redux";
+import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import { getProjectConfig, dbIcons, notify, setProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import client from '../../client';
+import { getProjectConfig, dbIcons, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
-import { setEventingConfig } from '../../operations/eventing';
+import { saveEventingConfig } from '../../operations/eventing';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/settings");
@@ -43,10 +40,10 @@ const EventingSettings = () => {
 
   const handleEventingConfig = (dbAlias) => {
     incrementPendingRequests()
-    setEventingConfig(projectID, true, dbAlias)
-     .then(() => notify("success", "Success", "Changed eventing config successfully"))
-     .catch(ex => notify("error", "Error changing eventing config", ex))
-     .finally(() => decrementPendingRequests());
+    saveEventingConfig(projectID, true, dbAlias)
+      .then(() => notify("success", "Success", "Changed eventing config successfully"))
+      .catch(ex => notify("error", "Error changing eventing config", ex))
+      .finally(() => decrementPendingRequests());
   };
 
   return (

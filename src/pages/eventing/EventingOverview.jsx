@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Table, Button, Alert, Row, Col } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import { increment, decrement } from "automate-redux";
-import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import client from '../../client';
+import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import eventingSvg from "../../assets/eventing.svg"
 import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
-import { deleteEventingTriggerRule, setEventingTriggerRule } from '../../operations/eventing';
+import { deleteEventingTriggerRule, saveEventingTriggerRule } from '../../operations/eventing';
 
 
 const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
-
-	const dispatch = useDispatch()
 
 	// Global state
 	const projects = useSelector(state => state.projects)
@@ -65,7 +61,7 @@ const EventingOverview = () => {
 		const isRulePresent = rules[name] ? true : false
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
-			setEventingTriggerRule(projectID, name, type, url, retries, timeout, options)
+			saveEventingTriggerRule(projectID, name, type, url, retries, timeout, options)
 				.then(() => {
 					notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()

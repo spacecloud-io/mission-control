@@ -7,17 +7,9 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
 import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
-import { set, increment, decrement } from "automate-redux";
-import client from "../../client";
-import {
-  setProjectConfig,
-  notify,
-  getProjectConfig,
-  generateId,
-  decrementPendingRequests,
-  incrementPendingRequests
-} from "../../utils";
-import { setIngressRoute, deleteIngressRoute } from "../../operations/ingressRoutes";
+import { set } from "automate-redux";
+import { notify, getProjectConfig, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
+import { deleteIngressRoute, saveIngressRoute } from "../../operations/ingressRoutes";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -95,7 +87,7 @@ function Routing() {
         }
       };
       incrementPendingRequests()
-      setIngressRoute(projectID, config.id, config)
+      saveIngressRoute(projectID, config.id, config)
         .then(() => {
           notify("success", "Success", "Saved routing config successfully");
           resolve()
@@ -109,7 +101,6 @@ function Routing() {
   };
 
   const handleRouteClick = id => {
-    dispatch(set("routing", routes));
     setRouteClicked(id);
     setModalVisible(true);
   };

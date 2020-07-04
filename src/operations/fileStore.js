@@ -36,7 +36,7 @@ export const loadFileStoreRules = (projectId) => {
   })
 }
 
-export const setFileStoreConfig = (projectId, config) => {
+export const saveFileStoreConfig = (projectId, config) => {
   return new Promise((resolve, reject) => {
     client.fileStore.setConfig(projectId, config)
       .then(() => {
@@ -48,7 +48,7 @@ export const setFileStoreConfig = (projectId, config) => {
   })
 }
 
-export const setFileStoreRule = (projectId, ruleName, rule) => {
+export const saveFileStoreRule = (projectId, ruleName, rule) => {
   return new Promise((resolve, reject) => {
     const fileRule = Object.assign({}, rule, { id: ruleName })
     client.fileStore.setRule(projectId, ruleName, fileRule)

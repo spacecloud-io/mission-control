@@ -11,7 +11,7 @@ import Topbar from "../../../components/topbar/Topbar";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { Row, Col, Divider } from "antd";
-import { loadClusterSettings, setClusterSetting } from "../../../operations/clusterSettings";
+import { loadClusterSettings, saveClusterSetting } from "../../../operations/clusterSettings";
 
 const ClusterSettings = () => {
   const { projectID } = useParams();
@@ -35,7 +35,7 @@ const ClusterSettings = () => {
 
   const handleLetsEncryptEmail = newEmail => {
     incrementPendingRequests()
-    setClusterSetting("email", newEmail)
+    saveClusterSetting("email", newEmail)
       .then(() => notify("success", "Success", "Changed letsencrypt email successfully"))
       .catch(ex => notify("error", "Error changing letsencrypt email", ex))
       .finally(() => decrementPendingRequests());
@@ -43,7 +43,7 @@ const ClusterSettings = () => {
 
   const handleTelemetry = newTelemetry => {
     incrementPendingRequests()
-    setClusterSetting("telemetry", newTelemetry)
+    saveClusterSetting("telemetry", newTelemetry)
       .then(() => notify("success", "Success", `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
       .catch(ex => notify("error", `Error ${newTelemetry ? "enabling" : "disabling"} telemetry`, ex))
       .finally(() => decrementPendingRequests());

@@ -4,17 +4,14 @@ import Topbar from '../../components/topbar/Topbar';
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
 import { useSelector, useDispatch } from 'react-redux';
-import { increment, decrement } from 'automate-redux'
-import { set, get } from 'automate-redux';
+import { set } from 'automate-redux';
 import ReactGA from 'react-ga';
-import { getProjectConfig, notify, setProjectConfig, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import client from '../../client';
-import store from '../../store';
+import { getProjectConfig, notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
-import { deleteEventingSecurityRule, setEventingSecurityRule } from '../../operations/eventing';
+import { deleteEventingSecurityRule, saveEventingSecurityRule } from '../../operations/eventing';
 
 const EventingRules = () => {
   const { projectID } = useParams()
@@ -27,7 +24,6 @@ const EventingRules = () => {
   const projects = useSelector(state => state.projects)
   const selectedEvent = useSelector(state => state.uiState.selectedEvent)
   const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
-  const [conformLoading, setConformLoading] = useState(false);
   const dispatch = useDispatch()
 
   // Derived properties
@@ -43,7 +39,7 @@ const EventingRules = () => {
   const handleSubmit = (type, rule) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      setEventingSecurityRule(projectID, type, rule)
+      saveEventingSecurityRule(projectID, type, rule)
       .then(() => {
         notify("success", "Success", "Added eventing security rule successfully")
         resolve()

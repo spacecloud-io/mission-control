@@ -15,7 +15,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import history from '../../../history';
-import { setColSchema, inspectColSchema, untrackCollection, deleteCollection, setColRealtimeEnabled, loadDBConnState, enableDb } from "../../../operations/database"
+import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled } from "../../../operations/database"
 import { defaultDBRules, dbTypes } from '../../../constants';
 
 
@@ -35,8 +35,6 @@ const Overview = () => {
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
-  // making changes for loading button
-  const [conformLoading, setConformLoading] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
@@ -63,7 +61,7 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     incrementPendingRequests()
-    setColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
+    saveColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
       .then(() => notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`))
       .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`, ex))
       .finally(() => decrementPendingRequests())
@@ -123,7 +121,7 @@ const Overview = () => {
 
   const handleAddCollection = (editMode, colName, schema) => {
     incrementPendingRequests()
-    setColSchema(projectID, selectedDB, colName, schema)
+    saveColSchema(projectID, selectedDB, colName, schema)
       .then(() => {
         notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
         dispatch(set("uiState.selectedCollection", colName))
