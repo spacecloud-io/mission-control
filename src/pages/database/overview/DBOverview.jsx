@@ -13,9 +13,9 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias } from '../../../utils';
+import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import history from '../../../history';
-import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
+import { setColSchema, inspectColSchema, untrackCollection, deleteCollection, setColRealtimeEnabled, loadDBConnState, enableDb } from "../../../operations/database"
 import { defaultDBRules, dbTypes } from '../../../constants';
 
 
@@ -40,7 +40,7 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
-  const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
+  const selectedDBType = getDBTypeFromAlias(selectedDB)
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
   let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
@@ -57,13 +57,16 @@ const Overview = () => {
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
-    fetchDBConnState(projectID, selectedDB)
+    loadDBConnState(projectID, selectedDB)
   }, [projectID, selectedDB])
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
-    const rules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.${colName}.rules`)
-    setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
+    incrementPendingRequests()
+    setColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
+      .then(() => notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`))
+      .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`, ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleAddClick = () => {
@@ -89,11 +92,16 @@ const Overview = () => {
   }
 
   const handleDelete = (colName) => {
-    deleteCol(projectID, selectedDB, colName).then(() => notify("success", "Success", `Deleted ${colName} successfully`))
-      .catch(ex => notify("error", "Error", ex))
-    if (clickedCol === colName) {
-      setClickedCol("")
-    }
+    incrementPendingRequests()
+    deleteCollection(projectID, selectedDB, colName)
+      .then(() => {
+        notify("success", "Success", `Deleted ${colName} successfully`)
+        if (clickedCol === colName) {
+          setClickedCol("")
+        }
+      })
+      .catch(ex => notify("error", "Error deleting table", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleViewQueriesClick = (colName) => {
@@ -103,8 +111,8 @@ const Overview = () => {
 
   const handleUntrackClick = (colName) => {
     untrackCollection(projectID, selectedDB, colName)
-    .then(() => notify("success", "Success", `Sucessfully untracked ${colName} collection`))
-    .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
+      .then(() => notify("success", "Success", `Sucessfully untracked ${colName} collection`))
+      .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
   }
 
   const handleTrackCollections = (collections) => {
@@ -113,31 +121,30 @@ const Overview = () => {
       .catch(ex => notify("error", "Error", ex))
   }
 
-  const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
-    setConformLoading(true);
-    setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
-      notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
-      setAddColModalVisible(false);
-      setAddColFormInEditMode(false);
-      setConformLoading(false);
-      dispatch(set("uiState.selectedCollection", colName))
-    }).catch(ex => {
-      notify("error", "Error", ex)
-      setConformLoading(false);
-    })
+  const handleAddCollection = (editMode, colName, schema) => {
+    incrementPendingRequests()
+    setColSchema(projectID, selectedDB, colName, schema)
+      .then(() => {
+        notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
+        dispatch(set("uiState.selectedCollection", colName))
+      })
+      .catch(ex => notify("error", `Error ${editMode ? "Modified" : "Added"} ${colName}`, ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleEditConnString = (conn) => {
-    setConformLoading(true);
-    const dbType = getDBTypeFromAlias(projectID, selectedDB)
-    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
-    setDBConfig(projectID, selectedDB, true, conn, dbType, dbName, false)
-      .then(() => {
-        notify("success", "Connection successful", `Connected to ${dbType} successfully`)
-        setEditConnModalVisible(false);
-      })
-      .catch(() => notify("error", "Connection failed", ` Unable to connect to ${dbType}. Make sure your connection string is correct.`))
-      .finally(() => setConformLoading(false))
+    incrementPendingRequests()
+    return new Promise((resolve, reject) => {
+      enableDb(projectID, selectedDB, conn)
+        .then(() => {
+          notify("success", "Connection successful", `Connected to database successfully`)
+          resolve()
+        })
+        .catch(() => {
+          notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
+          reject()
+        })
+    })
   }
   const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
   const trackedTableColumns = [
@@ -235,20 +242,20 @@ const Overview = () => {
               </div>
             </div>}
             {connected && <React.Fragment>
-                <div>
-                  <div style={{ marginTop: '32px' }}>
-                    <span className='collections'>
-                     Tracked {label}s
+              <div>
+                <div style={{ marginTop: '32px' }}>
+                  <span className='collections'>
+                    Tracked {label}s
                     </span>
-                    <Button style={{ float: "right" }} type="primary"
-                      onClick={handleAddClick}>
-                      Add {label}
-                    </Button>
-                  </div>
-                  <div style={{ marginTop: '32px' }}>
-                    <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} bordered locale={{emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' />}}/>
-                  </div>
+                  <Button style={{ float: "right" }} type="primary"
+                    onClick={handleAddClick}>
+                    Add {label}
+                  </Button>
                 </div>
+                <div style={{ marginTop: '32px' }}>
+                  <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} bordered locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' /> }} />
+                </div>
+              </div>
               {unTrackedCollectionsToShow.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
@@ -263,7 +270,7 @@ const Overview = () => {
                     </Button>
                     </div>
                     <div style={{ marginTop: '32px' }}>
-                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} bordered/>
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} bordered />
                     </div>
                   </Col>
                 </Row>
@@ -272,16 +279,12 @@ const Overview = () => {
             {addColModalVisible && <AddCollectionForm
               editMode={addColFormInEditMode}
               initialValues={clickedColDetails}
-              projectId={projectID}
-              selectedDB={selectedDB}
-              conformLoading={conformLoading}
-              defaultRules={defaultRules}
-              handleCancel={() => handleCancelAddColModal(false)}
-              handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
+              dbType={selectedDBType}
+              handleCancel={handleCancelAddColModal}
+              handleSubmit={(colName, schema) => handleAddCollection(addColFormInEditMode, colName, schema)}
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
-              conformLoading={conformLoading}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString} />}
           </div>

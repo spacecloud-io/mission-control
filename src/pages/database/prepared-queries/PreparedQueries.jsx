@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
 import SecurityRulesForm from '../../../components/security-rules-form/SecurityRulesForm';
 import { Button, Table, Popconfirm, Alert } from 'antd';
@@ -10,11 +10,9 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
 import client from '../../../client';
-import { increment, decrement, set } from 'automate-redux'
-import { notify, getProjectConfig } from '../../../utils';
-import store from '../../../store';
+import { notify, getProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { defaultPreparedQueryRule } from '../../../constants';
-import { setPreparedQueries } from '../dbActions'
+import { deletePreparedQuery, setPreparedQuerySecurityRule } from '../../../operations/database'
 
 
 
@@ -25,7 +23,6 @@ const PreparedQueries = () => {
   const projects = useSelector(state => state.projects);
   const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {});
   const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default")
-  const dispatch = useDispatch();
   const [clickedQuery, setClickedQuery] = useState("");
   let defaultRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
   if (Object.keys(defaultRule).length === 0) {
@@ -43,26 +40,20 @@ const PreparedQueries = () => {
 
   const handleSecureSubmit = (rule) => {
     return new Promise((resolve, reject) => {
-      const oldPreparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${clickedQuery}`);
-      const newPreparedQuery = Object.assign({}, oldPreparedQuery, { rule: rule })
-      setPreparedQueries(projectID, selectedDB, newPreparedQuery.id, newPreparedQuery.args, newPreparedQuery.sql, newPreparedQuery.rule)
-        .then(() => resolve()).catch(ex => reject(ex))
+      incrementPendingRequests()
+      setPreparedQuerySecurityRule(projectID, selectedDB, clickedQuery, rule)
+        .then(() => resolve())
+        .catch(ex => reject(ex))
+        .finally(() => decrementPendingRequests())
     })
   }
 
-  const handleDeletePreparedQuery = (name) => {
-    dispatch(increment("pendingRequests"));
-    client.database.deletePreparedQueries(projectID, selectedDB, name)
-      .then(() => {
-        const preparedQueriesList = getProjectConfig(store.getState().projects, projectID, `modules.db.${selectedDB}.preparedQueries`)
-        const newPreparedQueries = delete preparedQueriesList[name]
-        store.dispatch(set(`extraConfig.${projectID}.db.${selectedDB}.preparedQueries`, newPreparedQueries))
-        notify("success", "Success", "Removed prepared query successfully");
-      })
-      .catch(ex => {
-        notify("error", "Error removing prepared query", ex.toString());
-      })
-      .finally(() => store.dispatch(decrement("pendingRequests")));
+  const handleDeletePreparedQuery = (id) => {
+    incrementPendingRequests()
+    deletePreparedQuery(projectID, selectedDB, id)
+      .then(() => notify("success", "Success", "Removed prepared query successfully"))
+      .catch(ex => notify("error", "Error removing prepared query", ex))
+      .finally(() => decrementPendingRequests());
   }
 
   // TODO: Add links here

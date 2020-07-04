@@ -7,13 +7,14 @@ import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
 import { get, set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
+import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
+import { loadFileStoreConnState, setFileStoreRule, deleteFileStoreRule, setFileStoreConfig } from '../../operations/fileStore';
 
 const Rules = (props) => {
 	const history = useHistory();
@@ -60,61 +61,43 @@ const Rules = (props) => {
 	}
 
 	const handleConfig = (config) => {
-		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
-		client.fileStore.setConfig(projectID, newConfig).then(() => {
-			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-			notify("success", "Success", "Configured file storage successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		setFileStoreConfig(projectID, newConfig)
+			.then(() => notify("success", "Success", "Configured file storage successfully"))
+			.catch(ex => notify("error", "Error configuring file storage", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 	const handleSaveRule = (rule) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, selectedRuleName, rule).then(() => {
-			const newRules = rules.map(r => {
-				if (r.id !== selectedRuleName) return rule
-				return Object.assign({}, r, rule)
-			})
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Saved rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		setFileStoreRule(projectID, selectedRuleName, rule)
+			.then(() => notify("success", "Success", "Saved rule successfully"))
+			.catch(ex => notify("error", "Error saving rule", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 	const handleAddRule = (ruleName, rule) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, ruleName, rule).then(() => {
-			const newRules = [...rules, { id: ruleName, ...rule }]
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Added rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		setFileStoreRule(projectID, ruleName, rule)
+			.then(() => notify("success", "Success", "Added rule successfully"))
+			.catch(ex => notify("error", "Error adding rule", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 	const handleDeleteRule = (ruleName) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.deleteRule(projectID, ruleName).then(() => {
-			const newRules = rules.filter(r => r.id !== ruleName)
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Deleted rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		deleteFileStoreRule(projectID, ruleName)
+			.then(() => notify("success", "Success", "Deleted rule successfully"))
+			.catch(ex => notify("error", "Error deleting rule", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 	const fetchConnState = () => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.getConnectionState(projectID).then(connected => {
-			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, connected))
-		})
+		incrementPendingRequests()
+		loadFileStoreConnState()
 			.catch(ex => notify("error", "Error fetching connection status", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+			.finally(() => decrementPendingRequests())
 	}
 
 	useEffect(() => {

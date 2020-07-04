@@ -106,26 +106,14 @@ const Sidenav = (props) => {
           <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
             <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
           </Link>
-          {/* <Divider />
-        <Link to={`/mission-control/projects/${projectID}/guides`} onClick={closeSidenav}>
-          <SidenavItem name="Guides" icon="import_contacts" active={props.selectedItem === 'guides'} />
-        </Link> */}
           <Divider />
           <Link to={`/mission-control/projects/${projectID}/settings`} onClick={closeSidenav}>
             <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
           </Link>
-          {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
-          <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
-        </Link> */}
-          {/* <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
-            <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link> */}
         </div>
         <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
-          {/* <p className="plan">{planName} plan</p>
-          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>} */}
         </div>
       </div>
     </div>

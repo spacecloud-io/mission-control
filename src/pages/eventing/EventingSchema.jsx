@@ -9,7 +9,9 @@ import {
   getProjectConfig,
   notify,
   setProjectConfig,
-  getEventSourceFromType
+  getEventSourceFromType,
+  incrementPendingRequests,
+  decrementPendingRequests
 } from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
 import { set, get, increment, decrement } from "automate-redux";
@@ -18,15 +20,16 @@ import client from "../../client";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
+import { deleteEventingSchema, setEventingSchema } from "../../operations/eventing";
 
 const EventingSchema = () => {
   // Router params
   const { projectID } = useParams();
 
   useEffect(() => {
-		ReactGA.pageview("/projects/eventing/schema");
+    ReactGA.pageview("/projects/eventing/schema");
   }, [])
-  
+
   // Global state
   const projects = useSelector(state => state.projects);
   const selectedEvent = useSelector(state => state.uiState.selectedEvent);
@@ -68,54 +71,33 @@ const EventingSchema = () => {
 
   const handleDelete = type => {
     return new Promise((resolve, reject) => {
-      store.dispatch(increment("pendingRequests"));
-      client.eventing
-        .deleteEventSchema(projectID, type)
+      incrementPendingRequests()
+      deleteEventingSchema(projectID, type)
         .then(() => {
-          const newSchema = getProjectConfig(
-            store.getState().projects,
-            projectID,
-            `modules.eventing.schemas`,
-            {}
-          );
-          delete newSchema[type];
-          setProjectConfig(projectID, `modules.eventing.schemas`, newSchema);
-          resolve();
-          notify("success", "Success", "Removed event schema successfully");
+          notify("success", "Success", "Removed event schema successfully")
+          resolve()
         })
         .catch(ex => {
-          reject(ex);
-          notify("error", "Error removing event schema", ex);
+          notify("error", "Error removing event schema", ex)
+          reject()
         })
-        .finally(() => store.dispatch(decrement("pendingRequests")));
+        .finally(() => decrementPendingRequests())
     });
   };
 
   const handleAddSchema = (type, schema) => {
     return new Promise((resolve, reject) => {
-      setConformLoading(true);
-      store.dispatch(increment("pendingRequests"));
-      client.eventing
-        .setEventSchema(projectID, type, schema)
+      incrementPendingRequests()
+      setEventingSchema(projectID, type, schema)
         .then(() => {
-          const oldSchemas = getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
-          const newSchemas = Object.assign({}, oldSchemas, {
-            [type]: { schema: schema }
-          });
-          setProjectConfig(projectID, `modules.eventing.schemas`, newSchemas);
-
-          notify("success", "Success", "Saved event schema successfully");
-          dispatch(set("uiState.selectedEvent", type));
-          setAddColModalVisible(false);
-          setConformLoading(false);
-          resolve();
+          notify("success", "Success", "Saved event schema successfully")
+          resolve()
         })
         .catch(ex => {
-          notify("error", "Error saving event schema", ex);
-          setConformLoading(false);
-          reject(ex);
+          notify("error", "Error saving event schema", ex)
+          reject()
         })
-        .finally(() => store.dispatch(decrement("pendingRequests")));
+        .finally(() => decrementPendingRequests())
     });
   };
 

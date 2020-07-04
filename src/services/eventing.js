@@ -7,6 +7,62 @@ class Eventing {
     this.client = client
   }
 
+  fetchEventingConfig(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/config`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result[0])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingSchemas(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/schemas`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingRules(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/rules`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingTriggers(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
   fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType, getToken) {
     let uri = `/v1/api/${projectId}/graphql`
     if (spaceCloudClusterOrigin) {

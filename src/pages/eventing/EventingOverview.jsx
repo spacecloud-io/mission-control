@@ -9,12 +9,13 @@ import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { increment, decrement } from "automate-redux";
-import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig } from '../../utils';
+import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, setProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import client from '../../client';
 import eventingSvg from "../../assets/eventing.svg"
 import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
+import { deleteEventingTriggerRule, setEventingTriggerRule } from '../../operations/eventing';
 
 
 const EventingOverview = () => {
@@ -61,22 +62,28 @@ const EventingOverview = () => {
 	}
 
 	const handleSetRule = (name, type, url, retries, timeout, options = {}) => {
-		const triggerRule = { type, url, retries, timeout, options }
 		const isRulePresent = rules[name] ? true : false
-		dispatch(increment("pendingRequests"))
-		client.eventing.setTriggerRule(projectID, name, triggerRule).then(() => {
-			setProjectConfig(projectID, `modules.eventing.triggers.${name}`, triggerRule)
-			notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
-		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+		return new Promise((resolve, reject) => {
+			incrementPendingRequests()
+			setEventingTriggerRule(projectID, name, type, url, retries, timeout, options)
+				.then(() => {
+					notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
+					resolve()
+				})
+				.catch(ex => {
+					notify("error", `Error ${isRulePresent ? "Modifying" : "Adding"} trigger rule`, ex)
+					reject()
+				})
+				.finally(() => decrementPendingRequests())
+		})
 	}
 
 	const handleDeleteRule = (name) => {
-		const newRules = Object.assign({}, rules)
-		delete newRules[name]
-		client.eventing.deleteTriggerRule(projectID, name).then(() => {
-			setProjectConfig(projectID, `modules.eventing.triggers`, newRules)
-			notify("success", "Success", "Deleted trigger rule successfully")
-		}).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		deleteEventingTriggerRule(projectID, name)
+			.then(() => notify("success", "Success", "Deleted trigger rule successfully"))
+			.catch(ex => notify("error", "Error deleting trigger rule", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 

@@ -1,26 +1,23 @@
 import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { LeftOutlined } from '@ant-design/icons';
-import { set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig } from '../../utils';
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
-import { Button, Card, Input, Radio, Form, Alert, Cascader, Row, Col } from "antd"
-import client from "../../client"
+import { Button, Card, Input, Radio, Form, Alert, Cascader, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
+import { setFileStoreConfig } from '../../operations/fileStore';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
   const history = useHistory();
   // Router params
   const { projectID } = useParams()
-
-  const dispatch = useDispatch()
 
   // Global state
   const projects = useSelector(state => state.projects)
@@ -76,20 +73,18 @@ const FileStorageConfig = () => {
       values.secret = `secrets.${values.secret[0]}.${values.secret[1]}`
     }
     delete values["credentials"]
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     const newConfig = { enabled: true, ...values }
-    client.fileStore.setConfig(projectID, newConfig).then(() => {
-      const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-      setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-      dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-      notify("success", "Success", "Configured file storage successfully")
-    })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
-    form.resetFields();
-    history.goBack();
-  }
 
+    setFileStoreConfig(projectID, newConfig)
+      .then(() => {
+        notify("success", "Success", "Configured file storage successfully")
+        form.resetFields();
+        history.goBack();
+      })
+      .catch(ex => notify("error", "Error configuring file storage", ex))
+      .finally(() => decrementPendingRequests())
+  }
 
   return (
     <div className="file-storage">
@@ -218,7 +213,6 @@ const FileStorageConfig = () => {
             </Card>
           </Col>
         </div>
-
       </div>
     </div >
   )

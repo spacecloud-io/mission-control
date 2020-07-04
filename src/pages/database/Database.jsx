@@ -1,7 +1,7 @@
 import React, { useState } from "react"
-import { useParams, Redirect,  } from "react-router-dom"
+import { useParams, Redirect, } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
-import { getProjectConfig, notify } from "../../utils"
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
@@ -9,9 +9,8 @@ import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
-import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
-import { dbEnable } from "./dbActions"
-import { increment, decrement } from "automate-redux"
+import { defaultDbConnectionStrings } from "../../constants"
+import { enableDb } from "../../operations/database"
 
 const Database = () => {
 
@@ -31,13 +30,20 @@ const Database = () => {
   const dbType = type ? type : selectedDB
 
   // Handlers
-  const handleEnable = (conn, defaultCollectionRule) => {
-    const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
-    dispatch(increment("pendingRequests"))
-    dbEnable(projects, projectID, selectedDB, dbType, dbName, conn, defaultCollectionRule)
-    .then(() => notify("success", "Success", "Successfully enabled database"))
-    .catch(ex => notify("error", "Error enabling database", ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
+  const handleEnable = (conn) => {
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      enableDb(projectID, selectedDB, conn)
+        .then(() => {
+          notify("success", "Success", "Successfully enabled database")
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error enabling database", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   if (enabled) {
@@ -81,7 +87,7 @@ const Database = () => {
         </div>
       </div>
       {modalVisible && <EnableDBForm
-        initialValues={{ conn: defaultConnString, rules: defaultDBRules }}
+        initialValues={{ conn: defaultConnString }}
         handleSubmit={handleEnable}
         handleCancel={() => setModalVisible(false)} />}
     </div>

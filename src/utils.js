@@ -10,12 +10,25 @@ import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
+import { loadProjects } from './operations/projects'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
 const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
+
+export function upsertArray(array, predicate, getItem) {
+  const index = array.findIndex(predicate)
+  return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]
+}
+export function incrementPendingRequests() {
+  store.dispatch(increment("pendingRequests"))
+}
+
+export function decrementPendingRequests() {
+  store.dispatch(decrement("pendingRequests"))
+}
 
 export function capitalizeFirstCharacter(str) {
   if (!str) return str
@@ -98,19 +111,7 @@ export const generateProjectConfig = (projectId, name) => ({
   id: projectId,
   secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
-  contextTimeGraphQL: 5,
-  modules: {
-    db: {},
-    eventing: {},
-    userMan: {},
-    remoteServices: {
-      externalServices: {}
-    },
-    fileStore: {
-      enabled: false,
-      rules: []
-    }
-  }
+  contextTimeGraphQL: 5
 })
 
 export const notify = (type, title, msg, duration) => {
@@ -250,29 +251,24 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
 
   if (shouldFetchGlobalEntities()) {
     // Fetch projects
-    store.dispatch(increment("pendingRequests"))
-    client.projects.getProjects().then(projects => {
-      store.dispatch(set("projects", projects))
-      if (projects.length === 0) {
-        history.push(`/mission-control/welcome`)
-        return
-      }
+    incrementPendingRequests()
+    loadProjects()
+      .then(projects => {
+        if (projects.length === 0) {
+          history.push(`/mission-control/welcome`)
+          return
+        }
 
-      // Decide which project to open
-      let projectToBeOpened = getProjectToBeOpened()
-      if (!projectToBeOpened) {
-        projectToBeOpened = projects[0].id
-      }
+        // Decide which project to open
+        let projectToBeOpened = getProjectToBeOpened()
+        if (!projectToBeOpened) {
+          projectToBeOpened = projects[0].id
+        }
 
-      openProject(projectToBeOpened)
-    }).catch(ex => notify("error", "Could not fetch projects", ex))
+        openProject(projectToBeOpened)
+      })
+      .catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
-      
-      store.dispatch(increment("pendingRequests"))
-      client.clusterConfig.getConfig()
-        .then(data => store.dispatch(set("clusterConfig", data)))
-        .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-        .finally(() => store.dispatch(decrement("pendingRequests")))
 
     if (spaceUpToken) {
       store.dispatch(increment("pendingRequests"))
@@ -524,13 +520,12 @@ export const BillingRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
+export const getDBTypeFromAlias = (dbAliasName) => {
+  return get(store.getState(), `dbConfig.${dbAliasName}.type`, dbAliasName)
 }
 
-export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
-  const dbType = getDBTypeFromAlias(projectId, dbAlias)
+export const canDatabaseHavePreparedQueries = (dbAliasName) => {
+  const dbType = getDBTypeFromAlias(dbAliasName)
   return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
 }
 
@@ -540,16 +535,16 @@ export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
 
 export const getDatabaseLabelFromType = (dbType) => {
   switch (dbType) {
-    case dbTypes.MONGO: 
-    return "MongoDB"
-    case dbTypes.POSTGRESQL: 
-    return "PostgreSQL"
-    case dbTypes.MYSQL: 
-    return "MySQL"
-    case dbTypes.SQLSERVER: 
-    return "SQL Server"
-    case dbTypes.EMBEDDED: 
-    return "Embedded"
+    case dbTypes.MONGO:
+      return "MongoDB"
+    case dbTypes.POSTGRESQL:
+      return "PostgreSQL"
+    case dbTypes.MYSQL:
+      return "MySQL"
+    case dbTypes.SQLSERVER:
+      return "SQL Server"
+    case dbTypes.EMBEDDED:
+      return "Embedded"
   }
 }
 
@@ -596,12 +591,12 @@ export const getTrackedCollectionNames = (state, projectId, dbName) => {
 export const getTrackedCollections = (state, projectId, dbName) => {
   const projects = getProjects(state)
   const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections =  Object.keys(collections)
-  .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-  .reduce((obj, key) => {
-    obj[key] = collections[key];
-    return obj;
-  }, {})
+  const trackedCollections = Object.keys(collections)
+    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
+    .reduce((obj, key) => {
+      obj[key] = collections[key];
+      return obj;
+    }, {})
   return trackedCollections
 }
 

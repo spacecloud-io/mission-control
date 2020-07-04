@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Switch, Input, Checkbox } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -8,13 +8,10 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
+const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initialValues }) => {
   const [form] = Form.useForm();
   const [colName, setcolName] = useState('')
-
-  const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
   const defaultSchema = `type ${(initialValues && initialValues.name) ? initialValues.name : ""}{
   ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
@@ -23,22 +20,10 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   const initialSchema = (initialValues && initialValues.schema) ? initialValues.schema : defaultSchema
 
   if (!initialValues) {
-    initialValues = {
-      rules: defaultRules,
-      isRealtimeEnabled: true
-    }
+    initialValues = {}
   }
 
-  const initialRules = Object.assign({}, initialValues.rules)
-
-  if (Object.keys(initialValues.rules).length === 0) {
-    initialValues.rules = defaultRules
-  }
-
-  const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialSchema);
-  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
   const handleChangedValues = ({ name }) => { setcolName(name) };
   useEffect(() => {
@@ -50,22 +35,9 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
     }
   }, [colName])
 
-  const onSwitchChange = checked => {
-    setIsRealtimeEnabled(checked);
-  };
-
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      try {
-        handleSubmit(
-          values.name,
-          applyDefaultRules ? {} : JSON.parse(rule),
-          schema,
-          isRealtimeEnabled
-        );
-      } catch (ex) {
-        notify("error", "Error", ex.toString())
-      }
+      handleSubmit(values.name, schema).then(() => handleCancel())
     });
   };
 
@@ -79,7 +51,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
-        confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues}
@@ -106,13 +77,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
               disabled={editMode}
             />
           </Form.Item>
-
-          <FormItemLabel name="Realtime subscriptions" />
-          <Form.Item name="realtime">
-            <span className='realtime'>
-              Enabled: <Switch defaultChecked={initialValues.isRealtimeEnabled} onChange={onSwitchChange} />
-            </span>
-          </Form.Item>
           <FormItemLabel name="Schema" />
           <CodeMirror
             value={schema}
@@ -129,32 +93,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
               setSchema(value)
             }}
           />
-          <div style={{ paddingTop: 20 }}>
-            <Checkbox
-              checked={applyDefaultRules}
-              onChange={e =>
-                setApplyDefaultRules(!applyDefaultRules)
-              }
-            >Apply default security rules</Checkbox>
-          </div>
-          {!applyDefaultRules ? <div style={{ paddingTop: 20 }}>
-            <FormItemLabel name="Rule" />
-            <CodeMirror
-              value={rule}
-              options={{
-                mode: { name: "javascript", json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: false
-              }}
-              onBeforeChange={(editor, data, value) => {
-                setRule(value)
-              }}
-            />
-          </div> : ""}
         </Form>
       </Modal>
     </div>

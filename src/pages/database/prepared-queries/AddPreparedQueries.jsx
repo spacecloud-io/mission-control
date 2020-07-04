@@ -16,8 +16,7 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
 import { getProjectConfig, notify } from '../../../utils';
-import { defaultPreparedQueryRule } from '../../../constants';
-import { setPreparedQueries } from '../dbActions';
+import { setPreparedQueryConfig } from "../../../operations/database"
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
@@ -47,7 +46,7 @@ const AddPreparedQueries = () => {
 
 
   const handleSubmit = formValues => {
-    setPreparedQueries(projectID, selectedDB, formValues.id, formValues.args, sqlQuery, defaultPreparedQueryRule)
+    setPreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery)
       .then(() => {
         history.goBack();
         notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)

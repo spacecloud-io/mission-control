@@ -6,17 +6,15 @@ import { Button, Table, Popconfirm } from "antd";
 import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
-import { getSecretType, getProjectConfig, setProjectConfig } from "../../utils";
+import { getSecretType, getProjectConfig, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { increment, decrement } from "automate-redux";
-import client from "../../client";
+import { useSelector } from "react-redux";
 import { notify } from "../../utils";
+import { setSecret, deleteSecret } from "../../operations/secrets";
 
 const Secrets = () => {
   const history = useHistory();
   const { projectID } = useParams();
-  const dispatch = useDispatch();
   const projects = useSelector(state => state.projects);
   const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
   const [secretModalVisible, setSecretModalVisible] = useState(false);
@@ -25,39 +23,32 @@ const Secrets = () => {
   );
   const [secretIdClicked, setSecretIdClicked] = useState("");
 
-
   useEffect(() => {
-		ReactGA.pageview("/projects/secrets");
+    ReactGA.pageview("/projects/secrets");
   }, [])
 
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets
-        .addSecret(projectID, secretConfig)
+      incrementPendingRequests()
+      setSecret(projectID, secretConfig)
         .then(() => {
-          const newSecrets = [...secrets.filter(obj => obj.id !== secretConfig.id), secretConfig];
-          setProjectConfig(projectID, "modules.secrets", newSecrets);
-          resolve();
+          notify("success", "Success", "Saved secret successfully")
+          resolve()
         })
         .catch(ex => {
-          notify("error", "Error adding secret", ex);
+          notify("error", "Error saving secret", ex);
           reject();
         })
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDeleteSecret = secretId => {
-    dispatch(increment("pendingRequests"));
-    client.secrets
-      .deleteSecret(projectID, secretId)
-      .then(() => {
-        const newSecrets = secrets.filter(obj => obj.id !== secretId);
-        setProjectConfig(projectID, "modules.secrets", newSecrets);
-      })
-      .catch(ex => notify("error", "Error adding secret", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+    incrementPendingRequests()
+    deleteSecret(projectID, secretId)
+      .then(() => notify("success", "Success", "Deleted secret successfully"))
+      .catch(ex => notify("error", "Error deleting secret", ex))
+      .finally(() => decrementPendingRequests());
   };
 
   const handleSecretView = secretId => {

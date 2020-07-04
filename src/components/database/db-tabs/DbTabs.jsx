@@ -6,7 +6,7 @@ import { canDatabaseHavePreparedQueries } from '../../../utils';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
-  const showPreparedQueriesTab = canDatabaseHavePreparedQueries(projectID, selectedDB)
+  const showPreparedQueriesTab = canDatabaseHavePreparedQueries(selectedDB)
   return (
     <div className="db-tabs">
       <Tabs defaultActiveKey={activeKey} >
@@ -31,20 +31,6 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>}
-        <TabPane tab='Rules' key='rules'>
-          <Redirect
-            to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/rules`
-            }}
-          />
-        </TabPane>
-        <TabPane tab='Schema' key='schema'>
-          <Redirect
-            to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/schema`
-            }}
-          />
-        </TabPane>
         <TabPane tab='Sample queries' key='queries'>
           <Redirect
             to={{

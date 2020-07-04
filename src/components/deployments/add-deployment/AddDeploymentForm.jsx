@@ -63,15 +63,7 @@ const AddDeploymentForm = props => {
       values.serviceType = "image";
       props
         .handleSubmit(values)
-        .then(() => {
-          notify(
-            "success",
-            "Success",
-            "Saved deployment config successfully"
-          );
-          props.handleCancel();
-        })
-        .catch(ex => notify("error", "Error saving config", ex.toString()));
+        .then(() => props.handleCancel())
     });
   };
 
@@ -216,7 +208,7 @@ const AddDeploymentForm = props => {
                       <Form.Item>
                         <Button
                           onClick={() => {
-                            form.validateFields([...fields.map(obj => ["ports", obj.name,"port"]), ...fields.map(obj => ["ports", obj.name,"protocol"])])
+                            form.validateFields([...fields.map(obj => ["ports", obj.name, "port"]), ...fields.map(obj => ["ports", obj.name, "protocol"])])
                               .then(() => add({ protocol: "http", port: "" }))
                               .catch(ex => console.log("Exception", ex))
                           }}
@@ -350,7 +342,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["env", obj.name,"key"]), ...fields.map(obj => ["env", obj.name,"value"])])
+                              form.validateFields([...fields.map(obj => ["env", obj.name, "key"]), ...fields.map(obj => ["env", obj.name, "value"])])
                                 .then(() => add())
                                 .catch(ex => console.log("Exception", ex))
                             }}
@@ -433,7 +425,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["whitelists", obj.name,"projectId"]), ...fields.map(obj => ["whitelists", obj.name,"service"])])
+                              form.validateFields([...fields.map(obj => ["whitelists", obj.name, "projectId"]), ...fields.map(obj => ["whitelists", obj.name, "service"])])
                                 .then(() => add({ projectId }))
                                 .catch(ex => console.log("Exception", ex))
                             }}
@@ -503,7 +495,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["upstreams", obj.name,"projectId"]), ...fields.map(obj => ["upstreams", obj.name,"service"])])
+                              form.validateFields([...fields.map(obj => ["upstreams", obj.name, "projectId"]), ...fields.map(obj => ["upstreams", obj.name, "service"])])
                                 .then(() => add({ projectId }))
                                 .catch(ex => console.log("Exception", ex))
                             }}

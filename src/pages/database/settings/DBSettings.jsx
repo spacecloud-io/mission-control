@@ -6,8 +6,8 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { getProjectConfig, notify, getDatabaseLabelFromType, getDBTypeFromAlias, canDatabaseHavePreparedQueries } from '../../../utils';
-import { setDBConfig, handleReload, handleModify, removeDBConfig, changeDatabaseName, setPreparedQueries } from '../dbActions';
+import { getProjectConfig, notify, getDatabaseLabelFromType, canDatabaseHavePreparedQueries, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { modifyDbSchema, reloadDbSchema, setPreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb } from "../../../operations/database"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -17,7 +17,6 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { dbTypes } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
-import { decrement, increment } from 'automate-redux';
 
 const Settings = () => {
   // Router params
@@ -62,63 +61,67 @@ const Settings = () => {
   const defaultPreparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
   const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
-  const dbModule = getProjectConfig(projects, projectID, `modules.db`)
-
   // Handlers
   const handleDisable = () => {
-    let conn = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`)
-    let dbType = getDBTypeFromAlias(projectID, selectedDB)
-    let dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
-    dispatch(increment("pendingRequests"))
-    setDBConfig(projectID, selectedDB, false, conn, dbType, dbName, false)
-      .then(() => {
+    incrementPendingRequests()
+    disableDb(projectID, selectedDB)
+      .then((disabledEventing) => {
         notify("success", "Success", "Disabled database successfully")
         history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)
+        if (disabledEventing) {
+          notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
+        }
       })
       .catch(ex => notify("error", "Error disabling database", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleReloadDB = () => {
-    handleReload(projectID, selectedDB)
-      .then(() => notify("success", "Success", "Reloaded schema successfully"))
-      .catch(ex => notify("error", "Error", ex))
+    incrementPendingRequests()
+    reloadDbSchema(projectID, selectedDB)
+      .then(() => notify("success", "Success", "Reloaded database schema successfully"))
+      .catch(ex => notify("error", "Error reloading database schema", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleModifyDB = () => {
-    handleModify(projectID, selectedDB)
-      .then(() => notify("success", "Success", "Setup database successfully"))
-      .catch(ex => notify("error", "Error", ex))
+    incrementPendingRequests()
+    modifyDbSchema(projectID, selectedDB)
+      .then(() => notify("success", "Success", "Modified database schema successfully"))
+      .catch(ex => notify("error", "Error modifying database schema", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleChangeDBName = ({ dbName }) => {
-    dispatch(increment("pendingRequests"))
-    changeDatabaseName(projectID, selectedDB, dbName)
+    incrementPendingRequests()
+    let msg = "database"
+    if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) msg = "schema"
+    changeDbName(projectID, selectedDB, dbName)
       .then(() => {
-        let msg = "database"
-        if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) msg = "schema"
         notify("success", "Success", `Changed ${msg} setting successfully`)
       })
-      .catch(ex => notify("error", "Error changing database", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .catch(ex => notify("error", `Error changing  ${msg}`, ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleRemoveDb = () => {
-    dispatch(increment("pendingRequests"))
-    removeDBConfig(projectID, selectedDB)
+    incrementPendingRequests()
+    removeDbConfig(projectID, selectedDB)
       .then(() => {
         history.push(`/mission-control/projects/${projectID}/database`)
         notify("success", "Success", "Successfully removed database config")
       })
       .catch(ex => notify("error", "Error removing database config", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleChangeDefaultPreparedQueryRule = () => {
     try {
-      setPreparedQueries(projectID, selectedDB, "default", [], "", JSON.parse(defaultPreparedQueryRuleString))
+      incrementPendingRequests()
+      setPreparedQuerySecurityRule(projectID, selectedDB, "default", JSON.parse(defaultPreparedQueryRuleString))
         .then(() => notify("success", "Success", "Successfully changed default security rules of prepared queries"))
         .catch(ex => notify("error", "Error changing default security rules of prepared queries", ex))
+        .finally(() => decrementPendingRequests())
     } catch (ex) {
       notify("error", "Error changing default security rules of prepared queries", ex)
     }
@@ -153,7 +156,7 @@ const Settings = () => {
                 <Button htmlType="submit">Save</Button>
               </Form.Item>
             </Form>
-            {canDatabaseHavePreparedQueries(projectID, selectedDB) &&
+            {canDatabaseHavePreparedQueries(selectedDB) &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
                 <Form layout="vertical" form={form1} onFinish={handleChangeDefaultPreparedQueryRule}>
@@ -187,8 +190,8 @@ const Settings = () => {
             <FormItemLabel name="Reload schema" description="Refresh Space Cloud schema, typically required if you have changed the underlying database" />
             <Button onClick={handleReloadDB}>Reload</Button>
             <Divider style={{ margin: "16px 0px" }} />
-            <FormItemLabel name="Setup DB" description="Modifies database as per Space Cloud schema, typically required if you have dropped or modified the underlying database" />
-            <Button onClick={handleModifyDB}>Setup</Button>
+            <FormItemLabel name="Modify schema" description="Modifies database as per Space Cloud schema, typically required if you have dropped or modified the underlying database" />
+            <Button onClick={handleModifyDB}>Modify</Button>
             <Divider style={{ margin: "16px 0px" }} />
             <FormItemLabel name="Disable database" description="Disables all access to this database" />
             <Popconfirm

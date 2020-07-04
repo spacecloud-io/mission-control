@@ -1,22 +1,20 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga'
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, getProjectConfig, getJWTSecret, generateInternalToken } from "../../../utils";
-import client from "../../../client";
-import { increment, decrement } from 'automate-redux';
+import { getEventSourceFromType, getProjectConfig, getJWTSecret, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { triggerCustomEvent } from '../../../operations/eventing';
 
 const QueueEvent = () => {
   const { projectID } = useParams()
   const { state } = useLocation()
   const history = useHistory()
-  const dispatch = useDispatch()
 
   const initialEventType = state.eventType;
   const projects = useSelector(state => state.projects)
@@ -31,15 +29,11 @@ const QueueEvent = () => {
 
   const handleTriggerEvent = (type, payload, isSynchronous, token) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"))
-      const eventBody = { type, delay: 0, timestamp: new Date().toISOString(), payload, options: {}, isSynchronous }
-      client.eventing.queueEvent(projectID, eventBody, token).then(data => {
-        resolve(data)
-      })
-        .catch(err => {
-          reject(err)
-        })
-        .finally(() => dispatch(decrement("pendingRequests")))
+      incrementPendingRequests()
+      triggerCustomEvent(projectID, type, payload, isSynchronous, token)
+        .then((data) => resolve(data))
+        .catch(() => reject())
+        .finally(() => decrementPendingRequests())
     })
   }
   return (

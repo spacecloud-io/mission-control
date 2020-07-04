@@ -13,8 +13,11 @@ import {
   setProjectConfig,
   notify,
   getProjectConfig,
-  generateId
+  generateId,
+  decrementPendingRequests,
+  incrementPendingRequests
 } from "../../utils";
+import { setIngressRoute, deleteIngressRoute } from "../../operations/ingressRoutes";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -73,7 +76,6 @@ function Routing() {
 
   const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
       const config = {
         id: routeId ? routeId : generateId(),
         source: {
@@ -92,20 +94,17 @@ function Routing() {
           outputFormat: values.outputFormat
         }
       };
-      client.routing
-        .setRoutingConfig(projectID, config.id, config)
+      incrementPendingRequests()
+      setIngressRoute(projectID, config.id, config)
         .then(() => {
-          if (routeId) {
-            const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          } else {
-            const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          }
+          notify("success", "Success", "Saved routing config successfully");
           resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", "Error saving routing config", ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
@@ -116,16 +115,11 @@ function Routing() {
   };
 
   const handleDelete = id => {
-    dispatch(increment("pendingRequests"));
-    client.routing
-      .deleteRoutingConfig(projectID, id)
-      .then(() => {
-        const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.ingressRoutes`, newRoutes);
-        notify("success", "Success", "Deleted rule successfully");
-      })
+    incrementPendingRequests()
+    deleteIngressRoute(projectID, id)
+      .then(() => notify("success", "Success", "Deleted rule successfully"))
       .catch(ex => notify("error", "Error", ex.toString()))
-      .finally(() => dispatch(decrement("pendingRequests")));
+      .finally(() => decrementPendingRequests());
   };
 
   const handleModalCancel = () => {

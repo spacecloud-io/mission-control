@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { LeftOutlined } from '@ant-design/icons';
@@ -6,12 +6,13 @@ import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
 import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
-import { getProjectConfig, setProjectConfig, notify } from "../../utils";
+import { getProjectConfig, setProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import client from "../../client";
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "automate-redux";
 import './secretDetail.css';
+import { setSecretKey, deleteSecretKey, setRootPath } from "../../operations/secrets";
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -39,9 +40,9 @@ const SecretDetails = () => {
   const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
   useEffect(() => {
-		ReactGA.pageview("/projects/secrets/secretDetails");
+    ReactGA.pageview("/projects/secrets/secretDetails");
   }, [])
-  
+
   const handleClickUpdateSecretKey = name => {
     setSecretKeyClicked(name);
     setSecretKeyModalVisible(true);
@@ -49,38 +50,34 @@ const SecretDetails = () => {
 
   const handleSetSecretKey = (key, value) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets
-        .setSecretKey(projectID, secretId, key, value)
+      incrementPendingRequests()
+      setSecretKey(projectID, secretId, key, value)
         .then(() => {
-          const newSecrets = secrets.map(obj => {
-            if (obj.id !== secretId) return obj;
-            const newData = Object.assign({}, secret.data, { [key]: value });
-            return Object.assign({}, secret, { data: newData });
-          });
-          setProjectConfig(projectID, "modules.secrets", newSecrets);
-          resolve();
+          notify("success", "Success", "Saved secret key successfully");
+          resolve()
         })
         .catch(ex => {
-          notify("error", "Error setting secret value", ex);
+          notify("error", "Error saving secret key value", ex);
           reject();
         })
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDeleteSecretKey = name => {
-    dispatch(increment("pendingRequests"));
-    client.secrets.deleteSecretKey(projectID, secretId, name).then(() => {
-      const newSecrets = secrets.map(obj => {
-        if (obj.id !== secretId) return obj;
-        const newData = Object.assign({}, secret.data);
-        delete newData[name]
-        return Object.assign({}, secret, { data: newData });
-      });
-      setProjectConfig(projectID, "modules.secrets", newSecrets);
-    }).catch(ex => notify("error", "Error deleting secret value", ex))
-    .finally(() => dispatch(decrement("pendingRequests")));
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      deleteSecretKey(projectID, secretId, name)
+        .then(() => {
+          notify("success", "Success", "Deleted secret key successfully");
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error saving secret key value", ex);
+          reject();
+        })
+        .finally(() => decrementPendingRequests());
+    });
   };
 
   const handleCancel = () => {
@@ -90,21 +87,18 @@ const SecretDetails = () => {
 
   const handleUpdateRootpath = (path) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets.setRootPath(projectID, secretId, { rootPath : path}).then(() => {
-        const updatedSecret = secrets.map(obj => {
-          if (obj.id !==  secretId) return obj;
-          const newData = Object.assign({}, { rootPath: path });
-          return Object.assign({}, obj, newData);
-        });
-        setProjectConfig(projectID, `modules.secrets`, updatedSecret);
-        notify("success", "Success", "Saved root path successfully")
-        resolve();
-      }).catch((ex) => {
-        notify("error", "Error in saving root path", ex.toString());
-        reject(ex)
-      }).finally(() => dispatch(decrement("pendingRequests")));
-    })
+      incrementPendingRequests()
+      setRootPath(projectID, secretId, path)
+        .then(() => {
+          notify("success", "Success", "Saved root path successfully");
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error saving root path", ex);
+          reject();
+        })
+        .finally(() => decrementPendingRequests());
+    });
   }
 
   const envColumns = [
@@ -192,22 +186,22 @@ const SecretDetails = () => {
           </div>
           <br />
           <Row>
-            <Col lg={{ span: 15, offset: 1 }} xs={{ span:22, offset:1 }}>
+            <Col lg={{ span: 15, offset: 1 }} xs={{ span: 22, offset: 1 }}>
               {secretType === "file" && (
-                  <React.Fragment>
-                    <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>
-                    <div className="mount-location">
-                      {secret.rootPath}
-                    </div>
-                    {rootPathModalVisible && (
-                      <UpdateRootPathModal
-                        rootPath={secret.rootPath}
-                        handleSubmit={handleUpdateRootpath}
-                        handleCancel={() => setRootPathModalVisible(false)}
-                      />
-                    )}
-                  </React.Fragment>
-                )}
+                <React.Fragment>
+                  <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>
+                  <div className="mount-location">
+                    {secret.rootPath}
+                  </div>
+                  {rootPathModalVisible && (
+                    <UpdateRootPathModal
+                      rootPath={secret.rootPath}
+                      handleSubmit={handleUpdateRootpath}
+                      handleCancel={() => setRootPathModalVisible(false)}
+                    />
+                  )}
+                </React.Fragment>
+              )}
               <h3 style={{ display: "flex", justifyContent: "space-between" }}>
                 {getLabelFromSecretType(secretType)}
                 {secretType !== "docker" && (

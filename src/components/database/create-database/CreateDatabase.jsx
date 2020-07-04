@@ -1,5 +1,5 @@
 import React from 'react';
-import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
+import { dbTypes, defaultDbConnectionStrings } from '../../../constants';
 import { Card, Input, Button, Alert, Radio, Form } from 'antd';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
@@ -29,7 +29,7 @@ const CreateDatabase = (props) => {
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
 
   const handleOnFinish = ({ alias, dbType, conn, dbName }) => {
-    props.handleSubmit(alias, conn, defaultDBRules, dbType, dbName)
+    props.handleSubmit(alias, conn, dbType, dbName)
   }
 
   const handleValuesChange = (changedValues) => {

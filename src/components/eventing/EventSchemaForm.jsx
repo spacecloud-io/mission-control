@@ -10,7 +10,7 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify } from '../../utils';
 
-const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes, conformLoading }) => {
+const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes }) => {
   const [form] = Form.useForm()
   const [eventType, setEventType] = useState();
 
@@ -40,12 +40,9 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(values);
       try {
-        handleSubmit(
-          values.eventType,
-          schema
-        );
+        handleSubmit(values.eventType, schema)
+          .then(() => handleCancel())
       } catch (ex) {
         notify("error", "Error", ex.toString())
       }
@@ -62,7 +59,6 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
         okText="Add"
         title="Add event schema"
         onOk={handleSubmitClick}
-        confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} initialValues={{ 'eventType': eventType }}>

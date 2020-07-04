@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
-import { increment, decrement } from "automate-redux"
+import { useSelector } from "react-redux"
 import ReactGA from 'react-ga';
-import client from "../../client"
-import { getProjectConfig, setProjectConfig, notify } from "../../utils"
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 
 import { Button, Table, Popconfirm } from "antd"
 import ServiceForm from "../../components/remote-services/service-form/ServiceForm"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
+import { setRemoteService, deleteRemoteService } from "../../operations/remoteServices"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
 
 const RemoteServices = () => {
   // Router params
   const { projectID } = useParams()
-
-  const dispatch = useDispatch()
   const history = useHistory()
 
   // Global state
@@ -49,14 +46,21 @@ const RemoteServices = () => {
   }
 
   const handleSubmit = (name, url) => {
-    const serviceConfig = services[name]
-    const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
-    const newServices = Object.assign({}, services, { [name]: newServiceConfig })
-    dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, name, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.remoteServices.externalServices`, newServices)
-      notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} service successfully`)
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    return new Promise((resolve, reject) => {
+      const serviceConfig = services[name]
+      const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
+      incrementPendingRequests()
+      setRemoteService(projectID, name, newServiceConfig)
+        .then(() => {
+          notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
+          resolve()
+        })
+        .catch((ex) => {
+          notify("error", `Error ${serviceConfig ? "modifying" : "adding"} remote service`, ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   const handleViewClick = (name) => {
@@ -64,13 +68,11 @@ const RemoteServices = () => {
   }
 
   const handleDelete = (name) => {
-    dispatch(increment("pendingRequests"))
-    client.remoteServices.deleteServiceConfig(projectID, name).then(() => {
-      const newServices = Object.assign({}, services)
-      delete newServices[name]
-      setProjectConfig(projectID, "modules.remoteServices.externalServices", newServices)
-      notify("success", "Success", "Removed service successfully")
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    incrementPendingRequests()
+    deleteRemoteService(projectID, name)
+      .then(() => notify("success", "Success", "Removed remote service successfully"))
+      .catch(ex => notify("error", "Error removing remote service", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const tableColumns = [

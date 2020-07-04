@@ -1,20 +1,17 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { increment, decrement } from 'automate-redux';
-import client from '../../client';
-import { getProjectConfig, setProjectConfig, notify } from '../../utils';
+import { useSelector } from 'react-redux';
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import ReactGA from 'react-ga';
 import ProjectPageLayout, { Content, InnerTopBar } from "../../components/project-page-layout/ProjectPageLayout";
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EndpointForm from '../../components/remote-services/endpoint-form/EndpointForm';
+import { setRemoteService } from '../../operations/remoteServices';
 
 const ConfigureEndpoint = () => {
   // Router params
   const { projectID, serviceName, endpointName } = useParams();
-
-  const dispatch = useDispatch();
   const history = useHistory()
 
   const projects = useSelector(state => state.projects);
@@ -29,15 +26,14 @@ const ConfigureEndpoint = () => {
     const isEndpointPresent = endpoints[name] ? true : false
     const newEndpoints = Object.assign({}, endpoints, { [name]: { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers } })
     const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
-    dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig)
+    incrementPendingRequests()
+    setRemoteService(projectID, serviceName, newServiceConfig)
       .then(() => {
-        setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
         notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
         history.goBack()
       })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .catch(ex => notify("error", `Error ${isEndpointPresent ? "modifying" : "adding"} endpoint`, ex))
+      .finally(() => decrementPendingRequests())
   }
 
   return (

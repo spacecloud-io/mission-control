@@ -46,9 +46,10 @@ const RuleForm = (props) => {
         delete options["col"]
       }
 
-      props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options);
-      props.handleCancel();
-      form.resetFields();
+      props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options).then(() => {
+        props.handleCancel();
+        form.resetFields();
+      })
     });
   }
 

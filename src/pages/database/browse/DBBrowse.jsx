@@ -33,7 +33,7 @@ const Browse = () => {
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
 
-  const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
+  const selectedDBType = getDBTypeFromAlias(selectedDB)
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);

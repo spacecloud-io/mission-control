@@ -7,10 +7,10 @@ import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
 import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
-import client from "../../../client";
 import source_code from "../../../assets/source_code.svg";
-import { getProjectConfig, setProjectConfig, notify } from "../../../utils";
-import { increment, decrement } from "automate-redux";
+import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { decrement } from "automate-redux";
+import { setService, deleteService } from "../../../operations/deployments";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -142,7 +142,6 @@ const DeploymentsOverview = () => {
     return new Promise((resolve, reject) => {
       const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
       const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
-      dispatch(increment("pendingRequests"));
       const serviceId = values.id;
 
       let config = {
@@ -185,48 +184,25 @@ const DeploymentsOverview = () => {
         whitelists: values.whitelists,
         upstreams: values.upstreams
       };
-      client.deployments
-        .setDeploymentConfig(projectID, serviceId, values.version, config)
+      incrementPendingRequests()
+      setService(projectID, config.id, config.version, config)
         .then(() => {
-          if (type === "add") {
-            const newDeployments = [...deployments, config];
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          } else {
-            const newDeployments = deployments.map(obj => {
-              if (obj.id === config.id && obj.version === config.version) return config;
-              return obj;
-            });
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          }
-          resolve();
+          notify("success", "Success", "Saved service config successfully")
+          resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", "Error saving service config", ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDelete = (serviceId, version) => {
-    dispatch(increment("pendingRequests"));
-    client.deployments
-      .deleteDeploymentConfig(projectID, serviceId, version)
-      .then(() => {
-        const newDeployments = deployments.filter(obj => !(obj.id === serviceId && obj.version === version));
-        setProjectConfig(
-          projectID,
-          "modules.deployments.services",
-          newDeployments
-        );
-        notify("success", "Success", "Successfully deleted deployment config");
-      })
-      .catch(ex => notify("error", "Error deleting deployment", ex))
+    incrementPendingRequests()
+    deleteService(projectID, serviceId, version)
+      .then(() => notify("success", "Success", "Successfully deleted service"))
+      .catch(ex => notify("error", "Error deleting service", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
