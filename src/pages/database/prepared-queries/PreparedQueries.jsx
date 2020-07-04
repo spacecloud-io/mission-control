@@ -11,7 +11,7 @@ import '../database.css';
 import history from '../../../history';
 import client from '../../../client';
 import { increment, decrement, set } from 'automate-redux'
-import { notify, getProjectConfig } from '../../../utils';
+import { notify, getProjectConfig, setProjectConfig } from '../../../utils';
 import store from '../../../store';
 import { defaultPreparedQueryRule } from '../../../constants';
 import { setPreparedQueries } from '../dbActions'
@@ -36,9 +36,35 @@ const PreparedQueries = () => {
     ReactGA.pageview("/projects/database/prepared-queries");
   }, [])
 
+  // Handlers
+  useEffect(() => {
+    const bc = new BroadcastChannel('builder');
+    bc.onmessage = ({data}) => {
+      if (data.module === "prepared-queries") {
+        const oldPreparedQuery = getProjectConfig(store.getState().projects, projectID, `modules.db.${data.db}.preparedQueries.${data.name}`);
+        const newPreparedQuery = Object.assign({}, oldPreparedQuery, {rule: data.rules[data.name]})
+        dispatch(increment("pendingRequests"));
+        setPreparedQueries(projectID, data.db, newPreparedQuery.id, newPreparedQuery.args, newPreparedQuery.sql, newPreparedQuery.rule)
+        .then(() => {
+          setProjectConfig(projectID, `modules.db.${data.db}.preparedQueries.${data.name}`, newPreparedQuery)
+          notify("success", "Success", "Successfully edited rule")
+        })
+        .catch((ex) => notify("error", "Error", ex))
+        .finally(() => store.dispatch(decrement("pendingRequests")))
+      }
+    }
+  }, [])
+
   const handleSecureClick = (queryName) => {
-    setClickedQuery(queryName)
-    setRuleModal(true)
+    const rule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${queryName}.rule`)
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=prepared-queries&name=${queryName}&db=${selectedDB}`, '_newtab')
+    w.data = {
+      rules: {
+        [queryName]: {
+          ...rule
+        }
+      }
+    };
   }
 
   const handleSecureSubmit = (rule) => {

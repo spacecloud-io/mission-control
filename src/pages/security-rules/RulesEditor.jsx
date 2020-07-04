@@ -93,7 +93,7 @@ const RulesEditor = (props) => {
   };
 
   // Map rules into nodes and edges
-  if (!["remote-service", "routing", "eventing"].includes(moduleName)) nodes.push({ id: name, label: name, group: 'crud' });
+  if (!["remote-service", "routing", "eventing", "prepared-queries"].includes(moduleName)) nodes.push({ id: name, label: name, group: 'crud' });
     Object.entries(rule).map(([key, value]) => {
       if (Object.keys(value).length === 0) {
         nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
