@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig, notify, getJWTSecret } from '../../../utils';
+import { getProjectConfig, notify } from '../../../utils';
 import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -17,6 +17,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
+import { getJWTSecret } from '../../../operations/projects';
 
 const { Option } = Select;
 const { Panel } = Collapse;

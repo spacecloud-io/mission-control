@@ -371,8 +371,54 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
 }
 
 // Getters
-
 export const getDbsConfig = (state) => get(state, "dbConfig", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfig.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", dbAliasName)
+export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
+export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
+export const getDbSchemas = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
+export const getDbRules = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}`, {})
+export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}`, {})
+export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: "", args: [] })
+export const getDbDefaultPreparedQuerySecurityRule = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}.default.rule`, {})
+export const getDbDefaultCollectionSecurityRule = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}.default.rules`, {})
+export const getCollections = (state, dbAliasName) => get(state, `dbCollections.${dbAliasName}`, [])
+export const getTrackedCollectionsInfo = (state, dbAliasName) => {
+  const schemas = getDbSchemas(state, dbAliasName)
+  const rules = getDbRules(state, dbAliasName)
+  const collections = {}
+  Object.entries(schemas).forEach(([colName, schema]) => {
+    collections[colName] = { schema }
+  })
+  Object.entries(rules).forEach(([colName, rule]) => {
+    if (collections[colName]) {
+      collections[colName].rule = rule
+    } else {
+      collections[colName] = { rule }
+    }
+  })
+  return Object.entries(collections).map(([colName, { schema, rule }]) => Object.assign({}, { name: colName, schema, ...rule }))
+}
+
+export const getTrackedCollections = (state, dbAliasName) => {
+  const schemas = getDbSchemas(state, dbAliasName)
+  const rules = getDbRules(state, dbAliasName)
+  return [...new Set([...Object.keys(schemas), ...Object.keys(rules)])]
+}
+
+export const getDbGraphQLRootFields = (state, dbAliasName) => {
+  const schemas = getDbSchemas(state, dbAliasName)
+  const rules = getDbRules(state, dbAliasName)
+  const preparedQueries = getDbPreparedQueries(state, dbAliasName)
+  return [...new Set([...Object.keys(schemas), ...Object.keys(rules), ...Object.keys(preparedQueries)])]
+}
+
+export const getUntrackedCollections = (state, dbAliasName) => {
+  const schemas = getDbSchemas(state, dbAliasName)
+  const rules = getDbRules(state, dbAliasName)
+  const collections = getCollections(state, dbAliasName)
+  return collections.filter(colName => !schemas[colName] && !rules[colName])
+}
+
+export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")

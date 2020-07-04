@@ -140,12 +140,12 @@ export const generateGraphQLQueryFromGraphQLAST = (ast = { queryType: "query", f
   return result
 }
 
-export const generateDBSchemaAST = (collections) => {
-  const schemaAST = Object.values(collections).reduce((prev, { schema }) => {
-    if (!schema) {
+export const generateDBSchemaAST = (schemas) => {
+  const schemaAST = Object.values(schemas).reduce((prev, curr) => {
+    if (!curr) {
       return prev
     }
-    return Object.assign({}, prev, generateSchemaAST(schema))
+    return Object.assign({}, prev, generateSchemaAST(curr))
   }, {})
   return schemaAST
 }

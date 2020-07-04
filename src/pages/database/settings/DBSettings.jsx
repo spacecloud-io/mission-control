@@ -6,8 +6,8 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { getProjectConfig, notify, getDatabaseLabelFromType, canDatabaseHavePreparedQueries, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType } from "../../../operations/database"
+import { notify, getDatabaseLabelFromType, canDatabaseHavePreparedQueries, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, getDbDefaultPreparedQuerySecurityRule } from "../../../operations/database"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -32,14 +32,22 @@ const Settings = () => {
     ReactGA.pageview("/projects/database/settings");
   }, [])
   // Global state
-  const projects = useSelector(state => state.projects)
-
-  // Derived properties
+  const defaultPreparedQueryRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
   const eventingDB = useSelector(state => getEventingDbAliasName(state))
-  const canDisableDB = eventingDB !== selectedDB
-
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
   const type = useSelector(state => getDbType(state, selectedDB))
+
+  // Derived properties
+  const canDisableDB = eventingDB !== selectedDB
+  const databaseLabel = getDatabaseLabelFromType(type)
+  let databaseLabelName = "Database name"
+  let databaseLabelDescription = `The logical database inside ${databaseLabel} that Space Cloud will connect to. Space Cloud will create this database if it doesn’t exist already`
+  if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) {
+    databaseLabelName = `${databaseLabel} schema`
+    databaseLabelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
+  }
+
+  const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
   // This is used to bind the form initial values on page reload. 
   // On page reload the redux is intially empty leading the form initial values to be empty. 
@@ -49,17 +57,6 @@ const Settings = () => {
       form.setFieldsValue({ dbName: dbName })
     }
   }, [dbName])
-
-  const databaseLabel = getDatabaseLabelFromType(type)
-  let databaseLabelName = "Database name"
-  let databaseLabelDescription = `The logical database inside ${databaseLabel} that Space Cloud will connect to. Space Cloud will create this database if it doesn’t exist already`
-  if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) {
-    databaseLabelName = `${databaseLabel} schema`
-    databaseLabelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
-  }
-
-  const defaultPreparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
-  const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
   // Handlers
   const handleDisable = () => {

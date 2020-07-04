@@ -9,22 +9,22 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
-import client from '../../../client';
-import { notify, getProjectConfig, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { defaultPreparedQueryRule } from '../../../constants';
-import { deletePreparedQuery, savePreparedQuerySecurityRule } from '../../../operations/database'
-
-
+import { deletePreparedQuery, savePreparedQuerySecurityRule, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
   const [ruleModal, setRuleModal] = useState(false)
-  const projects = useSelector(state => state.projects);
-  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {});
+
+  // Global state
+  const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
+  let defaultRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
+
+  // Derived properties
   const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default")
   const [clickedQuery, setClickedQuery] = useState("");
-  let defaultRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
   if (Object.keys(defaultRule).length === 0) {
     defaultRule = defaultPreparedQueryRule
   }

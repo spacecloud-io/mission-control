@@ -6,7 +6,6 @@ import { useHistory } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getProjectConfig } from '../../utils';
-import { dbTypes } from '../../constants';
 import { dbIcons } from '../../utils';
 
 function DbSelector(props) {
@@ -17,7 +16,7 @@ function DbSelector(props) {
 
   const dbList = Object.entries(dbModule).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
-    return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(projects, projectID, alias) }
+    return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(alias) }
   })
 
   const dbcolumns = [

@@ -34,7 +34,7 @@ const EventingSettings = () => {
     return {
       alias: alias,
       dbtype: obj.type,
-      svgIconSet: dbIcons(projects, projectID, alias)
+      svgIconSet: dbIcons(alias)
     };
   });
 

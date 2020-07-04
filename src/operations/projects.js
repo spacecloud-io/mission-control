@@ -1,4 +1,4 @@
-import { set } from "automate-redux";
+import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
 import { generateProjectConfig } from "../utils";
@@ -81,4 +81,19 @@ export const removeSecret = (projectId, secret) => {
   const primarySecretPresent = newSecrets.some(obj => obj.isPrimary)
   if (!primarySecretPresent && newSecrets.length > 0) newSecrets[0].isPrimary = true
   return saveProjectSetting(projectId, "secrets", newSecrets)
+}
+
+// getters
+
+export const getProjectConfig = (state, projectId) => {
+  const projects = get(state, "projects", [])
+  const index = projects.findIndex(obj => obj.id === projectId)
+  return index === -1 ? {} : projects[index]
+}
+
+export const getJWTSecret = (state, projectId) => {
+  const projectConfig = getProjectConfig(state, projectId)
+  const secrets = get(projectConfig, "secrets", [])
+  if (secrets.length === 0) return ""
+  return secrets[0].secret
 }

@@ -11,11 +11,12 @@ import FilterSorterForm from "../../../components/database/filter-sorter-form/Fi
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
-import { notify, getTrackedCollectionNames, getProjectConfig, getDBTypeFromAlias } from '../../../utils';
+import { notify } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
+import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 
 let editRowData = {};
 
@@ -33,12 +34,12 @@ const Browse = () => {
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
 
-  const selectedDBType = getDBTypeFromAlias(selectedDB)
+  const selectedDBType = useSelector(state => getDbType(state, selectedDB))
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
-  const collectionSchemaString = useSelector(state => getProjectConfig(state.projects, projectID, `modules.db.${selectedDB}.collections.${selectedCol}.schema`))
-  const collections = useSelector(state => getTrackedCollectionNames(state, projectID, selectedDB))
+  const collectionSchemaString = useSelector(state => getCollectionSchema(state, selectedDB, selectedCol))
+  const collections = useSelector(state => getTrackedCollections(state, selectedDB))
   const api = new API(projectID, spaceCloudClusterOrigin);
   const db = api.DB(selectedDB);
   const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];

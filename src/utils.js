@@ -3,14 +3,15 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID, defaultPreparedQueryRule } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID } from './constants';
 
 import store from "./store"
 import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects } from './operations/projects'
+import { loadProjects, getJWTSecret } from './operations/projects'
+import { getDbType } from './operations/database'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -33,12 +34,6 @@ export function decrementPendingRequests() {
 export function capitalizeFirstCharacter(str) {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-export const getJWTSecret = (state, projectId) => {
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
-  if (secrets.length === 0) return ""
-  return secrets[0].secret
 }
 
 export const generateToken = (state, projectId, claims) => {
@@ -517,17 +512,9 @@ export const BillingRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const getDBTypeFromAlias = (dbAliasName) => {
-  return get(store.getState(), `dbConfig.${dbAliasName}.type`, dbAliasName)
-}
-
 export const canDatabaseHavePreparedQueries = (dbAliasName) => {
-  const dbType = getDBTypeFromAlias(dbAliasName)
+  const dbType = getDbType(dbAliasName)
   return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
-}
-
-export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbAliasName}.preparedQueries.default.rule`, defaultPreparedQueryRule)
 }
 
 export const getDatabaseLabelFromType = (dbType) => {
@@ -545,15 +532,11 @@ export const getDatabaseLabelFromType = (dbType) => {
   }
 }
 
-export const dbIcons = (project, projectId, selectedDb) => {
-
-  const dbModule = getProjectConfig(project, projectId, "modules.db", {})
-
-  let checkDB = ''
-  if (dbModule[selectedDb]) checkDB = dbModule[selectedDb].type
+export const dbIcons = (selectedDb) => {
+  const dbType = getDbType(store.getState(), selectedDb)
 
   var svg = mongoSvg
-  switch (checkDB) {
+  switch (dbType) {
     case dbTypes.MONGO:
       svg = mongoSvg
       break;
@@ -573,32 +556,6 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
   }
   return svg;
-}
-
-const getProjects = state => state.projects
-
-export const getTrackedCollectionNames = (state, projectId, dbName) => {
-  const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections = Object.keys(collections)
-    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-  return trackedCollections
-}
-
-export const getTrackedCollections = (state, projectId, dbName) => {
-  const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections = Object.keys(collections)
-    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-    .reduce((obj, key) => {
-      obj[key] = collections[key];
-      return obj;
-    }, {})
-  return trackedCollections
-}
-
-export const getSchema = (projectId, dbName, colName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections.${colName}.schema`, "")
 }
 
 export const parseJSONSafely = (str) => {

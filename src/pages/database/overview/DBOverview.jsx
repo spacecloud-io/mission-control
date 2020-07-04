@@ -13,23 +13,23 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import history from '../../../history';
-import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled } from "../../../operations/database"
-import { defaultDBRules, dbTypes } from '../../../constants';
+import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { dbTypes } from '../../../constants';
 
 
 const Overview = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-
-  // changes
   const dispatch = useDispatch();
 
   // Global state
-  const projects = useSelector(state => state.projects)
-  const allCollections = useSelector(state => get(state, `extraConfig.${projectID}.db.${selectedDB}.collections`, []))
-  const connected = useSelector(state => get(state, `extraConfig.${projectID}.db.${selectedDB}.connected`))
+  const connected = useSelector(state => getDbConnState(state, selectedDB))
+  const selectedDBType = useSelector(state => getDbType(state, selectedDB))
+  const connString = useSelector(state => getDbConnectionString(state, selectedDB))
+  const unTrackedCollections = useSelector(state => getUntrackedCollections(state, selectedDB)).map(colName => ({ name: colName }))
+  const trackedCollections = useSelector(state => getTrackedCollectionsInfo(state, selectedDB))
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
@@ -38,20 +38,9 @@ const Overview = () => {
   const [clickedCol, setClickedCol] = useState("");
 
   // Derived properties
-  const selectedDBType = getDBTypeFromAlias(selectedDB)
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
-  const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
-  let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
-  if (Object.keys(defaultRules).length === 0) {
-    defaultRules = defaultDBRules
-  }
   const { hostName, port } = parseDbConnString(connString);
   const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
-  const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== "event_logs" && col !== "invocation_logs")
-  const unTrackedCollectionsToShow = unTrackedCollections.map(col => ({ name: col }))
-  const trackedCollections = Object.entries(collections).map(([name, val]) => Object.assign({}, { name: name, realtime: val.isRealtimeEnabled }))
-  const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
-  const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
+  const clickedColDetails = trackedCollections.find(obj => obj.name === clickedCol)
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
@@ -114,9 +103,11 @@ const Overview = () => {
   }
 
   const handleTrackCollections = (collections) => {
+    incrementPendingRequests()
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
       .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
-      .catch(ex => notify("error", "Error", ex))
+      .catch(ex => notify("error", `Error tracking ${collections.length > 1 ? "collections" : "collection"}`, ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const handleAddCollection = (editMode, colName, schema) => {
@@ -131,8 +122,8 @@ const Overview = () => {
   }
 
   const handleEditConnString = (conn) => {
-    incrementPendingRequests()
     return new Promise((resolve, reject) => {
+      incrementPendingRequests()
       enableDb(projectID, selectedDB, conn)
         .then(() => {
           notify("success", "Connection successful", `Connected to database successfully`)
@@ -142,6 +133,7 @@ const Overview = () => {
           notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
           reject()
         })
+        .finally(() => decrementPendingRequests())
     })
   }
   const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
@@ -153,11 +145,11 @@ const Overview = () => {
     },
     {
       title: 'Realtime',
-      dataIndex: 'realtime',
+      dataIndex: 'isRealtimeEnabled',
       key: 'realtime',
-      render: (_, { name, realtime }) => (
+      render: (_, { name, isRealtimeEnabled }) => (
         <Switch
-          checked={realtime}
+          checked={isRealtimeEnabled}
           onChange={checked =>
             handleRealtimeEnabled(name, checked)
           }
@@ -251,10 +243,10 @@ const Overview = () => {
                   </Button>
                 </div>
                 <div style={{ marginTop: '32px' }}>
-                  <Table columns={trackedTableColumns} dataSource={trackedCollectionsToShow} bordered locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' /> }} />
+                  <Table columns={trackedTableColumns} dataSource={trackedCollections} bordered locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' /> }} />
                 </div>
               </div>
-              {unTrackedCollectionsToShow.length > 0 && (
+              {unTrackedCollections.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
                     <div style={{ marginTop: '32px' }}>
@@ -268,7 +260,7 @@ const Overview = () => {
                     </Button>
                     </div>
                     <div style={{ marginTop: '32px' }}>
-                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsToShow} pagination={false} bordered />
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollections} pagination={false} bordered />
                     </div>
                   </Col>
                 </Row>

@@ -3,10 +3,16 @@ import { Redirect, useParams } from "react-router-dom";
 import { useSelector } from 'react-redux'
 import ReactGA from 'react-ga';
 
-import './database.css'
-import '../../index.css'
+import Sidenav from '../../components/sidenav/Sidenav'
+import Topbar from '../../components/topbar/Topbar'
+import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
+import ProjectPageLayout, { Content } from "../../components/project-page-layout/ProjectPageLayout"
+
 import { loadDbSchemas, loadDbConfig, loadDbRules, getDbsConfig } from '../../operations/database';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+
+import './database.css'
+import '../../index.css'
 
 const Database = () => {
   const { projectID } = useParams()
@@ -46,7 +52,15 @@ const Database = () => {
   }
 
   return (
-    null
+    <React.Fragment>
+      <Topbar showProjectSelector />
+      <Sidenav selectedItem="database" />
+      <ProjectPageLayout>
+        <Content>
+          <DatabaseEmptyState />
+        </Content>
+      </ProjectPageLayout>
+    </React.Fragment>
   )
 }
 

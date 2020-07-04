@@ -8,8 +8,9 @@ import { Row, Col, Button } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, getProjectConfig, getJWTSecret, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { getEventSourceFromType, getProjectConfig, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { triggerCustomEvent } from '../../../operations/eventing';
+import { getJWTSecret } from '../../../operations/projects';
 
 const QueueEvent = () => {
   const { projectID } = useParams()

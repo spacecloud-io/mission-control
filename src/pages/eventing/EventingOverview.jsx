@@ -33,7 +33,7 @@ const EventingOverview = () => {
 	const dbModuleFetch = getProjectConfig(projects, projectID, "modules.db", {})
 	const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
-		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(projects, projectID, alias) }
+		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
 	})
 	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
 	const noOfRules = rulesTableData.length

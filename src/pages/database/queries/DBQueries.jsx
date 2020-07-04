@@ -10,10 +10,10 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import QueryBlock from "../../../components/db-query/QueryBlock";
-import { getTrackedCollections, getSchema } from "../../../utils";
 import { generateDBSchemaAST, generateSampleQueryDBInsert, generateSampleQueryDBRead, generateSampleQueryDBUpdate, generateSampleQueryDBDelete } from '../../../graphql';
 
 import bookReadingSvg from "../../../assets/bookReading.svg"
+import { getCollectionSchema, getDbSchemas, getTrackedCollections } from "../../../operations/database";
 
 const VariablesPanel = () => {
   return <div style={{
@@ -57,9 +57,9 @@ const Queries = () => {
 
   // Global state
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
-  const trackedCollections = useSelector(state => getTrackedCollections(state, projectID, selectedDB))
-  const trackedCollectionNames = Object.keys(trackedCollections)
-  const schema = getSchema(projectID, selectedDB, selectedCol)
+  const dbSchemas = useSelector(state => getDbSchemas(state, selectedDB))
+  const trackedCollectionNames = useSelector(state => getTrackedCollections(state, selectedDB))
+  const schema = useSelector(state => getCollectionSchema(state, selectedDB, selectedCol))
   const dispatch = useDispatch()
 
   // Handlers
@@ -106,7 +106,7 @@ const Queries = () => {
   }
 
 
-  const dbSchemaASTs = generateDBSchemaAST(trackedCollections)
+  const dbSchemaASTs = generateDBSchemaAST(dbSchemas)
   let readQuery = { query: '', response: '' }
   let insertQuery = { query: '', response: '' }
   let updateQuery = { query: '', response: '' }
