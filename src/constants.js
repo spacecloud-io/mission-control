@@ -54,7 +54,6 @@ export const defaultEventRule = {
 }
 
 export const defaultFileRootPathRule = {
-  prefix: "/",
   rule: defaultFileRule
 }
 

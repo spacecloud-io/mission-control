@@ -17,6 +17,8 @@ import Graph from 'react-graph-vis';
 import { Alert, Dropdown, Menu } from 'antd';
 import ConfigureRule from '../../components/security-rules/ConfigureRule';
 import dotProp from 'dot-prop-immutable';
+import {useParams} from 'react-router-dom';
+import qs from 'qs';
 
 const Keyboard = (props) => {
   return (
@@ -27,11 +29,14 @@ const Keyboard = (props) => {
 };
 
 const RulesEditor = (props) => {
+
+  const params = qs.parse(props.location.search, { ignoreQueryPrefix: true });
+  const {moduleName, name, id, db} = params;
+
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [rule, setRule] = useState({});
-  const [value, setValue] = useState('');
-  const [name, setName] = useState('');
+  const [stringifiedRule, setStringifiedRule] = useState('');
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
   const [network, setNetwork] = useState();
@@ -40,25 +45,19 @@ const RulesEditor = (props) => {
   const edges = [];
 
   useEffect(() => {
-    setValue(JSON.stringify(rule, null, 2));
+    setStringifiedRule(JSON.stringify(rule, null, 2));
   }, [rule]);
 
   const bc = new BroadcastChannel('builder');
   useEffect(() => {
-    bc.onmessage = function (ev) {
-      if (ev.data.to === "editor") {
-        setName(ev.data.name);
-        setRule(ev.data.rules);
-      }
-    };
+    if (!window.data) return;
+    setRule(window.data.rules);
   }, []);
 
   // And, or rule
   const nestedNodes = (clauses, parentId) => {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < clauses.length; i++) {
       const childId = `${parentId}.clauses.${i}`;
-
-      if (clauses[i] && Object.keys(clauses[i]).length > 0) {
         nodes.push({
           id: childId,
           label: clauses[i].rule,
@@ -72,12 +71,10 @@ const RulesEditor = (props) => {
         }
         if (clauses[i].rule === 'query' || clauses[i].rule === 'remove' || clauses[i].rule === 'force') {
           clauseNodes(clauses[i].clause, childId);
-        }
-      } else {
-        nodes.push({ id: childId, label: '+ Add rule', group: 'add_rule' });
-        edges.push({ from: parentId, to: childId });
-      }
+        }     
     }
+    nodes.push({ id: `${parentId}.clauses.${clauses.length}`, label: '+ Add rule', group: 'add_rule' });
+    edges.push({ from: parentId, to: `${parentId}.clauses.${clauses.length}` });
   };
 
   // query, remove
@@ -96,31 +93,26 @@ const RulesEditor = (props) => {
   };
 
   // Map rules into nodes and edges
-  nodes.push({ id: name, label: name, group: 'crud' });
-  Object.entries(rule).map(([key, value]) => {
-    if (Object.keys(value).length === 0) {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
-      nodes.push({ id: key, label: '+ Add rule', group: 'add_rule' });
-    } else {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'crud' });
-      nodes.push({ id: key, label: value.rule, ...value, group: 'rule' });
-    }
-    edges.push({ from: name, to: `${key}Rule` });
-    edges.push({ from: `${key}Rule`, to: key });
-
-    if (value.rule === 'query' || value.rule === 'remove' || value.rule === 'force') {
-      clauseNodes(value.clause, key);
-    }
-
-    if (value.rule === 'or' || value.rule === 'and') {
-      nestedNodes(value.clauses, key);
-    }
-  });
-
-  // On drawer form submit
-  const onSubmit = (values, id) => {
-    setRule(dotProp.set(rule, id, values));
-  };
+  if (!["remote-service", "routing", "eventing"].includes(moduleName)) nodes.push({ id: name, label: name, group: 'crud' });
+    Object.entries(rule).map(([key, value]) => {
+      if (Object.keys(value).length === 0) {
+        nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
+        nodes.push({ id: key, label: '+ Add rule', group: 'add_rule' });
+      } else {
+        nodes.push({ id: `${key}Rule`, label: key, group: 'crud' });
+        nodes.push({ id: key, label: value.rule, group: 'rule', ...value });
+      }
+      edges.push({ from: name, to: `${key}Rule` });
+      edges.push({ from: `${key}Rule`, to: key });
+  
+      if (value.rule === 'query' || value.rule === 'remove' || value.rule === 'force') {
+        clauseNodes(value.clause, key);
+      }
+  
+      if (value.rule === 'or' || value.rule === 'and') {
+        nestedNodes(value.clauses, key);
+      }
+    });
 
   // vis.js configurations
   const graph = {
@@ -209,32 +201,42 @@ const RulesEditor = (props) => {
       const position = event.pointer.DOM;
       const nodeId = network.getNodeAt(position);
       if (nodeId) network.selectNodes([nodeId], false);
-      console.log(nodeId);
+      console.log("Rule", rule);
+      console.log("Nodes", nodes);
     },
     select: (event) => {
       const node = event.nodes[0];
-      if (node && !node.includes('Rule')) setselectedNodeId(node);
+      if (node) setselectedNodeId(node);
     },
     doubleClick: function (event) {
-      const ruleObj = nodes.find((val) => val.id === event.nodes[0]);
-      setSelectedRule(ruleObj);
+      const nodeId = event.nodes[0];
+      setselectedNodeId(nodeId);
+      setSelectedRule(dotProp.get(rule, nodeId));
       setDrawer(true);
     },
   };
 
   // shortcut events handler
   const shortcutsHandler = (key) => {
-    console.log('key: ' + key);
     if (!selectedNodeId) return;
 
     if (key === 'del') {
-      setRule(dotProp.set(rule, selectedNodeId, {}));
+      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
+        return;
+      }
+      if (["create", "update", "read", "delete"].includes(selectedNodeId)) {
+        setRule(dotProp.set(rule, selectedNodeId, {}))
+      }
+      else {
+        setRule(dotProp.delete(rule, selectedNodeId));
+      }
     } 
 
     else if (key === 'ctrl+c') {
       const copiedRule = Object.assign({}, dotProp.get(rule, selectedNodeId));
       if (copiedRule.clauses) copiedRule.clauses = [];
       else if (copiedRule.clause) copiedRule.clause = {};
+      console.log(copiedRule);
       setSelectedRule(copiedRule);
     } 
 
@@ -254,9 +256,20 @@ const RulesEditor = (props) => {
     } 
     
     else if (key === 'ctrl+v') {
+
       const ruleObj = dotProp.get(rule, selectedNodeId);
-      if (ruleObj.rule === 'and' || ruleObj.rule === 'or') {
-        for (let i = 0; i < 2; i++) {
+      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
+        setRule(dotProp.set(rule, selectedNodeId.split("Rule")[0], selectedRule));
+      }
+      else if (ruleObj.rule === 'query' || ruleObj.rule === "remove" || ruleObj.rule === "force") {
+        const childId = `${selectedNodeId}.clause`;
+        const child = nodes.find((val) => val.id === childId);
+        if (child.group === 'add_rule') {
+          setRule(dotProp.set(rule, childId, selectedRule));
+        }
+      }
+      else if (ruleObj.rule === 'and' || ruleObj.rule === 'or') {
+        for (let i = 0; i <= ruleObj.clauses.length; i++) {
           const childId = `${selectedNodeId}.clauses.${i}`;
           const child = nodes.find((val) => val.id === childId);
           if (child.group === 'add_rule') {
@@ -274,7 +287,7 @@ const RulesEditor = (props) => {
 
 const onTabChange = (tab) => {
   try {
-    const parsedRule = JSON.parse(value);
+    const parsedRule = JSON.parse(stringifiedRule);
     localStorage.setItem('rules:editor', tab);
     setRule(parsedRule);
   } catch (ex) {
@@ -285,8 +298,8 @@ const onTabChange = (tab) => {
 // Prettify JSON code
 const prettify = () => {
   try {
-    const obj = JSON.parse(value);
-    setValue(JSON.stringify(obj, null, 2));
+    const obj = JSON.parse(stringifiedRule);
+    setStringifiedRule(JSON.stringify(obj, null, 2));
   } catch (ex) {
     notify('error', 'Error', ex.toString());
   }
@@ -309,15 +322,31 @@ const addDefaultSecurityRules = () => {
   })
 }
 
-const onSaveChanges = () => {
-  bc.postMessage({
-    to: "module",
+  // On drawer form submit
+const onSubmit = (values) => {
+  setRule(dotProp.set(rule, selectedNodeId, values));
+};
+
+const onSaveChanges = (tab) => {
+  const message= {
+    module: moduleName,
     name: name,
-    rules: {
-      ...rule
+    id: id,
+    db: db
+  }
+  if (tab === "builder") {
+    bc.postMessage({...message, rules: rule})
+  } else {
+    try {
+      const parsedJSON = JSON.parse(stringifiedRule);
+      bc.postMessage({...message, rules: parsedJSON})
+    } catch (ex) {
+      notify("error", "Error", ex.toString())
+      return;
     }
-  });
+  }
   window.close();
+  console.log(rule);
 }
 
 
@@ -326,7 +355,7 @@ const onSaveChanges = () => {
       <Menu.Item key='ctrl+c'>Copy</Menu.Item>
       <Menu.Item key='ctrl+alt+c'>Copy with children</Menu.Item>
       <Menu.Item key='ctrl+x'>Cut</Menu.Item>
-      <Menu.Item key='ctrl+v'>Paste behind and/or</Menu.Item>
+      <Menu.Item key='ctrl+v'>Paste</Menu.Item>
       <Menu.Item key='alt+r'>Replace</Menu.Item>
       <Menu.Item key='del'>Delete</Menu.Item>
     </Menu>
@@ -348,7 +377,7 @@ const onSaveChanges = () => {
               style={{ padding: '16px 32px 32px' }}
             >
               <div style={{ marginBottom: 28 }}>
-                <b>Security rules</b> ({name} table)
+                <b>Security rules</b> ({name})
                 <span style={{ float: 'right' }}>
                   <Button
                     style={{ marginRight: 16 }}
@@ -414,7 +443,7 @@ const onSaveChanges = () => {
                 ) : (
                   <></>
                 )}
-                <Button type='primary' onClick={() => onSaveChanges()} style={{ width: '100%', marginTop: 24 }}>
+                <Button type='primary' onClick={() => onSaveChanges("builder")} style={{ width: '100%', marginTop: 24 }}>
                   Save
                 </Button>
               </div>
@@ -425,7 +454,7 @@ const onSaveChanges = () => {
               style={{ padding: '16px 32px 32px' }}
             >
               <div style={{ marginBottom: 28 }}>
-                <b>Security rules</b> ({name} table)
+                <b>Security rules</b> ({name})
                 <span style={{ float: 'right' }}>
                   <Button style={{ marginRight: 16 }} onClick={prettify}>
                     Prettify
@@ -439,7 +468,7 @@ const onSaveChanges = () => {
               <div style={{ border: '1px solid #D9D9D9' }}>
                 <CodeMirror
                   style={{ border: '1px solid #D9D9D9' }}
-                  value={value}
+                  value={stringifiedRule}
                   options={{
                     mode: { name: 'javascript', json: true },
                     lineNumbers: true,
@@ -450,11 +479,11 @@ const onSaveChanges = () => {
                     autofocus: true,
                   }}
                   onBeforeChange={(editor, data, value) => {
-                    setValue(value);
+                    setStringifiedRule(value);
                   }}
                 />
               </div>
-              <Button type='primary' onClick={() => onSaveChanges()} style={{ width: '100%', marginTop: 24 }}>
+              <Button type='primary' onClick={() => onSaveChanges("json")} style={{ width: '100%', marginTop: 24 }}>
                 Save
               </Button>
             </Tabs.TabPane>
@@ -464,7 +493,7 @@ const onSaveChanges = () => {
       {Object.keys(rule).length === 0 && (
         <>
           <div style={{ marginBottom: 28, marginTop: 80, padding: '0px 32px' }}>
-            <b>Security rules</b> ({name} table)
+            <b>Security rules</b> ({name})
             <span style={{ float: 'right' }}>
               <Button
                 style={{ marginRight: 16 }}

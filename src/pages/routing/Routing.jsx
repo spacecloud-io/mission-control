@@ -15,6 +15,7 @@ import {
   getProjectConfig,
   generateId
 } from "../../utils";
+import store from "../../store";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -71,6 +72,28 @@ function Routing() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
+  //handlers
+  useEffect(() => {
+    const bc = new BroadcastChannel('builder');
+    bc.onmessage = ({data}) => {
+      if (data.module === 'routing') {
+        dispatch(increment("pendingRequests"));
+        const routes = getProjectConfig(store.getState().projects, projectID, `modules.ingressRoutes`)
+        const config = routes.find(val => val.id === data.id);
+        const newConfig = {...config, rule: data.rules[data.name]}
+       client.routing.setRoutingConfig(projectID, newConfig.id, newConfig)
+       .then(() => {
+         const newRoutes = routes.map(obj => obj.id === data.id ? newConfig : obj);
+         setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
+         notify("success", "Success", "Rule successfully edited")
+       })
+       .catch(ex => notify("error", "Error", ex))
+       .finally(() => dispatch(decrement("pendingRequests")));
+
+      }
+    }
+  }, [])
+
   const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
       dispatch(increment("pendingRequests"));
@@ -108,6 +131,20 @@ function Routing() {
         .finally(() => dispatch(decrement("pendingRequests")));
     });
   };
+
+  const handleSecureClick = id => {
+    const route = getProjectConfig(projects, projectID, `modules.ingressRoutes`).find(val => val.id === id);
+    const url = route.source.url;
+    const rule = route.rule;
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=routing&name=${url}&id=${id}`, '_newtab')
+    w.data = {
+      rules: {
+        [url]: {
+          ...rule
+        }
+      }
+    };
+  }
 
   const handleRouteClick = id => {
     dispatch(set("routing", routes));
@@ -156,23 +193,17 @@ function Routing() {
     },
     {
       title: <b>{"Actions"}</b>,
-      className: "actions",
+      className: "column-actions",
       render: (_, record) => {
         return (
           <span>
-            <a
-              style={{ color: "#40A9FF" }}
-              onClick={() => {
-                handleRouteClick(record.id);
-              }}
-            >
-              Edit
-            </a>
+            <a onClick={() => handleRouteClick(record.id)}>Edit</a>
+            <a onClick={() => handleSecureClick(record.id)}>Secure</a>
             <Popconfirm
               title={`This will delete all the data. Are you sure?`}
               onConfirm={() => handleDelete(record.id)}
             >
-              <a style={{ color: "red", paddingLeft: 10 }}>Delete</a>
+              <a style={{ color: "red" }}>Delete</a>
             </Popconfirm>
           </span>
         );

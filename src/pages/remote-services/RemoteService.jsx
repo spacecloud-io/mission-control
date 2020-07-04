@@ -11,6 +11,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
 import { endpointTypes } from "../../constants"
+import store from "../../store";
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -68,6 +69,37 @@ const RemoteService = () => {
     }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
   }
 
+  // handlers
+  useEffect(() => {
+    const bc = new BroadcastChannel('builder');
+    bc.onmessage = ({data}) => {
+      if (data.module === 'remote-service') {
+        const serviceConfig = getProjectConfig(store.getState().projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
+        serviceConfig.endpoints[data.name].rule = data.rules[data.name];
+        dispatch(increment("pendingRequests"))
+        client.remoteServices.setServiceConfig(projectID, serviceName, serviceConfig)
+          .then(() => {
+            setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, serviceConfig)
+            notify("success", "Success", `Rule successfully edited`)
+          })
+          .catch(ex => notify("error", "Error", ex))
+          .finally(() => dispatch(decrement("pendingRequests")))
+      }
+    }
+  }, [])
+  
+  const handleSecureClick = (endpoint) => {
+    const rule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${endpoint}.rule`)
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}`, '_newtab')
+    w.data = {
+      rules: {
+        [endpoint]: {
+          ...rule
+        }
+      }
+    };
+  }
+
   const tableColumns = [
     {
       title: 'Name',
@@ -102,6 +134,7 @@ const RemoteService = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/${name}/edit`)}>Edit</a>
+          <a onClick={() => handleSecureClick(name)}>Secure</a>
           <Popconfirm title={`This will remove this endpoint from this service. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>

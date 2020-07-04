@@ -20,7 +20,7 @@ const AddRuleForm = (props) => {
   const handleSubmit = e => {
     form.validateFields().then(values => {
       try {
-        props.handleSubmit(values.name, JSON.parse(data));
+        props.handleSubmit(values.name, values.prefix, JSON.parse(data));
         props.handleCancel();
         form.resetFields();
       } catch (ex) {
@@ -37,10 +37,14 @@ const AddRuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{prefix: "/"}}>
         <FormItemLabel name="Name" />
         <Form.Item name="name" rules={[{ required: true, message: 'Please provide a name to your rule!' }]}>
           <Input placeholder="Example: profile-files" />
+        </Form.Item>
+        <FormItemLabel name="Prefix" />
+        <Form.Item name="prefix">
+          <Input />
         </Form.Item>
         <FormItemLabel name="Rule" />
         <CodeMirror

@@ -10,7 +10,7 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import { notify, getDBTypeFromAlias } from '../../../utils';
 
-const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading, defaultRules }) => {
+const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
   const [form] = Form.useForm();
   const [colName, setcolName] = useState('')
 
@@ -24,21 +24,12 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
 
   if (!initialValues) {
     initialValues = {
-      rules: defaultRules,
       isRealtimeEnabled: true
     }
   }
 
-  const initialRules = Object.assign({}, initialValues.rules)
-
-  if (Object.keys(initialValues.rules).length === 0) {
-    initialValues.rules = defaultRules
-  }
-
-  const [rule, setRule] = useState(JSON.stringify(initialValues.rules, null, 2));
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialSchema);
-  const [applyDefaultRules, setApplyDefaultRules] = useState(editMode ? Object.keys(initialRules).length === 0 : true);
 
   const handleChangedValues = ({ name }) => { setcolName(name) };
   useEffect(() => {
@@ -59,7 +50,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
       try {
         handleSubmit(
           values.name,
-          applyDefaultRules ? {} : JSON.parse(rule),
           schema,
           isRealtimeEnabled
         );
@@ -129,32 +119,6 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
               setSchema(value)
             }}
           />
-          <div style={{ paddingTop: 20 }}>
-            <Checkbox
-              checked={applyDefaultRules}
-              onChange={e =>
-                setApplyDefaultRules(!applyDefaultRules)
-              }
-            >Apply default security rules</Checkbox>
-          </div>
-          {!applyDefaultRules ? <div style={{ paddingTop: 20 }}>
-            <FormItemLabel name="Rule" />
-            <CodeMirror
-              value={rule}
-              options={{
-                mode: { name: "javascript", json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: false
-              }}
-              onBeforeChange={(editor, data, value) => {
-                setRule(value)
-              }}
-            />
-          </div> : ""}
         </Form>
       </Modal>
     </div>

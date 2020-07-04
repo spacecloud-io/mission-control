@@ -59,6 +59,8 @@ const Settings = () => {
     databaseLabelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
   }
 
+  const defaultTablesRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {});
+
   const defaultPreparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
   const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
@@ -77,6 +79,21 @@ const Settings = () => {
       })
       .catch(ex => notify("error", "Error disabling database", ex))
       .finally(() => dispatch(decrement("pendingRequests")))
+  }
+
+  const handleDefaultTablesRules = () => {
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor`, '_newtab')
+    w.data = {
+      module: "database",
+      name: "default",
+      rules: {
+        ...defaultTablesRules
+      }
+    };
+  }
+
+  const handleDefaultPreparedQueriesRule = () => {
+    console.log("ok")
   }
 
   const handleReloadDB = () => {
@@ -114,7 +131,7 @@ const Settings = () => {
       .finally(() => dispatch(decrement("pendingRequests")))
   }
 
-  const handleChangeDefaultPreparedQueryRule = () => {
+/*   const handleChangeDefaultPreparedQueryRule = () => {
     try {
       setPreparedQueries(projectID, selectedDB, "default", [], "", JSON.parse(defaultPreparedQueryRuleString))
         .then(() => notify("success", "Success", "Successfully changed default security rules of prepared queries"))
@@ -122,7 +139,7 @@ const Settings = () => {
     } catch (ex) {
       notify("error", "Error changing default security rules of prepared queries", ex)
     }
-  }
+  } */
 
   return (
     <React.Fragment>
@@ -153,34 +170,14 @@ const Settings = () => {
                 <Button htmlType="submit">Save</Button>
               </Form.Item>
             </Form>
+            <Divider style={{ margin: "16px 0px" }} />
+            <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
+            <Button onClick={handleDefaultTablesRules}>{Object.keys(defaultTablesRules).length === 0 ? "Configure" : "Edit"}</Button>
             {canDatabaseHavePreparedQueries(projectID, selectedDB) &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
-                <Form layout="vertical" form={form1} onFinish={handleChangeDefaultPreparedQueryRule}>
-                  <FormItemLabel name="Default rules for prepared queries" />
-                  <div style={{ width: 600 }}>
-                    <Form.Item >
-                      <CodeMirror
-                        value={defaultPreparedQueryRuleString}
-                        options={{
-                          mode: { name: "javascript", json: true },
-                          lineNumbers: true,
-                          styleActiveLine: true,
-                          matchBrackets: true,
-                          autoCloseBrackets: true,
-                          tabSize: 2,
-                          autofocus: true
-                        }}
-                        onBeforeChange={(editor, data, value) => {
-                          setDefaultPreparedQueryRuleString(value)
-                        }}
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button htmlType="submit">Save</Button>
-                    </Form.Item>
-                  </div>
-                </Form>
+                  <FormItemLabel name="Default rules for prepared queries" description="Not configured yet. Used when a prepared query doesn’t have a rule specified."/>
+                  <Button onClick={handleDefaultPreparedQueriesRule}>Configure</Button>
               </React.Fragment>
             }
             <Divider style={{ margin: "16px 0px" }} />

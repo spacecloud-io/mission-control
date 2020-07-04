@@ -17,7 +17,7 @@ import { notify, getProjectConfig, parseDbConnString, getDBTypeFromAlias, setPro
 import history from '../../../history';
 import { setDBConfig, setColConfig, deleteCol, setColRule, inspectColSchema, fetchDBConnState, untrackCollection } from '../dbActions';
 import { defaultDBRules, dbTypes } from '../../../constants';
-
+import store from "../../../store";
 
 const Overview = () => {
   // Router params
@@ -43,10 +43,6 @@ const Overview = () => {
   const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
   const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {})
   const connString = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.conn`, "")
-  let defaultRules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.default.rules`, {})
-  if (Object.keys(defaultRules).length === 0) {
-    defaultRules = defaultDBRules
-  }
   const { hostName, port } = parseDbConnString(connString);
   const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
   const unTrackedCollections = allCollections.filter(col => !collections[col] && col !== "event_logs" && col !== "invocation_logs")
@@ -55,23 +51,24 @@ const Overview = () => {
   const trackedCollectionsToShow = trackedCollections.filter(obj => obj.name !== "default" && obj.name !== "event_logs" && obj.name !== "invocation_logs")
   const clickedColDetails = clickedCol ? Object.assign({}, collections[clickedCol], { name: clickedCol }) : null
 
-  const bc = new BroadcastChannel('builder');
-  useEffect(() => {
-    bc.onmessage = (ev) => {
-      if (ev.data.to === "module") {
-        console.log(ev.data.rules);
-        notify("success", "Success", "Edited rules successfully");
-        setProjectConfig(projectID, `modules.db.${selectedDB}.collections.${ev.data.name}.rules`, ev.data.rules)
-      }
-    }
-  }, [])
-
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
     fetchDBConnState(projectID, selectedDB)
   }, [projectID, selectedDB])
 
   // Handlers
+  useEffect(() => {
+    const bc = new BroadcastChannel('builder');
+    bc.onmessage = ({data}) => {
+      if (data.module === 'database') {
+        const isRealtimeEnabled = getProjectConfig(store.getState().projects, projectID, `modules.db.${data.db}.collections.${data.name}.isRealtimeEnabled`)
+        setColRule(projectID, data.db, data.name, data.rules, isRealtimeEnabled, true)
+          .then(() => notify("success", "Success", "Saved rule successfully"))
+          .catch(ex => notify("error", "Error saving rule", ex)) 
+      }
+    }
+  }, [])
+  
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     const rules = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.${colName}.rules`)
     setColRule(projectID, selectedDB, colName, rules, isRealtimeEnabled, true)
@@ -95,16 +92,12 @@ const Overview = () => {
 
   const handleSecureClick = (colName) => {
     const rule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections.${colName}.rules`, {})
-    setTimeout(() => {
-      bc.postMessage({
-        to: "editor",
-        module: "database",
-        name: colName,
-        rules: {
-          ...rule
-        }
-      });
-    }, 1000)
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=database&name=${colName}&db=${selectedDB}`, '_newtab')
+    w.data = {
+      rules: {
+        ...rule
+      }
+    };
   }
 
   const handleCancelAddColModal = () => {
@@ -138,9 +131,9 @@ const Overview = () => {
       .catch(ex => notify("error", "Error", ex))
   }
 
-  const handleAddCollection = (editMode, colName, rules, schema, isRealtimeEnabled) => {
+  const handleAddCollection = (editMode, colName, schema, isRealtimeEnabled) => {
     setConformLoading(true);
-    setColConfig(projectID, selectedDB, colName, rules, schema, isRealtimeEnabled).then(() => {
+    setColConfig(projectID, selectedDB, colName, {}, schema, isRealtimeEnabled).then(() => {
       notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
       setAddColModalVisible(false);
       setAddColFormInEditMode(false);
@@ -191,7 +184,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
-          <a target="_blank" href={`/mission-control/projects/${projectID}/security-rules/editor`} onClick={() => handleSecureClick(name)}>Secure</a>
+          <a onClick={() => handleSecureClick(name)}>Secure</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>
@@ -301,7 +294,6 @@ const Overview = () => {
               projectId={projectID}
               selectedDB={selectedDB}
               conformLoading={conformLoading}
-              defaultRules={defaultRules}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={(...params) => handleAddCollection(addColFormInEditMode, ...params)}
             />}

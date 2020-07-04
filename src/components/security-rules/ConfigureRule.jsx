@@ -34,8 +34,8 @@ const ConfigureRule = (props) => {
   const { projectID } = useParams();
 
   const projects = useSelector((state) => state.projects);
-  console.log(props.selectedRule);
-  const { id, rule, type, f1, f2, error, fields, field, value } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
+  console.log(props.selectedRule)
 
   const dbModuleFetch = getProjectConfig(projects, projectID, 'modules.db', {});
   const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
@@ -56,7 +56,7 @@ const ConfigureRule = (props) => {
   const trackedCollections = Object.keys(collections);
   const data = trackedCollections.filter(
     (name) =>
-      name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs' && name.includes(col)
+      name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs'
   );
 
   const rules = [
@@ -111,20 +111,24 @@ const ConfigureRule = (props) => {
     }
     else if (values.rule === 'force') {
       // Datatype
-      if (values.type === 'number') {
+     if (values.type === 'number') {
         if (/\d/.test(values.value)) {
           values.value = parseInt(values.value);
         } else {
-          notify('error', 'Error', 'No number literal in either operand');
+          notify('error', 'Error', 'No number literal in value field');
           return;
         }
       } else if (values.type === 'bool') {
-        if (values.value.toLowerCase() === 'true') {
+        if (!typeof values.value === "string") {
+          notify('error', 'Error', 'No boolean present in value field');
+          return;
+        }
+        else if (values.value.toLowerCase() === 'true') {
           values.value = true;
         } else if (values.value.toLowerCase() === 'false') {
           values.value = false;
         } else {
-          notify('error', 'Error', 'No boolean present in either operand');
+          notify('error', 'Error', 'No boolean present in value field');
           return;
         }
       }
@@ -141,7 +145,7 @@ const ConfigureRule = (props) => {
       values.clauses = [];
     }
     delete values.errorMsg;
-    props.onSubmit(values, id);
+    props.onSubmit(values);
     props.closeDrawer();
   };
 
@@ -168,14 +172,15 @@ const ConfigureRule = (props) => {
           f2,
           fields,
           field,
-          value,
+          value: value,
+          url,
           errorMsg: error ? true : false,
           error
         }}
       >
         <FormItemLabel name='Rule Type' />
         <Form.Item name='rule'>
-          <Select>
+          <Select placeholder="Rule">
             {rules.map((val) => (
               <Select.Option key={val} value={val}>
                 {val}
@@ -189,7 +194,7 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name='Operands data type' />
           <Form.Item name='type'>
-            <Select>
+            <Select placeholder="Data type">
               <Select.Option value='string'>String</Select.Option>
               <Select.Option value='number'>Number</Select.Option>
               <Select.Option value='bool'>Bool</Select.Option>
@@ -197,17 +202,17 @@ const ConfigureRule = (props) => {
           </Form.Item>
           <FormItemLabel name='First operand' />
           <Form.Item name='f1'>
-            <Input />
+            <Input placeholder="First operand"/>
           </Form.Item>
           <FormItemLabel name='Evaluation type' />
           <Form.Item name='eval'>
-            <Select>
+            <Select placeholder="Evaluation">
               <Select.Option value='=='>Equals to</Select.Option>
               <Select.Option value='!='>Not equals to</Select.Option>
               <Select.Option value='>'>Greater than</Select.Option>
               <Select.Option value='>='>Greater than equal to</Select.Option>
-              <Select.Option value='<'>Less than</Select.Option>
-              <Select.Option value='<='>Less than equal to</Select.Option>
+              <Select.Option value='<'>Lesser than</Select.Option>
+              <Select.Option value='<='>Lesser than equal to</Select.Option>
               <Select.Option value='in'>In</Select.Option>
               <Select.Option value='notIn'>Not in</Select.Option>
             </Select>
@@ -228,7 +233,7 @@ const ConfigureRule = (props) => {
           </ConditionalFormBlock>
           <FormItemLabel name='Second operand' />
           <Form.Item name='f2'>
-            <Input />
+            <Input placeholder="Second operand"/>
           </Form.Item>
           <Alert
             description={
@@ -265,7 +270,7 @@ const ConfigureRule = (props) => {
                             { required: true, message: 'Please enter column!' },
                           ]}
                         >
-                          <Input placeholder='field' />
+                          <Input placeholder='Field' />
                         </Form.Item>
                       </Col>
                       <Col span={2}>
@@ -306,11 +311,11 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name="Field"/>
           <FormItem name="field">
-            <Input />
+            <Input placeholder="Field"/>
           </FormItem>
           <FormItemLabel name="Datatype" />
           <FormItem name="type">
-            <Select>
+            <Select placeholder="Data type">
               <Select.Option value="string">String</Select.Option>
               <Select.Option value="number">Number</Select.Option>
               <Select.Option value="bool">Bool</Select.Option>
@@ -318,7 +323,7 @@ const ConfigureRule = (props) => {
           </FormItem>
           <FormItemLabel name="Value"/>
           <FormItem name="value">
-            <Input />
+            <Input placeholder="Value"/>
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
@@ -327,7 +332,7 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name="URL"/>
           <FormItem name="url">
-            <Input />
+            <Input placeholder="URL"/>
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
@@ -360,7 +365,7 @@ const ConfigureRule = (props) => {
               {data
                 .filter(
                   (data) =>
-                    data.toLowerCase().indexOf(value.toLowerCase()) !== -1
+                    data.toLowerCase().indexOf(col.toLowerCase()) !== -1
                 )
                 .map((data) => (
                   <AutoComplete.Option key={data} value={data}>
@@ -401,11 +406,11 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name='Error message' />
           <Form.Item name='error'>
-            <Input />
+            <Input placeholder="Error message"/>
           </Form.Item>
         </ConditionalFormBlock>
         <span style={{ float: 'right' }}>
-          <Button style={{ marginRight: 16 }}>Cancel</Button>
+          <Button style={{ marginRight: 16 }} onClick={() => props.closeDrawer()}>Cancel</Button>
           <Button type='primary' htmlType='submit'>
             Save
           </Button>
