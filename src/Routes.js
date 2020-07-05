@@ -49,6 +49,11 @@ import RegisterCluster from './pages/billing/RegisterCluster';
 import ContactUs from './pages/billing/ContactUs';
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import ExploreIntegration from './pages/integration/ExploreIntegration';
+import InstalledIntegration from './pages/integration/InstalledIntegration';
+import InstallIntegration from './pages/integration/InstallIntegration';
+import IntegrationDetails from './pages/integration/IntegrationDetails';
+import IntegrationPermissions from './pages/integration/IntegrationPermissions';
 
 export default () => {
   return (
@@ -112,6 +117,13 @@ export default () => {
         <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration" 
+          component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/integration/explore`}/> } />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration/explore" component={ExploreIntegration} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration/installed" component={InstalledIntegration} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration/details/:integrationid" component={IntegrationDetails} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration/install/:integrationid" component={InstallIntegration} />
+        <PrivateRoute exact path="/mission-control/projects/:projectID/integration/permissions/:integrationid" component={IntegrationPermissions} />
       </Switch>
     </Router>
   );
