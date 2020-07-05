@@ -8,8 +8,8 @@ import { Row, Col, Button } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, getProjectConfig, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
-import { triggerCustomEvent } from '../../../operations/eventing';
+import { getEventSourceFromType, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
 import { getJWTSecret } from '../../../operations/projects';
 
 const QueueEvent = () => {
@@ -18,16 +18,20 @@ const QueueEvent = () => {
   const history = useHistory()
 
   const initialEventType = state.eventType;
-  const projects = useSelector(state => state.projects)
-  const eventTriggerRules = getProjectConfig(projects, projectID, `modules.eventing.triggers`, {})
-  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
+
+  // Global state
+  const eventTriggerRules = useSelector(state => getEventingTriggerRules(state))
   const secret = useSelector(state => getJWTSecret(state, projectID))
   const internalToken = useSelector(state => generateInternalToken(state, projectID))
+
+  // Derived properties
+  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/queue-event");
   }, [])
 
+  // Handlers
   const handleTriggerEvent = (type, payload, isSynchronous, token) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()

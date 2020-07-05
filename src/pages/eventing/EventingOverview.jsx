@@ -8,39 +8,42 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import { getEventSourceFromType, notify, getProjectConfig, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { getEventSourceFromType, notify, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import eventingSvg from "../../assets/eventing.svg"
 import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
-import { deleteEventingTriggerRule, saveEventingTriggerRule } from '../../operations/eventing';
+import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
+import { getDbsConfig } from '../../operations/database';
 
 
 const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
 
+	useEffect(() => {
+		ReactGA.pageview("/projects/eventing/overview");
+	}, [])
+
 	// Global state
-	const projects = useSelector(state => state.projects)
+	const rules = useSelector(state => getEventingTriggerRules(state))
+	const dbsConfig = useSelector(state => getDbsConfig(state))
 
 	// Component state
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived properties
-	const rules = getProjectConfig(projects, projectID, "modules.eventing.triggers", {})
-	// changes
-	const dbModuleFetch = getProjectConfig(projects, projectID, "modules.db", {})
-	const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
+	const activeDB = Object.keys(dbsConfig).find(db => {
+		return dbsConfig[db].enabled
+	})
+	const dbList = Object.entries(dbsConfig).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
 	})
 	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
-	useEffect(() => {
-		ReactGA.pageview("/projects/eventing/overview");
-	}, [])
 
 	// Handlers
 	const handleEditRuleClick = (name) => {
@@ -82,7 +85,6 @@ const EventingOverview = () => {
 			.finally(() => decrementPendingRequests())
 	}
 
-
 	const columns = [
 		{
 			title: 'Name',
@@ -108,11 +110,6 @@ const EventingOverview = () => {
 			}
 		}
 	]
-
-	const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
-	const activeDB = Object.keys(dbModule).find(db => {
-		return dbModule[db].enabled
-	})
 
 	const alertMsg = <div>
 		<span>Space Cloud needs a database to store the event logs. First</span>

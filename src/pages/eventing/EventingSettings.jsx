@@ -2,13 +2,14 @@ import React, { useEffect } from 'react';
 import { useParams, } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import { getProjectConfig, dbIcons, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { dbIcons, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
-import { saveEventingConfig } from '../../operations/eventing';
+import { saveEventingConfig, getEventingDbAliasName } from '../../operations/eventing';
+import { getDbsConfig } from '../../operations/database';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
@@ -18,18 +19,11 @@ const EventingSettings = () => {
   }, [])
 
   // Global state
-  const projects = useSelector(state => state.projects);
+  const eventingDbAliasName = useSelector(state => getEventingDbAliasName(state))
+  const dbsConfig = useSelector(state => getDbsConfig(state));
 
-  const eventing = getProjectConfig(
-    projects,
-    projectID,
-    "modules.eventing",
-    {}
-  );
-
-  const dbModule = getProjectConfig(projects, projectID, "modules.db", {});
-
-  const dbList = Object.entries(dbModule).map(([alias, obj]) => {
+  // Derived properties
+  const dbList = Object.entries(dbsConfig).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias;
     return {
       alias: alias,
@@ -56,7 +50,7 @@ const EventingSettings = () => {
           <h2>Eventing Config</h2>
           <div className="divider" />
           <EventingConfigure
-            dbType={eventing.dbAlias}
+            dbType={eventingDbAliasName}
             dbList={dbList}
             handleSubmit={handleEventingConfig}
           />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { get, set } from 'automate-redux';
+import { set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
@@ -15,7 +15,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import history from '../../../history';
-import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, loadCollections } from "../../../operations/database"
 import { dbTypes } from '../../../constants';
 
 
@@ -44,8 +44,25 @@ const Overview = () => {
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/overview");
-    loadDBConnState(projectID, selectedDB)
+  }, [])
+
+  useEffect(() => {
+    if (projectID && selectedDB) {
+      incrementPendingRequests()
+      loadDBConnState(projectID, selectedDB)
+        .catch(ex => notify("error", "Error fetching database connection state", ex))
+        .finally(() => decrementPendingRequests())
+    }
   }, [projectID, selectedDB])
+
+  useEffect(() => {
+    if (projectID && selectedDB && connected) {
+      incrementPendingRequests()
+      loadCollections(projectID, selectedDB)
+        .catch(ex => notify("error", "Error fetching database connection state", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID, selectedDB, connected])
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {

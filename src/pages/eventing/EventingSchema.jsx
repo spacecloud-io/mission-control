@@ -5,61 +5,51 @@ import { useParams } from "react-router-dom";
 import { Button } from "antd";
 import ReactGA from 'react-ga';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import {
-  getProjectConfig,
-  notify,
-  getEventSourceFromType,
-  incrementPendingRequests,
-  decrementPendingRequests
-} from "../../utils";
+import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
 import { set } from "automate-redux";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
-import { deleteEventingSchema, saveEventingSchema } from "../../operations/eventing";
+import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
 
 const EventingSchema = () => {
   // Router params
   const { projectID } = useParams();
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/schema");
   }, [])
 
-  // Global state
-  const projects = useSelector(state => state.projects);
-  const selectedEvent = useSelector(state => state.uiState.selectedEvent);
-  const eventRules = getProjectConfig(
-    projects,
-    projectID,
-    `modules.eventing.triggers`,
-    {}
-  );
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadEventingSchemas(projectID)
+        .catch(ex => notify("error", "Error fetching eventing schemas", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
+  // Global state
+  const selectedEvent = useSelector(state => state.uiState.selectedEvent);
+  const eventRules = useSelector(state => getEventingTriggerRules(state))
+  const schemas = useSelector(state => getEventingSchemas(state))
+
+  // Component state
+  const [addColModalVisible, setAddColModalVisible] = useState(false);
+  const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
+
+  // Derived properties
   const customEventTypes = Object.entries(eventRules)
     .filter(([key, value]) => getEventSourceFromType(value.type) === "custom")
     .map(([_, value]) => value.type);
-
-  const dispatch = useDispatch();
-
-  // Derived properties
-  const schemas = Object.entries(
-    getProjectConfig(projects, projectID, `modules.eventing.schemas`, {})
-  ).reduce(
-    (prev, [key, value]) => Object.assign({}, prev, { [key]: value.schema }),
-    {}
-  );
 
   // Handlers
   const handleSelect = eventType =>
     dispatch(set("uiState.selectedEvent", eventType));
 
-  // Component state
-  const [addColModalVisible, setAddColModalVisible] = useState(false);
-  const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
-  // making changes for loading button
-  const [conformLoading, setConformLoading] = useState(false);
 
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false);
@@ -109,14 +99,6 @@ const EventingSchema = () => {
           >
             Schema lets you manage types and relations
           </p>
-          {/* <a
-            style={{ marginTop: 4 }}
-            target="_blank"
-            href="https://docs.spaceuptech.com/essentials/storage/database/data-modelling"
-            className="panel__link"
-          >
-            <span>View docs</span> <i className="material-icons">launch</i>
-          </a> */}
         </div>
       </div>
     );
@@ -150,7 +132,6 @@ const EventingSchema = () => {
               editMode={addColFormInEditMode}
               projectId={projectID}
               customEventTypes={customEventTypes}
-              conformLoading={conformLoading}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={handleAddSchema}
             />

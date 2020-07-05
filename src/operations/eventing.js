@@ -159,4 +159,8 @@ export const triggerCustomEvent = (projectId, type, payload, isSynchronous, toke
 
 // Getters && setters
 
-export const getEventingDbAliasName = (state) => get(state, "eventingConfig", "")
+export const getEventingDbAliasName = (state) => get(state, "eventingConfig.dbAlias", "")
+export const getEventingTriggerRules = (state) => get(state, "eventingTriggers", {})
+export const getEventingSchemas = (state) => get(state, "eventingSchemas", {})
+export const getEventingSecurityRules = (state) => get(state, "eventingRules", {})
+export const getEventingDefaultSecurityRule = (state) => get(state, "eventingRules.default", {})

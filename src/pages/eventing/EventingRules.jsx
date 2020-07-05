@@ -6,32 +6,45 @@ import { Button } from "antd";
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 import ReactGA from 'react-ga';
-import { getProjectConfig, notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import RuleEditor from '../../components/rule-editor/RuleEditor';
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
-import { deleteEventingSecurityRule, saveEventingSecurityRule } from '../../operations/eventing';
+import { deleteEventingSecurityRule, saveEventingSecurityRule, loadEventingSecurityRules, getEventingTriggerRules, getEventingSecurityRules, getEventingDefaultSecurityRule } from '../../operations/eventing';
 
 const EventingRules = () => {
   const { projectID } = useParams()
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/rules");
   }, [])
 
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadEventingSecurityRules(projectID)
+        .catch(ex => notify("error", "Error fetching eventing rules", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
   // Global state
-  const projects = useSelector(state => state.projects)
   const selectedEvent = useSelector(state => state.uiState.selectedEvent)
+  const rule = useSelector(state => getEventingDefaultSecurityRule(state))
+  const rules = useSelector(state => getEventingSecurityRules(state))
+  const eventRules = useSelector(state => getEventingTriggerRules(state))
+
+  // Component state
   const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
-  const dispatch = useDispatch()
+
 
   // Derived properties
-  const rule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.default`, {})
-  delete rule.id;
-  const rules = getProjectConfig(projects, projectID, `modules.eventing.securityRules`, {})
-  const eventRules = getProjectConfig(projects, projectID, `modules.eventing.triggers`, {})
   const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)
+
+  delete rule.id;
 
   // Handlers
   const handleSelect = (eventType) => dispatch(set("uiState.selectedEvent", eventType))
@@ -40,15 +53,15 @@ const EventingRules = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveEventingSecurityRule(projectID, type, rule)
-      .then(() => {
-        notify("success", "Success", "Added eventing security rule successfully")
-        resolve()
-      })
-      .catch(ex => {
-        notify("error", "Error adding eventing security rule", ex)
-        reject()
-      })
-      .finally(() => decrementPendingRequests())
+        .then(() => {
+          notify("success", "Success", "Added eventing security rule successfully")
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error adding eventing security rule", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
     })
   }
 

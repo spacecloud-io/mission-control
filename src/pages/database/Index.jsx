@@ -8,7 +8,7 @@ import Topbar from '../../components/topbar/Topbar'
 import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
 import ProjectPageLayout, { Content } from "../../components/project-page-layout/ProjectPageLayout"
 
-import { loadDbSchemas, loadDbConfig, loadDbRules, getDbsConfig } from '../../operations/database';
+import { loadDbSchemas, loadDbConfig, loadDbRules, getDbsConfig, loadDbPreparedQueries } from '../../operations/database';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 
 import './database.css'
@@ -27,20 +27,27 @@ const Database = () => {
   }, [])
 
   useEffect(() => {
-    incrementPendingRequests()
-    loadDbConfig(projectID)
-      .catch(ex => notify("error", "Error fetching database config", ex))
-      .finally(() => decrementPendingRequests())
+    if (projectID) {
+      incrementPendingRequests()
+      loadDbConfig(projectID)
+        .catch(ex => notify("error", "Error fetching database config", ex))
+        .finally(() => decrementPendingRequests())
 
-    incrementPendingRequests()
-    loadDbSchemas(projectID)
-      .catch(ex => notify("error", "Error fetching database schemas", ex))
-      .finally(() => decrementPendingRequests())
+      incrementPendingRequests()
+      loadDbSchemas(projectID)
+        .catch(ex => notify("error", "Error fetching database schemas", ex))
+        .finally(() => decrementPendingRequests())
 
-    incrementPendingRequests()
-    loadDbRules(projectID)
-      .catch(ex => notify("error", "Error fetching database rules", ex))
-      .finally(() => decrementPendingRequests())
+      incrementPendingRequests()
+      loadDbRules(projectID)
+        .catch(ex => notify("error", "Error fetching database rules", ex))
+        .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadDbPreparedQueries(projectID)
+        .catch(ex => notify("error", "Error fetching prepared queries", ex))
+        .finally(() => decrementPendingRequests())
+    }
   }, [projectID])
 
   if (activeDB) {
