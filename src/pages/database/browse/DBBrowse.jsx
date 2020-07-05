@@ -16,24 +16,27 @@ import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
+import InfiniteScroll from 'react-infinite-scroller';
 
 let editRowData = {};
 
 const getUniqueKeys = (colSchemaFields = []) => {
   return colSchemaFields.filter(val => val.isPrimary || val.hasUniqueConstraint).map(val => val.name)
 }
-
+let num = 1;
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
   const [isEditRowFormVisible, setEditRowFormVisibility] = useState(false);
   const [data, setData] = useState([]);
+  const [hasMoreRows, setHasMoreRows] = useState(true);
 
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
 
   const selectedDBType = getDBTypeFromAlias(projectID, selectedDB)
+  const projects = useSelector(state => state.projects);
   const selectedCol = useSelector(state => state.uiState.selectedCollection)
   const filters = useSelector(state => state.uiState.explorer.filters);
   const sorters = useSelector(state => state.uiState.explorer.sorters);
@@ -54,7 +57,8 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = () => {
+  const getTableData = (skip = 0) => {
+    return new Promise((resolve, reject) => {
     if (selectedCol) {
 
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
@@ -64,15 +68,17 @@ const Browse = () => {
       db.get(selectedCol)
         .where(...filterConditions)
         .sort(...sortConditions)
+        .skip(skip)
+        .limit(10)
         .apply()
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            notify("error", "Error fetching data", data.error, 5);
+        .then((response) => {
+          if (response.status !== 200) {
+            notify("error", "Error fetching data", response.data.error, 5);
             setData([]);
             return
           }
 
-          data.result.forEach(obj => {
+          response.data.result.forEach(obj => {
             Object.entries(obj).forEach(([key, value]) => {
               // Stringifying certain data types to render them in table 
               if (typeof value === "boolean") {
@@ -89,11 +95,15 @@ const Browse = () => {
             })
           })
 
-          setData(data.result);
+          const newData = data.concat(response.data.result);
+          setData(newData);
+           resolve(response.data.result.length);
         })
         .catch(ex => notify("error", "Error fetching data", ex, 5))
         .finally(() => dispatch(decrement("pendingRequests")));
+        
     }
+  })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -142,7 +152,13 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    getTableData();
+    const myFunc = async () => {
+      
+    const rows = await getTableData();
+    console.log(rows)
+    }
+    myFunc();
+
   }, [filters, sorters, selectedCol])
 
 
@@ -319,6 +335,14 @@ const Browse = () => {
       })
   }
 
+  const loadFunc = async (page) => {
+    const rows = await getTableData(page*10);
+    console.log(rows)
+    if (rows < 10) {
+      setHasMoreRows(false);
+    }
+  }
+
   const tableColumns = getColumnNames(colSchemaFields, data)
   return (
     <React.Fragment>
@@ -349,14 +373,21 @@ const Browse = () => {
                 <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
               </>
             )}
-            <Table
-              className="db-browse-table"
-              columns={tableColumns}
-              dataSource={data}
-              style={{ marginTop: 21 }}
-              bordered
-              pagination={false}
-            />
+            <InfiniteScroll
+             pageStart={0}
+             loadMore={loadFunc}
+             hasMore={hasMoreRows}
+             loader={<div style={{ textAlign: "center" }} key={0}>Loading...</div>}
+            >
+              <Table
+               className="db-browse-table"
+               columns={tableColumns}
+               dataSource={data}
+               style={{ marginTop: 21 }}
+               bordered
+               pagination={false}
+              />
+            </InfiniteScroll>
           </div>
         </div>
       </div>
