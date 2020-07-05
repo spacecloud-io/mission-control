@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from "react-redux"
 import ReactGA from 'react-ga';
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 
 import { Button, Table, Popconfirm } from "antd"
 import ServiceForm from "../../components/remote-services/service-form/ServiceForm"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
-import { saveRemoteService, deleteRemoteService } from "../../operations/remoteServices"
+import { saveRemoteService, deleteRemoteService, getRemoteServices } from "../../operations/remoteServices"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
 
@@ -17,19 +17,18 @@ const RemoteServices = () => {
   const { projectID } = useParams()
   const history = useHistory()
 
-  // Global state
-  const projects = useSelector(state => state.projects)
-
   useEffect(() => {
     ReactGA.pageview("/projects/remote-services");
   }, [])
+
+  // Global state
+  const services = useSelector(state => getRemoteServices(state))
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false)
   const [serviceClicked, setServiceClicked] = useState("")
 
   // Derived state
-  const services = getProjectConfig(projects, projectID, "modules.remoteServices.externalServices", {})
   const servicesTableData = Object.entries(services).map(([name, { url }]) => ({ name, url }))
   const noOfServices = servicesTableData.length
   const serviceClickedInfo = serviceClicked ? { name: serviceClicked, url: services[serviceClicked].url } : undefined

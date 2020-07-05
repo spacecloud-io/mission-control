@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
@@ -7,9 +7,9 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
 import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
-import { set } from "automate-redux";
-import { notify, getProjectConfig, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
-import { deleteIngressRoute, saveIngressRoute } from "../../operations/ingressRoutes";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
+import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
+import { loadServices, getServices } from "../../operations/deployments";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -17,23 +17,34 @@ const calculateRequestURL = (routeType, url) => {
 
 function Routing() {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [routeClicked, setRouteClicked] = useState("");
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes");
   }, [])
 
-  let routes = getProjectConfig(projects, projectID, "modules.ingressRoutes", []);
-  if (!routes) routes = []
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadIngressRoutes(projectID)
+        .catch(ex => notify("error", "Error fetching ingress routes", ex))
+        .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadServices(projectID)
+        .catch(ex => notify("error", "Error fetching services", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
+  // Global state
+  let routes = useSelector(state => getIngressRoutes(state))
+  let deployments = useSelector(state => getServices(state));
+
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [routeClicked, setRouteClicked] = useState("");
+
+  // Derived state
   const services = deployments.map(obj => {
     const ports =
       obj.tasks &&
@@ -66,6 +77,7 @@ function Routing() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
+  // Handlers
   const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
       const config = {

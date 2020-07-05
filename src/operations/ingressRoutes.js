@@ -39,3 +39,6 @@ export const deleteIngressRoute = (projectId, routeId) => {
       .catch(ex => reject(ex))
   })
 }
+
+// Getters
+export const getIngressRoutes = (state) => get(state, "ingressRoutes", [])

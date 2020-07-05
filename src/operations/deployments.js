@@ -69,3 +69,7 @@ export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
       .catch(ex => reject(ex))
   })
 }
+
+// Getters
+export const getServices = (state) => get(state, "services", [])
+export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})

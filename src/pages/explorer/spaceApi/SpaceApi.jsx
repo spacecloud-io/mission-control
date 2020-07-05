@@ -19,9 +19,10 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import '../explorer.css';
-import { notify, getProjectConfig } from '../../../utils';
+import { notify } from '../../../utils';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
+import { getSecrets } from '../../../operations/secrets';
 
 const { Option } = Select;
 
@@ -192,7 +193,7 @@ const SpaceApi = props => {
 
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
+  const secrets = getSecrets(state)
   return {
     secret: secrets.length > 0 ? secrets[0].secret : "",
     projectId: projectId,

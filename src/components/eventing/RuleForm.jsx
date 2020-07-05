@@ -1,11 +1,11 @@
 import React, { useState } from "react"
-import { useParams } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber, Form } from 'antd';
-import { getEventSourceFromType, getProjectConfig } from "../../utils";
+import { getEventSourceFromType } from "../../utils";
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import RadioCards from "../radio-cards/RadioCards";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import { getTrackedCollections } from "../../operations/database";
 
 const { Option } = AutoComplete;
 
@@ -13,13 +13,8 @@ const RuleForm = (props) => {
   const [form] = Form.useForm();
   const [selectedDb, setSelectedDb] = useState();
 
-  const { projectID } = useParams()
-  const projects = useSelector(state => state.projects)
-
   const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
-  const trackedCollections = Object.keys(collections);
+  const trackedCollections = useSelector(state => getTrackedCollections(state))
   const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
 
   const [value, setValue] = useState("");

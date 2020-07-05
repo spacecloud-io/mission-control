@@ -1,4 +1,4 @@
-import { set, del } from "automate-redux";
+import { set, del, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
 
@@ -35,3 +35,27 @@ export const deleteRemoteService = (projectId, serviceId) => {
       .catch(ex => reject(ex))
   })
 }
+
+export const saveRemoteServiceEndpoint = (projectId, serviceId, endpointId, endpointConfig) => {
+  const state = store.getState()
+  const endpoints = getRemoteServiceEndpoints(state, serviceId)
+  const newEndpoints = Object.assign({}, endpoints, { [endpointId]: endpointConfig })
+  const serviceConfig = getRemoteServiceConfig(state, serviceId)
+  const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
+  return saveRemoteService(projectId, serviceId, newServiceConfig)
+}
+
+export const deleteRemoteServiceEndpoint = (projectId, serviceId, endpointId) => {
+  const state = store.getState()
+  const newEndpoints = getRemoteServiceEndpoints(state, serviceId)
+  delete newEndpoints[endpointId]
+  const serviceConfig = getRemoteServiceConfig(state, serviceId)
+  const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
+  return saveRemoteService(projectId, serviceId, newServiceConfig)
+}
+
+// Getters
+export const getRemoteServices = (state) => get(state, "remoteServices", {})
+export const getRemoteServiceConfig = (state, serviceId) => get(state, `remoteServices.${serviceId}`, {})
+export const getRemoteServiceURL = (state, serviceId) => get(state, `remoteServices.${serviceId}.url`, "")
+export const getRemoteServiceEndpoints = (state, serviceId) => get(state, `remoteServices.${serviceId}.endpoints`, {})

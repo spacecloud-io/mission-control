@@ -72,12 +72,6 @@ export const parseDbConnString = conn => {
   }
   return urlObj
 }
-export const getProjectConfig = (projects, projectId, path, defaultValue) => {
-  const project = projects.find(project => project.id === projectId)
-  if (!project) return defaultValue
-  const returnValue = get(project, path, defaultValue)
-  return (returnValue == undefined || returnValue == null) ? defaultValue : returnValue
-}
 
 export const setProjectConfig = (projectId, path, value) => {
   const projects = get(store.getState(), "projects", [])

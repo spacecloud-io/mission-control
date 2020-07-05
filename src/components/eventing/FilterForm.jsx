@@ -1,13 +1,13 @@
-import React, { useState } from "react"
+import React from "react"
 import { CheckOutlined, CloseOutlined, HourglassOutlined } from '@ant-design/icons';
 import { Modal, Select, Checkbox, DatePicker, Form } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
 //redux
 import { useDispatch, useSelector } from "react-redux";
-import { set, reset } from "automate-redux";
-import { getProjectConfig } from "../../utils";
+import { reset } from "automate-redux";
 import moment from 'moment';
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import { getEventingTriggerRules } from "../../operations/eventing";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -16,9 +16,7 @@ const FilterForm = (props) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const projects = useSelector(state => state.projects);
-
-  const triggerNames = Object.keys(getProjectConfig(projects, props.projectID, "modules.eventing.triggers", {}));
+  const triggerNames = useSelector(state => Object.keys(getEventingTriggerRules(state)))
 
   const handleSubmit = e => {
     form.validateFields().then(fieldsValue => {

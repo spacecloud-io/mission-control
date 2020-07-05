@@ -11,11 +11,11 @@ import Topbar from '../../../components/topbar/Topbar';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { Checkbox, Input, Tooltip, Button } from 'antd';
 import '../explorer.css';
-import { getProjectConfig } from '../../../utils';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
+import { getSecrets } from '../../../operations/secrets';
 
 const generateAdminToken = secret => {
   return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
@@ -104,7 +104,7 @@ const Graphql = props => {
 
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
+  const secrets = getSecrets(state)
   return {
     secret: secrets.length > 0 ? secrets[0].secret : "",
     projectId: projectId,

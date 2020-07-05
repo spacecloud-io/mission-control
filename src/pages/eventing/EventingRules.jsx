@@ -41,7 +41,7 @@ const EventingRules = () => {
   const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
 
 
-  // Derived properties
+  // Derived state
   const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)
 
   delete rule.id;

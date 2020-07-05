@@ -41,7 +41,7 @@ const EventingSchema = () => {
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
 
-  // Derived properties
+  // Derived state
   const customEventTypes = Object.entries(eventRules)
     .filter(([key, value]) => getEventSourceFromType(value.type) === "custom")
     .map(([_, value]) => value.type);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import { RightOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm, Collapse } from "antd";
@@ -9,36 +9,32 @@ import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
 import RoutingModal from "../../../components/deployments/routing-modal/RoutingModal"
 import routingSvg from "../../../assets/routing.svg";
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
-import { loadServiceRoutes, saveServiceRoutes } from "../../../operations/deployments";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { loadServiceRoutes, saveServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
   const { projectID } = useParams();
-  const projects = useSelector(state => state.projects);
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
 
-  const [modalVisible, setModalVisible] = useState(false)
-  const [routeClicked, setRouteClicked] = useState(null)
+  useEffect(() => {
+    ReactGA.pageview("/projects/deployments/ingress-routes");
+  }, [])
 
-  const getRoutes = () => {
+  useEffect(() => {
     incrementPendingRequests()
     loadServiceRoutes(projectID)
       .catch(ex => notify("error", "Error fetching routes. This page is only available for Kubernetes cluster", ex.toString()))
       .finally(() => decrementPendingRequests())
-  }
+  }, [projectID])
 
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/ingress-routes");
-    getRoutes()
-  }, [])
+  // Global state
+  const deployments = useSelector(state => getServices(state))
+  const serviceRoutes = useSelector(state => getServiceRoutes(state))
 
-  const serviceRoutes = useSelector(state => state.serviceRoutes)
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false)
+  const [routeClicked, setRouteClicked] = useState(null)
+
 
   deployments.forEach(obj => {
     if (!serviceRoutes[obj.id]) {

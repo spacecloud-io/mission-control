@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from "react-redux"
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import ReactGA from 'react-ga';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm } from "antd";
@@ -9,7 +9,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
 import { endpointTypes } from "../../constants"
-import { saveRemoteService } from "../../operations/remoteServices"
+import { deleteRemoteServiceEndpoint, getRemoteServiceEndpoints } from "../../operations/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -47,20 +47,15 @@ const RemoteService = () => {
   }, [])
 
   // Global state
-  const projects = useSelector(state => state.projects)
+  const endpoints = useSelector(state => getRemoteServiceEndpoints(state, serviceName))
 
   // Derived state
-  const endpoints = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints`, {})
   const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => ({ name, method, path, kind }))
   const noOfEndpoints = endpointsTableData.length
 
   const handleDelete = (name) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
-    const newEndpoints = Object.assign({}, endpoints)
-    delete newEndpoints[name]
-    const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
     incrementPendingRequests()
-    saveRemoteService(projectID, serviceName, newServiceConfig)
+    deleteRemoteServiceEndpoint(projectID, serviceName, name)
       .then(() => notify("success", "Success", "Removed endpoint successfully"))
       .catch((ex) => notify("error", "Error removing endpoint", ex))
       .finally(() => decrementPendingRequests())

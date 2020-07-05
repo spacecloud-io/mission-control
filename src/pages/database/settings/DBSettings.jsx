@@ -37,7 +37,7 @@ const Settings = () => {
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
   const type = useSelector(state => getDbType(state, selectedDB))
 
-  // Derived properties
+  // Derived state
   const canDisableDB = eventingDB !== selectedDB
   const databaseLabel = getDatabaseLabelFromType(type)
   let databaseLabelName = "Database name"

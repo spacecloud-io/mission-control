@@ -10,7 +10,7 @@
     "antd": "^4.2.0",
     "apollo-boost": "^0.4.4",
     "apollo-link-context": "^1.0.20",
-    "automate-redux": "^1.1.0",
+    "automate-redux": "^1.2.0",
     "babel-plugin-import": "^1.12.0",
     "codemirror": "^5.47.0",
     "codemirror-graphql": "^0.11.2",

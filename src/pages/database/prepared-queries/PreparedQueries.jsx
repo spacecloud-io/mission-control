@@ -22,7 +22,7 @@ const PreparedQueries = () => {
   const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
   let defaultRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
 
-  // Derived properties
+  // Derived state
   const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default")
   const [clickedQuery, setClickedQuery] = useState("");
   if (Object.keys(defaultRule).length === 0) {

@@ -40,7 +40,7 @@ const ProjectSettings = () => {
   let selectedProject = projects.find(project => project.id === projectID);
   if (!selectedProject) selectedProject = {}
 
-  // Derived properties
+  // Derived state
   const secrets = selectedProject.secrets ? selectedProject.secrets : []
   const aesKey = selectedProject.aesKey
   const contextTimeGraphQL = selectedProject.contextTimeGraphQL

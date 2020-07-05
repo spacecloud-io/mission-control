@@ -37,7 +37,7 @@ const Overview = () => {
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
 
-  // Derived properties
+  // Derived state
   const { hostName, port } = parseDbConnString(connString);
   const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
   const clickedColDetails = trackedCollections.find(obj => obj.name === clickedCol)

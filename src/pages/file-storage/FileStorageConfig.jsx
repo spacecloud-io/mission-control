@@ -5,13 +5,14 @@ import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { LeftOutlined } from '@ant-design/icons';
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
 import { Button, Card, Input, Radio, Form, Alert, Cascader, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
-import { saveFileStoreConfig } from '../../operations/fileStore';
+import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
+import { getSecrets } from '../../operations/secrets';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -20,9 +21,9 @@ const FileStorageConfig = () => {
   const { projectID } = useParams()
 
   // Global state
-  const projects = useSelector(state => state.projects)
+  const { storeType, bucket, endpoint, conn, secret } = useSelector(state => getFileStoreConfig(state))
+  const secrets = useSelector(state => getSecrets(state))
 
-  // Secrets
   const getDataKeys = (fileSecret) => {
     const fileChildren = Object.keys(fileSecret.data)
       .map(keys => {
@@ -31,8 +32,7 @@ const FileStorageConfig = () => {
     return fileChildren;
   }
 
-  const fileSecrets = getProjectConfig(projects, projectID, "modules.secrets", [])
-    .filter(secret => secret.type === 'file')
+  const fileSecrets = secrets.filter(secret => secret.type === 'file')
     .map(fileSecret => {
       return ({ "value": fileSecret.id, "label": fileSecret.id, "children": getDataKeys(fileSecret) })
     });
@@ -41,7 +41,6 @@ const FileStorageConfig = () => {
     ReactGA.pageview("/projects/file-storage/configure");
   }, [])
 
-  const { storeType, bucket, endpoint, conn, secret } = getProjectConfig(projects, projectID, "modules.fileStore", {})
 
   let initialSecretValue = ""
   if (secret) {

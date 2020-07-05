@@ -6,27 +6,29 @@ import { Button, Table, Popconfirm } from "antd";
 import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
-import { getSecretType, getProjectConfig, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { getSecretType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notify } from "../../utils";
-import { saveSecret, deleteSecret } from "../../operations/secrets";
+import { saveSecret, deleteSecret, getSecrets } from "../../operations/secrets";
 
 const Secrets = () => {
   const history = useHistory();
   const { projectID } = useParams();
-  const projects = useSelector(state => state.projects);
-  const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+
+  // Global state
+  const secrets = useSelector(state => getSecrets(state))
+
+  // Component state
   const [secretModalVisible, setSecretModalVisible] = useState(false);
-  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(
-    false
-  );
+  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(false);
   const [secretIdClicked, setSecretIdClicked] = useState("");
 
   useEffect(() => {
     ReactGA.pageview("/projects/secrets");
   }, [])
 
+  // Handlers
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
@@ -63,6 +65,10 @@ const Secrets = () => {
   const handleDockerModalCancel = () => {
     setDockerSecretModalVisible(false);
     setSecretIdClicked("");
+  };
+
+  const handleSecretModalCancel = () => {
+    setSecretModalVisible(false);
   };
 
   const columns = [
@@ -127,10 +133,6 @@ const Secrets = () => {
         </div>
       </div>
     );
-  };
-
-  const handleSecretModalCancel = () => {
-    setSecretModalVisible(false);
   };
 
   return (

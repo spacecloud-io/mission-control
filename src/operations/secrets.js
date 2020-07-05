@@ -91,3 +91,6 @@ export const saveRootPath = (projectId, secretId, rootPath) => {
       .catch(ex => reject(ex))
   })
 }
+
+// Getters
+export const getSecrets = (state) => get(state, "secrets", [])

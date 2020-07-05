@@ -24,7 +24,7 @@ const QueueEvent = () => {
   const secret = useSelector(state => getJWTSecret(state, projectID))
   const internalToken = useSelector(state => generateInternalToken(state, projectID))
 
-  // Derived properties
+  // Derived state
   const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
 
   useEffect(() => {

@@ -33,7 +33,7 @@ const EventingOverview = () => {
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 
-	// Derived properties
+	// Derived state
 	const activeDB = Object.keys(dbsConfig).find(db => {
 		return dbsConfig[db].enabled
 	})

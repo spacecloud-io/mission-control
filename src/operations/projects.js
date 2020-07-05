@@ -83,7 +83,7 @@ export const removeSecret = (projectId, secret) => {
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 
-// getters
+// Getters
 
 export const getProjectConfig = (state, projectId) => {
   const projects = get(state, "projects", [])

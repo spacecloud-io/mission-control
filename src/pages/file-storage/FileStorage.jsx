@@ -6,14 +6,13 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
 import RuleEditor from "../../components/rule-editor/RuleEditor"
-import { get } from "automate-redux";
-import { getProjectConfig, notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
-import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig } from '../../operations/fileStore';
+import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState } from '../../operations/fileStore';
 
 const Rules = () => {
 	const history = useHistory();
@@ -21,8 +20,9 @@ const Rules = () => {
 	const { projectID } = useParams()
 
 	// Global state
-	const projects = useSelector(state => state.projects)
-	const connected = useSelector(state => get(state, `extraConfig.${projectID}.fileStore.connected`))
+	const connected = useSelector(state => getFileStoreConnState(state))
+	const rules = useSelector(state => getFileStoreRules(state))
+	const config = useSelector(state => getFileStoreConfig(state))
 
 	// Component state
 	const [configurationModalVisible, setConfigurationModalVisible] = useState(false)
@@ -33,8 +33,7 @@ const Rules = () => {
 		ReactGA.pageview("/projects/file-storage");
 	}, [])
 
-	// Derived properties
-	const { rules = [], ...config } = getProjectConfig(projects, projectID, "modules.fileStore", {})
+	// Derived state
 	const { enabled, ...connConfig } = config
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {

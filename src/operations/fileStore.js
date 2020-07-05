@@ -7,7 +7,7 @@ export const loadFileStoreConnState = (projectId) => {
   return new Promise((resolve, reject) => {
     client.fileStore.getConnectionState(projectId)
       .then(connected => {
-        store.dispatch(set(`extraConfig.${projectId}.fileStore.connected`, connected))
+        store.dispatch(setFileStoreConnState(connected))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -41,7 +41,7 @@ export const saveFileStoreConfig = (projectId, config) => {
     client.fileStore.setConfig(projectId, config)
       .then(() => {
         store.dispatch(set("fileStoreConfig", config))
-        store.dispatch(set(`extraConfig.${projectId}.fileStore.connected`, config.enabled))
+        store.dispatch(setFileStoreConnState(config.enabled))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -74,3 +74,11 @@ export const deleteFileStoreRule = (projectId, ruleName) => {
       .catch(ex => reject(ex))
   })
 }
+
+
+// Getters && setters
+
+export const getFileStoreRules = (state) => get(state, "fileStoreRules", [])
+export const getFileStoreConfig = (state) => get(state, "fileStoreConfig", {})
+const setFileStoreConnState = (connected) => store.dispatch(set("fileStoreConnState", connected))
+export const getFileStoreConnState = (state) => get(state, "fileStoreConnState", false)

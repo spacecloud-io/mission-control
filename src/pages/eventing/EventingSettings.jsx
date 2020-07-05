@@ -22,7 +22,7 @@ const EventingSettings = () => {
   const eventingDbAliasName = useSelector(state => getEventingDbAliasName(state))
   const dbsConfig = useSelector(state => getDbsConfig(state));
 
-  // Derived properties
+  // Derived state
   const dbList = Object.entries(dbsConfig).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias;
     return {

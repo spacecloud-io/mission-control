@@ -6,11 +6,11 @@ import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
 import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
-import { getProjectConfig, notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import './secretDetail.css';
-import { saveSecretKey, deleteSecretKey, saveRootPath } from "../../operations/secrets";
+import { saveSecretKey, deleteSecretKey, saveRootPath, getSecrets } from "../../operations/secrets";
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -26,20 +26,26 @@ const getLabelFromSecretType = type => {
 const SecretDetails = () => {
   const history = useHistory();
   const { projectID, secretId } = useParams();
-  const projects = useSelector(state => state.projects);
-  const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+
+  // Global state
+  const secrets = useSelector(state => getSecrets(state))
+
+  // Component state
+  const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
+  const [secretKeyClicked, setSecretKeyClicked] = useState("");
+  const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
+
+  // Derived state
   let secret = secrets.find(obj => obj.id === secretId);
   if (!secret) secret = { data: {} };
   const secretType = secret.type;
   const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
-  const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
-  const [secretKeyClicked, setSecretKeyClicked] = useState("");
-  const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
   useEffect(() => {
     ReactGA.pageview("/projects/secrets/secretDetails");
   }, [])
 
+  // Handlers
   const handleClickUpdateSecretKey = name => {
     setSecretKeyClicked(name);
     setSecretKeyModalVisible(true);
