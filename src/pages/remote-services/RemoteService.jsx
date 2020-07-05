@@ -90,7 +90,7 @@ const RemoteService = () => {
   
   const handleSecureClick = (endpoint) => {
     const rule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${endpoint}.rule`)
-    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}`, '_newtab')
+    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}&serviceName=${serviceName}`, '_newtab')
     w.data = {
       rules: {
         [endpoint]: {

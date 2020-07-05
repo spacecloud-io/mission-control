@@ -35,7 +35,6 @@ const ConfigureRule = (props) => {
 
   const projects = useSelector((state) => state.projects);
   const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
-  console.log(props.selectedRule)
 
   const dbModuleFetch = getProjectConfig(projects, projectID, 'modules.db', {});
   const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {

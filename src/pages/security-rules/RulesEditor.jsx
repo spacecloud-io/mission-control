@@ -10,7 +10,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import { notify } from '../../utils';
+import { notify, getProjectConfig } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import Graph from 'react-graph-vis';
@@ -19,6 +19,7 @@ import ConfigureRule from '../../components/security-rules/ConfigureRule';
 import dotProp from 'dot-prop-immutable';
 import {useParams} from 'react-router-dom';
 import qs from 'qs';
+import { useSelector } from 'react-redux';
 
 const Keyboard = (props) => {
   return (
@@ -30,9 +31,12 @@ const Keyboard = (props) => {
 
 const RulesEditor = (props) => {
 
+  // Router params
+  const { projectID } = useParams();
   const params = qs.parse(props.location.search, { ignoreQueryPrefix: true });
-  const {moduleName, name, id, db} = params;
+  const {moduleName, name, id, db, serviceName} = params;
 
+  // Component state
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [rule, setRule] = useState({});
@@ -40,6 +44,8 @@ const RulesEditor = (props) => {
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
   const [network, setNetwork] = useState();
+
+  const projects = useSelector(state => state.projects);
 
   const nodes = [];
   const edges = [];
@@ -53,6 +59,40 @@ const RulesEditor = (props) => {
     if (!window.data) return;
     setRule(window.data.rules);
   }, []);
+
+  useEffect(() => {
+    if (projects.length > 0 && !window.data) {
+      switch (moduleName) {
+        case "database":
+          setRule(getProjectConfig(projects, projectID, `modules.db.${db}.collections.${name}.rules`, {}))
+          break;
+        case "prepared-queries":
+          const preparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${db}.preparedQueries.${name}.rule`, {});
+          setRule({[name]: {...preparedQueryRule}})
+          break;
+        case "file-storage":
+          const fileStoreRules = getProjectConfig(projects, projectID, `modules.fileStore.rules`, []);
+          setRule(fileStoreRules.find(val => val.id === name).rule)
+          break;
+        case "remote-service":
+          const endpointRule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${name}.rule`, {});
+          setRule({[name]: {...endpointRule}})
+          break;
+        case "routing":
+          const routes = getProjectConfig(projects, projectID, `modules.ingressRoutes`, [])
+          const routeRule = routes.find(val => val.id === id).rule;
+          setRule({[name]: {...routeRule}})
+          break;
+        case "eventing":
+          const eventingRule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.${name}`)
+          if (!eventingRule) return;
+          setRule({[name]: {...eventingRule}})
+          break;
+        default:
+          break;
+      }
+    }
+  }, [projects])
 
   // And, or rule
   const nestedNodes = (clauses, parentId) => {
@@ -77,7 +117,7 @@ const RulesEditor = (props) => {
     edges.push({ from: parentId, to: `${parentId}.clauses.${clauses.length}` });
   };
 
-  // query, remove
+  // query, remove, force
   const clauseNodes = (clause, parentId) => {
     const childId = `${parentId}.clause`;
     if (clause && clause.rule) {
@@ -168,6 +208,7 @@ const RulesEditor = (props) => {
       heightConstraint: 54,
       widthConstraint: {
         minimum: 54,
+        maximum: 54
       },
     },
     edges: {
@@ -201,12 +242,16 @@ const RulesEditor = (props) => {
       const position = event.pointer.DOM;
       const nodeId = network.getNodeAt(position);
       if (nodeId) network.selectNodes([nodeId], false);
-      console.log("Rule", rule);
-      console.log("Nodes", nodes);
     },
     select: (event) => {
       const node = event.nodes[0];
-      if (node) setselectedNodeId(node);
+      if (!node) return;
+      setselectedNodeId(node);
+      const group = nodes.find(val => val.id === node).group;
+      if (group === "add_rule") {
+        setSelectedRule({});
+        setDrawer(true);
+      }
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
@@ -322,11 +367,12 @@ const addDefaultSecurityRules = () => {
   })
 }
 
-  // On drawer form submit
+// On drawer form submit
 const onSubmit = (values) => {
   setRule(dotProp.set(rule, selectedNodeId, values));
 };
 
+// On save rule
 const onSaveChanges = (tab) => {
   const message= {
     module: moduleName,
@@ -368,8 +414,8 @@ const onSaveChanges = (tab) => {
         onKeyEvent={(key) => openShortcutsDrawer(!shortcutsDrawer)}
       />
       <Topbar />
+      <div className='editor-page'>
       {Object.keys(rule).length > 0 && (
-        <div className='editor-page'>
           <Tabs defaultActiveKey={tab} activeKey={localStorage.getItem("rules:editor")} onChange={onTabChange} animated={false}>
             <Tabs.TabPane
               tab='Builder'
@@ -488,35 +534,34 @@ const onSaveChanges = (tab) => {
               </Button>
             </Tabs.TabPane>
           </Tabs>
-        </div>
       )}
       {Object.keys(rule).length === 0 && (
         <>
-          <div style={{ marginBottom: 28, marginTop: 80, padding: '0px 32px' }}>
-            <b>Security rules</b> ({name})
-            <span style={{ float: 'right' }}>
-              <Button
-                style={{ marginRight: 16 }}
-                onClick={() => openShortcutsDrawer(true)}
-              >
-                Shortcuts
-              </Button>
-              <Button>
-                Documentation
-                <LinkOutlined />
-              </Button>
-            </span>
-          </div>
-          <div className='rabbit'>
-            <img src={rabbit} alt='rabbit.png' />
-            <p style={{ margin: '30px 0px' }}>
-              No rules defined for this table yet. Default rules are being
-              applied.
-            </p>
-            <Button onClick={addDefaultSecurityRules} type='primary' size='large'>
-              Add security rules
+        <div style={{ marginBottom: 28, marginTop: 32, padding: '0px 32px' }}>
+          <b>Security rules</b> ({name})
+          <span style={{ float: 'right' }}>
+            <Button
+              style={{ marginRight: 16 }}
+              onClick={() => openShortcutsDrawer(true)}
+            >
+              Shortcuts
             </Button>
-          </div>
+            <Button>
+              Documentation
+              <LinkOutlined />
+            </Button>
+          </span>
+        </div>
+        <div className='rabbit'>
+          <img src={rabbit} alt='rabbit.png' />
+          <p style={{ margin: '30px 0px' }}>
+            No rules defined for this table yet. Default rules are being
+            applied.
+          </p>
+          <Button onClick={addDefaultSecurityRules} type='primary' size='large'>
+            Add security rules
+          </Button>
+        </div>
         </>
       )}
       {shortcutsDrawer && (
@@ -552,6 +597,7 @@ const onSaveChanges = (tab) => {
           </div>
         </Drawer>
       )}
+      </div>
     </React.Fragment>
   );
 };
