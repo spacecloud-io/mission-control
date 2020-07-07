@@ -21,7 +21,7 @@ import './event.css';
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import { set, increment, decrement } from "automate-redux";
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const getIconByStatus = (status) => {
   switch (status) {
@@ -154,11 +154,11 @@ const EventingLogs = () => {
           <Button size="large" style={{ marginRight: 16 }} onClick={handleRefresh}>Refresh <ReloadOutlined /></Button>
           <Button size="large" onClick={() => setModalVisible(true)}>Filters <FilterOutlined /></Button>
           <InfiniteScroll
-            pageStart={0}
-            loadMore={loadFunc}
-            hasMore={hasMoreEventLogs}
-            loader={<div style={{ textAlign: "center" }} key={0}>Loading...</div>}
-          >
+             dataLength={eventLogs.length}
+             next={loadFunc}
+             hasMore={hasMoreEventLogs}
+             loader={<h4 style={{textAlign: "center"}}>Loading...</h4>}
+            >
             <Table
               className="event-logs-table"
               columns={columns}

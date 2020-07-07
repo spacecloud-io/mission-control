@@ -16,14 +16,14 @@ import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin } from "../../../constants"
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 let editRowData = {};
 
 const getUniqueKeys = (colSchemaFields = []) => {
   return colSchemaFields.filter(val => val.isPrimary || val.hasUniqueConstraint).map(val => val.name)
 }
-let num = 1;
+let page = 1;
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
@@ -58,7 +58,6 @@ const Browse = () => {
   }, [selectedCol, collections])
 
   const getTableData = (skip = 0) => {
-    return new Promise((resolve, reject) => {
     if (selectedCol) {
 
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
@@ -76,6 +75,10 @@ const Browse = () => {
             notify("error", "Error fetching data", response.data.error, 5);
             setData([]);
             return
+          }
+
+          if (response.data.result.length === 0) {
+            setHasMoreRows(false);
           }
 
           response.data.result.forEach(obj => {
@@ -97,13 +100,11 @@ const Browse = () => {
 
           const newData = data.concat(response.data.result);
           setData(newData);
-           resolve(response.data.result.length);
         })
         .catch(ex => notify("error", "Error fetching data", ex, 5))
         .finally(() => dispatch(decrement("pendingRequests")));
         
     }
-  })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -152,13 +153,7 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    const myFunc = async () => {
-      
-    const rows = await getTableData();
-    console.log(rows)
-    }
-    myFunc();
-
+    getTableData();
   }, [filters, sorters, selectedCol])
 
 
@@ -335,12 +330,9 @@ const Browse = () => {
       })
   }
 
-  const loadFunc = async (page) => {
-    const rows = await getTableData(page*10);
-    console.log(rows)
-    if (rows < 10) {
-      setHasMoreRows(false);
-    }
+  const loadFunc = () => {
+    const rows = getTableData(page*10);
+    page++;
   }
 
   const tableColumns = getColumnNames(colSchemaFields, data)
@@ -374,10 +366,10 @@ const Browse = () => {
               </>
             )}
             <InfiniteScroll
-             pageStart={0}
-             loadMore={loadFunc}
+             dataLength={data.length} //This is important field to render the next data
+             next={loadFunc}
              hasMore={hasMoreRows}
-             loader={<div style={{ textAlign: "center" }} key={0}>Loading...</div>}
+             loader={<h4 style={{textAlign: "center"}}>Loading...</h4>}
             >
               <Table
                className="db-browse-table"
