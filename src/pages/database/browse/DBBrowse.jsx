@@ -46,6 +46,8 @@ const Browse = () => {
   const db = api.DB(selectedDB);
   const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];
   const uniqueKeys = getUniqueKeys(colSchemaFields)
+
+  const maxRows = 10;
   useEffect(() => {
     ReactGA.pageview("/projects/database/browse");
   }, [])
@@ -68,7 +70,7 @@ const Browse = () => {
         .where(...filterConditions)
         .sort(...sortConditions)
         .skip(skip)
-        .limit(10)
+        .limit(maxRows)
         .apply()
         .then((response) => {
           if (response.status !== 200) {
@@ -77,7 +79,7 @@ const Browse = () => {
             return
           }
 
-          if (response.data.result.length === 0) {
+          if (response.data.result.length < maxRows) {
             setHasMoreRows(false);
           }
 
@@ -331,7 +333,7 @@ const Browse = () => {
   }
 
   const loadFunc = () => {
-    const rows = getTableData(page*10);
+    getTableData(page*maxRows);
     page++;
   }
 
