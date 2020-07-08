@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig, notify, getJWTSecret } from '../../../utils';
+import { notify } from '../../../utils';
 import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -17,6 +17,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
+import { getJWTSecret } from '../../../operations/projects';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -43,12 +44,11 @@ function AlertMsgPreparedQueries() {
   );
 }
 
-const EndpointForm = ({ initialValues, handleSubmit }) => {
+const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
-  const { projectID, serviceName } = useParams();
-  const projects = useSelector((state) => state.projects);
+  const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers } = initialValues ? initialValues : {}
   const initialRule = rule ? rule : defaultEndpointRule
   const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
@@ -57,11 +57,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
 
   const [form] = Form.useForm();
-  const url = getProjectConfig(
-    projects,
-    projectID,
-    `modules.remoteServices.externalServices.${serviceName}.url`
-  );
 
   const secret = useSelector(state => getJWTSecret(state, projectID))
 
@@ -72,8 +67,8 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     path: path,
     overrideToken: token ? true : false,
     token: token,
-    setHeaders: headers.length > 0 ? true : false,
-    headers: headers.length > 0 ? headers : [{ key: "", value: "" }],
+    setHeaders: headers && headers.length > 0 ? true : false,
+    headers: headers && headers.length > 0 ? headers : [{ key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
@@ -185,7 +180,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   name='path'
                   rules={[{ required: true, message: 'Please provide path!' }]}
                 >
-                  <Input addonBefore={url} placeholder='Example: /v1/payments' />
+                  <Input addonBefore={serviceURL} placeholder='Example: /v1/payments' />
                 </Form.Item>
               </ConditionalFormBlock>
               <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.EXTERNAL}>

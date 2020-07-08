@@ -2,11 +2,12 @@ import React from 'react';
 import { Tabs } from 'antd';
 import { Redirect } from 'react-router-dom';
 import "./db-tabs.css"
-import { canDatabaseHavePreparedQueries } from '../../../utils';
+import { useSelector } from 'react-redux';
+import { isPreparedQueriesSupported } from '../../../operations/database';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
-  const showPreparedQueriesTab = canDatabaseHavePreparedQueries(projectID, selectedDB)
+  const showPreparedQueriesTab = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
   return (
     <div className="db-tabs">
       <Tabs defaultActiveKey={activeKey} >
@@ -17,13 +18,6 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>
-        <TabPane tab='Browse' key='browse'>
-          <Redirect
-            to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/browse`
-            }}
-          />
-        </TabPane>
         {showPreparedQueriesTab && <TabPane tab='Prepared queries' key='preparedQueries'>
           <Redirect
             to={{
@@ -31,17 +25,10 @@ export default ({ activeKey, projectID, selectedDB }) => {
             }}
           />
         </TabPane>}
-        <TabPane tab='Rules' key='rules'>
+        <TabPane tab='Browse' key='browse'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/rules`
-            }}
-          />
-        </TabPane>
-        <TabPane tab='Schema' key='schema'>
-          <Redirect
-            to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/schema`
+              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/browse`
             }}
           />
         </TabPane>

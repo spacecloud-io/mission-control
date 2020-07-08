@@ -5,19 +5,17 @@ import './db-selector.css'
 import { useHistory } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig } from '../../utils';
-import { dbTypes } from '../../constants';
 import { dbIcons } from '../../utils';
+import { getDbConfigs } from '../../operations/database';
 
 function DbSelector(props) {
-  const { projectID, selectedDB } = useParams();
+  const { projectID } = useParams();
   const history = useHistory();
-  const projects = useSelector(state => state.projects)
-  const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
+  const dbConfigs = useSelector(state => getDbConfigs(state))
 
-  const dbList = Object.entries(dbModule).map(([alias, obj]) => {
+  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
-    return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(projects, projectID, alias) }
+    return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(alias) }
   })
 
   const dbcolumns = [

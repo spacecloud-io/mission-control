@@ -15,7 +15,6 @@ const EventSecurityRuleForm = ({
   handleSubmit,
   handleCancel,
   initialValues,
-  conformLoading,
   defaultRules,
   customEventTypes
 }) => {
@@ -40,7 +39,8 @@ const EventSecurityRuleForm = ({
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
       try {
-        handleSubmit(values.eventType, JSON.parse(rule));
+        handleSubmit(values.eventType, JSON.parse(rule))
+        .then(() => handleCancel())
       } catch (ex) {
         notify("error", "Error", ex.toString());
       }
@@ -56,7 +56,6 @@ const EventSecurityRuleForm = ({
         okText="Add"
         title="Add rule"
         onOk={handleSubmitClick}
-        confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValue}>

@@ -1,45 +1,50 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
 import ReactGA from 'react-ga'
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, getProjectConfig, getJWTSecret, generateInternalToken } from "../../../utils";
-import client from "../../../client";
-import { increment, decrement } from 'automate-redux';
+import { getEventSourceFromType, generateInternalToken, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
+import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
+import { getJWTSecret } from '../../../operations/projects';
 
 const QueueEvent = () => {
   const { projectID } = useParams()
   const { state } = useLocation()
   const history = useHistory()
-  const dispatch = useDispatch()
 
   const initialEventType = state.eventType;
-  const projects = useSelector(state => state.projects)
-  const eventTriggerRules = getProjectConfig(projects, projectID, `modules.eventing.triggers`, {})
-  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
+
+  // Global state
+  const eventTriggerRules = useSelector(state => getEventingTriggerRules(state))
   const secret = useSelector(state => getJWTSecret(state, projectID))
   const internalToken = useSelector(state => generateInternalToken(state, projectID))
+
+  // Derived state
+  const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/queue-event");
   }, [])
 
+  // Handlers
   const handleTriggerEvent = (type, payload, isSynchronous, token) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"))
-      const eventBody = { type, delay: 0, timestamp: new Date().toISOString(), payload, options: {}, isSynchronous }
-      client.eventing.queueEvent(projectID, eventBody, token).then(data => {
-        resolve(data)
-      })
-        .catch(err => {
-          reject(err)
+      incrementPendingRequests()
+      triggerCustomEvent(projectID, type, payload, isSynchronous, token)
+        .then((data) => {
+          notify("success", "Success", "Event successfully queued to Space Cloud")
+          resolve(data)
         })
-        .finally(() => dispatch(decrement("pendingRequests")))
+        .catch(ex => {
+          notify("error", "Error queuing event", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
     })
   }
   return (

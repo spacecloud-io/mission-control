@@ -1,5 +1,5 @@
 import React from 'react';
-import { dbTypes, defaultDbConnectionStrings, defaultDBRules } from '../../../constants';
+import { dbTypes, defaultDbConnectionStrings } from '../../../constants';
 import { Card, Input, Button, Alert, Radio, Form } from 'antd';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
@@ -8,7 +8,7 @@ import sqlserverIcon from '../../../assets/sqlserverIcon.svg'
 import embeddedIcon from '../../../assets/embeddedIcon.svg'
 import './create-db.css'
 import { useSelector } from 'react-redux';
-import { getProjectConfig, getDatabaseLabelFromType } from "../../../utils"
+import { getDatabaseLabelFromType } from "../../../utils"
 import RadioCards from "../../radio-cards/RadioCards"
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import { Controlled as CodeMirror } from 'react-codemirror2';
@@ -19,17 +19,17 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import gqlPrettier from 'graphql-prettier';
+import { getDbConfigs } from '../../../operations/database';
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
   const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO] }
-  const projects = useSelector(state => state.projects)
-  const dbconfig = getProjectConfig(projects, props.projectId, `modules.db`)
+  const dbconfig = useSelector(state => getDbConfigs(state))
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
 
   const handleOnFinish = ({ alias, dbType, conn, dbName }) => {
-    props.handleSubmit(alias, conn, defaultDBRules, dbType, dbName)
+    props.handleSubmit(alias, conn, dbType, dbName)
   }
 
   const handleValuesChange = (changedValues) => {

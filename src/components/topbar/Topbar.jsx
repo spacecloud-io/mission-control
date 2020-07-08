@@ -26,7 +26,7 @@ const Topbar = (props) => {
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
   const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
-  const svgIcon = dbIcons(projects, projectID, selectedDB)
+  const svgIcon = dbIcons(selectedDB)
   const content = (
     <div className="popContent">
       <p style={{ marginBottom: "50px", fontWeight: "bold", fontSize: "16px" }}>Love Space Cloud? Help us spread the love!</p>

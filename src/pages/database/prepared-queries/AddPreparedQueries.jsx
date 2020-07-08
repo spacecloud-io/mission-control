@@ -15,19 +15,14 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
-import { getProjectConfig, notify } from '../../../utils';
-import { defaultPreparedQueryRule } from '../../../constants';
-import { setPreparedQueries } from '../dbActions';
+import { notify } from '../../../utils';
+import { savePreparedQueryConfig, getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
   const history = useHistory()
-  const projects = useSelector(state => state.projects)
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.collections`, {});
-  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {})
-  const preparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${preparedQueryId}`, { id: "", args: [] });
-  const collectionNames = Object.keys(collections)
-  const preparedQueryNames = Object.keys(preparedQueries)
+  const preparedQuery = useSelector(state => getDbPreparedQuery(state, selectedDB, preparedQueryId));
+  const dbGraphQLRootFields = useSelector(state => getDbGraphQLRootFields(state, selectedDB))
   const [form] = Form.useForm()
   const [sqlQuery, setSqlQuery] = useState(preparedQueryId ? preparedQuery.sql : "")
 
@@ -47,7 +42,7 @@ const AddPreparedQueries = () => {
 
 
   const handleSubmit = formValues => {
-    setPreparedQueries(projectID, selectedDB, formValues.id, formValues.args, sqlQuery, defaultPreparedQueryRule)
+    savePreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery)
       .then(() => {
         history.goBack();
         notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)
@@ -99,15 +94,9 @@ const AddPreparedQueries = () => {
                           cb(`Prepared query name can only contain alphanumeric characters and underscores!`)
                           return
                         }
-                        if (!preparedQueryId) {
-                          if (collectionNames.some(name => name.toLowerCase() === value.toLowerCase())) {
-                            cb("This name collides with an existing collection/table name. Please provide an unique name!")
-                            return
-                          }
-                          if (preparedQueryNames.some(name => name.toLowerCase() === value.toLowerCase())) {
-                            cb("This name collides with an existing prepared query name. Please provide an unique name!")
-                            return
-                          }
+                        if (!preparedQueryId && dbGraphQLRootFields.some(name => name.toLowerCase() === value.toLowerCase())) {
+                          cb("This name collides with an existing collection/table or prepared query name. Please provide an unique name!")
+                          return
                         }
                         cb()
                       }

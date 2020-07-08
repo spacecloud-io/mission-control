@@ -94,10 +94,7 @@ const IngressRoutingModal = props => {
         delete values["performRewrite"];
         delete values["setHeaders"];
         delete values["applyTransformations"]
-        props.handleSubmit(values).then(() => {
-          notify("success", "Success", "Saved routing config successfully");
-          props.handleCancel();
-        });
+        props.handleSubmit(values).then(() => props.handleCancel());
       } catch (error) {
         notify("error", "Error", error)
       }
