@@ -13,7 +13,7 @@ import FilterForm from "../../components/eventing/FilterForm";
 
 
 import client from "../../client";
-import { notify, parseJSONSafely, generateInternalToken } from "../../utils";
+import { notify, parseJSONSafely, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { getEventingDbAliasName } from '../../operations/eventing';
 import store from '../../store';
 
@@ -45,26 +45,26 @@ const EventingLogs = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (projects.length > 0) {
-      const dbType = getEventingDbAliasName(store.getState());
-      dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
-        .then(res => dispatch(set("eventLogs", res)))
-        .catch(ex => notify("error", "Error loading event logs", ex.toString()))
-        .finally(() => dispatch(decrement("pendingRequests")))
-    }
-  }, [eventFilters, projects])
-
   // Global state
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const projects = useSelector(state => state.projects);
-  const adminToken = useSelector(state => generateInternalToken(state, projectID))
+  const internalToken = useSelector(state => generateInternalToken(state, projectID))
 
   // Component state  
   const [modalVisible, setModalVisible] = useState(false);
   const [hasMoreEventLogs, setHasMoreEventLogs] = useState(true);
+
+  useEffect(() => {
+    if (projects.length > 0) {
+      const dbType = getEventingDbAliasName(store.getState());
+      incrementPendingRequests()
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => internalToken)
+        .then(res => dispatch(set("eventLogs", res)))
+        .catch(ex => notify("error", "Error loading event logs", ex.toString()))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [eventFilters, projects])
 
   // Handlers
 
@@ -76,7 +76,7 @@ const EventingLogs = () => {
   const loadFunc = () => {
     if (projects.length > 0) {
       const dbType = getEventingDbAliasName(store.getState())
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => adminToken)
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => internalToken)
         .then(res => {
           if (res.length < 100) {
             setHasMoreEventLogs(false);
@@ -91,7 +91,7 @@ const EventingLogs = () => {
   const handleRefresh = () => {
     const dbType = getEventingDbAliasName(store.getState())
     dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
+    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => internalToken)
       .then(res => dispatch(set("eventLogs", res)))
       .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
       .finally(() => dispatch(decrement("pendingRequests")))

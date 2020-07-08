@@ -7,8 +7,9 @@ import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Welcome from "./pages/welcome/Welcome";
 import CreateProject from "./pages/create-project/CreateProject";
-import Overview from "./pages/overview/Overview";
 import DatabaseIndexPage from "./pages/database/Index";
+import DatabaseEmptyStatePage from "./pages/database/empty-state/EmptyState";
+import Overview from "./pages/overview/Overview";
 import DatabasePage from "./pages/database/Database";
 import DBOverview from "./pages/database/overview/DBOverview";
 import DBBrowse from "./pages/database/browse/DBBrowse";
@@ -62,6 +63,7 @@ export default () => {
       <PrivateRoute exact path="/mission-control/projects/:projectID/overview" component={Overview} />
       <PrivateRoute path="/mission-control/projects/:projectID/database" component={DatabaseIndexPage} />
       <Switch>
+        <PrivateRoute exact path="/mission-control/projects/:projectID/database" component={DatabaseEmptyStatePage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/add-db" component={AddDb} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB" component={DatabasePage} />
         <PrivateRoute exact path="/mission-control/projects/:projectID/database/:selectedDB/overview" component={DBOverview} />

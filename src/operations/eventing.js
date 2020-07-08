@@ -49,7 +49,7 @@ export const loadEventingTriggers = (projectId) => {
     client.eventing.fetchEventingTriggers(projectId)
       .then((result = []) => {
         const eventingTriggers = result.reduce((prev, curr) => {
-          return Object.assign({}, prev, { [curr.name]: curr })
+          return Object.assign({}, prev, { [curr.id]: curr })
         }, {})
         store.dispatch(set("eventingTriggers", eventingTriggers))
         resolve()
@@ -159,6 +159,7 @@ export const triggerCustomEvent = (projectId, type, payload, isSynchronous, toke
 
 // Getters && setters
 
+export const getEventingConfig = (state) => get(state, "eventingConfig", { enabled: false, dbAlias: "" })
 export const getEventingDbAliasName = (state) => get(state, "eventingConfig.dbAlias", "")
 export const getEventingTriggerRules = (state) => get(state, "eventingTriggers", {})
 export const getEventingSchemas = (state) => get(state, "eventingSchemas", {})

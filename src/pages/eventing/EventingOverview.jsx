@@ -41,13 +41,13 @@ const EventingOverview = () => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
 	})
-	const rulesTableData = Object.entries(rules).map(([name, { type }]) => ({ name, type }))
+	const rulesTableData = Object.entries(rules).map(([id, { type }]) => ({ id, type }))
 	const noOfRules = rulesTableData.length
-	const ruleClickedInfo = ruleClicked ? { name: ruleClicked, ...rules[ruleClicked] } : undefined
+	const ruleClickedInfo = ruleClicked ? { id: ruleClicked, ...rules[ruleClicked] } : undefined
 
 	// Handlers
-	const handleEditRuleClick = (name) => {
-		setRuleClicked(name)
+	const handleEditRuleClick = (id) => {
+		setRuleClicked(id)
 		setRuleModalVisibile(true)
 	}
 
@@ -60,11 +60,11 @@ const EventingOverview = () => {
 		setRuleModalVisibile(false)
 	}
 
-	const handleSetRule = (name, type, url, retries, timeout, options = {}) => {
-		const isRulePresent = rules[name] ? true : false
+	const handleSetRule = (id, type, url, retries, timeout, options = {}) => {
+		const isRulePresent = rules[id] ? true : false
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
-			saveEventingTriggerRule(projectID, name, type, url, retries, timeout, options)
+			saveEventingTriggerRule(projectID, id, type, url, retries, timeout, options)
 				.then(() => {
 					notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()
@@ -77,9 +77,9 @@ const EventingOverview = () => {
 		})
 	}
 
-	const handleDeleteRule = (name) => {
+	const handleDeleteRule = (id) => {
 		incrementPendingRequests()
-		deleteEventingTriggerRule(projectID, name)
+		deleteEventingTriggerRule(projectID, id)
 			.then(() => notify("success", "Success", "Deleted trigger rule successfully"))
 			.catch(ex => notify("error", "Error deleting trigger rule", ex))
 			.finally(() => decrementPendingRequests())
@@ -88,7 +88,7 @@ const EventingOverview = () => {
 	const columns = [
 		{
 			title: 'Name',
-			dataIndex: 'name'
+			dataIndex: 'id'
 		},
 		{
 			title: 'Source',
@@ -102,9 +102,9 @@ const EventingOverview = () => {
 				const source = getEventSourceFromType(record.type)
 				return (
 					<span>
-						<a onClick={() => handleEditRuleClick(record.name)}>Edit</a>
+						<a onClick={() => handleEditRuleClick(record.id)}>Edit</a>
 						{source === "custom" && <a onClick={() => handleTriggerRuleClick(record.type)}>Trigger</a>}
-						<a style={{ color: "red" }} onClick={() => handleDeleteRule(record.name)}>Delete</a>
+						<a style={{ color: "red" }} onClick={() => handleDeleteRule(record.id)}>Delete</a>
 					</span>
 				)
 			}
@@ -151,7 +151,7 @@ const EventingOverview = () => {
 					{noOfRules > 0 && (
 						<React.Fragment>
 							<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
-							<Table columns={columns} dataSource={rulesTableData} rowKey="name" />
+							<Table columns={columns} dataSource={rulesTableData} rowKey="id" />
 						</React.Fragment>
 					)}
 					{ruleModalVisible && <RuleForm

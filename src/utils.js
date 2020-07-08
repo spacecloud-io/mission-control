@@ -506,11 +506,6 @@ export const BillingRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-export const canDatabaseHavePreparedQueries = (dbAliasName) => {
-  const dbType = getDbType(dbAliasName)
-  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
-}
-
 export const getDatabaseLabelFromType = (dbType) => {
   switch (dbType) {
     case dbTypes.MONGO:

@@ -28,7 +28,8 @@ const Overview = () => {
   const connected = useSelector(state => getDbConnState(state, selectedDB))
   const selectedDBType = useSelector(state => getDbType(state, selectedDB))
   const connString = useSelector(state => getDbConnectionString(state, selectedDB))
-  const unTrackedCollections = useSelector(state => getUntrackedCollections(state, selectedDB)).map(colName => ({ name: colName }))
+  const unTrackedCollections = useSelector(state => getUntrackedCollections(state, selectedDB))
+  const unTrackedCollectionsInfo = unTrackedCollections.map(colName => ({ name: colName }))
   const trackedCollections = useSelector(state => getTrackedCollectionsInfo(state, selectedDB))
 
   // Component state
@@ -55,21 +56,12 @@ const Overview = () => {
     }
   }, [projectID, selectedDB])
 
-  useEffect(() => {
-    if (projectID && selectedDB && connected) {
-      incrementPendingRequests()
-      loadCollections(projectID, selectedDB)
-        .catch(ex => notify("error", "Error fetching database connection state", ex))
-        .finally(() => decrementPendingRequests())
-    }
-  }, [projectID, selectedDB, connected])
-
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     incrementPendingRequests()
     saveColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
-      .then(() => notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`))
-      .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality on ${colName}`, ex))
+      .then(() => notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`))
+      .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`, ex))
       .finally(() => decrementPendingRequests())
   }
 
@@ -128,23 +120,34 @@ const Overview = () => {
   }
 
   const handleAddCollection = (editMode, colName, schema) => {
-    incrementPendingRequests()
-    saveColSchema(projectID, selectedDB, colName, schema)
-      .then(() => {
-        notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
-        dispatch(set("uiState.selectedCollection", colName))
-      })
-      .catch(ex => notify("error", `Error ${editMode ? "Modified" : "Added"} ${colName}`, ex))
-      .finally(() => decrementPendingRequests())
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      saveColSchema(projectID, selectedDB, colName, schema)
+        .then(() => {
+          notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
+          dispatch(set("uiState.selectedCollection", colName))
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", `Error ${editMode ? "Modified" : "Added"} ${colName}`, ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   const handleEditConnString = (conn) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       enableDb(projectID, selectedDB, conn)
-        .then(() => {
-          notify("success", "Connection successful", `Connected to database successfully`)
-          resolve()
+        .then(connected => {
+          if (connected) {
+            notify("success", "Connection successful", `Connected to database successfully`)
+            resolve()
+            return
+          }
+          notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
+          reject()
         })
         .catch(() => {
           notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
@@ -277,7 +280,7 @@ const Overview = () => {
                     </Button>
                     </div>
                     <div style={{ marginTop: '32px' }}>
-                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollections} pagination={false} bordered />
+                      <Table columns={untrackedTableColumns} dataSource={unTrackedCollectionsInfo} pagination={false} bordered />
                     </div>
                   </Col>
                 </Row>

@@ -8,7 +8,7 @@ import { Row, Col, Button } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { getEventSourceFromType, generateInternalToken, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
 import { getJWTSecret } from '../../../operations/projects';
 
@@ -36,8 +36,14 @@ const QueueEvent = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       triggerCustomEvent(projectID, type, payload, isSynchronous, token)
-        .then((data) => resolve(data))
-        .catch(() => reject())
+        .then((data) => {
+          notify("success", "Success", "Event successfully queued to Space Cloud")
+          resolve(data)
+        })
+        .catch(ex => {
+          notify("error", "Error queuing event", ex)
+          reject()
+        })
         .finally(() => decrementPendingRequests())
     })
   }

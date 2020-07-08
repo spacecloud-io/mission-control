@@ -8,7 +8,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
-import { saveEventingConfig, getEventingDbAliasName } from '../../operations/eventing';
+import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
 import { getDbsConfig } from '../../operations/database';
 
 const EventingSettings = () => {
@@ -19,7 +19,7 @@ const EventingSettings = () => {
   }, [])
 
   // Global state
-  const eventingDbAliasName = useSelector(state => getEventingDbAliasName(state))
+  const eventingConfig = useSelector(state => getEventingConfig(state))
   const dbsConfig = useSelector(state => getDbsConfig(state));
 
   // Derived state
@@ -32,11 +32,11 @@ const EventingSettings = () => {
     };
   });
 
-  const handleEventingConfig = (dbAlias) => {
+  const handleEventingConfig = ({ enabled, dbAlias }) => {
     incrementPendingRequests()
-    saveEventingConfig(projectID, true, dbAlias)
-      .then(() => notify("success", "Success", "Changed eventing config successfully"))
-      .catch(ex => notify("error", "Error changing eventing config", ex))
+    saveEventingConfig(projectID, enabled, dbAlias)
+      .then(() => notify("success", "Success", "Saved eventing config successfully"))
+      .catch(ex => notify("error", "Error saving eventing config", ex))
       .finally(() => decrementPendingRequests());
   };
 
@@ -50,13 +50,13 @@ const EventingSettings = () => {
           <h2>Eventing Config</h2>
           <div className="divider" />
           <EventingConfigure
-            dbType={eventingDbAliasName}
+            initialValues={eventingConfig}
             dbList={dbList}
             handleSubmit={handleEventingConfig}
           />
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

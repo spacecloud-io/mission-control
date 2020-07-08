@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
-import jwt from 'jsonwebtoken';
 import client from '../../../client';
 import * as templates from '../templates.js';
-import { SPACE_CLOUD_USER_ID } from '../../../constants';
 import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -19,16 +17,12 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import '../explorer.css';
-import { notify } from '../../../utils';
+import { notify, generateInternalToken } from '../../../utils';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getSecrets } from '../../../operations/secrets';
+import { getJWTSecret } from '../../../operations/projects';
 
 const { Option } = Select;
-
-const generateAdminToken = secret => {
-  return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
-};
 
 const SpaceApi = props => {
   const { projectID } = useParams();
@@ -42,7 +36,7 @@ const SpaceApi = props => {
   }, [])
 
   const getToken = () => {
-    return props.useAdminToken ? generateAdminToken(props.secret) : props.userToken
+    return props.useInternalToken ? props.internalToken : props.userToken
   }
 
   const applyRequest = () => {
@@ -90,9 +84,9 @@ const SpaceApi = props => {
                         </div>
             <div className='row'>
               <Checkbox
-                checked={props.useAdminToken}
+                checked={props.useInternalToken}
                 onChange={e =>
-                  props.setUseAdminToken(e.target.checked)
+                  props.setUseInternalToken(e.target.checked)
                 }
               >
                 Bypass security rules
@@ -104,7 +98,7 @@ const SpaceApi = props => {
                 <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
               </Tooltip>
             </div>
-            {!props.useAdminToken && (
+            {!props.useInternalToken && (
               <div className='row' style={{ display: "flex" }}>
                 <Input.Password
                   placeholder='JWT Token'
@@ -193,9 +187,8 @@ const SpaceApi = props => {
 
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
-  const secrets = getSecrets(state)
   return {
-    secret: secrets.length > 0 ? secrets[0].secret : "",
+    secret: getJWTSecret(state, projectId),
     projectId: projectId,
     selectedTemplate: get(state, 'uiState.explorer.spaceApi.selectedTemplate'),
     spaceApiQuery: get(
@@ -203,12 +196,13 @@ const mapStateToProps = (state, ownProps) => {
       'uiState.explorer.spaceApi.query',
       templates.defaultTemplate
     ),
-    useAdminToken: get(
+    useInternalToken: get(
       state,
-      'uiState.explorer.useAdminToken',
+      'uiState.explorer.useInternalToken',
       true
     ),
-    userToken: get(state, 'uiState.explorer.userToken')
+    userToken: get(state, 'uiState.explorer.userToken'),
+    internalToken: generateInternalToken(state, projectId)
   };
 };
 
@@ -220,8 +214,8 @@ const mapDispatchToProps = dispatch => {
     handleSpaceApiQueryChange: query => {
       dispatch(set('uiState.explorer.spaceApi.query', query));
     },
-    setUseAdminToken: (useAdminToken) => {
-      dispatch(set('uiState.explorer.useAdminToken', useAdminToken))
+    setUseInternalToken: (useInternalToken) => {
+      dispatch(set('uiState.explorer.useInternalToken', useInternalToken))
     },
     setUserToken: (userToken) => {
       dispatch(set('uiState.explorer.userToken', userToken))

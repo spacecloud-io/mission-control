@@ -2,8 +2,7 @@ import { set, get, del } from "automate-redux";
 import client from "../client";
 import store from "../store";
 import { saveEventingConfig, getEventingDbAliasName } from "./eventing"
-import { defaultDBRules, defaultPreparedQueryRule } from "../constants";
-import { canDatabaseHavePreparedQueries } from "../utils";
+import { defaultDBRules, defaultPreparedQueryRule, dbTypes } from "../constants";
 
 export const loadDbConfig = (projectId) => {
   return new Promise((resolve, reject) => {
@@ -90,7 +89,7 @@ export const loadDbPreparedQueries = (projectId) => {
   })
 }
 
-export const loadCollections = (projectId, dbAliasName) => {
+const loadCollections = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.listCollections(projectId, dbAliasName)
       .then((collections = []) => {
@@ -108,11 +107,11 @@ export const loadDBConnState = (projectId, dbAliasName) => {
         store.dispatch(set(`dbConnState.${dbAliasName}`, connected))
         if (connected) {
           loadCollections(projectId, dbAliasName)
-            .then(() => resolve())
+            .then(() => resolve(connected))
             .catch(ex => reject(ex))
           return
         }
-        resolve()
+        resolve(connected)
       })
       .catch(ex => reject(ex))
   })
@@ -154,9 +153,9 @@ export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRe
 
 export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealtimeEnabled) => {
   return new Promise((resolve, reject) => {
-    const collectionSecurityRules = get(store.getState(), `dbRules.${dbAliasName}.${colName}.rules`, {})
-    const collectionRules = { rules: collectionSecurityRules, isRealtimeEnabled }
-    client.database.setColRule(projectId, dbAliasName, colName, collectionRules)
+    const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
+    const newCollectionRules = Object.assign({}, collectionRules, { isRealtimeEnabled })
+    client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
       .then(() => {
         store.dispatch(set(`dbRules.${dbAliasName}.${colName}.isRealtimeEnabled`, isRealtimeEnabled))
         resolve()
@@ -167,9 +166,9 @@ export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealti
 
 export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRules) => {
   return new Promise((resolve, reject) => {
-    const isRealtimeEnabled = get(store.getState(), `dbRules.${dbAliasName}.${colName}.isRealtimeEnabled`, false)
-    const collectionRules = { rules: securityRules, isRealtimeEnabled }
-    client.database.setColRule(projectId, dbAliasName, colName, collectionRules)
+    const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
+    const newCollectionRules = Object.assign({}, collectionRules, { rules: securityRules })
+    client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
       .then(() => {
         store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, securityRules))
         resolve()
@@ -208,8 +207,8 @@ export const deleteCollection = (projectId, dbAliasName, colName) => {
 
 export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) => {
   return new Promise((resolve, reject) => {
-    const preparedQueryConfig = get(store.getState(), `dbPreparedQueries.${dbAliasName}.${id}`, {})
-    const config = Object.assign({}, preparedQueryConfig, { id, sql, args })
+    const preparedQueryConfig = getDbPreparedQuery(store.getState(), dbAliasName, id)
+    const config = Object.assign({}, preparedQueryConfig, { sql, args })
     client.database.setPreparedQuery(projectId, dbAliasName, id, config)
       .then(() => {
         store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}`, config))
@@ -221,8 +220,8 @@ export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) =
 
 export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) => {
   return new Promise((resolve, reject) => {
-    const preparedQueryConfig = get(store.getState(), `dbPreparedQueries.${dbAliasName}.${id}`, {})
-    const config = Object.assign({}, preparedQueryConfig, { id, rule })
+    const preparedQueryConfig = getDbPreparedQuery(store.getState(), dbAliasName, id)
+    const config = Object.assign({}, preparedQueryConfig, { rule })
     client.database.setPreparedQuery(projectId, dbAliasName, id, config)
       .then(() => {
         store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
@@ -247,11 +246,11 @@ export const reloadDbSchema = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.reloadSchema(projectId, dbAliasName)
       .then(collections => {
-        const dbSchema = get(store.getState(), `dbSchemas.${dbAliasName}`, {})
+        const dbSchemas = getDbSchemas(store.getState(), dbAliasName)
         Object.entries(collections).forEach(([colName, schema]) => {
-          dbSchema[colName] = schema
+          dbSchemas[colName] = schema
         })
-        store.dispatch(set(`dbSchemas.${dbAliasName}`, dbSchema))
+        store.dispatch(set(`dbSchemas.${dbAliasName}`, dbSchemas))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -260,8 +259,8 @@ export const reloadDbSchema = (projectId, dbAliasName) => {
 
 export const modifyDbSchema = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
-    const dbSchema = get(store.getState(), `dbSchemas.${dbAliasName}`, {})
-    const dbSchemaRequest = Object.entries(dbSchema).reduce((prev, curr) => {
+    const dbSchemas = getDbSchemas(store.getState(), dbAliasName)
+    const dbSchemaRequest = Object.entries(dbSchemas).reduce((prev, curr) => {
       const [colName, schema] = curr
       return Object.assign({}, prev, { [colName]: { schema } })
     }, {})
@@ -277,14 +276,9 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => {
     client.database.setDbConfig(projectId, dbAliasName, dbConfig)
       .then(() => {
         store.dispatch(set(`dbConfig.${dbAliasName}`, dbConfig))
-        store.dispatch(set(`dbConnState.${dbAliasName}`, true))
-        if (enabled) {
-          loadCollections(projectId, dbAliasName)
-            .then(() => resolve())
-            .catch(ex => reject(ex))
-          return
-        }
-        resolve()
+        loadDBConnState(projectId, dbAliasName)
+          .then(connected => resolve(connected))
+          .catch(ex => reject(ex))
       })
       .catch(ex => reject(ex))
   })
@@ -292,14 +286,15 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => {
 
 export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
   return new Promise((resolve, reject) => {
-    const dbConfig = get(store.getState(), "dbConfig", {})
-    const isFirstDatabase = Object.keys(dbConfig).length === 0
+    const state = store.getState()
+    const dbsConfig = getDbsConfig(state)
+    const isFirstDatabase = Object.keys(dbsConfig).length === 0
     saveDbConfig(projectId, dbAliasName, true, conn, dbType, dbName)
       .then(() => {
         // Set default security rules for collections and prepared queries in the background
         saveColRule(projectId, dbAliasName, "default", defaultDBRules, false)
           .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
-        if (canDatabaseHavePreparedQueries(dbAliasName)) {
+        if (isPreparedQueriesSupported(state, dbAliasName)) {
           savePreparedQuerySecurityRule(projectId, dbAliasName, "default", defaultPreparedQueryRule)
             .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
         }
@@ -319,16 +314,16 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
 
 export const enableDb = (projectId, dbAliasName, conn) => {
   return new Promise((resolve, reject) => {
-    const { type, name } = get(store.getState(), "dbConfig", {})
+    const { type, name } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, true, conn, type, name)
-      .then(() => resolve())
+      .then(connected => resolve(connected))
       .catch(ex => reject(ex))
   })
 }
 
 export const disableDb = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
-    const { type, name, conn } = get(store.getState(), "dbConfig", {})
+    const { type, name, conn } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, false, conn, type, name)
       .then(() => resolve())
       .catch(ex => reject(ex))
@@ -359,7 +354,7 @@ export const removeDbConfig = (projectId, dbAliasName) => {
 
 export const changeDbName = (projectId, dbAliasName, dbName) => {
   return new Promise((resolve, reject) => {
-    const { conn, type } = get(store.getState(), "dbConfig", {})
+    const { conn, type } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, true, conn, type, dbName)
       .then(() => {
         modifyDbSchema(projectId, dbAliasName)
@@ -374,13 +369,13 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
 export const getDbsConfig = (state) => get(state, "dbConfig", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfig.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
-export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", dbAliasName)
+export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
 export const getDbSchemas = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
 export const getDbRules = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}`, {})
 export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}`, {})
-export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: "", args: [] })
+export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: preparedQueryId, sql: "", args: [], rule: {} })
 export const getDbDefaultPreparedQuerySecurityRule = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}.default.rule`, {})
 export const getDbDefaultCollectionSecurityRule = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}.default.rules`, {})
 export const getCollections = (state, dbAliasName) => get(state, `dbCollections.${dbAliasName}`, [])
@@ -398,13 +393,15 @@ export const getTrackedCollectionsInfo = (state, dbAliasName) => {
       collections[colName] = { rule }
     }
   })
-  return Object.entries(collections).map(([colName, { schema, rule }]) => Object.assign({}, { name: colName, schema, ...rule }))
+  const collectionsInfo = Object.entries(collections).map(([colName, { schema, rule }]) => Object.assign({}, { name: colName, schema, ...rule }))
+  return collectionsInfo.filter(({ name }) => name !== "default" && name !== "invocation_logs" && name !== "event_logs")
 }
 
 export const getTrackedCollections = (state, dbAliasName) => {
   const schemas = getDbSchemas(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
-  return [...new Set([...Object.keys(schemas), ...Object.keys(rules)])]
+  const collections = [...new Set([...Object.keys(schemas), ...Object.keys(rules)])]
+  return collections.filter(col => col !== "default" && col !== "invocation_logs" && col !== "event_logs")
 }
 
 export const getDbGraphQLRootFields = (state, dbAliasName) => {
@@ -418,7 +415,12 @@ export const getUntrackedCollections = (state, dbAliasName) => {
   const schemas = getDbSchemas(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = getCollections(state, dbAliasName)
-  return collections.filter(colName => !schemas[colName] && !rules[colName])
+  return collections.filter(col => !schemas[col] && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
 }
 
 export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")
+export const getCollectionRules = (state, dbAliasName, colName) => get(state, `dbRules.${dbAliasName}.${colName}`, { isRealtimeEnabled: false, rules: {} })
+export const isPreparedQueriesSupported = (state, dbAliasName) => {
+  const dbType = getDbType(state, dbAliasName)
+  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
+}

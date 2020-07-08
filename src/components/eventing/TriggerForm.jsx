@@ -38,13 +38,13 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
   const handleClickSubmit = e => {
     form.validateFields().then(fieldsValue => {
       try {
-        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken()).then(res => {
-          notify("success", "Success", "Event successfully queued to Space Cloud")
-          setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
-          if (!triggeredEventOnce) setTriggeredEventOnce(true)
-        }).catch(ex => notify("error", "Error", ex.toString()))
+        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken())
+          .then(res => {
+            setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
+            if (!triggeredEventOnce) setTriggeredEventOnce(true)
+          })
       } catch (ex) {
-        notify("error", "Error", ex.toString())
+        notify("error", "Error", ex)
       }
     });
   };
@@ -55,7 +55,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
     bypassSecurityRules: useInternalToken,
     token: token
   }
-  
+
   return (
     <React.Fragment>
       <Form layout="vertical" form={form} initialValues={formInitialValues}

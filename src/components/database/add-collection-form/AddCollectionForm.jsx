@@ -8,6 +8,7 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import "./add-collection.css"
 
 const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initialValues }) => {
   const [form] = Form.useForm();
@@ -45,9 +46,9 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
   return (
     <div>
       <Modal
-        className='edit-item-modal'
+        className='add-collection-modal'
         visible={true}
-        width={520}
+        width={720}
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
@@ -75,10 +76,12 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
               className="input"
               placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
               disabled={editMode}
+              autoFocus={true}
             />
           </Form.Item>
           <FormItemLabel name="Schema" />
           <CodeMirror
+            style={{ height: 420 }}
             value={schema}
             options={{
               mode: { name: "javascript", json: true },
@@ -86,8 +89,7 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
               styleActiveLine: true,
               matchBrackets: true,
               autoCloseBrackets: true,
-              tabSize: 2,
-              autofocus: true
+              tabSize: 2
             }}
             onBeforeChange={(editor, data, value) => {
               setSchema(value)

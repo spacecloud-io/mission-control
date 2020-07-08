@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react'
-import { Redirect, useParams } from "react-router-dom";
-import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
-
-import Sidenav from '../../components/sidenav/Sidenav'
-import Topbar from '../../components/topbar/Topbar'
-import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
-import ProjectPageLayout, { Content } from "../../components/project-page-layout/ProjectPageLayout"
-
-import { loadDbSchemas, loadDbConfig, loadDbRules, getDbsConfig, loadDbPreparedQueries } from '../../operations/database';
+import { useEffect } from 'react'
+import { useParams } from "react-router-dom";
+import { loadDbSchemas, loadDbConfig, loadDbRules, loadDbPreparedQueries } from '../../operations/database';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 
 import './database.css'
@@ -16,15 +8,6 @@ import '../../index.css'
 
 const Database = () => {
   const { projectID } = useParams()
-  const dbConfig = useSelector(state => getDbsConfig(state))
-  const dbAliasNames = Object.keys(dbConfig)
-  const activeDB = dbAliasNames.find(dbAliasName => {
-    return dbConfig[dbAliasName].enabled
-  })
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database");
-  }, [])
 
   useEffect(() => {
     if (projectID) {
@@ -50,25 +33,7 @@ const Database = () => {
     }
   }, [projectID])
 
-  if (activeDB) {
-    return <Redirect to={`/mission-control/projects/${projectID}/database/${activeDB}/overview`} />;
-  }
-
-  if (dbAliasNames.length > 0) {
-    return <Redirect to={`/mission-control/projects/${projectID}/database/${dbAliasNames[0]}`} />;
-  }
-
-  return (
-    <React.Fragment>
-      <Topbar showProjectSelector />
-      <Sidenav selectedItem="database" />
-      <ProjectPageLayout>
-        <Content>
-          <DatabaseEmptyState />
-        </Content>
-      </ProjectPageLayout>
-    </React.Fragment>
-  )
+  return null
 }
 
 export default Database;

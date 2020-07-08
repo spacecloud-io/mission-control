@@ -209,3 +209,8 @@ body {
     width: 100% !important;
   }
 }
+
+
+.ant-notification-notice-icon-info {
+  color: #1890ff !important;
+}

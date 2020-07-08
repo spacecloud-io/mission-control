@@ -13,14 +13,13 @@ const RuleForm = (props) => {
   const [form] = Form.useForm();
   const [selectedDb, setSelectedDb] = useState();
 
-  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-  const trackedCollections = useSelector(state => getTrackedCollections(state))
-  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
+  const { id, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
+  const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
   const [value, setValue] = useState("");
 
   const formInitialValues = {
-    'name': name,
+    'id': id,
     'source': getEventSourceFromType(type, "database"),
     'type': type ? type : "DB_INSERT",
     'options': options ? options : {},
@@ -41,7 +40,7 @@ const RuleForm = (props) => {
         delete options["col"]
       }
 
-      props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options).then(() => {
+      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options).then(() => {
         props.handleCancel();
         form.resetFields();
       })
@@ -58,7 +57,7 @@ const RuleForm = (props) => {
     >
       <Form layout="vertical" form={form} initialValues={formInitialValues}>
         <FormItemLabel name="Trigger name" />
-        <Form.Item name="name" rules={[
+        <Form.Item name="id" rules={[
           {
             validator: (_, value, cb) => {
               if (!value) {
@@ -73,7 +72,7 @@ const RuleForm = (props) => {
             }
           }
         ]}>
-          <Input placeholder="Trigger Name" />
+          <Input placeholder="Trigger Name" disabled={id}/>
         </Form.Item>
         <FormItemLabel name="Source" />
         <Form.Item name="source" rules={[{ required: true, message: 'Please select a source!' }]}>
@@ -97,7 +96,7 @@ const RuleForm = (props) => {
             <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
               <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
                 {
-                  data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                  trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
                     <Option key={data} value={data}>
                       {data}
                     </Option>

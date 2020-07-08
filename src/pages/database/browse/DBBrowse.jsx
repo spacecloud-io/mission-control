@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
-import { set, increment, decrement } from 'automate-redux';
+import { set } from 'automate-redux';
 import ReactGA from 'react-ga'
 
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -11,7 +11,7 @@ import FilterSorterForm from "../../../components/database/filter-sorter-form/Fi
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
-import { notify } from '../../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests, generateInternalToken } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
@@ -40,7 +40,9 @@ const Browse = () => {
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const collectionSchemaString = useSelector(state => getCollectionSchema(state, selectedDB, selectedCol))
   const collections = useSelector(state => getTrackedCollections(state, selectedDB))
+  const internalToken = useSelector(state => generateInternalToken(state, projectID))
   const api = new API(projectID, spaceCloudClusterOrigin);
+  api.setToken(internalToken)
   const db = api.DB(selectedDB);
   const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];
   const uniqueKeys = getUniqueKeys(colSchemaFields)
@@ -61,14 +63,14 @@ const Browse = () => {
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
       const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
-      dispatch(increment("pendingRequests"));
+      incrementPendingRequests()
       db.get(selectedCol)
         .where(...filterConditions)
         .sort(...sortConditions)
         .apply()
         .then(({ status, data }) => {
           if (status !== 200) {
-            notify("error", "Error fetching data", data.error, 5);
+            notify("error", "Error fetching data", data.error);
             setData([]);
             return
           }
@@ -92,8 +94,8 @@ const Browse = () => {
 
           setData(data.result);
         })
-        .catch(ex => notify("error", "Error fetching data", ex, 5))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => notify("error", "Error fetching data", ex))
+        .finally(() => decrementPendingRequests());
     }
   }
 
@@ -160,44 +162,48 @@ const Browse = () => {
   }
 
   const insertRow = values => {
-    let doc = {};
-    for (let row of values) {
-      doc[row.column] = row.value;
-    }
+    return new Promise((resolve, reject) => {
+      let doc = {};
+      for (let row of values) {
+        doc[row.column] = row.value;
+      }
 
-    dispatch(increment("pendingRequests"));
-    db.insert(selectedCol).doc(doc).apply()
-      .then(res => {
-        if (res.status !== 200) {
-          notify("error", "Error inserting row", res.data.error, 5);
-          return;
-        }
-        notify("success", "Success", "Successfully inserted a row!", 5);
-        getTableData();
-      })
-      .catch(ex => notify("error", "Error inserting row", ex, 5))
-      .finally(() => {
-        setInsertRowFormVisibility(false)
-        dispatch(decrement("pendingRequests"));
-      })
+      incrementPendingRequests()
+      db.insert(selectedCol).doc(doc).apply()
+        .then(res => {
+          if (res.status !== 200) {
+            notify("error", "Error inserting row", res.data.error);
+            reject()
+            return;
+          }
+          notify("success", "Success", "Successfully inserted a row!");
+          resolve()
+          getTableData();
+        })
+        .catch(ex => {
+          notify("error", "Error inserting row", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   const deleteRow = (record) => {
     const conditions = uniqueKeys.map(key => cond(key, "==", record[key]))
-    dispatch(increment("pendingRequests"));
+    incrementPendingRequests()
     db.delete(selectedCol)
       .where(...conditions)
       .apply()
       .then((res) => {
         if (res.status !== 200) {
-          notify("error", "Error deleting row", res.data.error, 5)
+          notify("error", "Error deleting row", res.data.error)
           return;
         }
-        notify("success", "Success", "Row deleted successfully", 5)
+        notify("success", "Success", "Row deleted successfully")
         getTableData();
       })
-      .catch(ex => notify("error", "Error deleting row", ex, 5))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .catch(ex => notify("error", "Error deleting row", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   const editRow = values => {
@@ -303,21 +309,25 @@ const Browse = () => {
       })
     }
 
-    dispatch(increment("pendingRequests"));
-    updateOperation.apply()
-      .then(({ status, data }) => {
-        if (status !== 200) {
-          notify("error", "Error updating row", data.error, 5);
-          return;
-        }
-        notify("success", "Success", "Row updated successfully!", 5);
-        getTableData();
-      })
-      .catch(ex => notify("error", "Error updating row", ex, 5))
-      .finally(() => {
-        setEditRowFormVisibility(false);
-        dispatch(decrement("pendingRequests"));
-      })
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      updateOperation.apply()
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            notify("error", "Error updating row", data.error);
+            reject()
+            return;
+          }
+          notify("success", "Success", "Row updated successfully!");
+          resolve()
+          getTableData();
+        })
+        .catch(ex => {
+          notify("error", "Error updating row", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   const tableColumns = getColumnNames(colSchemaFields, data)

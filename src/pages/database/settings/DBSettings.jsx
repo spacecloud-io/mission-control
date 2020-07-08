@@ -6,8 +6,8 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { notify, getDatabaseLabelFromType, canDatabaseHavePreparedQueries, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, getDbDefaultPreparedQuerySecurityRule } from "../../../operations/database"
+import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, getDbDefaultPreparedQuerySecurityRule, isPreparedQueriesSupported } from "../../../operations/database"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -153,7 +153,7 @@ const Settings = () => {
                 <Button htmlType="submit">Save</Button>
               </Form.Item>
             </Form>
-            {canDatabaseHavePreparedQueries(selectedDB) &&
+            {isPreparedQueriesSupported(selectedDB) &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
                 <Form layout="vertical" form={form1} onFinish={handleChangeDefaultPreparedQueryRule}>
