@@ -19,9 +19,10 @@ describe("generateSchemaAST method", () => {
       f13: DateTime @updatedAt
       f14: mytype2
       f15: ID @foreign(table: mytype3, field: myfield)
-      f16: String @link(table: mytype4, from: id, to: somefield, field: goodfield)
-      f17: mytype5 @link(table: mytype5, from: id, to: nicefield)
-      f18: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
+      f16: ID @foreign(table: mytype3, to: myfield)
+      f17: String @link(table: mytype4, from: id, to: somefield, field: goodfield)
+      f18: mytype5 @link(table: mytype5, from: id, to: nicefield)
+      f19: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
     }
     `
     const expectedSchemaAST = {
@@ -227,6 +228,23 @@ describe("generateSchemaAST method", () => {
         },
         {
           name: "f16",
+          type: "ID",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: true,
+          foreign: {
+            table: "mytype3",
+            field: "myfield"
+          },
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f17",
           type: "String",
           isRequired: false,
           isPrimary: false,
@@ -244,7 +262,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f17",
+          name: "f18",
           type: "mytype5",
           isRequired: false,
           isPrimary: false,
@@ -262,7 +280,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: true
         },
         {
-          name: "f18",
+          name: "f19",
           type: "mytype6",
           isRequired: true,
           isPrimary: false,
@@ -431,13 +449,11 @@ describe("generateRandomFieldValues method", () => {
 describe("generateSampleQueryDBDelete method", () => {
   it("generates proper delete query without filters", () => {
     const collections = {
-      users: {
-        schema: `type users {
-          id: ID! @primary
-          name: String
-          email: ID! @unique
-        }`
-      }
+      users: `type users {
+        id: ID! @primary
+        name: String
+        email: ID! @unique
+      }`
     }
     const schemaASTs = generateDBSchemaAST(collections)
     const result = {
@@ -461,13 +477,11 @@ describe("generateSampleQueryDBDelete method", () => {
 
   it("generates proper delete query filters", () => {
     const collections = {
-      users: {
-        schema: `type users {
-          id: ID! @primary
-          name: String
-          email: ID! @unique
-        }`
-      }
+      users: `type users {
+        id: ID! @primary
+        name: String
+        email: ID! @unique
+      }`
     }
     const schemaASTs = generateDBSchemaAST(collections)
     const result = {
@@ -495,23 +509,19 @@ describe("generateSampleQueryDBDelete method", () => {
 describe("generateSampleQueryDBInsert method", () => {
   it("generates proper insert query for table with linked inserts", () => {
     const collections = {
-      authors: {
-        schema: `type authors {
-          id: ID! @primary
-          name: String
-          posts: [posts] @link(table: posts, from: id, to: author_id)
-        }`
-      },
-      posts: {
-        schema: `type posts {
-          id: ID! @primary
-          title: String
-          author_id: ID! @foreign(table: authors, field: id)
-          created_on: DateTime! @createdAt
-          last_updated: DateTime! @updatedAt
-          author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
+      authors: `type authors {
+        id: ID! @primary
+        name: String
+        posts: [posts] @link(table: posts, from: id, to: author_id)
+      }`,
+      posts: `type posts {
+        id: ID! @primary
+        title: String
+        author_id: ID! @foreign(table: authors, field: id)
+        created_on: DateTime! @createdAt
+        last_updated: DateTime! @updatedAt
+        author: authors @link(table: authors, from: author_id, to: id)
+      }`
     }
 
     const schemaASTs = generateDBSchemaAST(collections)
@@ -565,23 +575,19 @@ describe("generateSampleQueryDBInsert method", () => {
   })
   it("generates proper insert query for table that has foreign key and read only link on others table", () => {
     const collections = {
-      authors: {
-        schema: `type authors {
-          id: ID! @primary
-          name: String
-          posts: [posts] @link(table: posts, from: id, to: author_id)
-        }`
-      },
-      posts: {
-        schema: `type posts {
-          id: ID! @primary
-          title: String
-          author_id: ID! @foreign(table: authors, field: id)
-          created_on: DateTime! @createdAt
-          last_updated: DateTime! @updatedAt
-          author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
+      authors: `type authors {
+        id: ID! @primary
+        name: String
+        posts: [posts] @link(table: posts, from: id, to: author_id)
+      }`,
+      posts: `type posts {
+        id: ID! @primary
+        title: String
+        author_id: ID! @foreign(table: authors, field: id)
+        created_on: DateTime! @createdAt
+        last_updated: DateTime! @updatedAt
+        author: authors @link(table: authors, from: author_id, to: id)
+      }`
     }
 
     const schemaASTs = generateDBSchemaAST(collections)
@@ -627,25 +633,21 @@ describe("generateSampleQueryDBInsert method", () => {
 describe("generateSampleQueryDBRead method", () => {
   it("generates proper read query for 1 to many relation", () => {
     const collections = {
-      authors: {
-        schema: `type authors {
-          id: ID! @primary
-          name: String
-          email: ID!
-          posts: [posts] @link(table: posts, from: id, to: author_id)
-          joined_on: DateTime! @createdAt
-        }`
-      },
-      posts: {
-        schema: `type posts {
-          id: ID! @primary
-          title: String
-          author_id: ID! @foreign(table: authors, field: id)
-          created_on: DateTime! @createdAt
-          last_updated: DateTime! @updatedAt
-          author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
+      authors: `type authors {
+        id: ID! @primary
+        name: String
+        email: ID!
+        posts: [posts] @link(table: posts, from: id, to: author_id)
+        joined_on: DateTime! @createdAt
+      }`,
+      posts: `type posts {
+        id: ID! @primary
+        title: String
+        author_id: ID! @foreign(table: authors, field: id)
+        created_on: DateTime! @createdAt
+        last_updated: DateTime! @updatedAt
+        author: authors @link(table: authors, from: author_id, to: id)
+      }`
     }
     const schemaASTs = generateDBSchemaAST(collections)
     const result = {
@@ -695,34 +697,28 @@ describe("generateSampleQueryDBRead method", () => {
 
   it("generates proper read query for many to many relation", () => {
     const collections = {
-      authors: {
-        schema: `type authors {
-          id: ID! @primary
-          name: String
-          email: ID!
-          posts: [posts] @link(table: authors_posts, field: posts, from: id, to: authors_id)
-          joined_on: DateTime! @createdAt
-        }`
-      },
-      posts: {
-        schema: `type posts {
-          id: ID! @primary
-          title: String
-          author_id: ID! @foreign(table: authors, field: id)
-          created_on: DateTime! @createdAt
-          last_updated: DateTime! @updatedAt
-          authors: [authors] @link(table: authors_posts, field: authors, from: id, to: posts_id)
-        }`
-      },
-      authors_posts: {
-        schema: `type authors_posts {
-          id: ID!
-          author_id: ID! @foreign(table: authors, field: id)
-          posts_id: ID! @foreign(table: posts, field: id)
-          posts: [posts] @link(table: posts, from: posts_id, to: id)
-          authors: [authors] @link(table: authors, from: authors_id, to: id) 
-        }`
-      }
+      authors: `type authors {
+        id: ID! @primary
+        name: String
+        email: ID!
+        posts: [posts] @link(table: authors_posts, field: posts, from: id, to: authors_id)
+        joined_on: DateTime! @createdAt
+      }`,
+      posts: `type posts {
+        id: ID! @primary
+        title: String
+        author_id: ID! @foreign(table: authors, field: id)
+        created_on: DateTime! @createdAt
+        last_updated: DateTime! @updatedAt
+        authors: [authors] @link(table: authors_posts, field: authors, from: id, to: posts_id)
+      }`,
+      authors_posts: `type authors_posts {
+        id: ID!
+        author_id: ID! @foreign(table: authors, field: id)
+        posts_id: ID! @foreign(table: posts, field: id)
+        posts: [posts] @link(table: posts, from: posts_id, to: id)
+        authors: [authors] @link(table: authors, from: authors_id, to: id) 
+      }`
     }
     const schemaASTs = generateDBSchemaAST(collections)
     const result = {
@@ -774,8 +770,7 @@ describe("generateSampleQueryDBRead method", () => {
 describe("generateSampleQueryDBUpdate method", () => {
   it("generates proper upsert query", () => {
     const collections = {
-      authors: {
-        schema: `type authors {
+      authors: `type authors {
           id: ID! @primary
           name: String
           email: ID! @unique
@@ -783,18 +778,15 @@ describe("generateSampleQueryDBUpdate method", () => {
           last_updated: DateTime! @updatedAt
           address: JSON
           posts: [posts] @link(table: posts, from: id, to: author_id)
-        }`
-      },
-      posts: {
-        schema: `type posts {
-          id: ID! @primary
-          title: String
-          author_id: ID! @foreign(table: authors, field: id)
-          created_on: DateTime! @createdAt
-          last_updated: DateTime! @updatedAt
-          author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
+        }`,
+      posts: `type posts {
+        id: ID! @primary
+        title: String
+        author_id: ID! @foreign(table: authors, field: id)
+        created_on: DateTime! @createdAt
+        last_updated: DateTime! @updatedAt
+        author: authors @link(table: authors, from: author_id, to: id)
+      }`
     }
 
     const schemaASTs = generateDBSchemaAST(collections)

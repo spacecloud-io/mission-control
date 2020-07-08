@@ -34,7 +34,7 @@ const generateSchemaASTFromGraphQLSchemaDefinition = (def) => {
       (ar) => ar.name.value === "table"
     );
     const fieldArgument = foreignDirective.arguments.find(
-      (ar) => ar.name.value === "field"
+      (ar) => ar.name.value === "field" ||  ar.name.value === "to"
     );
     foreignTable = tableArgument.value.value;
     foreignField = fieldArgument.value.value;
