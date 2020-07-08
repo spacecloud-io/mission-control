@@ -8,11 +8,11 @@ export const loadDbConfig = (projectId) => {
   return new Promise((resolve, reject) => {
     client.database.fetchDbConfig(projectId)
       .then((result = []) => {
-        const dbConfig = result.reduce((prev, curr) => {
+        const dbConfigs = result.reduce((prev, curr) => {
           const [dbAliasName, config] = Object.entries(curr)[0]
           return Object.assign({}, prev, { [dbAliasName]: config })
         }, {})
-        store.dispatch(set("dbConfig", dbConfig))
+        store.dispatch(set("dbConfigs", dbConfigs))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -275,7 +275,7 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => {
     const dbConfig = { enabled, type, conn, name: dbName }
     client.database.setDbConfig(projectId, dbAliasName, dbConfig)
       .then(() => {
-        store.dispatch(set(`dbConfig.${dbAliasName}`, dbConfig))
+        store.dispatch(set(`dbConfigs.${dbAliasName}`, dbConfig))
         loadDBConnState(projectId, dbAliasName)
           .then(connected => resolve(connected))
           .catch(ex => reject(ex))
@@ -287,8 +287,8 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => {
 export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
   return new Promise((resolve, reject) => {
     const state = store.getState()
-    const dbsConfig = getDbsConfig(state)
-    const isFirstDatabase = Object.keys(dbsConfig).length === 0
+    const dbConfigs = getDbConfigs(state)
+    const isFirstDatabase = Object.keys(dbConfigs).length === 0
     saveDbConfig(projectId, dbAliasName, true, conn, dbType, dbName)
       .then(() => {
         // Set default security rules for collections and prepared queries in the background
@@ -333,7 +333,7 @@ export const disableDb = (projectId, dbAliasName) => {
 export const removeDbConfig = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.removeDbConfig(projectId, dbAliasName).then(() => {
-      store.dispatch(del(`dbConfig.${dbAliasName}`))
+      store.dispatch(del(`dbConfigs.${dbAliasName}`))
       store.dispatch(del(`dbSchemas.${dbAliasName}`))
       store.dispatch(del(`dbRules.${dbAliasName}`))
       store.dispatch(del(`dbPreparedQueries.${dbAliasName}`))
@@ -366,8 +366,8 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
 }
 
 // Getters
-export const getDbsConfig = (state) => get(state, "dbConfig", {})
-export const getDbConfig = (state, dbAliasName) => get(state, `dbConfig.${dbAliasName}`, {})
+export const getDbConfigs = (state) => get(state, "dbConfigs", {})
+export const getDbConfig = (state, dbAliasName) => get(state, `dbConfigs.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)

@@ -19,12 +19,12 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import gqlPrettier from 'graphql-prettier';
-import { getDbsConfig } from '../../../operations/database';
+import { getDbConfigs } from '../../../operations/database';
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
   const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO] }
-  const dbconfig = useSelector(state => getDbsConfig(state))
+  const dbconfig = useSelector(state => getDbConfigs(state))
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
 

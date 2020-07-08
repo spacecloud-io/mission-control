@@ -6,7 +6,7 @@ import Sidenav from '../../../components/sidenav/Sidenav'
 import Topbar from '../../../components/topbar/Topbar'
 import DatabaseEmptyState from '../../../components/database-card/DatabaseEmptyState'
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
-import { getDbsConfig } from "../../../operations/database";
+import { getDbConfigs } from "../../../operations/database";
 
 function EmptyState() {
 
@@ -16,7 +16,7 @@ function EmptyState() {
     ReactGA.pageview("/projects/database");
   }, [])
 
-  const dbConfig = useSelector(state => getDbsConfig(state))
+  const dbConfig = useSelector(state => getDbConfigs(state))
   const dbAliasNames = Object.keys(dbConfig)
   const activeDB = dbAliasNames.find(dbAliasName => {
     return dbConfig[dbAliasName].enabled

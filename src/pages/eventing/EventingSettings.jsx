@@ -9,7 +9,7 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
-import { getDbsConfig } from '../../operations/database';
+import { getDbConfigs } from '../../operations/database';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
@@ -21,10 +21,10 @@ const EventingSettings = () => {
   // Global state
   const loading = useSelector(state => state.pendingRequests > 0)
   const eventingConfig = useSelector(state => getEventingConfig(state))
-  const dbsConfig = useSelector(state => getDbsConfig(state));
+  const dbConfigs = useSelector(state => getDbConfigs(state));
 
   // Derived state
-  const dbList = Object.entries(dbsConfig).map(([alias, obj]) => {
+  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias;
     return {
       alias: alias,

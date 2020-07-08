@@ -16,7 +16,7 @@ import AESConfigure from "../../../components/settings/project/AESConfigure";
 import GraphQLTimeout from "../../../components/settings/project/GraphQLTimeout";
 import DockerRegistry from "../../../components/settings/project/DockerRegistry";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
-import { loadLetsEncryptConfig, saveWhiteListedDomains } from "../../../operations/letsencrypt";
+import { loadLetsEncryptConfig, saveWhiteListedDomains, getWhiteListedDomains } from "../../../operations/letsencrypt";
 import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
 
 const ProjectSettings = () => {
@@ -37,16 +37,17 @@ const ProjectSettings = () => {
   // Global state
   const projects = useSelector(state => state.projects);
   const loading = useSelector(state => state.pendingRequests > 0)
-  let selectedProject = projects.find(project => project.id === projectID);
-  if (!selectedProject) selectedProject = {}
+  const domains = useSelector(state => getWhiteListedDomains(state))
 
   // Derived state
+  let selectedProject = projects.find(project => project.id === projectID);
+  if (!selectedProject) selectedProject = {}
+  
   const secrets = selectedProject.secrets ? selectedProject.secrets : []
   const aesKey = selectedProject.aesKey
   const contextTimeGraphQL = selectedProject.contextTimeGraphQL
   const dockerRegistry = selectedProject.dockerRegistry
 
-  const domains = get(store.getState(), "letsencrypt.domains", [])
   // Handlers
   const handleAddSecret = (secret, isPrimary) => {
     return new Promise((resolve, reject) => {

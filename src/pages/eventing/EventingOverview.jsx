@@ -14,7 +14,7 @@ import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
-import { getDbsConfig } from '../../operations/database';
+import { getDbConfigs } from '../../operations/database';
 
 
 const EventingOverview = () => {
@@ -27,17 +27,17 @@ const EventingOverview = () => {
 
 	// Global state
 	const rules = useSelector(state => getEventingTriggerRules(state))
-	const dbsConfig = useSelector(state => getDbsConfig(state))
+	const dbConfigs = useSelector(state => getDbConfigs(state))
 
 	// Component state
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived state
-	const activeDB = Object.keys(dbsConfig).find(db => {
-		return dbsConfig[db].enabled
+	const activeDB = Object.keys(dbConfigs).find(db => {
+		return dbConfigs[db].enabled
 	})
-	const dbList = Object.entries(dbsConfig).map(([alias, obj]) => {
+	const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
 		if (!obj.type) obj.type = alias
 		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
 	})

@@ -101,7 +101,7 @@ const PreparedQueries = () => {
               type="info"
               showIcon
             />}
-            <h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
+            <h3 style={{ display: "flex", justifyContent: "space-between" }}>
               Prepared queries
                 <Button type="primary" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
             </h3>
