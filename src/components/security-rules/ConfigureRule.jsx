@@ -22,20 +22,30 @@ import 'codemirror/addon/edit/closebrackets.js';
 import ConditionalFormBlock from '../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { notify, getProjectConfig, dbIcons } from '../../utils';
+import {generateSchemaAST} from '../../graphql';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
+import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
 
+const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
 const ConfigureRule = (props) => {
+  // form
   const [form] = Form.useForm();
+
+  // Router params
+  const { projectID } = useParams();
+
+  // Global state
+  const projects = useSelector((state) => state.projects);
+
+  // Component state
   const [selectedDb, setSelectedDb] = useState();
   const [col, setCol] = useState('');
   const [findQuery, setFindQuery] = useState("{}");
-  const { projectID } = useParams();
 
-  const projects = useSelector((state) => state.projects);
+  // Derived properties
   const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
-
   const dbModuleFetch = getProjectConfig(projects, projectID, 'modules.db', {});
   const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias;
@@ -45,36 +55,17 @@ const ConfigureRule = (props) => {
       svgIconSet: dbIcons(projects, projectID, alias),
     };
   });
-
-  const collections = getProjectConfig(
-    projects,
-    projectID,
-    `modules.db.${selectedDb}.collections`,
-    {}
-  );
+  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {});
   const trackedCollections = Object.keys(collections);
-  const data = trackedCollections.filter(
-    (name) =>
-      name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs'
-  );
+  const data = trackedCollections.filter((name) => name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs');
+  const collectionSchemaString = useSelector(state => getProjectConfig(state.projects, projectID, `modules.db.${props.params.db}.collections.${props.params.name}.schema`))
 
-  const rules = [
-    'allow',
-    'deny',
-    'authenticated',
-    'match',
-    'remove',
-    'force',
-    'query',
-    'encrypt',
-    'decrypt',
-    'hash',
-    'and',
-    'or',
-    'webhook',
-  ];
+  // Handlers
+  const handleSelectDatabase = (value) => setSelectedDb(value);
+  const handleSearch = (value) => setCol(value);
 
   const onFinish = (values) => {
+    console.log(values);
     if (values.rule === 'match') {
       // Datatype
       if (values.type === 'number') {
@@ -148,8 +139,69 @@ const ConfigureRule = (props) => {
     props.closeDrawer();
   };
 
-  const handleSelectDatabase = (value) => setSelectedDb(value);
-  const handleSearch = (value) => setCol(value);
+  // Autocomplete options
+  let autoCompleteOptions = {};
+  if (props.params.moduleName === "database") {
+    const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.params.name];
+    autoCompleteOptions = {
+      args: {
+        auth: true,
+        find: {},
+        update: {
+          $set: {},
+          $inc: {},
+          $mul: {},
+          $min: {},
+          $max: {},
+          $currentDate: {},
+        },
+        doc: {},
+        op: true
+      },
+      token: true
+    }
+    colSchemaFields.forEach((column) => {
+      autoCompleteOptions.args.find[column.name] = true;
+      autoCompleteOptions.args.doc[column.name] = true;
+      Object.keys(autoCompleteOptions.args.update).forEach((updateOperation) => {
+        autoCompleteOptions.args.update[updateOperation][column.name] = true;
+      })
+    })
+
+    switch (props.selectedNodeId) {
+      case "create":
+        delete autoCompleteOptions.args.find;
+        delete autoCompleteOptions.args.update;
+        break;
+
+      case "read":
+        delete autoCompleteOptions.args.doc;
+        delete autoCompleteOptions.args.update;
+        break;
+      
+      case "update":
+        delete autoCompleteOptions.args.doc;
+        break;
+      
+      case "delete":
+        delete autoCompleteOptions.args.doc;
+        delete autoCompleteOptions.args.update;
+        break;
+      
+      default:
+        break;
+    }
+  }
+
+  else if (props.params.moduleName === "file-storage" || props.params.moduleName === "remote-service" || props.params.moduleName === "eventing") {
+    autoCompleteOptions = {
+      args: {
+        auth: true,
+        params: true
+      },
+      token: true
+    }
+  }
 
   return (
     <Drawer
@@ -201,7 +253,7 @@ const ConfigureRule = (props) => {
           </Form.Item>
           <FormItemLabel name='First operand' />
           <Form.Item name='f1'>
-            <Input placeholder="First operand"/>
+            <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions}/>
           </Form.Item>
           <FormItemLabel name='Evaluation type' />
           <Form.Item name='eval'>
@@ -232,7 +284,7 @@ const ConfigureRule = (props) => {
           </ConditionalFormBlock>
           <FormItemLabel name='Second operand' />
           <Form.Item name='f2'>
-            <Input placeholder="Second operand"/>
+            <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions}/>
           </Form.Item>
           <Alert
             description={
@@ -269,7 +321,7 @@ const ConfigureRule = (props) => {
                             { required: true, message: 'Please enter column!' },
                           ]}
                         >
-                          <Input placeholder='Field' />
+                          <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions}/>
                         </Form.Item>
                       </Col>
                       <Col span={2}>
@@ -310,7 +362,7 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name="Field"/>
           <FormItem name="field">
-            <Input placeholder="Field"/>
+            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions}/>
           </FormItem>
           <FormItemLabel name="Datatype" />
           <FormItem name="type">

@@ -484,7 +484,9 @@ const onSaveChanges = (tab) => {
                     selectedRule={selectedRule}
                     closeDrawer={() => setDrawer(false)}
                     drawer={drawer}
+                    params={{...params}}
                     onSubmit={onSubmit}
+                    selectedNodeId={selectedNodeId.split(".")[0]}
                   />
                 ) : (
                   <></>
