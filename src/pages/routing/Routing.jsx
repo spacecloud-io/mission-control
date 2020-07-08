@@ -9,7 +9,6 @@ import { Button, Table, Popconfirm, Tag } from "antd";
 import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
 import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
 import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
-import { loadServices, getServices } from "../../operations/deployments";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -28,34 +27,17 @@ function Routing() {
       loadIngressRoutes(projectID)
         .catch(ex => notify("error", "Error fetching ingress routes", ex))
         .finally(() => decrementPendingRequests())
-
-      incrementPendingRequests()
-      loadServices(projectID)
-        .catch(ex => notify("error", "Error fetching services", ex))
-        .finally(() => decrementPendingRequests())
     }
   }, [projectID])
 
   // Global state
   let routes = useSelector(state => getIngressRoutes(state))
-  let deployments = useSelector(state => getServices(state));
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
 
   // Derived state
-  const services = deployments.map(obj => {
-    const ports =
-      obj.tasks &&
-        obj.tasks[0] &&
-        obj.tasks[0].ports &&
-        obj.tasks[0].ports.length
-        ? obj.tasks[0].ports.map(port => port.port.toString())
-        : [];
-    return { name: obj.id, ports };
-  });
-
   const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
     id: id,
     allowedHosts: source.hosts,
@@ -223,7 +205,6 @@ function Routing() {
         {modalVisible && (
           <IngressRoutingModal
             handleSubmit={(values) => handleSubmit(routeClicked, values)}
-            services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}
           />

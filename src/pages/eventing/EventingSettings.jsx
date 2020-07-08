@@ -19,6 +19,7 @@ const EventingSettings = () => {
   }, [])
 
   // Global state
+  const loading = useSelector(state => state.pendingRequests > 0)
   const eventingConfig = useSelector(state => getEventingConfig(state))
   const dbsConfig = useSelector(state => getDbsConfig(state));
 
@@ -52,6 +53,7 @@ const EventingSettings = () => {
           <EventingConfigure
             initialValues={eventingConfig}
             dbList={dbList}
+            loading={loading}
             handleSubmit={handleEventingConfig}
           />
         </div>

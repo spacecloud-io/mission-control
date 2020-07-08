@@ -7,9 +7,10 @@ import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
+import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
-import { defaultDbConnectionStrings } from "../../constants"
+import { defaultDbConnectionStrings, dbTypes } from "../../constants"
 import { enableDb, getDbConfig } from "../../operations/database"
 
 const Database = () => {
@@ -50,21 +51,25 @@ const Database = () => {
   let dbName = ""
 
   switch (dbType) {
-    case "mysql":
+    case dbTypes.MYSQL:
       desc = "The world's most popular open source database."
       dbName = "MySQL"
       graphic = mysql
       break
-    case "postgres":
+    case dbTypes.POSTGRESQL:
       desc = "The world's most advanced open source database."
       dbName = "PostgreSQL"
       graphic = postgresql
       break
-    case "mongo":
+    case dbTypes.MONGO:
       desc = "A open-source cross-platform document- oriented database."
       dbName = "MongoDB"
       graphic = mongodb
       break
+    case dbTypes.SQLSERVER:
+      desc = "SQL Server is a relational database management system, developed and marketed by Microsoft."
+      dbName = "SQL Server"
+      graphic = sqlserver
   }
 
   const defaultConnString = conn ? conn : defaultDbConnectionStrings[dbType]

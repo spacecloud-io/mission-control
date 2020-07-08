@@ -12,7 +12,7 @@ import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
 import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
-import { getSecrets } from '../../operations/secrets';
+import { getSecrets, loadSecrets } from '../../operations/secrets';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -41,6 +41,14 @@ const FileStorageConfig = () => {
     ReactGA.pageview("/projects/file-storage/configure");
   }, [])
 
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
   let initialSecretValue = ""
   if (secret) {

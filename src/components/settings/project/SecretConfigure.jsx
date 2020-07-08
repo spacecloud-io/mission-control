@@ -49,7 +49,7 @@ const SecretValue = ({ secret }) => {
         lineHeight: "32px",
         borderRadius: 5,
         padding: "0 16px"
-      }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
+      }} >{showSecret ? secret : secret.slice(0, 4) + secret.slice(4).split("").map(() => "*").join("")}</span>
       {showSecret ? <EyeInvisibleOutlined onClick={() => setShowSecret(false)} /> : <EyeOutlined onClick={() => setShowSecret(true)} />}
     </span>
   );

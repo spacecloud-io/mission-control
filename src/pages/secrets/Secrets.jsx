@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import security from "../../assets/security.svg";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Empty } from "antd";
 import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
@@ -115,26 +114,6 @@ const Secrets = () => {
     }
   ];
 
-  const EmptyState = () => {
-    return (
-      <div style={{ marginTop: 24 }}>
-        <div className="rule-editor">
-          <div className="panel">
-            <img src={security} style={{ maxWidth: "500px" }} />
-            <p
-              className="panel__description"
-              style={{ marginTop: 32, marginBottom: 0 }}
-            >
-              Store private information required by your deployments in a
-              secure, encrypted format. Space Cloud takes care of all encryption
-              and decryption.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div>
       <Topbar showProjectSelector />
@@ -147,10 +126,12 @@ const Secrets = () => {
               Add
             </Button>
           </h3>
-          {secrets.length > 0 && (
-            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }} />
-          )}
-          {secrets.length === 0 && <EmptyState />}
+          <Table
+            columns={columns}
+            dataSource={secrets}
+            bordered={true}
+            onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }}
+            locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No secrets created yet. Add a secret' /> }} />
           {secretModalVisible && (
             <AddSecret
               handleCancel={handleSecretModalCancel}

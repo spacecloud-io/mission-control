@@ -12,7 +12,7 @@ import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
-import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState } from '../../operations/fileStore';
+import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
 
 const Rules = () => {
 	const history = useHistory();
@@ -89,15 +89,18 @@ const Rules = () => {
 			.finally(() => decrementPendingRequests())
 	}
 
-	const fetchConnState = () => {
+	useEffect(() => {
 		incrementPendingRequests()
-		loadFileStoreConnState()
+		loadFileStoreConnState(projectID)
 			.catch(ex => notify("error", "Error fetching connection status", ex))
 			.finally(() => decrementPendingRequests())
-	}
+	}, [])
 
 	useEffect(() => {
-		fetchConnState()
+		incrementPendingRequests()
+		loadFileStoreRules(projectID)
+			.catch(ex => notify("error", "Error fetching file storage rules", ex))
+			.finally(() => decrementPendingRequests())
 	}, [])
 
 	const EmptyState = () => {

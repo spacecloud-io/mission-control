@@ -49,11 +49,19 @@ const ProjectSettings = () => {
   const domains = get(store.getState(), "letsencrypt.domains", [])
   // Handlers
   const handleAddSecret = (secret, isPrimary) => {
-    incrementPendingRequests()
-    addSecret(projectID, secret, isPrimary)
-      .then(() => notify("success", "Success", "Added new secret successfully"))
-      .catch(ex => notify("error", "Error adding secret", ex))
-      .finally(() => decrementPendingRequests());
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      addSecret(projectID, secret, isPrimary)
+        .then(() => {
+          notify("success", "Success", "Added new secret successfully")
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error adding secret", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests());
+    })
   }
 
   const handleChangePrimarySecret = (secret) => {

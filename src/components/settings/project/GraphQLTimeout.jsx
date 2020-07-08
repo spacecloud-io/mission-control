@@ -15,7 +15,19 @@ const GraphQLTimeout = ({ loading, contextTimeGraphQL = "", handleSubmit }) => {
       <p>The timeout of GraphQL requests in seconds</p>
       <Form form={form} initialValues={{ contextTimeGraphQL: String(contextTimeGraphQL) }} onFinish={handleSubmitClick}>
         <Form.Item name="contextTimeGraphQL"
-          rules={[{ required: true, message: 'Please input a time in seconds!' }]}
+          rules={[{
+            validator: (_, value, cb) => {
+              if (!value) {
+                cb('Please input a timeout in seconds!')
+                return
+              }
+              if (isNaN(value)) {
+                cb("The value of timeout should be a number")
+                return
+              }
+              cb()
+            }
+          }]}
         >
           <Input placeholder="Enter time in seconds" />
         </Form.Item>

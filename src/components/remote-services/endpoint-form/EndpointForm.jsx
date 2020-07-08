@@ -48,7 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers } = initialValues ? initialValues : {}
   const initialRule = rule ? rule : defaultEndpointRule
   const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
@@ -67,8 +67,8 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     path: path,
     overrideToken: token ? true : false,
     token: token,
-    setHeaders: headers.length > 0 ? true : false,
-    headers: headers.length > 0 ? headers : [{ key: "", value: "" }],
+    setHeaders: headers && headers.length > 0 ? true : false,
+    headers: headers && headers.length > 0 ? headers : [{ key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }

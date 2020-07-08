@@ -25,7 +25,7 @@ class FileStore {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result[0])
         })
         .catch(ex => reject(ex.toString()))
     })

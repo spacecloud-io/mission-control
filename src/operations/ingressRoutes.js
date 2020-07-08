@@ -19,7 +19,7 @@ export const saveIngressRoute = (projectId, routeId, config) => {
     client.routing.setRoutingConfig(projectId, routeId, config)
       .then(() => {
         const ingressRoutes = get(store.getState(), "ingressRoutes", [])
-        const newIngressRoutes = upsertArray(ingressRoutes, obj => obj.id === routeId, config)
+        const newIngressRoutes = upsertArray(ingressRoutes, obj => obj.id === routeId, () => config)
         store.dispatch(set(`ingressRoutes`, newIngressRoutes))
         resolve()
       })

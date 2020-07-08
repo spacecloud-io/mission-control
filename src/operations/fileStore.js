@@ -27,7 +27,7 @@ export const loadFileStoreConfig = (projectId) => {
 
 export const loadFileStoreRules = (projectId) => {
   return new Promise((resolve, reject) => {
-    client.fileStore.getConfig(projectId)
+    client.fileStore.getRules(projectId)
       .then((fileStoreRules) => {
         store.dispatch(set("fileStoreRules", fileStoreRules))
         resolve()

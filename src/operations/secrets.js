@@ -32,7 +32,7 @@ export const deleteSecret = (projectId, secretId) => {
     client.secrets.deleteSecret(projectId, secretId)
       .then(() => {
         const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = secrets.filter(obj => obj.id === secretId)
+        const newSecrets = secrets.filter(obj => obj.id !== secretId)
         store.dispatch(set("secrets", newSecrets))
         resolve()
       })
@@ -82,8 +82,7 @@ export const saveRootPath = (projectId, secretId, rootPath) => {
         const secrets = get(store.getState(), "secrets", [])
         const newSecrets = secrets.map(obj => {
           if (obj.id !== secretId) return obj
-          const newData = Object.assign({}, obj.data, { rootPath })
-          return Object.assign({}, obj, { data: newData })
+          return Object.assign({}, obj, { rootPath })
         })
         store.dispatch(set("secrets", newSecrets))
         resolve()

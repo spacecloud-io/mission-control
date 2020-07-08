@@ -256,12 +256,12 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
       .catch(ex => notify("error", "Could not fetch projects", ex))
       .finally(() => store.dispatch(decrement("pendingRequests")))
 
-    if (spaceUpToken) {
-      store.dispatch(increment("pendingRequests"))
-      fetchBillingDetails()
-        .catch(ex => console.log("Error fetching billing details", ex))
-        .finally(() => store.dispatch(decrement("pendingRequests")))
-    }
+    // if (spaceUpToken) {
+    //   store.dispatch(increment("pendingRequests"))
+    //   fetchBillingDetails()
+    //     .catch(ex => console.log("Error fetching billing details", ex))
+    //     .finally(() => store.dispatch(decrement("pendingRequests")))
+    // }
   }
 }
 

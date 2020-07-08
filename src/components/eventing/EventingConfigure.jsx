@@ -3,7 +3,7 @@ import { Select, Button, Form, Checkbox } from 'antd';
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
 
-const EventingConfigure = ({ initialValues, handleSubmit, dbList }) => {
+const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => {
 	const [form] = Form.useForm()
 	const handleSubmitClick = e => {
 		form.validateFields().then(values => {
@@ -11,7 +11,10 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList }) => {
 		})
 	}
 
-	form.setFieldsValue(initialValues)
+	if (!loading) {
+		form.setFieldsValue(initialValues)
+	}
+
 	return (
 		<Form form={form} >
 			<Form.Item name="enabled" valuePropName="checked">

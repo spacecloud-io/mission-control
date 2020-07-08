@@ -92,7 +92,7 @@ const DeploymentsOverview = () => {
     setModalVisibility(true);
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (operation, values) => {
     return new Promise((resolve, reject) => {
       const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
       const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
@@ -141,11 +141,11 @@ const DeploymentsOverview = () => {
       incrementPendingRequests()
       saveService(projectID, config.id, config.version, config)
         .then(() => {
-          notify("success", "Success", "Saved service config successfully")
+          notify("success", "Success", `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
           resolve()
         })
         .catch(ex => {
-          notify("error", "Error saving service config", ex)
+          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
           reject(ex)
         })
         .finally(() => decrementPendingRequests());
@@ -237,8 +237,8 @@ const DeploymentsOverview = () => {
                     marginRight: 130
                   }}
                 >
-                  Deploy any docker containers to cloud easily in no time. Space
-                  Galaxy deploys your docker containers in a secure service mesh
+                  Deploy any docker containers in no time. Space
+                  Cloud deploys your docker containers in a secure service mesh
                   and provides you with a serverless experience by taking care
                   of auto scaling, self healing, etc.
                 </p>
@@ -253,7 +253,7 @@ const DeploymentsOverview = () => {
             ))}
           {data && data.length !== 0 && (
             <React.Fragment>
-              <div style={{ marginBottom: 47 }}>
+              <div>
                 <span style={{ fontSize: 18, fontWeight: "bold" }}>
                   Your Deployments
                 </span>
@@ -264,7 +264,7 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
+              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} style={{ marginTop: 16 }} />
             </React.Fragment>
           )}
         </div>
