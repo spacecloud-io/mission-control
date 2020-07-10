@@ -65,7 +65,9 @@ const IngressRoutingModal = props => {
     allowedMethods: initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
     targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }],
     setHeaders: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? true : false,
-    headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers : [{ key: "", value: "" }],
+    headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
+    setResHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? true : false,
+    resHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? initialValues.resHeaders.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
     outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
   }
@@ -78,6 +80,7 @@ const IngressRoutingModal = props => {
         if (!values.allowSpecificMethods) values.allowedMethods = ["*"]
         if (!values.performRewrite) values.rewrite = undefined
         if (!values.setHeaders) values.headers = []
+        if (!values.setResHeaders) values.resHeaders = []
         if (values.applyTransformations) {
           values.requestTemplate = requestTemplateData
           values.responseTemplate = responseTemplateData
@@ -93,6 +96,7 @@ const IngressRoutingModal = props => {
         delete values["allowSpecificMethods"];
         delete values["performRewrite"];
         delete values["setHeaders"];
+        delete values["setResHeaders"];
         delete values["applyTransformations"]
         props.handleSubmit(values).then(() => {
           notify("success", "Success", "Saved routing config successfully");
@@ -334,8 +338,7 @@ const IngressRoutingModal = props => {
                 styleActiveLine: true,
                 matchBrackets: true,
                 autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
+                tabSize: 2
               }}
               onBeforeChange={(editor, data, value) => {
                 setRuleData(value);
@@ -353,17 +356,17 @@ const IngressRoutingModal = props => {
               header='Advanced'
               key='1'
             >
-              <FormItemLabel name='Set headers' />
+              <FormItemLabel name='Modify request headers' />
               <Form.Item name='setHeaders' valuePropName='checked'>
                 <Checkbox>
-                  Set the value of headers in the request
+                  Modify the value of headers in the request
               </Checkbox>
               </Form.Item>
               <ConditionalFormBlock
                 dependency='setHeaders'
                 condition={() => form.getFieldValue('setHeaders') === true}
               >
-                <FormItemLabel name='Headers' />
+                <FormItemLabel name='Specify request header modifications' />
                 <Form.List name="headers">
                   {(fields, { add, remove }) => {
                     return (
@@ -371,28 +374,40 @@ const IngressRoutingModal = props => {
                         {fields.map((field, index) => (
                           <React.Fragment>
                             <Row key={field}>
-                              <Col span={10}>
+                              <Col span={5}>
+                                <Form.Item
+                                  name={[field.name, "op"]}
+                                  key={[field.name, "op"]}
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header operation" }]}
+                                  style={{ marginRight: 16 }}
+                                >
+                                  <Select placeholder="Select header operation">
+                                    <Option value='set'>Set</Option>
+                                    <Option value='add'>Add</Option>
+                                    <Option value='del'>Delete</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
                                 <Form.Item name={[field.name, "key"]}
                                   key={[field.name, "key"]}
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header key" }]}>
-                                  <Input
-                                    style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                    placeholder="Header key"
-                                  />
+                                  rules={[{ required: true, message: "Please input header key" }]}
+                                  style={{ marginRight: 16 }}
+                                >
+                                  <Input placeholder="Header key" />
                                 </Form.Item>
                               </Col>
-                              <Col span={10}>
+                              <Col span={8}>
                                 <Form.Item
                                   validateTrigger={["onChange", "onBlur"]}
                                   rules={[{ required: true, message: "Please input header value" }]}
                                   name={[field.name, "value"]}
                                   key={[field.name, "value"]}
+                                  style={{ marginRight: 16 }}
                                 >
-                                  <Input
-                                    placeholder="Header value"
-                                    style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                  />
+                                  <Input placeholder="Header value" />
                                 </Form.Item>
                               </Col>
                               <Col span={3}>
@@ -409,6 +424,7 @@ const IngressRoutingModal = props => {
                           <Button
                             onClick={() => {
                               const fieldKeys = [
+                                ...fields.map(obj => ["headers", obj.name, "op"]),
                                 ...fields.map(obj => ["headers", obj.name, "key"]),
                                 ...fields.map(obj => ["headers", obj.name, "value"]),
                               ]
@@ -418,7 +434,92 @@ const IngressRoutingModal = props => {
                             }}
                             style={{ marginRight: "2%", float: "left" }}
                           >
-                            <PlusOutlined /> Add header</Button>
+                            <PlusOutlined /> Add modification</Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
+              </ConditionalFormBlock>
+              <FormItemLabel name='Modify response headers' />
+              <Form.Item name='setResHeaders' valuePropName='checked'>
+                <Checkbox>
+                  Modify the value of headers in the response
+              </Checkbox>
+              </Form.Item>
+              <ConditionalFormBlock
+                dependency='setResHeaders'
+                condition={() => form.getFieldValue('setResHeaders') === true}
+              >
+                <FormItemLabel name='Specify response header modifications' />
+                <Form.List name="resHeaders">
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field, index) => (
+                          <React.Fragment>
+                            <Row key={field}>
+                              <Col span={5}>
+                                <Form.Item
+                                  name={[field.name, "op"]}
+                                  key={[field.name, "op"]}
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header operation" }]}
+                                  style={{ marginRight: 16 }}
+                                >
+                                  <Select placeholder="Select header operation">
+                                    <Option value='set'>Set</Option>
+                                    <Option value='add'>Add</Option>
+                                    <Option value='del'>Delete</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
+                                <Form.Item name={[field.name, "key"]}
+                                  key={[field.name, "key"]}
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header key" }]}
+                                  style={{ marginRight: 16 }}
+                                >
+                                  <Input placeholder="Header key" />
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
+                                <Form.Item
+                                  validateTrigger={["onChange", "onBlur"]}
+                                  rules={[{ required: true, message: "Please input header value" }]}
+                                  name={[field.name, "value"]}
+                                  key={[field.name, "value"]}
+                                  style={{ marginRight: 16 }}
+                                >
+                                  <Input placeholder="Header value" />
+                                </Form.Item>
+                              </Col>
+                              <Col span={3}>
+                                <Button
+                                  onClick={() => remove(field.name)}
+                                  style={{ marginRight: "2%", float: "left" }}>
+                                  <DeleteOutlined />
+                                </Button>
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            onClick={() => {
+                              const fieldKeys = [
+                                ...fields.map(obj => ["resHeaders", obj.name, "op"]),
+                                ...fields.map(obj => ["resHeaders", obj.name, "key"]),
+                                ...fields.map(obj => ["resHeaders", obj.name, "value"]),
+                              ]
+                              form.validateFields(fieldKeys)
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
+                            }}
+                            style={{ marginRight: "2%", float: "left" }}
+                          >
+                            <PlusOutlined /> Add modification</Button>
                         </Form.Item>
                       </div>
                     );
