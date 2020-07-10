@@ -11,7 +11,7 @@ function Headers({ handleSubmit, headers, loading }) {
   }
 
   if (!loading) {
-    form.setFieldsValue({ headers: headers })
+    form.setFieldsValue({ headers: headers ? headers : [] })
   }
 
   return (
