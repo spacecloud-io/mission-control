@@ -23,7 +23,7 @@ let editRowData = {};
 const getUniqueKeys = (colSchemaFields = []) => {
   return colSchemaFields.filter(val => val.isPrimary || val.hasUniqueConstraint).map(val => val.name)
 }
-let page = 1;
+
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
@@ -47,7 +47,8 @@ const Browse = () => {
   const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];
   const uniqueKeys = getUniqueKeys(colSchemaFields)
 
-  const maxRows = 10;
+  const maxRows = 20;
+
   useEffect(() => {
     ReactGA.pageview("/projects/database/browse");
   }, [])
@@ -60,6 +61,7 @@ const Browse = () => {
   }, [selectedCol, collections])
 
   const getTableData = (skip = 0) => {
+    return new Promise((resolve, reject) => {
     if (selectedCol) {
 
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
@@ -72,18 +74,15 @@ const Browse = () => {
         .skip(skip)
         .limit(maxRows)
         .apply()
-        .then((response) => {
-          if (response.status !== 200) {
-            notify("error", "Error fetching data", response.data.error, 5);
-            setData([]);
-            return
+        .then(({data, status}) => {
+          if (status !== 200) {
+            notify("error", "Error fetching data", data.error, 5);
+            resolve([]);
           }
 
-          if (response.data.result.length < maxRows) {
-            setHasMoreRows(false);
-          }
-
-          response.data.result.forEach(obj => {
+          data.result.length < maxRows ? setHasMoreRows(false) : setHasMoreRows(true);
+          
+          data.result.forEach(obj => {
             Object.entries(obj).forEach(([key, value]) => {
               // Stringifying certain data types to render them in table 
               if (typeof value === "boolean") {
@@ -99,14 +98,14 @@ const Browse = () => {
               }
             })
           })
-
-          const newData = data.concat(response.data.result);
-          setData(newData);
+          console.log(data.result)
+          resolve(data.result);
         })
-        .catch(ex => notify("error", "Error fetching data", ex, 5))
+        .catch(ex => reject(ex))
         .finally(() => dispatch(decrement("pendingRequests")));
         
     }
+  })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -155,7 +154,9 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    getTableData();
+    getTableData()
+    .then(response => setData(response))
+    .catch(ex => notify("error", "Error fetching data", ex, 5));
   }, [filters, sorters, selectedCol])
 
 
@@ -185,7 +186,9 @@ const Browse = () => {
           return;
         }
         notify("success", "Success", "Successfully inserted a row!", 5);
-        getTableData();
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));
       })
       .catch(ex => notify("error", "Error inserting row", ex, 5))
       .finally(() => {
@@ -206,7 +209,9 @@ const Browse = () => {
           return;
         }
         notify("success", "Success", "Row deleted successfully", 5)
-        getTableData();
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));;
       })
       .catch(ex => notify("error", "Error deleting row", ex, 5))
       .finally(() => dispatch(decrement("pendingRequests")))
@@ -323,7 +328,9 @@ const Browse = () => {
           return;
         }
         notify("success", "Success", "Row updated successfully!", 5);
-        getTableData();
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));;
       })
       .catch(ex => notify("error", "Error updating row", ex, 5))
       .finally(() => {
@@ -333,8 +340,9 @@ const Browse = () => {
   }
 
   const loadFunc = () => {
-    getTableData(page*maxRows);
-    page++;
+    getTableData(data.length)
+    .then(response => setData(data.concat(response)))
+    .catch(ex => notify("error", "Error fetching data", ex, 5));
   }
 
   const tableColumns = getColumnNames(colSchemaFields, data)
@@ -401,7 +409,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
           />
         )
       }
@@ -412,7 +420,7 @@ const Browse = () => {
             handleCancel={() => setEditRowFormVisibility(false)}
             editRow={editRow}
             selectedDB={selectedDBType}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
             data={editRowData}
           />
         )

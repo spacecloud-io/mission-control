@@ -38,12 +38,11 @@ const InsertRowForm = (props) => {
 
   let initialRows = props.schema.map(val => {
     const dataType = val.type.toLowerCase();
-    if (val.isLink) return;
     return {
       column: val.name, 
       datatype: val.isArray ? "array" : !primitives.includes(dataType) ? "json": dataType
     }
-  }).filter(val => val);
+  });
   
     const isFieldRequired = (field) => {
       const column = form.getFieldValue(["rows", field, "column"]);
