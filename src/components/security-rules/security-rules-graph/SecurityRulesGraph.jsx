@@ -47,11 +47,7 @@ const options = {
     font: {
       size: 16,
     },
-    heightConstraint: 54,
-    widthConstraint: {
-      minimum: 54,
-      maximum: 54
-    },
+    margin: 16
   },
   edges: {
     arrows: {

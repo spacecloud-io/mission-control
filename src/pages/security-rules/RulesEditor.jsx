@@ -3,7 +3,7 @@ import './rules-editor.css';
 import Topbar from '../../components/topbar/Topbar';
 import { Tabs, Button } from 'antd';
 
-import { notify, decrementPendingRequests, incrementPendingRequests, deepCompareObjects } from '../../utils';
+import { notify, decrementPendingRequests, incrementPendingRequests } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ShortcutsDrawer from "../../components/security-rules/shortcuts-drawer/ShortcutsDrawer"
@@ -38,7 +38,7 @@ const RulesEditor = () => {
 
   // Derived state
   const ruleExists = Object.keys(rule).length > 0
-  const rulesChanged = tab === "builder" ? !deepCompareObjects(rule, initialRule) : stringifiedRule !== initialRuleStringified
+  const rulesChanged = activeTab === "builder" ? JSON.stringify(initialRule) !== JSON.stringify(rule) : stringifiedRule !== initialRuleStringified
 
   useDeepCompareEffect(() => {
     setRule(initialRule)

@@ -30,6 +30,27 @@ import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../operations/database';
 import { securityRuleGroups } from '../../constants';
 
+const parseValue = (value, type) => {
+  return (type === "number") ? parseNumber(value) : (type === "bool" ? parseBoolean(value) : value)
+}
+
+const parseBoolean = (value) => {
+  if (value === "true") return true
+  if (value === "false") return false
+  return value
+}
+
+const parseNumber = (value) => {
+  return !isNaN(value) ? Number(value) : value
+}
+
+const parseArray = (value, type) => {
+  if (!value.includes(",")) {
+    return value
+  }
+  return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
+}
+
 const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
 const ConfigureRule = (props) => {
   // form
@@ -65,76 +86,35 @@ const ConfigureRule = (props) => {
   const handleSearch = (value) => setCol(value);
 
   const onFinish = (values) => {
-    console.log(values);
-    if (values.rule === 'match') {
-      // Datatype
-      if (values.type === 'number') {
-        if (/\d/.test(values.f1)) {
-          values.f1 = parseInt(values.f1);
-        } else if (/\d/.test(values.f2)) {
-          values.f2 = parseInt(values.f2);
+    switch (values.rule) {
+      case "match":
+        if (values.eval === 'in' || values.eval === 'notIn') {
+          values.f2 = parseArray(values.f2, values.type)
         } else {
-          notify('error', 'Error', 'No number literal in either operand');
+          values.f1 = parseValue(values.f1, values.type)
+          values.f2 = parseValue(values.f2, values.type)
+        }
+        break;
+      case "force":
+        values.value = parseValue(values.value, values.type)
+        delete values["type"]
+        break;
+      case "query":
+        try {
+          values.find = JSON.parse(findQuery);
+        } catch (ex) {
+          notify("error", "Error", ex.toString())
           return;
         }
-      } else if (values.type === 'bool') {
-        if (values.f1.toLowerCase() === 'true') {
-          values.f1 = true;
-        } else if (values.f2.toLowerCase() === 'false') {
-          values.f2 = false;
-        } else {
-          notify('error', 'Error', 'No boolean present in either operand');
-          return;
-        }
-      }
-      // eval
-      if (values.eval === 'in' || values.eval === 'notIn') {
-        if (values.f1.includes(',')) {
-          values.f1 = values.f1.split(',');
-        } else if (values.f2.includes(',')) {
-          values.f2 = values.f2.split(',');
-        } else {
-          notify('error', 'Error', 'No CSV found in either operand');
-          return;
-        }
-      }
+        break;
+      case "and":
+      case "or":
+        if (!props.selectedRule.clauses) values.clauses = [];
     }
-    else if (values.rule === 'force') {
-      // Datatype
-      if (values.type === 'number') {
-        if (/\d/.test(values.value)) {
-          values.value = parseInt(values.value);
-        } else {
-          notify('error', 'Error', 'No number literal in value field');
-          return;
-        }
-      } else if (values.type === 'bool') {
-        if (!typeof values.value === "string") {
-          notify('error', 'Error', 'No boolean present in value field');
-          return;
-        }
-        else if (values.value.toLowerCase() === 'true') {
-          values.value = true;
-        } else if (values.value.toLowerCase() === 'false') {
-          values.value = false;
-        } else {
-          notify('error', 'Error', 'No boolean present in value field');
-          return;
-        }
-      }
-    }
-    else if (values.rule === 'query') {
-      try {
-        values.find = JSON.parse(findQuery);
-      } catch (ex) {
-        notify("error", "Error", ex.toString())
-        return;
-      }
-    }
-    else if (values.rule === 'and' || values.rule === 'or') {
-      values.clauses = [];
-    }
+
     delete values.errorMsg;
+    if (props.selectedRule.clause) values.clause = props.selectedRule.clause
+    if (props.selectedRule.clauses) values.clauses = props.selectedRule.clauses
     props.onSubmit(values);
     props.closeDrawer();
   };
@@ -145,66 +125,45 @@ const ConfigureRule = (props) => {
   switch (props.ruleMetaData.ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:
       const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.ruleMetaData.id];
-      autoCompleteOptions = {
-        args: {
-          auth: true,
-          find: {},
-          update: {
-            $set: {},
-            $inc: {},
-            $mul: {},
-            $min: {},
-            $max: {},
-            $currentDate: {},
-          },
-          doc: {},
-          op: true
-        },
-        token: true
-      }
-      colSchemaFields.forEach((column) => {
-        autoCompleteOptions.args.find[column.name] = true;
-        autoCompleteOptions.args.doc[column.name] = true;
-        Object.keys(autoCompleteOptions.args.update).forEach((updateOperation) => {
-          autoCompleteOptions.args.update[updateOperation][column.name] = true;
-        })
-      })
-
+      const schemaFields = colSchemaFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: true }), {})
       switch (props.selectedNodeId) {
         case "create":
-          delete autoCompleteOptions.args.find;
-          delete autoCompleteOptions.args.update;
+          autoCompleteOptions = { args: { op: true, auth: true, token: true, doc: schemaFields } }
           break;
-
         case "read":
-          delete autoCompleteOptions.args.doc;
-          delete autoCompleteOptions.args.update;
+          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields } }
           break;
-
         case "update":
-          delete autoCompleteOptions.args.doc;
+          const update = {
+            $set: schemaFields,
+            $inc: schemaFields,
+            $mul: schemaFields,
+            $min: schemaFields,
+            $max: schemaFields,
+            $currentDate: schemaFields,
+            $currentTimestamp: schemaFields
+          }
+          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields, update } }
           break;
-
         case "delete":
-          delete autoCompleteOptions.args.doc;
-          delete autoCompleteOptions.args.update;
-          break;
-
-        default:
-          break;
+          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields } }
+          break
       }
-
       break;
     case securityRuleGroups.FILESTORE:
     case securityRuleGroups.REMOTE_SERVICES:
     case securityRuleGroups.EVENTING:
-      autoCompleteOptions = {
-        args: {
-          auth: true,
-          params: true
-        },
-        token: true
+    case securityRuleGroups.DB_PREPARED_QUERIES:
+      autoCompleteOptions = { auth: true, params: true, token: true }
+      break;
+    case securityRuleGroups.INGRESS_ROUTES:
+      const query = {
+        path: true,
+        pathArray: true,
+        params: true,
+        headers: true
       }
+      autoCompleteOptions = { auth: true, params: true, query }
   }
 
 
@@ -273,20 +232,6 @@ const ConfigureRule = (props) => {
               <Select.Option value='notIn'>Not in</Select.Option>
             </Select>
           </Form.Item>
-          <ConditionalFormBlock
-            dependency='eval'
-            condition={() =>
-              form.getFieldValue('eval') === 'in' ||
-              form.getFieldValue('eval') === 'notIn'
-            }
-          >
-            <Alert
-              description={<div>One of the operand must be CSV</div>}
-              type='info'
-              showIcon
-              style={{ marginBottom: 24 }}
-            />
-          </ConditionalFormBlock>
           <FormItemLabel name='Second operand' />
           <Form.Item name='f2'>
             <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
