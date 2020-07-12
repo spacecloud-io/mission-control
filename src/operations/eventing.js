@@ -62,7 +62,7 @@ export const saveEventingSecurityRule = (projectId, eventType, securityRule) => 
   return new Promise((resolve, reject) => {
     client.eventing.setSecurityRule(projectId, eventType, securityRule)
       .then(() => {
-        store.dispatch(set(`eventingRules.${eventType}`, securityRule))
+        setEventingSecurityRule(eventType, securityRule)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -163,5 +163,7 @@ export const getEventingConfig = (state) => get(state, "eventingConfig", { enabl
 export const getEventingDbAliasName = (state) => get(state, "eventingConfig.dbAlias", "")
 export const getEventingTriggerRules = (state) => get(state, "eventingTriggers", {})
 export const getEventingSchemas = (state) => get(state, "eventingSchemas", {})
+export const getEventingSecurityRule = (state, eventType) => get(state, `eventingRules.${eventType}`, {})
 export const getEventingSecurityRules = (state) => get(state, "eventingRules", {})
 export const getEventingDefaultSecurityRule = (state) => get(state, "eventingRules.default", {})
+export const setEventingSecurityRule = (eventType, rule) => store.dispatch(set(`eventingRules.${eventType}`, rule))

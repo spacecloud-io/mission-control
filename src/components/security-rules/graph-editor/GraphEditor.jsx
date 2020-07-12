@@ -4,8 +4,10 @@ import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ConfigureRule from '../ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
+import { securityRuleGroups } from "../../../constants"
+const { DB_COLLECTIONS, DB_PREPARED_QUERIES, REMOTE_SERVICES, INGRESS_ROUTES, FILESTORE, EVENTING } = securityRuleGroups
 
-function GraphEditor({ rule, setRule, moduleName, ruleName, params }) {
+function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const [drawer, setDrawer] = useState(false);
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
@@ -14,6 +16,7 @@ function GraphEditor({ rule, setRule, moduleName, ruleName, params }) {
   const nodes = [];
   const edges = [];
 
+  const { ruleType, id, group } = ruleMetaData
   // And, or rule
   const nestedNodes = (clauses, parentId) => {
     for (let i = 0; i < clauses.length; i++) {
@@ -53,7 +56,7 @@ function GraphEditor({ rule, setRule, moduleName, ruleName, params }) {
   };
 
   // Map rules into nodes and edges
-  if (!["remote-service", "routing", "eventing", "prepared-queries"].includes(moduleName)) nodes.push({ id: ruleName, label: ruleName, group: 'crud' });
+  if (![REMOTE_SERVICES, INGRESS_ROUTES, EVENTING, DB_PREPARED_QUERIES].includes(ruleType)) nodes.push({ id: ruleName, label: ruleName, group: 'crud' });
   Object.entries(rule).map(([key, value]) => {
     if (Object.keys(value).length === 0) {
       nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
@@ -227,7 +230,7 @@ function GraphEditor({ rule, setRule, moduleName, ruleName, params }) {
           selectedRule={selectedRule}
           closeDrawer={() => setDrawer(false)}
           drawer={drawer}
-          params={{ ...params }}
+          ruleMetaData={ruleMetaData}
           onSubmit={onSubmit}
           selectedNodeId={selectedNodeId.split(".")[0]}
         />

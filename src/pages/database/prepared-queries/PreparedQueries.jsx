@@ -8,8 +8,8 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { defaultPreparedQueryRule } from '../../../constants';
+import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
+import { defaultPreparedQueryRule, securityRuleGroups } from '../../../constants';
 import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
@@ -31,9 +31,7 @@ const PreparedQueries = () => {
   }, [])
 
   // Handlers
-  const handleSecureClick = (queryName) => {
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=prepared-queries&name=${queryName}&db=${selectedDB}`, '_newtab')
-  }
+  const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)
 
   const handleDeletePreparedQuery = (id) => {
     incrementPendingRequests()

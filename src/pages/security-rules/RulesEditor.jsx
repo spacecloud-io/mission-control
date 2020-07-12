@@ -1,129 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './rules-editor.css';
 import Topbar from '../../components/topbar/Topbar';
 import { Tabs, Button } from 'antd';
 
-import { notify } from '../../utils';
+import { notify, decrementPendingRequests, incrementPendingRequests, deepCompareObjects } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ShortcutsDrawer from "../../components/security-rules/shortcuts-drawer/ShortcutsDrawer"
 
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import qs from 'qs';
 import { useSelector } from 'react-redux';
 import DocumentationButton from "../../components/security-rules/documentation-button/DocumentationButton";
 import GraphEditor from "../../components/security-rules/graph-editor/GraphEditor";
 import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
+import useDeepCompareEffect from 'use-deep-compare-effect';
+import { getSecurityRuleInfo, loadSecurityRules, saveSecurityRule } from '../../operations/securityRuleBuilder';
+import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule } from '../../constants';
 
-const RulesEditor = (props) => {
-
+const RulesEditor = () => {
   // Router params
   const { projectID } = useParams();
-  const params = qs.parse(props.location.search, { ignoreQueryPrefix: true });
-  const { moduleName, name, id, db, serviceName } = params;
+  const location = useLocation()
+  const ruleMetaData = qs.parse(location.search, { ignoreQueryPrefix: true });
+  const { ruleType, id, group } = ruleMetaData
 
+  // Global state 
+  const { rule: initialRule, name } = useSelector(state => getSecurityRuleInfo(state, ruleType, id, group))
   const tab = localStorage.getItem('rules:editor') ? localStorage.getItem('rules:editor') : 'builder';
 
   // Component state
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
-  const [rule, setRule] = useState({});
-  const [stringifiedRule, setStringifiedRule] = useState('');
-  const projects = useSelector(state => state.projects);
+  const [rule, setRule] = useState(initialRule);
+  const initialRuleStringified = JSON.stringify(initialRule, null, 2)
+  const [stringifiedRule, setStringifiedRule] = useState(initialRuleStringified);
+  const [activeTab, setActiveTab] = useState(tab)
 
+  // Derived state
   const ruleExists = Object.keys(rule).length > 0
+  const rulesChanged = tab === "builder" ? !deepCompareObjects(rule, initialRule) : stringifiedRule !== initialRuleStringified
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
+    setRule(initialRule)
+  }, [initialRule])
+
+  useDeepCompareEffect(() => {
     setStringifiedRule(JSON.stringify(rule, null, 2));
   }, [rule]);
 
-  const bc = new BroadcastChannel('builder');
-  useEffect(() => {
-    if (!window.data) return;
-    setRule(window.data.rules);
-  }, []);
-
-  useEffect(() => {
-    // if (projects.length > 0 && !window.data) {
-    //   switch (moduleName) {
-    //     case "database":
-    //       setRule(getProjectConfig(projects, projectID, `modules.db.${db}.collections.${name}.rules`, {}))
-    //       break;
-    //     case "prepared-queries":
-    //       const preparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${db}.preparedQueries.${name}.rule`, {});
-    //       setRule({ [name]: { ...preparedQueryRule } })
-    //       break;
-    //     case "file-storage":
-    //       const fileStoreRules = getProjectConfig(projects, projectID, `modules.fileStore.rules`, []);
-    //       setRule(fileStoreRules.find(val => val.id === name).rule)
-    //       break;
-    //     case "remote-service":
-    //       const endpointRule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${name}.rule`, {});
-    //       setRule({ [name]: { ...endpointRule } })
-    //       break;
-    //     case "routing":
-    //       const routes = getProjectConfig(projects, projectID, `modules.ingressRoutes`, [])
-    //       const routeRule = routes.find(val => val.id === id).rule;
-    //       setRule({ [name]: { ...routeRule } })
-    //       break;
-    //     case "eventing":
-    //       const eventingRule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.${name}`)
-    //       if (!eventingRule) return;
-    //       setRule({ [name]: { ...eventingRule } })
-    //       break;
-    //     default:
-    //       break;
-    //   }
-    // }
-  }, [projects])
+  useDeepCompareEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecurityRules(projectID, ruleMetaData.ruleType)
+        .catch(ex => notify("error", "Error fetching security rule", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID, ruleMetaData])
 
   const onTabChange = (tab) => {
     try {
       const parsedRule = JSON.parse(stringifiedRule);
       localStorage.setItem('rules:editor', tab);
       setRule(parsedRule);
+      setActiveTab(tab)
     } catch (ex) {
       notify("error", "Error", ex.toString());
     }
   };
 
   const addDefaultSecurityRules = () => {
-    setRule({
-      create: {
-        rule: "allow"
-      },
-      read: {
-        rule: "allow"
-      },
-      update: {
-        rule: "allow"
-      },
-      delete: {
-        rule: "allow"
-      }
-    })
+    switch (ruleType) {
+      case securityRuleGroups.DB_COLLECTIONS:
+        setRule(defaultDBRules)
+        break;
+      case securityRuleGroups.DB_PREPARED_QUERIES:
+        setRule(defaultPreparedQueryRule)
+        break;
+      case securityRuleGroups.EVENTING:
+        setRule(defaultEventRule)
+        break;
+      case securityRuleGroups.FILESTORE:
+        setRule(defaultFileRule)
+        break;
+      case securityRuleGroups.REMOTE_SERVICES:
+        setRule(defaultEndpointRule)
+        break;
+      case securityRuleGroups.INGRESS_ROUTES:
+        setRule(defaultIngressRoutingRule)
+        break;
+    }
   }
 
   // On save rule
   const onSaveChanges = (tab) => {
-    const message = {
-      module: moduleName,
-      name: name,
-      id: id,
-      db: db
+    try {
+      incrementPendingRequests()
+      const rules = tab === "builder" ? rule : JSON.parse(stringifiedRule);
+      saveSecurityRule(projectID, ruleType, id, group, rules)
+        .catch(ex => notify("error", "Error saving rules", ex))
+        .finally(() => decrementPendingRequests())
+    } catch (ex) {
+      notify("error", "Error", ex)
+      return;
     }
-    if (tab === "builder") {
-      bc.postMessage({ ...message, rules: rule })
-    } else {
-      try {
-        const parsedJSON = JSON.parse(stringifiedRule);
-        bc.postMessage({ ...message, rules: parsedJSON })
-      } catch (ex) {
-        notify("error", "Error", ex.toString())
-        return;
-      }
-    }
-    window.close();
-    console.log(rule);
   }
 
   // Prettify JSON code
@@ -157,9 +136,9 @@ const RulesEditor = (props) => {
                     </span>
                   </div>
                   <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }}>
-                    <GraphEditor moduleName={moduleName} rule={rule} setRule={setRule} ruleName={name} params={params} />
+                    <GraphEditor rule={rule} setRule={setRule} ruleName={name} ruleMetaData={ruleMetaData} />
                   </div>
-                  <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }}>Save</Button>
+                  <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }} disabled={!rulesChanged}>Save</Button>
                 </div>
               </React.Fragment>
             </Tabs.TabPane>
@@ -175,7 +154,7 @@ const RulesEditor = (props) => {
                 <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }} >
                   <JSONEditor rule={stringifiedRule} setRule={setStringifiedRule} />
                 </div>
-                <Button type='primary' size="large" onClick={() => onSaveChanges("json")} block style={{ marginTop: 16 }}>Save</Button>
+                <Button type='primary' size="large" onClick={() => onSaveChanges("json")} block style={{ marginTop: 16 }} disabled={!rulesChanged}>Save</Button>
               </React.Fragment>
             </Tabs.TabPane>
           </Tabs>

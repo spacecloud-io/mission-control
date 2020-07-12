@@ -28,6 +28,7 @@ import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../operations/database';
+import { securityRuleGroups } from '../../constants';
 
 const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
 const ConfigureRule = (props) => {
@@ -41,7 +42,7 @@ const ConfigureRule = (props) => {
   const projects = useSelector((state) => state.projects);
 
   // Component state
-  const [selectedDb, setSelectedDb] = useState();
+  const [selectedDb, setSelectedDb] = useState("");
   const [col, setCol] = useState('');
   const [findQuery, setFindQuery] = useState("{}");
 
@@ -56,8 +57,8 @@ const ConfigureRule = (props) => {
       svgIconSet: dbIcons(projects, projectID, alias),
     };
   });
-  const data = useSelector(state => getTrackedCollections(state, props.params.db))
-  const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.params.db, props.params.name))
+  const data = useSelector(state => getTrackedCollections(state, selectedDb))
+  const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.ruleMetaData.group, props.ruleMetaData.id))
 
   // Handlers
   const handleSelectDatabase = (value) => setSelectedDb(value);
@@ -140,74 +141,79 @@ const ConfigureRule = (props) => {
 
   // Autocomplete options
   let autoCompleteOptions = {};
-  if (props.params.moduleName === "database") {
-    const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.params.name];
-    autoCompleteOptions = {
-      args: {
-        auth: true,
-        find: {},
-        update: {
-          $set: {},
-          $inc: {},
-          $mul: {},
-          $min: {},
-          $max: {},
-          $currentDate: {},
+
+  switch (props.ruleMetaData.ruleType) {
+    case securityRuleGroups.DB_COLLECTIONS:
+      const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.ruleMetaData.id];
+      autoCompleteOptions = {
+        args: {
+          auth: true,
+          find: {},
+          update: {
+            $set: {},
+            $inc: {},
+            $mul: {},
+            $min: {},
+            $max: {},
+            $currentDate: {},
+          },
+          doc: {},
+          op: true
         },
-        doc: {},
-        op: true
-      },
-      token: true
-    }
-    colSchemaFields.forEach((column) => {
-      autoCompleteOptions.args.find[column.name] = true;
-      autoCompleteOptions.args.doc[column.name] = true;
-      Object.keys(autoCompleteOptions.args.update).forEach((updateOperation) => {
-        autoCompleteOptions.args.update[updateOperation][column.name] = true;
+        token: true
+      }
+      colSchemaFields.forEach((column) => {
+        autoCompleteOptions.args.find[column.name] = true;
+        autoCompleteOptions.args.doc[column.name] = true;
+        Object.keys(autoCompleteOptions.args.update).forEach((updateOperation) => {
+          autoCompleteOptions.args.update[updateOperation][column.name] = true;
+        })
       })
-    })
 
-    switch (props.selectedNodeId) {
-      case "create":
-        delete autoCompleteOptions.args.find;
-        delete autoCompleteOptions.args.update;
-        break;
+      switch (props.selectedNodeId) {
+        case "create":
+          delete autoCompleteOptions.args.find;
+          delete autoCompleteOptions.args.update;
+          break;
 
-      case "read":
-        delete autoCompleteOptions.args.doc;
-        delete autoCompleteOptions.args.update;
-        break;
+        case "read":
+          delete autoCompleteOptions.args.doc;
+          delete autoCompleteOptions.args.update;
+          break;
 
-      case "update":
-        delete autoCompleteOptions.args.doc;
-        break;
+        case "update":
+          delete autoCompleteOptions.args.doc;
+          break;
 
-      case "delete":
-        delete autoCompleteOptions.args.doc;
-        delete autoCompleteOptions.args.update;
-        break;
+        case "delete":
+          delete autoCompleteOptions.args.doc;
+          delete autoCompleteOptions.args.update;
+          break;
 
-      default:
-        break;
-    }
+        default:
+          break;
+      }
+
+      break;
+    case securityRuleGroups.FILESTORE:
+    case securityRuleGroups.REMOTE_SERVICES:
+    case securityRuleGroups.EVENTING:
+      autoCompleteOptions = {
+        args: {
+          auth: true,
+          params: true
+        },
+        token: true
+      }
   }
 
-  else if (props.params.moduleName === "file-storage" || props.params.moduleName === "remote-service" || props.params.moduleName === "eventing") {
-    autoCompleteOptions = {
-      args: {
-        auth: true,
-        params: true
-      },
-      token: true
-    }
-  }
 
   return (
     <Drawer
       title='Configure rule'
       placement='right'
       onClose={props.closeDrawer}
-      visible={props.drawer}
+      visible={true}
       width={400}
     >
       <Form

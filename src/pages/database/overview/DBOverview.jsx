@@ -13,10 +13,10 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, loadCollections } from "../../../operations/database"
-import { dbTypes } from '../../../constants';
+import { dbTypes, securityRuleGroups } from '../../../constants';
 
 
 const Overview = () => {
@@ -81,9 +81,7 @@ const Overview = () => {
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
   }
 
-  const handleSecureClick = (colName) => {
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=database&name=${colName}&db=${selectedDB}`, '_newtab')
-  }
+  const handleSecureClick = (colName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_COLLECTIONS, colName, selectedDB)
 
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false)

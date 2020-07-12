@@ -7,8 +7,9 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
 import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
-import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
-import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage } from "../../utils";
+import { deleteIngressRoute, saveIngressRouteConfig, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
+import { securityRuleGroups } from "../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -81,7 +82,7 @@ function Routing() {
         }
       };
       incrementPendingRequests()
-      saveIngressRoute(projectID, config.id, config)
+      saveIngressRouteConfig(projectID, config.id, config)
         .then(() => {
           notify("success", "Success", "Saved routing config successfully");
           resolve()
@@ -94,10 +95,7 @@ function Routing() {
     });
   };
 
-  const handleSecureClick = id => {
-    const url = data.find(obj => obj.id === id).url;
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=routing&name=${url}&id=${id}`, '_newtab')
-  }
+  const handleSecureClick = id => openSecurityRulesPage(projectID, securityRuleGroups.INGRESS_ROUTES, id)
 
   const handleRouteClick = id => {
     setRouteClicked(id);

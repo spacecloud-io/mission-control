@@ -39,7 +39,22 @@ export const deleteRemoteService = (projectId, serviceId) => {
 export const saveRemoteServiceEndpoint = (projectId, serviceId, endpointId, endpointConfig) => {
   const state = store.getState()
   const endpoints = getRemoteServiceEndpoints(state, serviceId)
-  const newEndpoints = Object.assign({}, endpoints, { [endpointId]: endpointConfig })
+  const rule = getRemoteEndpointSecurityRule(state, serviceId, endpointId)
+  const newEndpointConfig = Object.assign({}, { rule }, endpointConfig)
+  const newEndpoints = Object.assign({}, endpoints, { [endpointId]: newEndpointConfig })
+  const serviceConfig = getRemoteServiceConfig(state, serviceId)
+  const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
+  return saveRemoteService(projectId, serviceId, newServiceConfig)
+}
+
+export const saveRemoteServiceEndpointRule = (projectId, serviceId, endpointId, rule) => {
+  const newEndpointConfig = Object.assign({}, config, { rule })
+  const state = store.getState()
+  const endpoints = getRemoteServiceEndpoints(state, serviceId)
+  // Strip out the rule from the config 
+  const { rule: _, ...config } = getRemoteServiceEndpointConfig(state, serviceId, endpointId)
+  // New config should be old config + new rule
+  const newEndpoints = Object.assign({}, endpoints, { [endpointId]: newEndpointConfig })
   const serviceConfig = getRemoteServiceConfig(state, serviceId)
   const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
   return saveRemoteService(projectId, serviceId, newServiceConfig)
@@ -58,4 +73,7 @@ export const deleteRemoteServiceEndpoint = (projectId, serviceId, endpointId) =>
 export const getRemoteServices = (state) => get(state, "remoteServices", {})
 export const getRemoteServiceConfig = (state, serviceId) => get(state, `remoteServices.${serviceId}`, {})
 export const getRemoteServiceURL = (state, serviceId) => get(state, `remoteServices.${serviceId}.url`, "")
+export const getRemoteEndpointSecurityRule = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.${endpointId}.rule`, {})
 export const getRemoteServiceEndpoints = (state, serviceId) => get(state, `remoteServices.${serviceId}.endpoints`, {})
+export const getRemoteServiceEndpointConfig = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.endpoints.${endpointId}`, {})
+export const setRemoteEndpointRule = (serviceId, endpointId, rule) => store.dispatch(set(`remoteServices.${serviceId}.endpoints.${endpointId}.rule`, rule))

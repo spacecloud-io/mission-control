@@ -1,14 +1,14 @@
 import React, { useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from "react-redux"
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
+import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from "../../utils"
 import ReactGA from 'react-ga';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm } from "antd";
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
-import { endpointTypes } from "../../constants"
+import { endpointTypes, securityRuleGroups } from "../../constants"
 import { deleteRemoteServiceEndpoint, getRemoteServiceEndpoints } from "../../operations/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
@@ -53,6 +53,7 @@ const RemoteService = () => {
   const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => ({ name, method, path, kind }))
   const noOfEndpoints = endpointsTableData.length
 
+  // Handlers
   const handleDelete = (name) => {
     incrementPendingRequests()
     deleteRemoteServiceEndpoint(projectID, serviceName, name)
@@ -61,10 +62,7 @@ const RemoteService = () => {
       .finally(() => decrementPendingRequests())
   }
 
-  // Handlers
-  const handleSecureClick = (endpoint) => {
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}&serviceName=${serviceName}`, '_newtab')
-  }
+  const handleSecureClick = (endpoint) => openSecurityRulesPage(projectID, securityRuleGroups.REMOTE_SERVICES, endpoint, serviceName)
 
   const tableColumns = [
     {

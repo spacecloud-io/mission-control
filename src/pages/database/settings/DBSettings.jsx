@@ -6,9 +6,9 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
-import { dbTypes } from '../../../constants';
+import { dbTypes, securityRuleGroups } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 
@@ -62,13 +62,8 @@ const Settings = () => {
       .finally(() => decrementPendingRequests())
   }
 
-  const handleConfigureDefaultTableRule = () => {
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor`, '_newtab')
-  }
-
-  const handleConfigureDefaultPreparedQueriesRule = () => {
-    console.log("ok")
-  }
+  const handleConfigureDefaultTableRule = () => openSecurityRulesPage(projectID, securityRuleGroups.DB_COLLECTIONS, "default", selectedDB)
+  const handleConfigureDefaultPreparedQueriesRule = () => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, "default", selectedDB)
 
   const handleReloadDB = () => {
     incrementPendingRequests()

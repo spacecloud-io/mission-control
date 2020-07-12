@@ -3,7 +3,7 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID, securityRuleGroups } from './constants';
 
 import store from "./store"
 import client from "./client"
@@ -11,7 +11,11 @@ import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
 import { loadProjects, getJWTSecret } from './operations/projects'
-import { getDbType } from './operations/database'
+import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
+import { setRemoteEndpointRule } from './operations/remoteServices'
+import { setIngressRouteRule } from './operations/ingressRoutes'
+import { setEventingSecurityRule } from './operations/eventing'
+import { setFileStoreSecurityRule } from './operations/fileStore'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -23,6 +27,35 @@ export function upsertArray(array, predicate, getItem) {
   const index = array.findIndex(predicate)
   return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]
 }
+
+export function deepCompareObjects(obj1, obj2) {
+	//Loop through properties in object 1
+	for (var p in obj1) {
+		//Check property exists on both objects
+		if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
+ 
+		switch (typeof (obj1[p])) {
+			//Deep compare objects
+			case 'object':
+				if (!deepCompareObjects(obj1[p], obj2[p])) return false;
+				break;
+			//Compare function code
+			case 'function':
+				if (typeof (obj2[p]) == 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
+				break;
+			//Compare values
+			default:
+				if (obj1[p] != obj2[p]) return false;
+		}
+	}
+ 
+	//Check object 2 for any extra properties
+	for (var p in obj2) {
+		if (typeof (obj1[p]) == 'undefined') return false;
+	}
+	return true;
+};
+
 export function incrementPendingRequests() {
   store.dispatch(increment("pendingRequests"))
 }
@@ -183,6 +216,11 @@ export const openProject = (projectId) => {
   if (!currentURL.includes(projectURL)) {
     history.push(projectURL)
   }
+}
+
+export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
+  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  window.open(url, '_newtab')
 }
 
 export const fetchBillingDetails = () => {
@@ -384,6 +422,36 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+const registerSecurityRulesBroadCastListener = () => {
+  const bc = new BroadcastChannel('security-rules');
+  bc.onmessage = ({ data }) => {
+    const { rule, meta } = data
+    const { ruleType, id, group } = meta
+    switch (ruleType) {
+      case securityRuleGroups.DB_COLLECTIONS:
+        setColSecurityRule(group, id, rule)
+        break;
+      case securityRuleGroups.DB_PREPARED_QUERIES:
+        setPreparedQueryRule(group, id, rule)
+        break;
+      case securityRuleGroups.EVENTING:
+        setEventingSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.FILESTORE:
+        setFileStoreSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.REMOTE_SERVICES:
+        setRemoteEndpointRule(group, id, rule)
+        break;
+      case securityRuleGroups.INGRESS_ROUTES:
+        setIngressRouteRule(id, rule)
+        break
+    }
+    notify("success", "Success", "Saved security rules successfully")
+  }
+  window.addEventListener("beforeunload", (ev) => bc.close());
+}
+
 export const onAppLoad = () => {
   client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
     // Store env
@@ -405,6 +473,8 @@ export const onAppLoad = () => {
 
     fetchGlobalEntities(token, spaceUpToken)
   })
+
+  registerSecurityRulesBroadCastListener()
 }
 
 export function enterpriseSignin(token) {

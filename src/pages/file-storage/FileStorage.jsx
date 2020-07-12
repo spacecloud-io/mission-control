@@ -5,13 +5,13 @@ import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
-import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge, Popconfirm, Table } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
-import securitySvg from "../../assets/security.svg"
 import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
+import { securityRuleGroups } from '../../constants';
 
 const Rules = () => {
 	const history = useHistory();
@@ -34,14 +34,6 @@ const Rules = () => {
 	// Derived state
 	const { enabled, ...connConfig } = config
 	const noOfRules = rules.length;
-	const rulesMap = rules.reduce((prev, curr) => {
-		return Object.assign(prev, {
-			[curr.id]: {
-				prefix: curr.prefix,
-				rule: curr.rule
-			}
-		})
-	}, {})
 
 	useEffect(() => {
 		if (!selectedRuleName && noOfRules > 0) {
@@ -79,15 +71,7 @@ const Rules = () => {
 			.finally(() => decrementPendingRequests())
 	}
 
-	const handleSecureClick = (ruleName) => {
-		const { id, rule } = rules.find(val => val.id === ruleName);
-		const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=file-storage&name=${id}`, '_newtab')
-		w.data = {
-			rules: {
-				...rule
-			}
-		};
-	}
+	const handleSecureClick = (ruleName) => openSecurityRulesPage(projectID, securityRuleGroups.FILESTORE, ruleName)
 
 	useEffect(() => {
 		incrementPendingRequests()

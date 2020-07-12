@@ -5,11 +5,12 @@ import { useParams } from "react-router-dom";
 import { Button, Table, Popconfirm } from "antd";
 import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 import { deleteEventingSecurityRule, saveEventingSecurityRule, loadEventingSecurityRules, getEventingTriggerRules, getEventingSecurityRules, getEventingDefaultSecurityRule } from '../../operations/eventing';
+import { securityRuleGroups } from '../../constants';
 
 const EventingRules = () => {
   const { projectID } = useParams()
@@ -73,9 +74,7 @@ const EventingRules = () => {
     })
   }
 
-  const handleSecureClick = id => {
-    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=eventing&name=${id}`, '_newtab')
-  }
+  const handleSecureClick = id => openSecurityRulesPage(projectID, securityRuleGroups.EVENTING, id)
 
   const EmptyState = () => {
     return <div style={{ marginTop: 24 }}>
