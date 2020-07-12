@@ -2,25 +2,18 @@ import React, { useState, useEffect } from 'react';
 import './rules-editor.css';
 import Topbar from '../../components/topbar/Topbar';
 import { Tabs, Button } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
+
 import { notify, getProjectConfig } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
-import SecurityRulesGraph from "../../components/security-rules/security-rules-graph/SecurityRulesGraph";
-import { Alert, Dropdown, Menu } from 'antd';
-import ConfigureRule from '../../components/security-rules/ConfigureRule';
-import dotProp from 'dot-prop-immutable';
+import ShortcutsDrawer from "../../components/security-rules/shortcuts-drawer/ShortcutsDrawer"
+
 import { useParams } from 'react-router-dom';
 import qs from 'qs';
 import { useSelector } from 'react-redux';
 import DocumentationButton from "../../components/security-rules/documentation-button/DocumentationButton";
-import ShortcutsDrawer from "../../components/security-rules/shortcuts-drawer/ShortcutsDrawer";
+import GraphEditor from "../../components/security-rules/graph-editor/GraphEditor";
+import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
 
 const RulesEditor = (props) => {
 
@@ -29,19 +22,15 @@ const RulesEditor = (props) => {
   const params = qs.parse(props.location.search, { ignoreQueryPrefix: true });
   const { moduleName, name, id, db, serviceName } = params;
 
+  const tab = localStorage.getItem('rules:editor') ? localStorage.getItem('rules:editor') : 'builder';
+
   // Component state
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
-  const [drawer, setDrawer] = useState(false);
   const [rule, setRule] = useState({});
   const [stringifiedRule, setStringifiedRule] = useState('');
-  const [selectedRule, setSelectedRule] = useState({});
-  const [selectedNodeId, setselectedNodeId] = useState();
-  const [network, setNetwork] = useState();
-
   const projects = useSelector(state => state.projects);
 
-  const nodes = [];
-  const edges = [];
+  const ruleExists = Object.keys(rule).length > 0
 
   useEffect(() => {
     setStringifiedRule(JSON.stringify(rule, null, 2));
@@ -87,166 +76,6 @@ const RulesEditor = (props) => {
     }
   }, [projects])
 
-  // And, or rule
-  const nestedNodes = (clauses, parentId) => {
-    for (let i = 0; i < clauses.length; i++) {
-      const childId = `${parentId}.clauses.${i}`;
-      nodes.push({
-        id: childId,
-        label: clauses[i].rule,
-        ...clauses[i],
-        group: 'rule',
-      });
-      edges.push({ from: parentId, to: childId });
-
-      if (clauses[i].rule === 'or' || clauses[i].rule === 'and') {
-        nestedNodes(clauses[i].clauses, childId);
-      }
-      if (clauses[i].rule === 'query' || clauses[i].rule === 'remove' || clauses[i].rule === 'force') {
-        clauseNodes(clauses[i].clause, childId);
-      }
-    }
-    nodes.push({ id: `${parentId}.clauses.${clauses.length}`, label: '+ Add rule', group: 'add_rule' });
-    edges.push({ from: parentId, to: `${parentId}.clauses.${clauses.length}` });
-  };
-
-  // query, remove, force
-  const clauseNodes = (clause, parentId) => {
-    const childId = `${parentId}.clause`;
-    if (clause && clause.rule) {
-      nodes.push({ id: childId, label: clause.rule, group: 'rule' });
-      edges.push({ from: parentId, to: childId });
-      if (clause.rule === 'and' || clause.rule === 'or') {
-        nestedNodes(clause.clauses, childId);
-      }
-    } else {
-      nodes.push({ id: childId, label: '+ Add rule', group: 'add_rule' });
-      edges.push({ from: parentId, to: childId });
-    }
-  };
-
-  // Map rules into nodes and edges
-  if (!["remote-service", "routing", "eventing", "prepared-queries"].includes(moduleName)) nodes.push({ id: name, label: name, group: 'crud' });
-  Object.entries(rule).map(([key, value]) => {
-    if (Object.keys(value).length === 0) {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
-      nodes.push({ id: key, label: '+ Add rule', group: 'add_rule' });
-    } else {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'crud' });
-      nodes.push({ id: key, label: value.rule, group: 'rule', ...value });
-    }
-    edges.push({ from: name, to: `${key}Rule` });
-    edges.push({ from: `${key}Rule`, to: key });
-
-    if (value.rule === 'query' || value.rule === 'remove' || value.rule === 'force') {
-      clauseNodes(value.clause, key);
-    }
-
-    if (value.rule === 'or' || value.rule === 'and') {
-      nestedNodes(value.clauses, key);
-    }
-  });
-
-  // vis.js configurations
-  const graph = {
-    nodes: [...nodes],
-    edges: [...edges],
-  };
-
-  // mouse events handlers
-  const events = {
-    oncontext: (event) => {
-      const position = event.pointer.DOM;
-      const nodeId = network.getNodeAt(position);
-      if (nodeId) network.selectNodes([nodeId], false);
-    },
-    select: (event) => {
-      const node = event.nodes[0];
-      if (!node) return;
-      setselectedNodeId(node);
-      const group = nodes.find(val => val.id === node).group;
-      if (group === "add_rule") {
-        setSelectedRule({});
-        setDrawer(true);
-      }
-    },
-    doubleClick: function (event) {
-      const nodeId = event.nodes[0];
-      setselectedNodeId(nodeId);
-      setSelectedRule(dotProp.get(rule, nodeId));
-      setDrawer(true);
-    },
-  };
-
-  // shortcut events handler
-  const shortcutsHandler = (key) => {
-    if (!selectedNodeId) return;
-
-    if (key === 'del') {
-      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
-        return;
-      }
-      if (["create", "update", "read", "delete"].includes(selectedNodeId)) {
-        setRule(dotProp.set(rule, selectedNodeId, {}))
-      }
-      else {
-        setRule(dotProp.delete(rule, selectedNodeId));
-      }
-    }
-
-    else if (key === 'ctrl+c') {
-      const copiedRule = Object.assign({}, dotProp.get(rule, selectedNodeId));
-      if (copiedRule.clauses) copiedRule.clauses = [];
-      else if (copiedRule.clause) copiedRule.clause = {};
-      console.log(copiedRule);
-      setSelectedRule(copiedRule);
-    }
-
-    else if (key === 'ctrl+alt+c') {
-      setSelectedRule(dotProp.get(rule, selectedNodeId));
-    }
-
-    else if (key === 'ctrl+x') {
-      setSelectedRule(dotProp.get(rule, selectedNodeId));
-      setRule(dotProp.set(rule, selectedNodeId, {}));
-    }
-
-    else if (Object.keys(selectedRule).length === 0) return;
-
-    else if (key === 'alt+r') {
-      setRule(dotProp.set(rule, selectedNodeId, selectedRule));
-    }
-
-    else if (key === 'ctrl+v') {
-
-      const ruleObj = dotProp.get(rule, selectedNodeId);
-      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
-        setRule(dotProp.set(rule, selectedNodeId.split("Rule")[0], selectedRule));
-      }
-      else if (ruleObj.rule === 'query' || ruleObj.rule === "remove" || ruleObj.rule === "force") {
-        const childId = `${selectedNodeId}.clause`;
-        const child = nodes.find((val) => val.id === childId);
-        if (child.group === 'add_rule') {
-          setRule(dotProp.set(rule, childId, selectedRule));
-        }
-      }
-      else if (ruleObj.rule === 'and' || ruleObj.rule === 'or') {
-        for (let i = 0; i <= ruleObj.clauses.length; i++) {
-          const childId = `${selectedNodeId}.clauses.${i}`;
-          const child = nodes.find((val) => val.id === childId);
-          if (child.group === 'add_rule') {
-            setRule(dotProp.set(rule, childId, selectedRule));
-            break;
-          }
-        }
-      }
-    }
-  };
-
-  const tab = localStorage.getItem('rules:editor')
-    ? localStorage.getItem('rules:editor')
-    : 'builder';
-
   const onTabChange = (tab) => {
     try {
       const parsedRule = JSON.parse(stringifiedRule);
@@ -254,16 +83,6 @@ const RulesEditor = (props) => {
       setRule(parsedRule);
     } catch (ex) {
       notify("error", "Error", ex.toString());
-    }
-  };
-
-  // Prettify JSON code
-  const prettify = () => {
-    try {
-      const obj = JSON.parse(stringifiedRule);
-      setStringifiedRule(JSON.stringify(obj, null, 2));
-    } catch (ex) {
-      notify('error', 'Error', ex.toString());
     }
   };
 
@@ -283,11 +102,6 @@ const RulesEditor = (props) => {
       }
     })
   }
-
-  // On drawer form submit
-  const onSubmit = (values) => {
-    setRule(dotProp.set(rule, selectedNodeId, values));
-  };
 
   // On save rule
   const onSaveChanges = (tab) => {
@@ -312,17 +126,15 @@ const RulesEditor = (props) => {
     console.log(rule);
   }
 
-
-  const menu = (
-    <Menu onClick={({ key }) => shortcutsHandler(key)}>
-      <Menu.Item key='ctrl+c'>Copy</Menu.Item>
-      <Menu.Item key='ctrl+alt+c'>Copy with children</Menu.Item>
-      <Menu.Item key='ctrl+x'>Cut</Menu.Item>
-      <Menu.Item key='ctrl+v'>Paste</Menu.Item>
-      <Menu.Item key='alt+r'>Replace</Menu.Item>
-      <Menu.Item key='del'>Delete</Menu.Item>
-    </Menu>
-  );
+  // Prettify JSON code
+  const prettify = () => {
+    try {
+      const obj = JSON.parse(stringifiedRule);
+      setStringifiedRule(JSON.stringify(obj, null, 2));
+    } catch (ex) {
+      notify('error', 'Error', ex.toString());
+    }
+  };
 
   return (
     <React.Fragment>
@@ -332,136 +144,54 @@ const RulesEditor = (props) => {
       />
       <Topbar />
       <div className='editor-page'>
-        {Object.keys(rule).length > 0 && (
-          <Tabs defaultActiveKey={tab} activeKey={localStorage.getItem("rules:editor")} onChange={onTabChange} animated={false} style={{ height: "100%" }}>
-            <Tabs.TabPane
-              tab='Builder'
-              key='builder'
-            >
-              <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-                <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-                  <span><b>Security rules</b> ({name})</span>
-                  <span>
-                    <Button
-                      onClick={() => openShortcutsDrawer(true)} style={{ marginRight: 16 }}
-                    >
-                      Shortcuts
-                    </Button>
-                    <DocumentationButton />
-                  </span>
+        {ruleExists && (
+          <Tabs defaultActiveKey={tab} onChange={onTabChange} style={{ height: "100%" }}>
+            <Tabs.TabPane tab='Builder' key='builder' >
+              <React.Fragment>
+                <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                  <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+                    <span><b>Security rules</b> ({name})</span>
+                    <span>
+                      <Button onClick={() => openShortcutsDrawer(true)} style={{ marginRight: 16 }}>Shortcuts</Button>
+                      <DocumentationButton />
+                    </span>
+                  </div>
+                  <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }}>
+                    <GraphEditor moduleName={moduleName} rule={rule} setRule={setRule} ruleName={name} params={params} />
+                  </div>
+                  <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }}>Save</Button>
                 </div>
-                <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)" }}>
-                  <Dropdown overlay={menu} trigger={['contextMenu']}>
-                    <KeyboardEventHandler
-                      handleKeys={[
-                        'ctrl+c',
-                        'ctrl+alt+c',
-                        'ctrl+v',
-                        'ctrl+h',
-                        'del',
-                        'ctrl+x',
-                        'alt+r',
-                      ]}
-                      onKeyEvent={shortcutsHandler}
-                    >
-                      <SecurityRulesGraph graph={graph} events={events} setNetwork={setNetwork} />
-                      {!localStorage.getItem('builderHelp:closed') && (
-                        <Alert
-                          description='You can double click on a rule block to configure it or right click on it for more options.'
-                          type='warning'
-                          closable
-                          style={{
-                            width: 400,
-                            position: 'absolute',
-                            right: 45,
-                            bottom: 100,
-                            background: '#F0F0F0',
-                            border: '1px solid #EEEEEE',
-                          }}
-                          afterClose={() =>
-                            localStorage.setItem('builderHelp:closed', true)
-                          }
-                        />
-                      )}
-                    </KeyboardEventHandler>
-                  </Dropdown>
-                  {drawer && selectedRule && (
-                    <ConfigureRule
-                      selectedRule={selectedRule}
-                      closeDrawer={() => setDrawer(false)}
-                      drawer={drawer}
-                      params={{ ...params }}
-                      onSubmit={onSubmit}
-                      selectedNodeId={selectedNodeId.split(".")[0]}
-                    />
-                  )}
-                </div>
-                <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }}>
-                  Save
-                </Button>
-              </div>
+              </React.Fragment>
             </Tabs.TabPane>
-            <Tabs.TabPane tab='JSON' key='JSON'>
-              <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <Tabs.TabPane tab='JSON' key='JSON' >
+              <React.Fragment>
                 <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
                   <span><b>Security rules</b> ({name})</span>
                   <span>
-                    <Button style={{ marginRight: 16 }} onClick={prettify}>
-                      Prettify
-                  </Button>
+                    <Button style={{ marginRight: 16 }} onClick={prettify}>Prettify</Button>
                     <DocumentationButton />
                   </span>
                 </div>
                 <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }} >
-                  <CodeMirror
-                    style={{ border: '1px solid #D9D9D9' }}
-                    value={stringifiedRule}
-                    options={{
-                      mode: { name: 'javascript', json: true },
-                      lineNumbers: true,
-                      styleActiveLine: true,
-                      matchBrackets: true,
-                      autoCloseBrackets: true,
-                      tabSize: 2,
-                      autofocus: true,
-                    }}
-                    onBeforeChange={(editor, data, value) => {
-                      setStringifiedRule(value);
-                    }}
-                  />
+                  <JSONEditor rule={stringifiedRule} setRule={setStringifiedRule} />
                 </div>
-                <Button type='primary' size="large" onClick={() => onSaveChanges("json")} block style={{ marginTop: 16 }}>
-                  Save
-              </Button>
-              </div>
+                <Button type='primary' size="large" onClick={() => onSaveChanges("json")} block style={{ marginTop: 16 }}>Save</Button>
+              </React.Fragment>
             </Tabs.TabPane>
           </Tabs>
         )}
-        {Object.keys(rule).length === 0 && (
-          <>
-            <div style={{ marginBottom: 24, marginTop: 32, padding: '0px 32px', display: "flex", justifyContent: "space-between" }}>
+        {!ruleExists && (
+          <div style={{ padding: 32 }}>
+            <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between" }}>
               <span><b>Security rules</b> ({name})</span>
-              <span>
-                <Button
-                  style={{ marginRight: 16 }}
-                  onClick={() => openShortcutsDrawer(true)}
-                >
-                  Shortcuts
-               </Button>
-                <DocumentationButton />
-              </span>
+              <DocumentationButton />
             </div>
             <div className='rabbit'>
               <img src={rabbit} alt='rabbit.png' />
-              <p style={{ margin: '30px 0px' }}>
-                No rules defined for this table yet. Default rules are being
-                applied.
-          </p>
-              <Button onClick={addDefaultSecurityRules} type='primary' size='large'>
-                Add security rules
-          </Button>
+              <p style={{ margin: '30px 0px' }}>No rules defined yet. Default rules are being applied.</p>
+              <Button onClick={addDefaultSecurityRules} type='primary' size='large'>Add security rules</Button>
             </div>
-          </>
+          </div>
         )}
         {shortcutsDrawer && <ShortcutsDrawer onClose={() => openShortcutsDrawer(false)} />}
       </div>

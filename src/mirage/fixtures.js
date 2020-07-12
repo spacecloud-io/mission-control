@@ -19,7 +19,14 @@ const projects = [
           "collections": {
             "users": {
               "isRealtimeEnabled": true,
-              "rules": {},
+              "rules": {
+                "create": {
+                  "rule": "allow"
+                },
+                "read": {
+                  "rule": "allow"
+                }
+              },
               "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
             },
             "default": {
