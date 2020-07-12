@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
@@ -7,15 +7,8 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag } from "antd";
 import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
-import { set, increment, decrement } from "automate-redux";
-import client from "../../client";
-import {
-  setProjectConfig,
-  notify,
-  getProjectConfig,
-  generateId
-} from "../../utils";
-import store from "../../store";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
+import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -23,34 +16,28 @@ const calculateRequestURL = (routeType, url) => {
 
 function Routing() {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [routeClicked, setRouteClicked] = useState("");
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes");
   }, [])
 
-  let routes = getProjectConfig(projects, projectID, "modules.ingressRoutes", []);
-  if (!routes) routes = []
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
-  const services = deployments.map(obj => {
-    const ports =
-      obj.tasks &&
-        obj.tasks[0] &&
-        obj.tasks[0].ports &&
-        obj.tasks[0].ports.length
-        ? obj.tasks[0].ports.map(port => port.port.toString())
-        : [];
-    return { name: obj.id, ports };
-  });
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadIngressRoutes(projectID)
+        .catch(ex => notify("error", "Error fetching ingress routes", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
+  // Global state
+  let routes = useSelector(state => getIngressRoutes(state))
+
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [routeClicked, setRouteClicked] = useState("");
+
+  // Derived state
   const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
     id: id,
     allowedHosts: source.hosts,
@@ -72,31 +59,9 @@ function Routing() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
-  //handlers
-  useEffect(() => {
-    const bc = new BroadcastChannel('builder');
-    bc.onmessage = ({data}) => {
-      if (data.module === 'routing') {
-        dispatch(increment("pendingRequests"));
-        const routes = getProjectConfig(store.getState().projects, projectID, `modules.ingressRoutes`)
-        const config = routes.find(val => val.id === data.id);
-        const newConfig = {...config, rule: data.rules[data.name]}
-       client.routing.setRoutingConfig(projectID, newConfig.id, newConfig)
-       .then(() => {
-         const newRoutes = routes.map(obj => obj.id === data.id ? newConfig : obj);
-         setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-         notify("success", "Success", "Rule successfully edited")
-       })
-       .catch(ex => notify("error", "Error", ex))
-       .finally(() => dispatch(decrement("pendingRequests")));
-
-      }
-    }
-  }, [])
-
+  // Handlers
   const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
       const config = {
         id: routeId ? routeId : generateId(),
         source: {
@@ -115,54 +80,36 @@ function Routing() {
           outputFormat: values.outputFormat
         }
       };
-      client.routing
-        .setRoutingConfig(projectID, config.id, config)
+      incrementPendingRequests()
+      saveIngressRoute(projectID, config.id, config)
         .then(() => {
-          if (routeId) {
-            const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          } else {
-            const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          }
+          notify("success", "Success", "Saved routing config successfully");
           resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", "Error saving routing config", ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleSecureClick = id => {
-    const route = getProjectConfig(projects, projectID, `modules.ingressRoutes`).find(val => val.id === id);
-    const url = route.source.url;
-    const rule = route.rule;
-    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=routing&name=${url}&id=${id}`, '_newtab')
-    w.data = {
-      rules: {
-        [url]: {
-          ...rule
-        }
-      }
-    };
+    const url = data.find(obj => obj.id === id).url;
+    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=routing&name=${url}&id=${id}`, '_newtab')
   }
 
   const handleRouteClick = id => {
-    dispatch(set("routing", routes));
     setRouteClicked(id);
     setModalVisible(true);
   };
 
   const handleDelete = id => {
-    dispatch(increment("pendingRequests"));
-    client.routing
-      .deleteRoutingConfig(projectID, id)
-      .then(() => {
-        const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.ingressRoutes`, newRoutes);
-        notify("success", "Success", "Deleted rule successfully");
-      })
+    incrementPendingRequests()
+    deleteIngressRoute(projectID, id)
+      .then(() => notify("success", "Success", "Deleted rule successfully"))
       .catch(ex => notify("error", "Error", ex.toString()))
-      .finally(() => dispatch(decrement("pendingRequests")));
+      .finally(() => decrementPendingRequests());
   };
 
   const handleModalCancel = () => {
@@ -257,7 +204,6 @@ function Routing() {
         {modalVisible && (
           <IngressRoutingModal
             handleSubmit={(values) => handleSubmit(routeClicked, values)}
-            services={services}
             initialValues={routeClickedInfo}
             handleCancel={handleModalCancel}
           />

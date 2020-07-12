@@ -2,24 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
-import jwt from 'jsonwebtoken';
 import client from '../../../client';
-import { SPACE_CLOUD_USER_ID } from '../../../constants';
 import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { Checkbox, Input, Tooltip, Button } from 'antd';
 import '../explorer.css';
-import { getProjectConfig } from '../../../utils';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-
-const generateAdminToken = secret => {
-  return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
-};
+import { getJWTSecret } from '../../../operations/projects';
+import { generateInternalToken } from '../../../utils';
 
 const Graphql = props => {
 
@@ -32,7 +27,7 @@ const Graphql = props => {
   }, [])
 
   const getToken = () => {
-    return props.useAdminToken ? generateAdminToken(props.secret) : props.userToken
+    return props.useInternalToken ? props.internalToken : props.userToken
   }
 
   const graphQLFetcher = (graphQLParams, projectId) => {
@@ -52,9 +47,9 @@ const Graphql = props => {
         <div style={{ padding: "32px 32px 0" }}>
           <div className='row'>
             <Checkbox
-              checked={props.useAdminToken}
+              checked={props.useInternalToken}
               onChange={e =>
-                props.setUseAdminToken(e.target.checked)
+                props.setUseInternalToken(e.target.checked)
               }
             >
               Bypass security rules
@@ -66,7 +61,7 @@ const Graphql = props => {
               <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
             </Tooltip>
           </div>
-          {!props.useAdminToken && (
+          {!props.useInternalToken && (
             <div className='row' style={{ display: "flex" }}>
               <Input.Password
                 placeholder='JWT Token'
@@ -104,25 +99,25 @@ const Graphql = props => {
 
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
   return {
-    secret: secrets.length > 0 ? secrets[0].secret : "",
+    secret: getJWTSecret(state, projectId),
     projectId: projectId,
     query: state.uiState.graphiql.query,
     variables: state.uiState.graphiql.variables,
-    useAdminToken: get(
+    useInternalToken: get(
       state,
-      'uiState.explorer.useAdminToken',
+      'uiState.explorer.useInternalToken',
       true
     ),
-    userToken: get(state, 'uiState.explorer.userToken')
+    userToken: get(state, 'uiState.explorer.userToken'),
+    internalToken: generateInternalToken(state, projectId) 
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setUseAdminToken: (useAdminToken) => {
-      dispatch(set('uiState.explorer.useAdminToken', useAdminToken))
+    setUseInternalToken: (useInternalToken) => {
+      dispatch(set('uiState.explorer.useInternalToken', useInternalToken))
     },
     setUserToken: (userToken) => {
       dispatch(set('uiState.explorer.userToken', userToken))

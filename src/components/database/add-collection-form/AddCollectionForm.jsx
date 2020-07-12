@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Switch, Input, Checkbox } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -8,13 +8,11 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, getDBTypeFromAlias } from '../../../utils';
+import "./add-collection.css"
 
-const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initialValues }) => {
   const [form] = Form.useForm();
   const [colName, setcolName] = useState('')
-
-  const dbType = getDBTypeFromAlias(projectId, selectedDB)
 
   const defaultSchema = `type ${(initialValues && initialValues.name) ? initialValues.name : ""}{
   ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
@@ -23,12 +21,9 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   const initialSchema = (initialValues && initialValues.schema) ? initialValues.schema : defaultSchema
 
   if (!initialValues) {
-    initialValues = {
-      isRealtimeEnabled: true
-    }
+    initialValues = {}
   }
 
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(initialValues.isRealtimeEnabled);
   const [schema, setSchema] = useState(initialSchema);
 
   const handleChangedValues = ({ name }) => { setcolName(name) };
@@ -41,21 +36,9 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
     }
   }, [colName])
 
-  const onSwitchChange = checked => {
-    setIsRealtimeEnabled(checked);
-  };
-
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      try {
-        handleSubmit(
-          values.name,
-          schema,
-          isRealtimeEnabled
-        );
-      } catch (ex) {
-        notify("error", "Error", ex.toString())
-      }
+      handleSubmit(values.name, schema).then(() => handleCancel())
     });
   };
 
@@ -63,13 +46,12 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
   return (
     <div>
       <Modal
-        className='edit-item-modal'
+        className='add-collection-modal'
         visible={true}
-        width={520}
+        width={720}
         okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
         onOk={handleSubmitClick}
-        confirmLoading={conformLoading}
         onCancel={handleCancel}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues}
@@ -94,17 +76,12 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
               className="input"
               placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
               disabled={editMode}
+              autoFocus={true}
             />
-          </Form.Item>
-
-          <FormItemLabel name="Realtime subscriptions" />
-          <Form.Item name="realtime">
-            <span className='realtime'>
-              Enabled: <Switch defaultChecked={initialValues.isRealtimeEnabled} onChange={onSwitchChange} />
-            </span>
           </Form.Item>
           <FormItemLabel name="Schema" />
           <CodeMirror
+            style={{ height: 420 }}
             value={schema}
             options={{
               mode: { name: "javascript", json: true },
@@ -112,8 +89,7 @@ const AddCollectionForm = ({ editMode, projectId, selectedDB, handleSubmit, hand
               styleActiveLine: true,
               matchBrackets: true,
               autoCloseBrackets: true,
-              tabSize: 2,
-              autofocus: true
+              tabSize: 2
             }}
             onBeforeChange={(editor, data, value) => {
               setSchema(value)

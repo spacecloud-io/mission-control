@@ -1,34 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
-import RuleEditor from "../../components/rule-editor/RuleEditor"
-import { get, set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig, getFileStorageProviderLabelFromStoreType } from '../../utils';
+import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge, Popconfirm, Table } from "antd"
-import client from "../../client"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import securitySvg from "../../assets/security.svg"
-import store from "../../store";
+import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
 
-const Rules = (props) => {
+const Rules = () => {
 	const history = useHistory();
 	// Router params
 	const { projectID } = useParams()
 
-	const dispatch = useDispatch()
-
 	// Global state
-	const projects = useSelector(state => state.projects)
-	const connected = useSelector(state => get(state, `extraConfig.${projectID}.fileStore.connected`))
+	const connected = useSelector(state => getFileStoreConnState(state))
+	const rules = useSelector(state => getFileStoreRules(state))
+	const config = useSelector(state => getFileStoreConfig(state))
 
 	// Component state
-	const [configurationModalVisible, setConfigurationModalVisible] = useState(false)
 	const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
 	let [selectedRuleName, setSelectedRuleName] = useState("")
 
@@ -36,8 +31,7 @@ const Rules = (props) => {
 		ReactGA.pageview("/projects/file-storage");
 	}, [])
 
-	// Derived properties
-	const { rules = [], ...config } = getProjectConfig(projects, projectID, "modules.fileStore", {})
+	// Derived state
 	const { enabled, ...connConfig } = config
 	const noOfRules = rules.length;
 	const rulesMap = rules.reduce((prev, curr) => {
@@ -55,143 +49,90 @@ const Rules = (props) => {
 		}
 	}, [selectedRuleName, noOfRules])
 
-  // Handlers
-  useEffect(() => {
-    const bc = new BroadcastChannel('builder');
-    bc.onmessage = ({data}) => {
-      if (data.module === "file-storage") {
-        const rules = getProjectConfig(store.getState().projects, projectID, "modules.fileStore.rules", {});
-        const {prefix} = rules.find(val => val.id === data.name);
-        client.fileStore.setRule(projectID, data.name, {prefix, rule: {...data.rules}}).then(() => {
-          const newRules = rules.map(r => {
-            if (r.id !== data.name) return r;
-            return {id: data.name, prefix, rule: {...data.rules}}
-          })
-          setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-          notify("success", "Success", "Saved rule successfully")
-        })
-        .catch(ex => notify("error", "Error", ex))
-        .finally(() => dispatch(decrement("pendingRequests")))
-      }
-    }
-  }, [])
-  
+	// Handlers
 	const handleFileConfig = () => {
 		history.push(`/mission-control/projects/${projectID}/file-storage/configure`);
 	}
 
 	const handleConfig = (config) => {
-		dispatch(increment("pendingRequests"))
 		const newConfig = { enabled: true, ...config }
-		client.fileStore.setConfig(projectID, newConfig).then(() => {
-			const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-			setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-			notify("success", "Success", "Configured file storage successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
-  }
-
-	const handleSaveRule = (rule) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, selectedRuleName, rule).then(() => {
-			const newRules = rules.map(r => {
-				if (r.id !== selectedRuleName) return rule
-				return Object.assign({}, r, rule)
-			})
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Saved rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+		incrementPendingRequests()
+		saveFileStoreConfig(projectID, newConfig)
+			.then(() => notify("success", "Success", "Configured file storage successfully"))
+			.catch(ex => notify("error", "Error configuring file storage", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
-	const handleAddRule = (ruleName, prefix, rule) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.setRule(projectID, ruleName, {prefix, ...rule}).then(() => {
-			const newRules = [...rules, { id: ruleName, prefix, ...rule }]
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Added rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+	const handleAddRule = (ruleName, rule) => {
+		incrementPendingRequests()
+		saveFileStoreRule(projectID, ruleName, rule)
+			.then(() => notify("success", "Success", "Added rule successfully"))
+			.catch(ex => notify("error", "Error adding rule", ex))
+			.finally(() => decrementPendingRequests())
 	}
 
 	const handleDeleteRule = (ruleName) => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.deleteRule(projectID, ruleName).then(() => {
-			const newRules = rules.filter(r => r.id !== ruleName)
-			setProjectConfig(projectID, "modules.fileStore.rules", newRules)
-			notify("success", "Success", "Deleted rule successfully")
-		})
-			.catch(ex => notify("error", "Error", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
-  }
-  
-  const handleSecureClick = (ruleName) => {
-    const {id, rule} = rules.find(val => val.id === ruleName);
-    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=file-storage&name=${id}`, '_newtab')
-    w.data = {
-      rules: {
-        ...rule
-      }
-    };
-  }
+		incrementPendingRequests()
+		deleteFileStoreRule(projectID, ruleName)
+			.then(() => notify("success", "Success", "Deleted rule successfully"))
+			.catch(ex => notify("error", "Error deleting rule", ex))
+			.finally(() => decrementPendingRequests())
+	}
 
-	const fetchConnState = () => {
-		dispatch(increment("pendingRequests"))
-		client.fileStore.getConnectionState(projectID).then(connected => {
-			dispatch(set(`extraConfig.${projectID}.fileStore.connected`, connected))
-		})
-			.catch(ex => notify("error", "Error fetching connection status", ex))
-			.finally(() => dispatch(decrement("pendingRequests")))
+	const handleSecureClick = (ruleName) => {
+		const { id, rule } = rules.find(val => val.id === ruleName);
+		const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=file-storage&name=${id}`, '_newtab')
+		w.data = {
+			rules: {
+				...rule
+			}
+		};
 	}
 
 	useEffect(() => {
-		fetchConnState()
+		incrementPendingRequests()
+		loadFileStoreConnState(projectID)
+			.catch(ex => notify("error", "Error fetching connection status", ex))
+			.finally(() => decrementPendingRequests())
 	}, [])
 
-	const EmptyState = () => {
-		return <div style={{ marginTop: 24 }}>
-			<div className="panel">
-				<img src={securitySvg} width="240px" />
-				<p className="panel__description" style={{ marginTop: 32, marginBottom: 0 }}>Security rules help you restrict access to your files. <a href="https://docs.spaceuptech.com/storage/filestore/securing-apis/">View Docs.</a></p>
-				<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setAddRuleModalVisible(true)}>Add your first rule</Button>
-			</div>
-		</div>
-  }
-  
-  const columns = [
-    {
-      title: 'Rule name',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Prefix',
-      dataIndex: 'prefix',
-      key: 'prefix',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      className: "column-actions",
-      render: (record) => {
-        return (
-          <span>
-            <a onClick={() => handleSecureClick(record.id)}>Secure</a>
-            <Popconfirm
-              title="Are you sure you want to delete this rule?"
-              onConfirm={() => handleDeleteRule(record.id)}
-            >
-              <a style={{ color: "red" }}>Delete</a>
-            </Popconfirm>
-          </span>
-        )
-      }
-    },
-  ]
+	useEffect(() => {
+		incrementPendingRequests()
+		loadFileStoreRules(projectID)
+			.catch(ex => notify("error", "Error fetching file storage rules", ex))
+			.finally(() => decrementPendingRequests())
+	}, [])
+
+	const columns = [
+		{
+			title: 'Rule name',
+			dataIndex: 'id',
+			key: 'id',
+		},
+		{
+			title: 'Prefix',
+			dataIndex: 'prefix',
+			key: 'prefix',
+		},
+		{
+			title: 'Actions',
+			key: 'actions',
+			className: "column-actions",
+			render: (record) => {
+				return (
+					<span>
+						<a onClick={() => handleSecureClick(record.id)}>Secure</a>
+						<Popconfirm
+							title="Are you sure you want to delete this rule?"
+							onConfirm={() => handleDeleteRule(record.id)}
+						>
+							<a style={{ color: "red" }}>Delete</a>
+						</Popconfirm>
+					</span>
+				)
+			}
+		},
+	]
 	return (
 		<div className="file-storage">
 			<Topbar showProjectSelector />
@@ -221,14 +162,13 @@ const Rules = (props) => {
 							<p className="empty-state__action-text">Make sure your connection details are correct</p>
 							<div className="empty-state__action-bar">
 								<Button className="action-rounded" type="default" onClick={() => handleConfig(connConfig)}>Reconnect</Button>
-								<Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={() => setConfigurationModalVisible(true)}>Edit Connection</Button>
+								<Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={handleFileConfig}>Edit Connection</Button>
 							</div>
 						</div>}
 						{connected && <React.Fragment>
 							{noOfRules > 0 && <React.Fragment>
 								<h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
 							</React.Fragment>}
-
 							<div style={{ marginTop: noOfRules ? 0 : 24 }}>
 								<Table dataSource={rules} columns={columns} />
 							</div>

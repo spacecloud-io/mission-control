@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { LeftOutlined } from '@ant-design/icons';
-import { set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
-import { Button, Card, Input, Radio, Form, Alert, Cascader, Row, Col } from "antd"
-import client from "../../client"
+import { Button, Card, Input, Radio, Form, Alert, Cascader, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
+import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
+import { getSecrets, loadSecrets } from '../../operations/secrets';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -20,12 +20,10 @@ const FileStorageConfig = () => {
   // Router params
   const { projectID } = useParams()
 
-  const dispatch = useDispatch()
-
   // Global state
-  const projects = useSelector(state => state.projects)
+  const { storeType, bucket, endpoint, conn, secret } = useSelector(state => getFileStoreConfig(state))
+  const secrets = useSelector(state => getSecrets(state))
 
-  // Secrets
   const getDataKeys = (fileSecret) => {
     const fileChildren = Object.keys(fileSecret.data)
       .map(keys => {
@@ -34,8 +32,7 @@ const FileStorageConfig = () => {
     return fileChildren;
   }
 
-  const fileSecrets = getProjectConfig(projects, projectID, "modules.secrets", [])
-    .filter(secret => secret.type === 'file')
+  const fileSecrets = secrets.filter(secret => secret.type === 'file')
     .map(fileSecret => {
       return ({ "value": fileSecret.id, "label": fileSecret.id, "children": getDataKeys(fileSecret) })
     });
@@ -44,7 +41,14 @@ const FileStorageConfig = () => {
     ReactGA.pageview("/projects/file-storage/configure");
   }, [])
 
-  const { storeType, bucket, endpoint, conn, secret } = getProjectConfig(projects, projectID, "modules.fileStore", {})
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
   let initialSecretValue = ""
   if (secret) {
@@ -76,20 +80,18 @@ const FileStorageConfig = () => {
       values.secret = `secrets.${values.secret[0]}.${values.secret[1]}`
     }
     delete values["credentials"]
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     const newConfig = { enabled: true, ...values }
-    client.fileStore.setConfig(projectID, newConfig).then(() => {
-      const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-      setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-      dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-      notify("success", "Success", "Configured file storage successfully")
-    })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
-    form.resetFields();
-    history.goBack();
-  }
 
+    saveFileStoreConfig(projectID, newConfig)
+      .then(() => {
+        notify("success", "Success", "Configured file storage successfully")
+        form.resetFields();
+        history.goBack();
+      })
+      .catch(ex => notify("error", "Error configuring file storage", ex))
+      .finally(() => decrementPendingRequests())
+  }
 
   return (
     <div className="file-storage">
@@ -218,7 +220,6 @@ const FileStorageConfig = () => {
             </Card>
           </Col>
         </div>
-
       </div>
     </div >
   )

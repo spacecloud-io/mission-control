@@ -21,12 +21,13 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import ConditionalFormBlock from '../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
-import { notify, getProjectConfig, dbIcons } from '../../utils';
-import {generateSchemaAST} from '../../graphql';
+import { notify, dbIcons } from '../../utils';
+import { generateSchemaAST } from '../../graphql';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
+import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../operations/database';
 
 const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
 const ConfigureRule = (props) => {
@@ -46,8 +47,8 @@ const ConfigureRule = (props) => {
 
   // Derived properties
   const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
-  const dbModuleFetch = getProjectConfig(projects, projectID, 'modules.db', {});
-  const dbList = Object.entries(dbModuleFetch).map(([alias, obj]) => {
+  const dbConfigs = useSelector(state => getDbConfigs(state))
+  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias;
     return {
       alias: alias,
@@ -55,10 +56,8 @@ const ConfigureRule = (props) => {
       svgIconSet: dbIcons(projects, projectID, alias),
     };
   });
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {});
-  const trackedCollections = Object.keys(collections);
-  const data = trackedCollections.filter((name) => name !== 'default' && name !== 'event_logs' && name !== 'invocation_logs');
-  const collectionSchemaString = useSelector(state => getProjectConfig(state.projects, projectID, `modules.db.${props.params.db}.collections.${props.params.name}.schema`))
+  const data = useSelector(state => getTrackedCollections(state, props.params.db))
+  const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.params.db, props.params.name))
 
   // Handlers
   const handleSelectDatabase = (value) => setSelectedDb(value);
@@ -101,7 +100,7 @@ const ConfigureRule = (props) => {
     }
     else if (values.rule === 'force') {
       // Datatype
-     if (values.type === 'number') {
+      if (values.type === 'number') {
         if (/\d/.test(values.value)) {
           values.value = parseInt(values.value);
         } else {
@@ -126,7 +125,7 @@ const ConfigureRule = (props) => {
     else if (values.rule === 'query') {
       try {
         values.find = JSON.parse(findQuery);
-      } catch(ex) {
+      } catch (ex) {
         notify("error", "Error", ex.toString())
         return;
       }
@@ -178,16 +177,16 @@ const ConfigureRule = (props) => {
         delete autoCompleteOptions.args.doc;
         delete autoCompleteOptions.args.update;
         break;
-      
+
       case "update":
         delete autoCompleteOptions.args.doc;
         break;
-      
+
       case "delete":
         delete autoCompleteOptions.args.doc;
         delete autoCompleteOptions.args.update;
         break;
-      
+
       default:
         break;
     }
@@ -253,7 +252,7 @@ const ConfigureRule = (props) => {
           </Form.Item>
           <FormItemLabel name='First operand' />
           <Form.Item name='f1'>
-            <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions}/>
+            <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions} />
           </Form.Item>
           <FormItemLabel name='Evaluation type' />
           <Form.Item name='eval'>
@@ -284,7 +283,7 @@ const ConfigureRule = (props) => {
           </ConditionalFormBlock>
           <FormItemLabel name='Second operand' />
           <Form.Item name='f2'>
-            <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions}/>
+            <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
           </Form.Item>
           <Alert
             description={
@@ -321,7 +320,7 @@ const ConfigureRule = (props) => {
                             { required: true, message: 'Please enter column!' },
                           ]}
                         >
-                          <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions}/>
+                          <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
                         </Form.Item>
                       </Col>
                       <Col span={2}>
@@ -360,9 +359,9 @@ const ConfigureRule = (props) => {
           dependency="rule"
           condition={() => form.getFieldValue('rule') === 'force'}
         >
-          <FormItemLabel name="Field"/>
+          <FormItemLabel name="Field" />
           <FormItem name="field">
-            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions}/>
+            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
           </FormItem>
           <FormItemLabel name="Datatype" />
           <FormItem name="type">
@@ -372,18 +371,18 @@ const ConfigureRule = (props) => {
               <Select.Option value="bool">Bool</Select.Option>
             </Select>
           </FormItem>
-          <FormItemLabel name="Value"/>
+          <FormItemLabel name="Value" />
           <FormItem name="value">
-            <Input placeholder="Value"/>
+            <Input placeholder="Value" />
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
           condition={() => form.getFieldValue('rule') === "webhook"}
         >
-          <FormItemLabel name="URL"/>
+          <FormItemLabel name="URL" />
           <FormItem name="url">
-            <Input placeholder="URL"/>
+            <Input placeholder="URL" />
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
@@ -457,7 +456,7 @@ const ConfigureRule = (props) => {
         >
           <FormItemLabel name='Error message' />
           <Form.Item name='error'>
-            <Input placeholder="Error message"/>
+            <Input placeholder="Error message" />
           </Form.Item>
         </ConditionalFormBlock>
         <span style={{ float: 'right' }}>

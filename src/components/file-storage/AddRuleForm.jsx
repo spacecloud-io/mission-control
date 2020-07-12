@@ -9,6 +9,7 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import "./add-rule-modal.css"
 import { notify } from "../../utils";
 import { defaultFileRootPathRule } from "../../constants";
 
@@ -31,9 +32,11 @@ const AddRuleForm = (props) => {
 
   return (
     <Modal
+      className="add-filestore-rule-modal"
       title="Add rule"
       visible={true}
       okText="Add"
+      width={720}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >

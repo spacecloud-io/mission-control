@@ -3,7 +3,21 @@ class Secrets {
     this.client = client
   }
 
-  addSecret(projectId, secretConfig) {
+  fetchSecrets(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/runner/${projectId}/secrets`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  setSecret(projectId, secretConfig) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/secrets/${secretConfig.id}`, secretConfig)
         .then(({ status, data }) => {
@@ -59,9 +73,9 @@ class Secrets {
     })
   }
 
-  setRootPath(projectId, secretName, rootpath) {
+  setRootPath(projectId, secretName, rootPath) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/runner/${projectId}/secrets/${secretName}/root-path`, rootpath)
+      this.client.postJSON(`/v1/runner/${projectId}/secrets/${secretName}/root-path`, { rootPath })
         .then(({ status, data }) => {
           if (status !== 200) {
             reject(data.error)

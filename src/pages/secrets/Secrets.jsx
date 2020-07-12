@@ -1,63 +1,55 @@
 import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import security from "../../assets/security.svg";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Empty } from "antd";
 import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
-import { getSecretType, getProjectConfig, setProjectConfig } from "../../utils";
+import { getSecretType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { increment, decrement } from "automate-redux";
-import client from "../../client";
+import { useSelector } from "react-redux";
 import { notify } from "../../utils";
+import { saveSecret, deleteSecret, getSecrets } from "../../operations/secrets";
 
 const Secrets = () => {
   const history = useHistory();
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const secrets = getProjectConfig(projects, projectID, "modules.secrets", []);
+
+  // Global state
+  const secrets = useSelector(state => getSecrets(state))
+
+  // Component state
   const [secretModalVisible, setSecretModalVisible] = useState(false);
-  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(
-    false
-  );
+  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(false);
   const [secretIdClicked, setSecretIdClicked] = useState("");
 
-
   useEffect(() => {
-		ReactGA.pageview("/projects/secrets");
+    ReactGA.pageview("/projects/secrets");
   }, [])
 
+  // Handlers
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
-      client.secrets
-        .addSecret(projectID, secretConfig)
+      incrementPendingRequests()
+      saveSecret(projectID, secretConfig)
         .then(() => {
-          const newSecrets = [...secrets.filter(obj => obj.id !== secretConfig.id), secretConfig];
-          setProjectConfig(projectID, "modules.secrets", newSecrets);
-          resolve();
+          notify("success", "Success", "Saved secret successfully")
+          resolve()
         })
         .catch(ex => {
-          notify("error", "Error adding secret", ex);
+          notify("error", "Error saving secret", ex);
           reject();
         })
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDeleteSecret = secretId => {
-    dispatch(increment("pendingRequests"));
-    client.secrets
-      .deleteSecret(projectID, secretId)
-      .then(() => {
-        const newSecrets = secrets.filter(obj => obj.id !== secretId);
-        setProjectConfig(projectID, "modules.secrets", newSecrets);
-      })
-      .catch(ex => notify("error", "Error adding secret", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+    incrementPendingRequests()
+    deleteSecret(projectID, secretId)
+      .then(() => notify("success", "Success", "Deleted secret successfully"))
+      .catch(ex => notify("error", "Error deleting secret", ex))
+      .finally(() => decrementPendingRequests());
   };
 
   const handleSecretView = secretId => {
@@ -72,6 +64,10 @@ const Secrets = () => {
   const handleDockerModalCancel = () => {
     setDockerSecretModalVisible(false);
     setSecretIdClicked("");
+  };
+
+  const handleSecretModalCancel = () => {
+    setSecretModalVisible(false);
   };
 
   const columns = [
@@ -118,30 +114,6 @@ const Secrets = () => {
     }
   ];
 
-  const EmptyState = () => {
-    return (
-      <div style={{ marginTop: 24 }}>
-        <div className="rule-editor">
-          <div className="panel">
-            <img src={security} style={{ maxWidth: "500px" }} />
-            <p
-              className="panel__description"
-              style={{ marginTop: 32, marginBottom: 0 }}
-            >
-              Store private information required by your deployments in a
-              secure, encrypted format. Space Cloud takes care of all encryption
-              and decryption.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const handleSecretModalCancel = () => {
-    setSecretModalVisible(false);
-  };
-
   return (
     <div>
       <Topbar showProjectSelector />
@@ -154,10 +126,12 @@ const Secrets = () => {
               Add
             </Button>
           </h3>
-          {secrets.length > 0 && (
-            <Table columns={columns} dataSource={secrets} bordered={true} onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }} />
-          )}
-          {secrets.length === 0 && <EmptyState />}
+          <Table
+            columns={columns}
+            dataSource={secrets}
+            bordered={true}
+            onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }}
+            locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No secrets created yet. Add a secret' /> }} />
           {secretModalVisible && (
             <AddSecret
               handleCancel={handleSecretModalCancel}

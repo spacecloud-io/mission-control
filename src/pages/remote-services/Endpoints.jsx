@@ -1,9 +1,7 @@
 import React, { useEffect } from "react"
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
-import { increment, decrement } from "automate-redux"
-import client from "../../client"
-import { getProjectConfig, setProjectConfig, notify } from "../../utils"
+import { useSelector } from "react-redux"
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import ReactGA from 'react-ga';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm } from "antd";
@@ -11,7 +9,7 @@ import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
 import { endpointTypes } from "../../constants"
-import store from "../../store";
+import { deleteRemoteServiceEndpoint, getRemoteServiceEndpoints } from "../../operations/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -41,7 +39,6 @@ const ServiceTopBar = ({ projectID, serviceName }) => {
 const RemoteService = () => {
   // Router params
   const { projectID, serviceName } = useParams()
-  const dispatch = useDispatch()
 
   const history = useHistory()
 
@@ -50,54 +47,23 @@ const RemoteService = () => {
   }, [])
 
   // Global state
-  const projects = useSelector(state => state.projects)
+  const endpoints = useSelector(state => getRemoteServiceEndpoints(state, serviceName))
 
   // Derived state
-  const endpoints = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints`, {})
   const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => ({ name, method, path, kind }))
   const noOfEndpoints = endpointsTableData.length
 
   const handleDelete = (name) => {
-    const serviceConfig = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
-    const newEndpoints = Object.assign({}, endpoints)
-    delete newEndpoints[name]
-    const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
-    dispatch(increment("pendingRequests"))
-    client.remoteServices.setServiceConfig(projectID, serviceName, newServiceConfig).then(() => {
-      setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, newServiceConfig)
-      notify("success", "Success", "Removed endpoint successfully")
-    }).catch(ex => notify("error", "Error", ex)).finally(() => dispatch(decrement("pendingRequests")))
+    incrementPendingRequests()
+    deleteRemoteServiceEndpoint(projectID, serviceName, name)
+      .then(() => notify("success", "Success", "Removed endpoint successfully"))
+      .catch((ex) => notify("error", "Error removing endpoint", ex))
+      .finally(() => decrementPendingRequests())
   }
 
-  // handlers
-  useEffect(() => {
-    const bc = new BroadcastChannel('builder');
-    bc.onmessage = ({data}) => {
-      if (data.module === 'remote-service') {
-        const serviceConfig = getProjectConfig(store.getState().projects, projectID, `modules.remoteServices.externalServices.${serviceName}`)
-        serviceConfig.endpoints[data.name].rule = data.rules[data.name];
-        dispatch(increment("pendingRequests"))
-        client.remoteServices.setServiceConfig(projectID, serviceName, serviceConfig)
-          .then(() => {
-            setProjectConfig(projectID, `modules.remoteServices.externalServices.${serviceName}`, serviceConfig)
-            notify("success", "Success", `Rule successfully edited`)
-          })
-          .catch(ex => notify("error", "Error", ex))
-          .finally(() => dispatch(decrement("pendingRequests")))
-      }
-    }
-  }, [])
-  
+  // Handlers
   const handleSecureClick = (endpoint) => {
-    const rule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${endpoint}.rule`)
-    const w = window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}&serviceName=${serviceName}`, '_newtab')
-    w.data = {
-      rules: {
-        [endpoint]: {
-          ...rule
-        }
-      }
-    };
+    window.open(`/mission-control/projects/${projectID}/security-rules/editor?moduleName=remote-service&name=${endpoint}&serviceName=${serviceName}`, '_newtab')
   }
 
   const tableColumns = [

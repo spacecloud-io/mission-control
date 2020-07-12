@@ -3,7 +3,7 @@ import './rules-editor.css';
 import Topbar from '../../components/topbar/Topbar';
 import { Tabs, Button } from 'antd';
 
-import { notify, getProjectConfig } from '../../utils';
+import { notify } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ShortcutsDrawer from "../../components/security-rules/shortcuts-drawer/ShortcutsDrawer"
@@ -43,37 +43,37 @@ const RulesEditor = (props) => {
   }, []);
 
   useEffect(() => {
-    if (projects.length > 0 && !window.data) {
-      switch (moduleName) {
-        case "database":
-          setRule(getProjectConfig(projects, projectID, `modules.db.${db}.collections.${name}.rules`, {}))
-          break;
-        case "prepared-queries":
-          const preparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${db}.preparedQueries.${name}.rule`, {});
-          setRule({ [name]: { ...preparedQueryRule } })
-          break;
-        case "file-storage":
-          const fileStoreRules = getProjectConfig(projects, projectID, `modules.fileStore.rules`, []);
-          setRule(fileStoreRules.find(val => val.id === name).rule)
-          break;
-        case "remote-service":
-          const endpointRule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${name}.rule`, {});
-          setRule({ [name]: { ...endpointRule } })
-          break;
-        case "routing":
-          const routes = getProjectConfig(projects, projectID, `modules.ingressRoutes`, [])
-          const routeRule = routes.find(val => val.id === id).rule;
-          setRule({ [name]: { ...routeRule } })
-          break;
-        case "eventing":
-          const eventingRule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.${name}`)
-          if (!eventingRule) return;
-          setRule({ [name]: { ...eventingRule } })
-          break;
-        default:
-          break;
-      }
-    }
+    // if (projects.length > 0 && !window.data) {
+    //   switch (moduleName) {
+    //     case "database":
+    //       setRule(getProjectConfig(projects, projectID, `modules.db.${db}.collections.${name}.rules`, {}))
+    //       break;
+    //     case "prepared-queries":
+    //       const preparedQueryRule = getProjectConfig(projects, projectID, `modules.db.${db}.preparedQueries.${name}.rule`, {});
+    //       setRule({ [name]: { ...preparedQueryRule } })
+    //       break;
+    //     case "file-storage":
+    //       const fileStoreRules = getProjectConfig(projects, projectID, `modules.fileStore.rules`, []);
+    //       setRule(fileStoreRules.find(val => val.id === name).rule)
+    //       break;
+    //     case "remote-service":
+    //       const endpointRule = getProjectConfig(projects, projectID, `modules.remoteServices.externalServices.${serviceName}.endpoints.${name}.rule`, {});
+    //       setRule({ [name]: { ...endpointRule } })
+    //       break;
+    //     case "routing":
+    //       const routes = getProjectConfig(projects, projectID, `modules.ingressRoutes`, [])
+    //       const routeRule = routes.find(val => val.id === id).rule;
+    //       setRule({ [name]: { ...routeRule } })
+    //       break;
+    //     case "eventing":
+    //       const eventingRule = getProjectConfig(projects, projectID, `modules.eventing.securityRules.${name}`)
+    //       if (!eventingRule) return;
+    //       setRule({ [name]: { ...eventingRule } })
+    //       break;
+    //     default:
+    //       break;
+    //   }
+    // }
   }, [projects])
 
   const onTabChange = (tab) => {
