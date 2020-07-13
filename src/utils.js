@@ -220,7 +220,7 @@ export const openProject = (projectId) => {
 
 export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
   const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
-  window.open(url, '_newtab')
+  window.open(url, '_blank')
 }
 
 export const fetchBillingDetails = () => {
