@@ -73,7 +73,7 @@ export const deleteRemoteServiceEndpoint = (projectId, serviceId, endpointId) =>
 export const getRemoteServices = (state) => get(state, "remoteServices", {})
 export const getRemoteServiceConfig = (state, serviceId) => get(state, `remoteServices.${serviceId}`, {})
 export const getRemoteServiceURL = (state, serviceId) => get(state, `remoteServices.${serviceId}.url`, "")
-export const getRemoteEndpointSecurityRule = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.${endpointId}.rule`, {})
+export const getRemoteEndpointSecurityRule = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.endpoints.${endpointId}.rule`, {})
 export const getRemoteServiceEndpoints = (state, serviceId) => get(state, `remoteServices.${serviceId}.endpoints`, {})
 export const getRemoteServiceEndpointConfig = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.endpoints.${endpointId}`, {})
 export const setRemoteEndpointRule = (serviceId, endpointId, rule) => store.dispatch(set(`remoteServices.${serviceId}.endpoints.${endpointId}.rule`, rule))

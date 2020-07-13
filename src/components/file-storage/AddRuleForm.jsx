@@ -40,14 +40,14 @@ const AddRuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{prefix: "/"}}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} >
         <FormItemLabel name="Name" />
         <Form.Item name="name" rules={[{ required: true, message: 'Please provide a name to your rule!' }]}>
           <Input placeholder="Example: profile-files" />
         </Form.Item>
         <FormItemLabel name="Prefix" />
         <Form.Item name="prefix">
-          <Input />
+          <Input placeholder="File path prefix. Example: /posts" />
         </Form.Item>
         <FormItemLabel name="Rule" />
         <CodeMirror

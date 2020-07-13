@@ -68,7 +68,10 @@ const options = {
     font: {
       size: 16,
     },
-    margin: 16
+    margin: 16,
+    widthConstraint: {
+      maximum: 150
+    }
   },
   edges: {
     arrows: {
@@ -92,6 +95,7 @@ const options = {
       sortMethod: 'directed',
       direction: 'LR',
       nodeSpacing: 120,
+      levelSeparation: 200
     },
   },
   interaction: {

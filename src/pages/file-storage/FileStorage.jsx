@@ -55,9 +55,9 @@ const Rules = () => {
 			.finally(() => decrementPendingRequests())
 	}
 
-	const handleAddRule = (ruleName, rule) => {
+	const handleAddRule = (ruleName, prefix, securityRule) => {
 		incrementPendingRequests()
-		saveFileStoreRule(projectID, ruleName, rule)
+		saveFileStoreRule(projectID, ruleName, { prefix: prefix, rule: securityRule })
 			.then(() => notify("success", "Success", "Added rule successfully"))
 			.catch(ex => notify("error", "Error adding rule", ex))
 			.finally(() => decrementPendingRequests())

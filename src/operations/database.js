@@ -424,6 +424,7 @@ export const getCollectionSecurityRule = (state, dbAliasName, colName) => get(st
 export const getPreparedQuerySecurityRule = (state, dbAliasName, id) => get(state, `dbPreparedQueries.${dbAliasName}.${id}.rule`, {})
 export const isPreparedQueriesSupported = (state, dbAliasName) => {
   const dbType = getDbType(state, dbAliasName)
+  console.log("dbtype",dbAliasName,  dbType)
   return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
 }
 export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))

@@ -27,6 +27,7 @@ const Settings = () => {
   const eventingDB = useSelector(state => getEventingDbAliasName(state))
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
   const type = useSelector(state => getDbType(state, selectedDB))
+  const preparedQueriesSupported = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
 
   // Derived state
   const canDisableDB = eventingDB !== selectedDB
@@ -136,7 +137,7 @@ const Settings = () => {
             <Divider style={{ margin: "16px 0px" }} />
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
-            {isPreparedQueriesSupported(selectedDB) &&
+            {preparedQueriesSupported &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
                 <FormItemLabel name="Default rules for prepared queries" description="Not configured yet. Used when a prepared query doesn’t have a rule specified." />
