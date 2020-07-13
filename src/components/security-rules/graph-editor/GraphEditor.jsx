@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Dropdown, Alert } from "antd"
 import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
@@ -12,6 +12,17 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
   const [network, setNetwork] = useState();
+
+  useEffect(() => {
+    function handleResize() {
+      if (network) {
+        network.redraw()
+        network.fit()
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [network])
 
   const nodes = [];
   const edges = [];
