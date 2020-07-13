@@ -23,6 +23,34 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
+function isJson(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+export function copyObjectToClipboard(obj) {
+  return navigator.clipboard.writeText(JSON.stringify(obj))
+}
+
+export function getCopiedObjectFromClipboard() {
+  return new Promise((resolve, reject) => {
+    navigator.clipboard.readText()
+      .then(data => {
+        const isValueJson = isJson(data)
+        if (!isValueJson) {
+          reject("Copied object is not a valid JSON")
+          return
+        }
+        resolve(JSON.parse(data))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export function upsertArray(array, predicate, getItem) {
   const index = array.findIndex(predicate)
   return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]

@@ -1,60 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Dropdown, Alert } from "antd"
+import { Menu, Dropdown, Alert, message } from "antd"
 import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ConfigureRule from '../configure-rule/ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
-import { securityRuleGroups } from "../../../constants"
-import { notify } from "../../../utils";
-const { DB_COLLECTIONS, FILESTORE } = securityRuleGroups
+import { copyObjectToClipboard, getCopiedObjectFromClipboard } from "../../../utils";
+import generateGraph from "./generateGraph";
 
-const mergeGraph = (graph1, graph2) => {
-  const nodes = [...graph1.nodes, ...graph2.nodes]
-  const edges = [...graph1.edges, ...graph2.edges]
-  return { nodes, edges }
-}
+const getStrippedKey = (ruleKey) => ruleKey.replace("rule:", "").replace("root:", "").replace("root.", "")
 
-const convertRuleToGraph = (rule, id, parentId) => {
-  let graph = { nodes: [], edges: [] }
-
-  const isRootBlock = !parentId.includes(".")
-  if (!rule || !rule.rule) {
-    if (isRootBlock) {
-      // Add a block to add rule
-      graph.nodes.push({ id: id, label: "+ Add rule", group: "add_rule" })
-      graph.edges.push({ from: parentId, to: id })
-    }
-    return graph
+const getDoubleClickedRuleObject = (rule, ruleKey) => {
+  if (ruleKey === "rule:root") {
+    return rule
   }
 
-  graph.nodes.push({ id: id, label: rule.rule, group: "rule" })
-  graph.edges.push({ from: parentId, to: id })
-
-  if (rule.rule === "and" || rule.rule === "or") {
-    if (rule.clauses) {
-      rule.clauses.forEach((clause, index) => {
-        graph = mergeGraph(graph, convertRuleToGraph(clause, `${id}.clauses.${index}`, id))
-      })
-    }
-    const len = rule.clauses ? rule.clauses.length : 0
-    graph.nodes.push({ id: `${id}.clauses.${len}`, label: "+ Add clause", group: "add_rule" })
-    graph.edges.push({ from: id, to: `${id}.clauses.${len}` })
-  }
-  if (rule.rule === "query" || rule.rule === "force" || rule.rule === "remove") {
-    if (rule.clause && rule.clause.rule) {
-      graph = mergeGraph(graph, convertRuleToGraph(rule.clause, `${id}.clause`, id))
-    } else {
-      graph.nodes.push({ id: `${id}.clause`, label: "Set clause", group: "add_rule" })
-      graph.edges.push({ from: id, to: `${id}.clause` })
-    }
-  }
-  return graph
+  return dotProp.get(rule, getStrippedKey(ruleKey), {})
 }
 
 function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
-  const [drawer, setDrawer] = useState(false);
+  const { ruleType } = ruleMetaData
+
+  // Component state
   const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
+  const [doubleClickedNodeId, setDoubleClickedNodeId] = useState("");
   const [network, setNetwork] = useState();
 
   useEffect(() => {
@@ -68,67 +37,9 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [network])
 
-  const { ruleType, id } = ruleMetaData
-
-  const nodes = []
-  const edges = []
-
-  nodes.push({ id: "root", label: ruleName, group: "root" })
-
-  switch (ruleType) {
-    case DB_COLLECTIONS:
-      nodes.push({ id: "root:create", label: "create", group: rule.create ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:create" })
-      const dbCreateGraph = convertRuleToGraph(rule.create, "create", "root:create")
-      nodes.push(...dbCreateGraph.nodes)
-      edges.push(...dbCreateGraph.edges)
-
-      nodes.push({ id: "root:read", label: "read", group: rule.read ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:read" })
-      const dbReadGraph = convertRuleToGraph(rule.read, "read", "root:read")
-      nodes.push(...dbReadGraph.nodes)
-      edges.push(...dbReadGraph.edges)
-
-      nodes.push({ id: "root:update", label: "update", group: rule.update ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:update" })
-      const dbUpdateGraph = convertRuleToGraph(rule.update, "update", "root:update")
-      nodes.push(...dbUpdateGraph.nodes)
-      edges.push(...dbUpdateGraph.edges)
-
-      nodes.push({ id: "root:delete", label: "delete", group: rule.delete ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:delete" })
-      const dbDeleteGraph = convertRuleToGraph(rule.delete, "delete", "root:delete")
-      nodes.push(...dbDeleteGraph.nodes)
-      edges.push(...dbDeleteGraph.edges)
-      break
-
-    case FILESTORE:
-      nodes.push({ id: "root:create", label: "create", group: rule.create ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:create" })
-      const fileCreateGraph = convertRuleToGraph(rule.create, "create", "root:create")
-      nodes.push(...fileCreateGraph.nodes)
-      edges.push(...fileCreateGraph.edges)
-
-      nodes.push({ id: "root:read", label: "read", group: rule.read ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:read" })
-      const fileReadGraph = convertRuleToGraph(rule.read, "read", "root:read")
-      nodes.push(...fileReadGraph.nodes)
-      edges.push(...fileReadGraph.edges)
-
-      nodes.push({ id: "root:delete", label: "delete", group: rule.delete ? "root" : "no_rule" })
-      edges.push({ from: "root", to: "root:delete" })
-      const fileDeleteGraph = convertRuleToGraph(rule.delete, "delete", "root:delete")
-      nodes.push(...fileDeleteGraph.nodes)
-      edges.push(...fileDeleteGraph.edges)
-      break
-
-    default:
-      const rootRuleGraph = convertRuleToGraph(rule, id, "root")
-      nodes.push(...rootRuleGraph.nodes)
-      edges.push(...rootRuleGraph.edges)
-  }
-
-  const graph = { nodes, edges };
+  // Derived state
+  const graph = generateGraph(ruleType, ruleName, rule)
+  const doubleClickedRuleObj = getDoubleClickedRuleObject(rule, doubleClickedNodeId) // Used in the configure rule form as initial values
 
   // mouse events handlers
   const events = {
@@ -140,106 +51,133 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     select: (event) => {
       const node = event.nodes[0];
       if (!node) return;
-      setselectedNodeId(node);
-      const group = nodes.find(val => val.id === node).group;
+      const group = graph.nodes.find(val => val.id === node).group;
+      // Set double clicked node id since clicking the add rule button should open the configure rule form 
+      // same as how double clicking a node opens the configure rule form.
       if (group === "add_rule") {
-        setSelectedRule({});
-        setDrawer(true);
+        setDoubleClickedNodeId(node)
+      } else {
+        setselectedNodeId(node);
       }
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
-      setselectedNodeId(nodeId);
-      setSelectedRule(dotProp.get(rule, nodeId));
-      setDrawer(true);
+      if (nodeId.startsWith("root")) {
+        message.error("Operation not allowed. Only rule blocks (blue ones) can be double clicked to configure them")
+        return
+      }
+      setDoubleClickedNodeId(nodeId);
     },
   };
 
   // shortcut events handler
   const shortcutsHandler = (key) => {
     if (!selectedNodeId) return;
+    if (selectedNodeId === "root") {
+      message.error("No operations are allowed on root block")
+      return
+    }
 
-    const selectedNodeIdStripped = selectedNodeId.replace("root:", "")
+    const strippedKey = getStrippedKey(selectedNodeId)
+    const selectedRuleObj = Object.assign({}, strippedKey === "root" ? rule : dotProp.get(rule, strippedKey))
+
     switch (key) {
-      case "del":
-        if (selectedNodeId === "root") {
-          notify("info", "Not supported", "Click on the `Use default rules` button instead to delete a complete rule", 10)
-          return
-        }
-        if (selectedNodeId.startsWith("root:")) {
-          setRule(dotProp.delete(rule, selectedNodeIdStripped));
-          return
-        }
-        if (selectedNodeId.includes(".")) {
-          setRule(dotProp.delete(rule, selectedNodeId));
-          return
-        }
-        setRule(dotProp.set(rule, selectedNodeId, {}))
-        break;
-
-
       case "ctrl+c":
-        const copiedRule = Object.assign({}, dotProp.get(rule, selectedNodeIdStripped));
-        if (copiedRule.clauses) copiedRule.clauses = [];
-        if (copiedRule.clause) copiedRule.clause = {};
-        setSelectedRule(copiedRule);
+        if (selectedNodeId.includes("root:")) {
+          message.error("Copy is not allowed on this block. Copy a rule block instead")
+          return
+        }
+
+        delete selectedRuleObj["clause"]
+        delete selectedRuleObj["clauses"]
+        copyObjectToClipboard(selectedRuleObj).then(() => message.success("Copied rule to clipboard"))
         break;
 
       case "ctrl+alt+c":
-        setSelectedRule(dotProp.get(rule, selectedNodeIdStripped));
+        if (selectedNodeId.includes("root:")) {
+          message.error("Copy is not allowed on this block. Copy a rule block instead")
+          return
+        }
+
+        copyObjectToClipboard(selectedRuleObj).then(() => message.success("Copied rule to clipboard"))
         break;
 
       case "ctrl+x":
-        if (selectedNodeId === "root") {
-          notify("info", "Not supported", "Cut on root block is not supported. Use copy instead", 10)
+        if (strippedKey === "root" || selectedNodeId.includes("root:")) {
+          message.error("Cut is not allowed on this block. Only child rule blocks can be cut")
           return
         }
-        setSelectedRule(dotProp.get(rule, selectedNodeIdStripped));
-        if (selectedNodeId.startsWith("root:")) {
-          setRule(dotProp.delete(rule, selectedNodeIdStripped));
-          return
-        }
-        if (selectedNodeId.includes(".")) {
-          setRule(dotProp.delete(rule, selectedNodeId));
-          return
-        }
-        setRule(dotProp.set(rule, selectedNodeId, {}))
+
+        copyObjectToClipboard(selectedRuleObj).then(() => {
+          setRule(dotProp.delete(rule, strippedKey))
+          message.success("Cut rule to clipboard")
+        })
         break
 
       case "alt+r":
-        setRule(dotProp.set(rule, selectedNodeId, selectedRule));
+        if (selectedNodeId.includes("root:")) {
+          message.error("Replace operation not allowed on this block. Try replacing a rule block (blue ones)")
+          return
+        }
+
+        getCopiedObjectFromClipboard()
+          .then(copiedRule => {
+            if (strippedKey === "root") {
+              setRule(copiedRule);
+              return
+            }
+            setRule(dotProp.set(rule, strippedKey, copiedRule))
+          })
+          .catch(ex => message.error(ex.toString()))
         break;
 
       case "ctrl+v":
-        const ruleObj = dotProp.get(rule, selectedNodeId);
-        if (selectedNodeId.startsWith("root:")) {
-          setRule(dotProp.set(rule, selectedNodeIdStripped, selectedRule));
+        getCopiedObjectFromClipboard()
+          .then(copiedRule => {
+            if (selectedNodeId.includes("root:")) {
+              setRule(dotProp.set(rule, strippedKey, copiedRule))
+              return
+            }
+            if (selectedRuleObj.rule === "and" || selectedRuleObj.rule === "or") {
+              const noOfClauses = selectedRuleObj.clauses ? selectedRuleObj.clauses.length : 0
+              if (strippedKey === "root") {
+                setRule(dotProp.set(rule, `clauses.${noOfClauses}`, copiedRule))
+              } else {
+                setRule(dotProp.set(rule, `${strippedKey}.clauses.${noOfClauses}`, copiedRule))
+              }
+              return
+            }
+            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove") {
+              if (strippedKey === "root") {
+                setRule(dotProp.set(rule, "clause", copiedRule))
+              } else {
+                setRule(dotProp.set(rule, `${strippedKey}.clause`, copiedRule))
+              }
+              return
+            }
+            message.error("Paste operation is not valid on this block.")
+          })
+          .catch(ex => message.error(ex.toString()))
+        break
+
+      case "del":
+        if (strippedKey === "root") {
+          message.error("Deleting the root rule is not supported")
           return
         }
-        if (selectedNodeId === "root") {
-          notify("error", "Error", "Paste not allowed on root block")
-          return
-        }
-        if (ruleObj.rule === "and" || ruleObj.rule === "or") {
-          if (!ruleObj.clauses) ruleObj.clauses = []
-          const newClauses = [...ruleObj.clauses, selectedRule]
-          setRule(dotProp.set(rule, `${selectedNodeId}.clauses`, newClauses))
-          return
-        }
-        if (ruleObj.rule === "query" || ruleObj.rule === "remove" || ruleObj.rule === "force") {
-          const clauseId = `${selectedNodeId}.clause`;
-          setRule(dotProp.set(rule, clauseId, selectedRule));
-          return
-        }
-        notify("error", "Error", "Paste not allowed on this block. Do you want to replace this block instead?")
+
+        setRule(dotProp.delete(rule, strippedKey))
         break;
     }
   };
 
   // On drawer form submit
   const onSubmit = (values) => {
-    console.log("Values", values)
-    setRule(dotProp.set(rule, selectedNodeId, values));
+    if (doubleClickedNodeId === "rule:root") {
+      setRule(values)
+      return
+    }
+    setRule(dotProp.set(rule, getStrippedKey(doubleClickedNodeId), values));
   };
 
   const menu = (
@@ -289,14 +227,13 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           )}
         </KeyboardEventHandler>
       </Dropdown>
-      {drawer && selectedRule && (
+      {doubleClickedNodeId && (
         <ConfigureRule
-          selectedRule={selectedRule}
-          closeDrawer={() => setDrawer(false)}
-          drawer={drawer}
+          selectedRule={doubleClickedRuleObj}
+          closeDrawer={() => setDoubleClickedNodeId("")}
           ruleMetaData={ruleMetaData}
           onSubmit={onSubmit}
-          selectedNodeId={selectedNodeId.split(".")[0]}
+          selectedNodeId={getStrippedKey(doubleClickedNodeId).split(".")[0]}
         />
       )}
     </React.Fragment>

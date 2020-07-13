@@ -8,13 +8,21 @@ const options = {
       color: {
         border: '#d0d0d0',
         background: '#eaeaea',
+        highlight: {
+          border: '#c0c0c0',
+          background: '#eaeaea'
+        }
       },
     },
     root: {
       borderWidth: 1,
       color: {
         border: "#53a415",
-        background: "#b7eb8f"
+        background: "#b7eb8f",
+        highlight: {
+          border: "#6c944e",
+          background: "#b7eb8f"
+        }
       },
     },
     rule: {
@@ -22,6 +30,10 @@ const options = {
       color: {
         border: '#1e8bce',
         background: '#91d5ff',
+        highlight: {
+          border: "#036bab",
+          background: '#91d5ff',
+        }
       },
       shapeProperties: {
         borderDashes: false,
@@ -31,7 +43,12 @@ const options = {
     add_rule: {
       borderWidth: 2,
       color: {
-        border: 'rgba(0, 0, 0, 0.45)',
+        border: 'rgba(0, 0, 0, 0.37)',
+        background: "#fff",
+        highlight: {
+          border: 'rgba(0, 0, 0, 0.45)',
+          background: "#fff",
+        }
       },
       shapeProperties: {
         borderDashes: [2, 4],
@@ -46,7 +63,7 @@ const options = {
     },
     color: {
       border: '#F0F0F0',
-      background: 'white',
+      background: 'white'
     },
     font: {
       size: 16,

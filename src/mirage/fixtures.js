@@ -54,17 +54,20 @@ export const dbRules = [
       isRealtimeEnabled: true,
       rules: {
         "create": {
-          "rule": "deny",
+          "rule": "and",
+          "clauses": [
+            {
+              "rule": "webhook",
+              "url": "localhost"
+            }
+          ]
         },
         "read": {
           "rule": "deny"
         },
         "update": {
           "rule": "deny"
-        },
-        // "delete": {
-        //   "rule": "deny"
-        // }
+        }
       }
     }
   }
@@ -75,7 +78,15 @@ export const dbPreparedQueries = [
     "id": "preparedQuery1",
     "db": "mydb",
     "sql": "select * from users",
-    "rule": { "rule": "allow" },
+    "rule": {
+      "rule": "and",
+      "clauses": [
+        {
+          "rule": "webhook",
+          "url": "localhost"
+        }
+      ]
+    },
     "args": ['args.args1']
   }
 ]
