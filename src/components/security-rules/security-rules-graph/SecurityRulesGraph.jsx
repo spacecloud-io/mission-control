@@ -4,20 +4,24 @@ import "./security-rules-graph.css";
 
 const options = {
   groups: {
-    no_rule_crud: {
+    no_rule: {
       color: {
-        border: '#F0F0F0',
-        background: 'white',
+        border: '#d0d0d0',
+        background: '#eaeaea',
       },
     },
-    crud: {
-      color: '#90EE90',
+    root: {
+      borderWidth: 1,
+      color: {
+        border: "#53a415",
+        background: "#b7eb8f"
+      },
     },
     rule: {
       borderWidth: 1,
       color: {
-        border: '#F0F0F0',
-        background: 'white',
+        border: '#1e8bce',
+        background: '#91d5ff',
       },
       shapeProperties: {
         borderDashes: false,
@@ -27,10 +31,10 @@ const options = {
     add_rule: {
       borderWidth: 2,
       color: {
-        border: 'rgba(0, 0, 0, 0.25)',
+        border: 'rgba(0, 0, 0, 0.45)',
       },
       shapeProperties: {
-        borderDashes: [2, 2],
+        borderDashes: [2, 4],
         borderRadius: 4,
       },
     },
@@ -58,6 +62,11 @@ const options = {
     color: '#000000',
     arrowStrikethrough: true,
     physics: false,
+    smooth: {
+      enabled: true,
+      type: "cubicBezier",
+      forceDirection: "horizontal"
+    }
   },
   layout: {
     hierarchical: {
@@ -65,7 +74,7 @@ const options = {
       parentCentralization: false,
       sortMethod: 'directed',
       direction: 'LR',
-      nodeSpacing: 200,
+      nodeSpacing: 120,
     },
   },
   interaction: {

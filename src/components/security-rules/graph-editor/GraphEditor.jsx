@@ -5,7 +5,50 @@ import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ConfigureRule from '../configure-rule/ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
 import { securityRuleGroups } from "../../../constants"
-const { DB_PREPARED_QUERIES, REMOTE_SERVICES, INGRESS_ROUTES, EVENTING } = securityRuleGroups
+import { notify } from "../../../utils";
+const { DB_COLLECTIONS, FILESTORE } = securityRuleGroups
+
+const mergeGraph = (graph1, graph2) => {
+  const nodes = [...graph1.nodes, ...graph2.nodes]
+  const edges = [...graph1.edges, ...graph2.edges]
+  return { nodes, edges }
+}
+const convertRuleToGraph = (rule, id, parentId) => {
+  let graph = { nodes: [], edges: [] }
+
+  const isRootBlock = !parentId.includes(".")
+  if (!rule || !rule.rule) {
+    if (isRootBlock) {
+      // Add a block to add rule
+      graph.nodes.push({ id: `${parentId}.add_rule`, label: "+ Add rule", group: "add_rule" })
+      graph.edges.push({ from: parentId, to: `${parentId}.add_rule` })
+    }
+    return graph
+  }
+
+  graph.nodes.push({ id: id, label: rule.rule, group: "rule" })
+  graph.edges.push({ from: parentId, to: id })
+
+  if (rule.rule === "and" || rule.rule === "or") {
+    if (rule.clauses) {
+      rule.clauses.forEach((clause, index) => {
+        graph = mergeGraph(graph, convertRuleToGraph(clause, `${id}.clauses.${index}`, id))
+      })
+    }
+    const len = rule.clauses ? rule.clauses.length : 0
+    graph.nodes.push({ id: `${id}.clauses.${len}`, label: "+ Add clause", group: "add_rule" })
+    graph.edges.push({ from: id, to: `${id}.clauses.${len}` })
+  }
+  if (rule.rule === "query" || rule.rule === "force" || rule.rule === "remove") {
+    if (rule.clause && rule.clause.rule) {
+      graph = mergeGraph(graph, convertRuleToGraph(rule.clause, `${id}.clause`, id))
+    } else {
+      graph.nodes.push({ id: `${id}.add_rule`, label: "Set clause", group: "add_rule" })
+      graph.edges.push({ from: id, to: `${id}.add_rule` })
+    }
+  }
+  return graph
+}
 
 function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const [drawer, setDrawer] = useState(false);
@@ -24,75 +67,67 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [network])
 
-  const nodes = [];
-  const edges = [];
+  const { ruleType, id } = ruleMetaData
 
-  const { ruleType, id, group } = ruleMetaData
-  // And, or rule
-  const nestedNodes = (clauses, parentId) => {
-    for (let i = 0; i < clauses.length; i++) {
-      const childId = `${parentId}.clauses.${i}`;
-      nodes.push({
-        id: childId,
-        label: clauses[i].rule,
-        ...clauses[i],
-        group: 'rule',
-      });
-      edges.push({ from: parentId, to: childId });
+  const nodes = []
+  const edges = []
 
-      if (clauses[i].rule === 'or' || clauses[i].rule === 'and') {
-        nestedNodes(clauses[i].clauses, childId);
-      }
-      if (clauses[i].rule === 'query' || clauses[i].rule === 'remove' || clauses[i].rule === 'force') {
-        clauseNodes(clauses[i].clause, childId);
-      }
-    }
-    nodes.push({ id: `${parentId}.clauses.${clauses.length}`, label: '+ Add rule', group: 'add_rule' });
-    edges.push({ from: parentId, to: `${parentId}.clauses.${clauses.length}` });
-  };
+  nodes.push({ id: "root", label: ruleName, group: "root" })
 
-  // query, remove, force
-  const clauseNodes = (clause, parentId) => {
-    const childId = `${parentId}.clause`;
-    if (clause && clause.rule) {
-      nodes.push({ id: childId, label: clause.rule, group: 'rule' });
-      edges.push({ from: parentId, to: childId });
-      if (clause.rule === 'and' || clause.rule === 'or') {
-        nestedNodes(clause.clauses, childId);
-      }
-    } else {
-      nodes.push({ id: childId, label: '+ Add rule', group: 'add_rule' });
-      edges.push({ from: parentId, to: childId });
-    }
-  };
+  switch (ruleType) {
+    case DB_COLLECTIONS:
+      nodes.push({ id: "root:create", label: "create", group: rule.create ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:create" })
+      const dbCreateGraph = convertRuleToGraph(rule.create, "create", "root:create")
+      nodes.push(...dbCreateGraph.nodes)
+      edges.push(...dbCreateGraph.edges)
 
-  // Map rules into nodes and edges
-  if (![REMOTE_SERVICES, INGRESS_ROUTES, EVENTING, DB_PREPARED_QUERIES].includes(ruleType)) nodes.push({ id: ruleName, label: ruleName, group: 'crud' });
-  Object.entries(rule).map(([key, value]) => {
-    if (Object.keys(value).length === 0) {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'no_rule_crud' });
-      nodes.push({ id: key, label: '+ Add rule', group: 'add_rule' });
-    } else {
-      nodes.push({ id: `${key}Rule`, label: key, group: 'crud' });
-      nodes.push({ id: key, label: value.rule, group: 'rule', ...value });
-    }
-    edges.push({ from: ruleName, to: `${key}Rule` });
-    edges.push({ from: `${key}Rule`, to: key });
+      nodes.push({ id: "root:read", label: "read", group: rule.read ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:read" })
+      const dbReadGraph = convertRuleToGraph(rule.read, "read", "root:read")
+      nodes.push(...dbReadGraph.nodes)
+      edges.push(...dbReadGraph.edges)
 
-    if (value.rule === 'query' || value.rule === 'remove' || value.rule === 'force') {
-      clauseNodes(value.clause, key);
-    }
+      nodes.push({ id: "root:update", label: "update", group: rule.update ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:update" })
+      const dbUpdateGraph = convertRuleToGraph(rule.update, "update", "root:update")
+      nodes.push(...dbUpdateGraph.nodes)
+      edges.push(...dbUpdateGraph.edges)
 
-    if (value.rule === 'or' || value.rule === 'and') {
-      nestedNodes(value.clauses, key);
-    }
-  });
+      nodes.push({ id: "root:delete", label: "delete", group: rule.delete ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:delete" })
+      const dbDeleteGraph = convertRuleToGraph(rule.delete, "delete", "root:delete")
+      nodes.push(...dbDeleteGraph.nodes)
+      edges.push(...dbDeleteGraph.edges)
+      break
 
-  // vis.js configurations
-  const graph = {
-    nodes: [...nodes],
-    edges: [...edges],
-  };
+    case FILESTORE:
+      nodes.push({ id: "root:create", label: "create", group: rule.create ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:create" })
+      const fileCreateGraph = convertRuleToGraph(rule.create, "create", "root:create")
+      nodes.push(...fileCreateGraph.nodes)
+      edges.push(...fileCreateGraph.edges)
+
+      nodes.push({ id: "root:read", label: "read", group: rule.read ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:read" })
+      const fileReadGraph = convertRuleToGraph(rule.read, "read", "root:read")
+      nodes.push(...fileReadGraph.nodes)
+      edges.push(...fileReadGraph.edges)
+
+      nodes.push({ id: "root:delete", label: "delete", group: rule.delete ? "root" : "no_rule" })
+      edges.push({ from: "root", to: "root:delete" })
+      const fileDeleteGraph = convertRuleToGraph(rule.delete, "delete", "root:delete")
+      nodes.push(...fileDeleteGraph.nodes)
+      edges.push(...fileDeleteGraph.edges)
+      break
+
+    default:
+      const rootRuleGraph = convertRuleToGraph(rule, id, "root")
+      nodes.push(...rootRuleGraph.nodes)
+      edges.push(...rootRuleGraph.edges)
+  }
+
+  const graph = { nodes, edges };
 
   // mouse events handlers
   const events = {
@@ -123,64 +158,80 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const shortcutsHandler = (key) => {
     if (!selectedNodeId) return;
 
-    if (key === 'del') {
-      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
-        return;
-      }
-      if (["create", "update", "read", "delete"].includes(selectedNodeId)) {
+    const selectedNodeIdStripped = selectedNodeId.replace("root:", "")
+    switch (key) {
+      case "del":
+        if (selectedNodeId === "root") {
+          notify("info", "Not supported", "Click on the `Use default rules` button instead to delete a complete rule", 10)
+          return
+        }
+        if (selectedNodeId.startsWith("root:")) {
+          setRule(dotProp.delete(rule, selectedNodeIdStripped));
+          return
+        }
+        if (selectedNodeId.includes(".")) {
+          setRule(dotProp.delete(rule, selectedNodeId));
+          return
+        }
         setRule(dotProp.set(rule, selectedNodeId, {}))
-      }
-      else {
-        setRule(dotProp.delete(rule, selectedNodeId));
-      }
-    }
+        break;
 
-    else if (key === 'ctrl+c') {
-      const copiedRule = Object.assign({}, dotProp.get(rule, selectedNodeId));
-      if (copiedRule.clauses) copiedRule.clauses = [];
-      else if (copiedRule.clause) copiedRule.clause = {};
-      console.log(copiedRule);
-      setSelectedRule(copiedRule);
-    }
 
-    else if (key === 'ctrl+alt+c') {
-      setSelectedRule(dotProp.get(rule, selectedNodeId));
-    }
+      case "ctrl+c":
+        const copiedRule = Object.assign({}, dotProp.get(rule, selectedNodeIdStripped));
+        if (copiedRule.clauses) copiedRule.clauses = [];
+        if (copiedRule.clause) copiedRule.clause = {};
+        setSelectedRule(copiedRule);
+        break;
 
-    else if (key === 'ctrl+x') {
-      setSelectedRule(dotProp.get(rule, selectedNodeId));
-      setRule(dotProp.set(rule, selectedNodeId, {}));
-    }
+      case "ctrl+alt+c":
+        setSelectedRule(dotProp.get(rule, selectedNodeIdStripped));
+        break;
 
-    else if (Object.keys(selectedRule).length === 0) return;
-
-    else if (key === 'alt+r') {
-      setRule(dotProp.set(rule, selectedNodeId, selectedRule));
-    }
-
-    else if (key === 'ctrl+v') {
-
-      const ruleObj = dotProp.get(rule, selectedNodeId);
-      if (["createRule", "updateRule", "readRule", "deleteRule"].includes(selectedNodeId)) {
-        setRule(dotProp.set(rule, selectedNodeId.split("Rule")[0], selectedRule));
-      }
-      else if (ruleObj.rule === 'query' || ruleObj.rule === "remove" || ruleObj.rule === "force") {
-        const childId = `${selectedNodeId}.clause`;
-        const child = nodes.find((val) => val.id === childId);
-        if (child.group === 'add_rule') {
-          setRule(dotProp.set(rule, childId, selectedRule));
+      case "ctrl+x":
+        if (selectedNodeId === "root") {
+          notify("info", "Not supported", "Cut on root block is not supported. Use copy instead", 10)
+          return
         }
-      }
-      else if (ruleObj.rule === 'and' || ruleObj.rule === 'or') {
-        for (let i = 0; i <= ruleObj.clauses.length; i++) {
-          const childId = `${selectedNodeId}.clauses.${i}`;
-          const child = nodes.find((val) => val.id === childId);
-          if (child.group === 'add_rule') {
-            setRule(dotProp.set(rule, childId, selectedRule));
-            break;
-          }
+        setSelectedRule(dotProp.get(rule, selectedNodeIdStripped));
+        if (selectedNodeId.startsWith("root:")) {
+          setRule(dotProp.delete(rule, selectedNodeIdStripped));
+          return
         }
-      }
+        if (selectedNodeId.includes(".")) {
+          setRule(dotProp.delete(rule, selectedNodeId));
+          return
+        }
+        setRule(dotProp.set(rule, selectedNodeId, {}))
+        break
+
+      case "alt+r":
+        setRule(dotProp.set(rule, selectedNodeId, selectedRule));
+        break;
+
+      case "ctrl+v":
+        const ruleObj = dotProp.get(rule, selectedNodeId);
+        if (selectedNodeId.startsWith("root:")) {
+          setRule(dotProp.set(rule, selectedNodeIdStripped, selectedRule));
+          return
+        }
+        if (selectedNodeId === "root") {
+          notify("error", "Error", "Paste not allowed on root block")
+          return
+        }
+        if (ruleObj.rule === "and" || ruleObj.rule === "or") {
+          if (!ruleObj.clauses) ruleObj.clauses = []
+          const newClauses = [...ruleObj.clauses, selectedRule]
+          setRule(dotProp.set(rule, `${selectedNodeId}.clauses`, newClauses))
+          return
+        }
+        if (ruleObj.rule === "query" || ruleObj.rule === "remove" || ruleObj.rule === "force") {
+          const clauseId = `${selectedNodeId}.clause`;
+          setRule(dotProp.set(rule, clauseId, selectedRule));
+          return
+        }
+        notify("error", "Error", "Paste not allowed on this block. Do you want to replace this block instead?")
+        break;
     }
   };
 

@@ -173,7 +173,7 @@ const ConfigureRule = (props) => {
       placement='right'
       onClose={props.closeDrawer}
       visible={true}
-      width={400}
+      width={560}
     >
       <Form
         name='configure'
