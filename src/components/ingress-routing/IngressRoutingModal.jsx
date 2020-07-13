@@ -399,17 +399,19 @@ const IngressRoutingModal = props => {
                                   <Input placeholder="Header key" />
                                 </Form.Item>
                               </Col>
-                              <Col span={8}>
-                                <Form.Item
-                                  validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header value" }]}
-                                  name={[field.name, "value"]}
-                                  key={[field.name, "value"]}
-                                  style={{ marginRight: 16 }}
-                                >
-                                  <Input placeholder="Header value" />
-                                </Form.Item>
-                              </Col>
+                              <ConditionalFormBlock dependency="headers" condition={() => form.getFieldValue(["headers", field.name, "op"]) !== "del"}>
+                                <Col span={8}>
+                                  <Form.Item
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    name={[field.name, "value"]}
+                                    key={[field.name, "value"]}
+                                    style={{ marginRight: 16 }}
+                                  >
+                                    <Input placeholder="Header value" />
+                                  </Form.Item>
+                                </Col>
+                              </ConditionalFormBlock>
                               <Col span={3}>
                                 <Button
                                   onClick={() => remove(field.name)}
@@ -484,17 +486,19 @@ const IngressRoutingModal = props => {
                                   <Input placeholder="Header key" />
                                 </Form.Item>
                               </Col>
-                              <Col span={8}>
-                                <Form.Item
-                                  validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header value" }]}
-                                  name={[field.name, "value"]}
-                                  key={[field.name, "value"]}
-                                  style={{ marginRight: 16 }}
-                                >
-                                  <Input placeholder="Header value" />
-                                </Form.Item>
-                              </Col>
+                              <ConditionalFormBlock dependency="resHeaders" condition={() => form.getFieldValue(["resHeaders", field.name, "op"]) !== "del"}>
+                                <Col span={8}>
+                                  <Form.Item
+                                    validateTrigger={["onChange", "onBlur"]}
+                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    name={[field.name, "value"]}
+                                    key={[field.name, "value"]}
+                                    style={{ marginRight: 16 }}
+                                  >
+                                    <Input placeholder="Header value" />
+                                  </Form.Item>
+                                </Col>
+                              </ConditionalFormBlock>
                               <Col span={3}>
                                 <Button
                                   onClick={() => remove(field.name)}
