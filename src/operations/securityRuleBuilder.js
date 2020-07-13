@@ -85,10 +85,6 @@ export const saveSecurityRule = (projectId, ruleType, id, group, rule) => {
 
         // Notify the parent tab
         bc.postMessage(message)
-        
-        // Close this window and move the focus to the parent window
-        window.opener.focus()
-        window.close()
         resolve()
       })
       .catch(ex => reject(ex))

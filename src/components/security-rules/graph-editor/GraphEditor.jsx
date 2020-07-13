@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Menu, Dropdown, Alert } from "antd"
 import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
-import ConfigureRule from '../ConfigureRule';
+import ConfigureRule from '../configure-rule/ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
 import { securityRuleGroups } from "../../../constants"
-const { DB_COLLECTIONS, DB_PREPARED_QUERIES, REMOTE_SERVICES, INGRESS_ROUTES, FILESTORE, EVENTING } = securityRuleGroups
+const { DB_PREPARED_QUERIES, REMOTE_SERVICES, INGRESS_ROUTES, EVENTING } = securityRuleGroups
 
 function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const [drawer, setDrawer] = useState(false);

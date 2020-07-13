@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import FormItemLabel from '../form-item-label/FormItemLabel';
+import FormItemLabel from '../../form-item-label/FormItemLabel';
 import {
   Form,
   Select,
@@ -19,16 +19,16 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import ConditionalFormBlock from '../conditional-form-block/ConditionalFormBlock';
+import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
-import { notify, dbIcons } from '../../utils';
-import { generateSchemaAST } from '../../graphql';
+import { notify, dbIcons } from '../../../utils';
+import { generateSchemaAST } from '../../../graphql';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
-import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
-import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../operations/database';
-import { securityRuleGroups } from '../../constants';
+import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
+import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
+import { securityRuleGroups } from '../../../constants';
 
 const parseValue = (value, type) => {
   return (type === "number") ? parseNumber(value) : (type === "bool" ? parseBoolean(value) : value)

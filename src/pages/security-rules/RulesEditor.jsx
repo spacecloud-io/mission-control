@@ -97,12 +97,23 @@ const RulesEditor = () => {
       incrementPendingRequests()
       const rules = tab === "builder" ? rule : JSON.parse(stringifiedRule);
       saveSecurityRule(projectID, ruleType, id, group, rules)
+        .then(() => {
+          window.opener.focus()
+          window.close()
+        })
         .catch(ex => notify("error", "Error saving rules", ex))
         .finally(() => decrementPendingRequests())
     } catch (ex) {
       notify("error", "Error", ex)
       return;
     }
+  }
+
+  const handleUseDefaultRules = () => {
+    incrementPendingRequests()
+    saveSecurityRule(projectID, ruleType, id, group, {})
+      .catch(ex => notify("error", "Error using default rules", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   // Prettify JSON code
@@ -114,6 +125,8 @@ const RulesEditor = () => {
       notify('error', 'Error', ex.toString());
     }
   };
+
+  const UseDefaultRulesButton = () => <Button onClick={handleUseDefaultRules} style={{ marginRight: 16 }}>Use default rules</Button>
 
   return (
     <React.Fragment>
@@ -131,6 +144,7 @@ const RulesEditor = () => {
                   <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
                     <span><b>Security rules</b> ({name})</span>
                     <span>
+                      <UseDefaultRulesButton />
                       <Button onClick={() => openShortcutsDrawer(true)} style={{ marginRight: 16 }}>Shortcuts</Button>
                       <DocumentationButton />
                     </span>
@@ -147,6 +161,7 @@ const RulesEditor = () => {
                 <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
                   <span><b>Security rules</b> ({name})</span>
                   <span>
+                    <UseDefaultRulesButton />
                     <Button style={{ marginRight: 16 }} onClick={prettify}>Prettify</Button>
                     <DocumentationButton />
                   </span>
