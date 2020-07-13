@@ -131,6 +131,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/runner/:projectId/secrets/:secretName", () => respondOk())
 
       // Routes endpoint
+      this.post("/config/projects/:projectId/routing/ingress/global", () => respondOk())
       this.post("/config/projects/:projectId/routing/ingress/:routeId", () => respondOk())
       this.delete("/config/projects/:projectId/routing/ingress/:routeId", () => respondOk())
 

@@ -78,8 +78,8 @@ const projects = [
             "url": "localhost:3000",
             "endpoints": {
               "login": {
-                "method":"POST",
-                "path":"/v1/login",
+                "method": "POST",
+                "path": "/v1/login",
                 "rule": {
                   "rule": "allow"
                 },
@@ -89,25 +89,25 @@ const projects = [
                 ]
               },
               "externalEndpoint": {
-                "method":"GET",
-                "path":"https://foo.com/bar",
-                "kind":"external",
+                "method": "GET",
+                "path": "https://foo.com/bar",
+                "kind": "external",
                 "rule": {
                   "rule": "authenticated"
                 },
                 "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
-                "requestTemplate":`{ "id": "args.id"}`,
+                "requestTemplate": `{ "id": "args.id"}`,
                 "responseTemplate": `{ "key1": "res.val1"}`
               },
               "preparedQuery": {
-                "kind":"prepared",
+                "kind": "prepared",
                 "rule": {
                   "rule": "authenticated"
                 },
                 "outputFormat": "json",
                 "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
                 "graphTemplate": `query { users @db }`,
-                "requestTemplate":`{ "id": "args.id"}`,
+                "requestTemplate": `{ "id": "args.id"}`,
                 "responseTemplate": `{ "key1": "res.val1"}`
               },
             }
@@ -234,7 +234,7 @@ const projects = [
           "targets": [
             {
               "scheme": "http",
-              "host": "service1.project1.svc.cluster.local",
+              "host": "service1.todoapp.svc.cluster.local",
               "port": 80,
               "weight": 40
             },
@@ -256,6 +256,15 @@ const projects = [
           }
         }
       ],
+      "ingressRoutesGlobal": {
+        "headers": [
+          { "op": "add", "key": "k1", "value": "v1" },
+          { "op": "set", "key": "k2", "value": "v2" }
+        ],
+        "resHeaders": [
+          { "op": "del", "key": "k1", "value": "v1" }
+        ]
+      },
       "fileStore": {
         "enabled": true,
         "storeType": "amazon-s3",
