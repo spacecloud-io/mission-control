@@ -13,6 +13,7 @@ const mergeGraph = (graph1, graph2) => {
   const edges = [...graph1.edges, ...graph2.edges]
   return { nodes, edges }
 }
+
 const convertRuleToGraph = (rule, id, parentId) => {
   let graph = { nodes: [], edges: [] }
 
@@ -20,8 +21,8 @@ const convertRuleToGraph = (rule, id, parentId) => {
   if (!rule || !rule.rule) {
     if (isRootBlock) {
       // Add a block to add rule
-      graph.nodes.push({ id: `${parentId}.add_rule`, label: "+ Add rule", group: "add_rule" })
-      graph.edges.push({ from: parentId, to: `${parentId}.add_rule` })
+      graph.nodes.push({ id: id, label: "+ Add rule", group: "add_rule" })
+      graph.edges.push({ from: parentId, to: id })
     }
     return graph
   }
@@ -43,8 +44,8 @@ const convertRuleToGraph = (rule, id, parentId) => {
     if (rule.clause && rule.clause.rule) {
       graph = mergeGraph(graph, convertRuleToGraph(rule.clause, `${id}.clause`, id))
     } else {
-      graph.nodes.push({ id: `${id}.add_rule`, label: "Set clause", group: "add_rule" })
-      graph.edges.push({ from: id, to: `${id}.add_rule` })
+      graph.nodes.push({ id: `${id}.clause`, label: "Set clause", group: "add_rule" })
+      graph.edges.push({ from: id, to: `${id}.clause` })
     }
   }
   return graph
@@ -237,6 +238,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
 
   // On drawer form submit
   const onSubmit = (values) => {
+    console.log("Values", values)
     setRule(dotProp.set(rule, selectedNodeId, values));
   };
 

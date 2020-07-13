@@ -86,6 +86,7 @@ const ConfigureRule = (props) => {
   const handleSearch = (value) => setCol(value);
 
   const onFinish = (values) => {
+    // Parse values
     switch (values.rule) {
       case "match":
         if (values.eval === 'in' || values.eval === 'notIn') {
@@ -107,14 +108,17 @@ const ConfigureRule = (props) => {
           return;
         }
         break;
-      case "and":
-      case "or":
-        if (!props.selectedRule.clauses) values.clauses = [];
     }
 
     delete values.errorMsg;
-    if (props.selectedRule.clause) values.clause = props.selectedRule.clause
-    if (props.selectedRule.clauses) values.clauses = props.selectedRule.clauses
+
+    if (values.rule === "and" || values.rule === "or") {
+      if (!props.selectedRule.clauses) values.clauses = [];
+      else values.clauses = props.selectedRule.clauses
+    }
+    if (values.rule === "query" || values.rule === "force" || values.rule === "remove") {
+      values.clause = props.selectedRule.clause
+    }
     props.onSubmit(values);
     props.closeDrawer();
   };

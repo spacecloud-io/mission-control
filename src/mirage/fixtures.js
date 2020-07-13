@@ -54,12 +54,7 @@ export const dbRules = [
       isRealtimeEnabled: true,
       rules: {
         "create": {
-          "rule": "and",
-          clauses: [
-            {
-              rule: "match"
-            }
-          ]
+          "rule": "deny",
         },
         "read": {
           "rule": "deny"
