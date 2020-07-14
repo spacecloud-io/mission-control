@@ -14,6 +14,17 @@ export const loadIngressRoutes = (projectId) => {
   })
 }
 
+export const loadIngressRoutesGlobalConfig = (projectId) => {
+  return new Promise((resolve, reject) => {
+    client.routing.fetchIngressRoutesGlobalConfig(projectId)
+      .then(ingressRoutesGlobalConfig => {
+        store.dispatch(set("ingressRoutesGlobal", ingressRoutesGlobalConfig))
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const saveIngressRoute = (projectId, routeId, config) => {
   return new Promise((resolve, reject) => {
     client.routing.setRoutingConfig(projectId, routeId, config)
@@ -40,5 +51,33 @@ export const deleteIngressRoute = (projectId, routeId) => {
   })
 }
 
+export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
+  return new Promise((resolve, reject) => {
+    const globalConfig = getIngressRoutesGlobalConfig()
+    const newGlobalConfig = Object.assign({}, globalConfig, { headers: headers })
+    client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
+      .then(() => {
+        setIngressRoutesGlobalConfig(newGlobalConfig)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const saveIngressGlobalResponseHeaders = (projectId, headers) => {
+  return new Promise((resolve, reject) => {
+    const globalConfig = getIngressRoutesGlobalConfig()
+    const newGlobalConfig = Object.assign({}, globalConfig, { resHeaders: headers })
+    client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
+      .then(() => {
+        setIngressRoutesGlobalConfig(newGlobalConfig)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getIngressRoutes = (state) => get(state, "ingressRoutes", [])
+export const getIngressRoutesGlobalConfig = (state) => get(state, "ingressRoutesGlobal", {})
+const setIngressRoutesGlobalConfig = (config) => store.dispatch(set("ingressRoutesGlobal", config)) 

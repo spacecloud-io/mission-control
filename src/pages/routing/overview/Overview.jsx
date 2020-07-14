@@ -1,21 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import ReactGA from 'react-ga';
-import Sidenav from "../../components/sidenav/Sidenav";
-import Topbar from "../../components/topbar/Topbar";
+import Sidenav from "../../../components/sidenav/Sidenav";
+import Topbar from "../../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
-import routingSvg from "../../assets/routing.svg";
-import { Button, Table, Popconfirm, Tag } from "antd";
-import IngressRoutingModal from "../../components/ingress-routing/IngressRoutingModal";
-import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../utils";
-import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../operations/ingressRoutes";
+import routingSvg from "../../../assets/routing.svg";
+import { Button, Table, Popconfirm, Tag, Space } from "antd";
+import IngressRoutingModal from "../../../components/ingress-routing/IngressRoutingModal";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../../utils";
+import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
+import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
+import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
+import { FilterOutlined } from "@ant-design/icons";
+import FilterForm from "../../../components/ingress-routing/FilterForm";
+import { set } from "automate-redux";
+import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
 };
 
-function Routing() {
+const applyFilters = (data, projectId, filters = { services: [], targetHosts: [], requestHosts: [] }) => {
+  const { services, targetHosts, requestHosts } = filters
+  const serviceHosts = services.map(serviceId => `${serviceId}.${projectId}.svc.cluster.local`)
+  const dataFilteredByServices = services.length === 0 ? data : data.filter(obj => obj.targets.some(target => serviceHosts.some(host => host === target.host)))
+  const dataFilteredByTargetHosts = targetHosts.length === 0 ? dataFilteredByServices : dataFilteredByServices.filter(obj => obj.targets.some(target => targetHosts.some(host => host === target.host)))
+  const dataFilteredByRequestHosts = requestHosts.length === 0 ? dataFilteredByTargetHosts : dataFilteredByTargetHosts.filter(obj => obj.allowedHosts.some(allowedHost => requestHosts.some(host => allowedHost === "*" || allowedHost === host)))
+  return dataFilteredByRequestHosts
+}
+
+function RoutingOverview() {
   const { projectID } = useParams();
+  const dispatch = useDispatch()
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes");
@@ -30,12 +46,23 @@ function Routing() {
     }
   }, [projectID])
 
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadServices(projectID)
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
   // Global state
   let routes = useSelector(state => getIngressRoutes(state))
+  const serviceNames = useSelector(state => getUniqueServiceIDs(state))
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
+  const filters = useSelector(state => state.uiState.ingressFilters)
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Derived state
   const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
@@ -47,11 +74,14 @@ function Routing() {
     allowedMethods: source.methods,
     targets: targets,
     headers: modify.headers,
+    resHeaders: modify.resHeaders,
     requestTemplate: modify.requestTemplate,
     responseTemplate: modify.responseTemplate,
     outputFormat: modify.outputFormat,
     rule: rule
   }));
+
+  const filteredData = applyFilters(data, projectID, filters)
 
   const len = routes.length;
 
@@ -75,6 +105,7 @@ function Routing() {
         rule: values.rule,
         modify: {
           headers: values.headers,
+          resHeaders: values.resHeaders,
           requestTemplate: values.requestTemplate,
           responseTemplate: values.responseTemplate,
           outputFormat: values.outputFormat
@@ -111,6 +142,8 @@ function Routing() {
     setRouteClicked("");
     setModalVisible(false);
   };
+
+  const handleFilter = (filters) => dispatch(set("uiState.ingressFilters", filters))
 
   const columns = [
     {
@@ -162,9 +195,10 @@ function Routing() {
   return (
     <div>
       <Topbar showProjectSelector />
-      <div>
-        <Sidenav selectedItem="routing" />
-        <div className="page-content">
+      <Sidenav selectedItem="routing" />
+      <ProjectPageLayout>
+        <IngressTabs projectID={projectID} activeKey="overview" />
+        <Content>
           {len === 0 && (
             <div className="panel">
               <img src={routingSvg} style={{ height: 300 }} />
@@ -188,30 +222,42 @@ function Routing() {
             <React.Fragment>
               <h3
                 style={{
-                  marginTop: 24,
                   display: "flex",
                   justifyContent: "space-between"
                 }}
               >
                 Ingress Routing rules
-                <Button type="primary" onClick={() => setModalVisible(true)}>
-                  Add
-                </Button>
+                <span>
+                  <Space>
+                    <Button onClick={() => setFilterModalVisible(true)}>
+                      Filters <FilterOutlined />
+                    </Button>
+                    <Button type="primary" onClick={() => setModalVisible(true)}>
+                      Add
+                    </Button>
+                  </Space>
+                </span>
               </h3>
-              <Table columns={columns} dataSource={data} bordered />
+              <Table columns={columns} dataSource={filteredData} bordered />
             </React.Fragment>
           )}
-        </div>
-        {modalVisible && (
-          <IngressRoutingModal
-            handleSubmit={(values) => handleSubmit(routeClicked, values)}
-            initialValues={routeClickedInfo}
-            handleCancel={handleModalCancel}
-          />
-        )}
-      </div>
+          {modalVisible && (
+            <IngressRoutingModal
+              handleSubmit={(values) => handleSubmit(routeClicked, values)}
+              initialValues={routeClickedInfo}
+              handleCancel={handleModalCancel}
+            />
+          )}
+          {filterModalVisible && <FilterForm
+            initialValues={filters}
+            serviceNames={serviceNames}
+            handleSubmit={handleFilter}
+            handleCancel={() => setFilterModalVisible(false)}
+          />}
+        </Content>
+      </ProjectPageLayout>
     </div>
   );
 }
 
-export default Routing;
+export default RoutingOverview;

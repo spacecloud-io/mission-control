@@ -138,6 +138,7 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Routes endpoint
       this.get("/config/projects/:projectId/routing/ingress", () => respondOk({ result: fixtures.ingressRoutes }))
+      this.post("/config/projects/:projectId/routing/ingress/global", () => respondOk())
       this.post("/config/projects/:projectId/routing/ingress/:routeId", () => respondOk())
       this.delete("/config/projects/:projectId/routing/ingress/:routeId", () => respondOk())
 
