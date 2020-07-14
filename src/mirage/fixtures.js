@@ -175,6 +175,19 @@ export const ingressRoutes = [
   }
 ]
 
+export const ingressRoutesGlobal = [
+  {
+    "headers": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "add" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ],
+    "resHeaders": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "del" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ]
+  }
+]
+
 export const letsencryptConfig = [
   {
     domains: ["example.com"]

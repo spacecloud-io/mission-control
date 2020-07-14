@@ -53,7 +53,7 @@ export const deleteIngressRoute = (projectId, routeId) => {
 
 export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
   return new Promise((resolve, reject) => {
-    const globalConfig = getIngressRoutesGlobalConfig()
+    const globalConfig = getIngressRoutesGlobalConfig(store.getState())
     const newGlobalConfig = Object.assign({}, globalConfig, { headers: headers })
     client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
       .then(() => {
@@ -66,7 +66,7 @@ export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
 
 export const saveIngressGlobalResponseHeaders = (projectId, headers) => {
   return new Promise((resolve, reject) => {
-    const globalConfig = getIngressRoutesGlobalConfig()
+    const globalConfig = getIngressRoutesGlobalConfig(store.getState())
     const newGlobalConfig = Object.assign({}, globalConfig, { resHeaders: headers })
     client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
       .then(() => {
