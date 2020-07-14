@@ -45,7 +45,7 @@ const FileStorageConfig = () => {
     if (projectID) {
       incrementPendingRequests()
       loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
+        // .catch(ex => notify("error", "Error fetching secrets", ex))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])

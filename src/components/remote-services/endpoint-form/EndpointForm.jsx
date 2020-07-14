@@ -48,7 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers} = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
@@ -66,7 +66,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     overrideToken: token ? true : false,
     token: token,
     setHeaders: headers && headers.length > 0 ? true : false,
-    headers: headers && headers.length > 0 ? headers : [{ key: "", value: "" }],
+    headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
@@ -86,7 +86,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
         (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
         kind === endpointTypes.PREPARED ? graphTemplateData : "",
-        setHeaders ? headers : undefined,
+        setHeaders ? headers : undefined
       )
     } catch (error) {
       notify("error", "Error", error)
@@ -111,7 +111,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
 
   return (
     <Row>
-      <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }}>
+      <Col lg={{ span: 20, offset: 2 }} sm={{ span: 24 }}>
         <Card>
           <Form
             layout='vertical'
@@ -288,17 +288,17 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                   </Input.Group>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
-                  <FormItemLabel name='Set headers' />
+                  <FormItemLabel name='Modify request headers' />
                   <Form.Item name='setHeaders' valuePropName='checked'>
                     <Checkbox>
-                      Set the value of headers in the request
+                      Modify the value of headers in the request
                   </Checkbox>
                   </Form.Item>
                   <ConditionalFormBlock
                     dependency='setHeaders'
                     condition={() => form.getFieldValue('setHeaders') === true}
                   >
-                    <FormItemLabel name='Headers' />
+                    <FormItemLabel name='Specify request header modifications' />
                     <Form.List name="headers">
                       {(fields, { add, remove }) => {
                         return (
@@ -306,30 +306,44 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                             {fields.map((field, index) => (
                               <React.Fragment>
                                 <Row key={field}>
-                                  <Col span={10}>
+                                  <Col span={5}>
+                                    <Form.Item
+                                      name={[field.name, "op"]}
+                                      key={[field.name, "op"]}
+                                      validateTrigger={["onChange", "onBlur"]}
+                                      rules={[{ required: true, message: "Please input header operation" }]}
+                                      style={{ marginRight: 16 }}
+                                    >
+                                      <Select placeholder="Select header operation">
+                                        <Option value='set'>Set</Option>
+                                        <Option value='add'>Add</Option>
+                                        <Option value='del'>Delete</Option>
+                                      </Select>
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={8}>
                                     <Form.Item name={[field.name, "key"]}
                                       key={[field.name, "key"]}
                                       validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please input header key" }]}>
-                                      <Input
-                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                        placeholder="Header key"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={10}>
-                                    <Form.Item
-                                      validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please input header value" }]}
-                                      name={[field.name, "value"]}
-                                      key={[field.name, "value"]}
+                                      rules={[{ required: true, message: "Please input header key" }]}
+                                      style={{ marginRight: 16 }}
                                     >
-                                      <Input
-                                        placeholder="Header value"
-                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                      />
+                                      <Input placeholder="Header key" />
                                     </Form.Item>
                                   </Col>
+                                  <ConditionalFormBlock dependency="headers" condition={() => form.getFieldValue(["headers", field.name, "op"]) !== "del"}>
+                                    <Col span={8}>
+                                      <Form.Item
+                                        validateTrigger={["onChange", "onBlur"]}
+                                        rules={[{ required: true, message: "Please input header value" }]}
+                                        name={[field.name, "value"]}
+                                        key={[field.name, "value"]}
+                                        style={{ marginRight: 16 }}
+                                      >
+                                        <Input placeholder="Header value" />
+                                      </Form.Item>
+                                    </Col>
+                                  </ConditionalFormBlock>
                                   <Col span={3}>
                                     <Button
                                       onClick={() => remove(field.name)}
@@ -353,7 +367,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                                 }}
                                 style={{ marginRight: "2%", float: "left" }}
                               >
-                                <PlusOutlined /> Add header</Button>
+                                <PlusOutlined /> Add modification</Button>
                             </Form.Item>
                           </div>
                         );

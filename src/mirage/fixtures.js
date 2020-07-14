@@ -173,12 +173,29 @@ export const ingressRoutes = [
     "rule": { "rule": "allow" },
     "modify": {
       "headers": [
-        { "key": "headerKey1", "value": "headerValue1" },
+        { "key": "headerKey1", "value": "headerValue1", "op": "add" },
         { "key": "headerKey2", "value": "headerValue2" }
+      ],
+      "resHeaders": [
+        { "key": "headerKey1", "value": "headerValue1", "op": "del" },
+        { "key": "headerKey2", "value": "headerValue2", "op": "set" }
       ],
       "outputFormat": "json",
       "requestTemplate": "{\"yo\": \"lo\"}"
     }
+  }
+]
+
+export const ingressRoutesGlobal = [
+  {
+    "headers": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "add" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ],
+    "resHeaders": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "del" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ]
   }
 ]
 
@@ -200,8 +217,8 @@ export const remoteServices = [
           "rule": "allow"
         },
         "headers": [
-          { "key": "headerKey1", "value": "headerValue1" },
-          { "key": "headerKey2", "value": "headerValue2" }
+          { "key": "headerKey1", "value": "headerValue1", "op": "add" },
+          { "key": "headerKey2", "value": "headerValue2", "op": "del" }
         ]
       },
       "externalEndpoint": {

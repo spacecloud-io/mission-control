@@ -72,4 +72,5 @@ export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
 
 // Getters
 export const getServices = (state) => get(state, "services", [])
+export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})

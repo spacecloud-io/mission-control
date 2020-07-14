@@ -14,6 +14,17 @@ export const loadIngressRoutes = (projectId) => {
   })
 }
 
+export const loadIngressRoutesGlobalConfig = (projectId) => {
+  return new Promise((resolve, reject) => {
+    client.routing.fetchIngressRoutesGlobalConfig(projectId)
+      .then(ingressRoutesGlobalConfig => {
+        store.dispatch(set("ingressRoutesGlobal", ingressRoutesGlobalConfig))
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const saveIngressRouteConfig = (projectId, routeId, config) => {
   return new Promise((resolve, reject) => {
     const rule = getIngressRouteSecurityRule(store.getState(), routeId)
@@ -55,6 +66,32 @@ export const deleteIngressRoute = (projectId, routeId) => {
   })
 }
 
+export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
+  return new Promise((resolve, reject) => {
+    const globalConfig = getIngressRoutesGlobalConfig(store.getState())
+    const newGlobalConfig = Object.assign({}, globalConfig, { headers: headers })
+    client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
+      .then(() => {
+        setIngressRoutesGlobalConfig(newGlobalConfig)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const saveIngressGlobalResponseHeaders = (projectId, headers) => {
+  return new Promise((resolve, reject) => {
+    const globalConfig = getIngressRoutesGlobalConfig(store.getState())
+    const newGlobalConfig = Object.assign({}, globalConfig, { resHeaders: headers })
+    client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
+      .then(() => {
+        setIngressRoutesGlobalConfig(newGlobalConfig)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getIngressRoutes = (state) => get(state, "ingressRoutes", [])
 export const getIngressRouteSecurityRule = (state, id) => {
@@ -82,3 +119,5 @@ const getIngressRoute = (state, routeId) => {
   const index = ingressRoutes.findIndex(obj => obj.id === routeId)
   return (index === -1) ? {} : ingressRoutes[index]
 } 
+export const getIngressRoutesGlobalConfig = (state) => get(state, "ingressRoutesGlobal", {})
+const setIngressRoutesGlobalConfig = (config) => store.dispatch(set("ingressRoutesGlobal", config)) 

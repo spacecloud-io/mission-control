@@ -40,7 +40,8 @@ import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "./pages/settings/project/ProjectSettings";
 import ClusterSettings from "./pages/settings/cluster/ClusterSettings";
-import Routing from './pages/routing/Routing';
+import RoutingOverview from './pages/routing/overview/Overview';
+import RoutingSettings from './pages/routing/settings/Settings';
 import UpgradeCluster from './pages/billing/UpgradeCluster';
 import ChangePlan from './pages/billing/ChangePlan';
 import RegisterCluster from './pages/billing/RegisterCluster';
@@ -82,7 +83,10 @@ export default () => {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/cluster" component={ClusterSettings} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes" component={Routing} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes"
+        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/ingress-routes/overview`} />} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes/overview" component={RoutingOverview} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes/settings" component={RoutingSettings} />
       <PrivateRoute path="/mission-control/projects/:projectID/eventing" component={EventingIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/overview" component={EventingOverview} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/eventing/rules" component={EventingRules} />

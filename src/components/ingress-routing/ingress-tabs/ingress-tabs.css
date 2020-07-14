@@ -1,0 +1,17 @@
+.ingress-tabs .ant-tabs-nav-animated {
+  margin-left: 32px;
+}
+
+.ingress-tabs .ant-tabs-tab {
+  color: #979797;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ingress-tabs .ant-tabs {
+  height: 48px;
+}
+
+.ingress-tabs .ant-tabs-tab-active {
+  color: #ff8629
+}
