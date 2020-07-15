@@ -104,6 +104,7 @@ const RulesEditor = () => {
         .catch(ex => notify("error", "Error saving rules", ex))
         .finally(() => decrementPendingRequests())
     } catch (ex) {
+      decrementPendingRequests()
       notify("error", "Error", ex)
       return;
     }
@@ -112,6 +113,7 @@ const RulesEditor = () => {
   const handleUseDefaultRules = () => {
     incrementPendingRequests()
     saveSecurityRule(projectID, ruleType, id, group, {})
+      .then(() => setRule({}))
       .catch(ex => notify("error", "Error using default rules", ex))
       .finally(() => decrementPendingRequests())
   }
@@ -137,7 +139,7 @@ const RulesEditor = () => {
       <Topbar />
       <div className='editor-page'>
         {ruleExists && (
-          <Tabs defaultActiveKey={tab} onChange={onTabChange} style={{ height: "100%" }}>
+          <Tabs defaultActiveKey={tab} activeKey={activeTab} onChange={onTabChange} style={{ height: "100%" }}>
             <Tabs.TabPane tab='Builder' key='builder' >
               <React.Fragment>
                 <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>

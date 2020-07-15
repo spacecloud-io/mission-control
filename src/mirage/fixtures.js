@@ -57,8 +57,7 @@ export const dbRules = [
           "rule": "and",
           "clauses": [
             {
-              "rule": "webhook",
-              "url": "localhost"
+              "rule": "force"
             }
           ]
         },
@@ -100,7 +99,12 @@ export const eventingConfig = [
 
 export const eventingSchemas = []
 
-export const eventingRules = []
+export const eventingRules = [
+  {
+    "id": "MY_CUSTOM_EVENT",
+    "rule": "allow" 
+  }
+]
 
 export const eventingTriggers = [
   {

@@ -11,9 +11,9 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import "./add-rule-modal.css"
 import { notify } from "../../utils";
-import { defaultFileRootPathRule } from "../../constants";
+import { defaultFileRule } from "../../constants";
 
-const defaultRule = JSON.stringify(defaultFileRootPathRule, null, 2)
+const defaultRule = JSON.stringify(defaultFileRule, null, 2)
 const AddRuleForm = (props) => {
   const [form] = Form.useForm()
   const [data, setData] = useState(defaultRule)

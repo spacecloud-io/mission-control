@@ -23,7 +23,7 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
-function isJson(str) {
+export function isJson(str) {
   try {
     JSON.parse(str);
   } catch (e) {

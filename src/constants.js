@@ -62,10 +62,6 @@ export const defaultEventRule = {
   rule: "allow"
 }
 
-export const defaultFileRootPathRule = {
-  rule: defaultFileRule
-}
-
 export const defaultEndpointRule = {
   rule: "allow"
 }

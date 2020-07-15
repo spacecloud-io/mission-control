@@ -12,16 +12,10 @@ import {
   Col,
   AutoComplete,
 } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
+import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
-import { notify, dbIcons } from '../../../utils';
+import { notify, dbIcons, isJson } from '../../../utils';
 import { generateSchemaAST } from '../../../graphql';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -30,8 +24,66 @@ import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
 
+
+const getTypeFromValue = (value) => {
+  if (value === "") {
+    return
+  }
+
+  if (typeof value === "number") return "number"
+  if (typeof value === "boolean") return "bool"
+  if (typeof value === "string") {
+    if (value.includes(".")) return "variable"
+    return "string"
+  }
+  if (typeof value === "object") return "object"
+}
+
+const createValueAndTypeValidator = (type, arrayAllowed) => {
+  return (_, value, cb) => {
+    if (!type) {
+      cb()
+      return
+    }
+
+    if (type === "string" || type === "variable") {
+      cb()
+      return
+    }
+
+    // Allow variables
+    if (value.includes(".")) {
+      cb()
+      return
+    }
+
+
+    if (!arrayAllowed && value.includes(",")) {
+      cb("Commas are not allowed here!")
+      return
+    }
+
+    const values = value.split(",").map(v => v.trim())
+    const areValuesValid = values.every(v => (type === "number") ? !isNaN(v) : (v === "true" || v === "false"))
+    if (!areValuesValid) {
+      cb(`Value must be a ${type === "bool" ? "boolean" : "number"} or a variable!`)
+      return
+    }
+    cb()
+  }
+}
+
 const parseValue = (value, type) => {
-  return (type === "number") ? parseNumber(value) : (type === "bool" ? parseBoolean(value) : value)
+  switch (type) {
+    case "number":
+      return parseNumber(value)
+    case "bool":
+      return parseBoolean(value)
+    case "object":
+      return JSON.parse(value)
+    default:
+      return value
+  }
 }
 
 const parseBoolean = (value) => {
@@ -52,6 +104,7 @@ const parseArray = (value, type) => {
 }
 
 const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
+
 const ConfigureRule = (props) => {
   // form
   const [form] = Form.useForm();
@@ -65,7 +118,6 @@ const ConfigureRule = (props) => {
   // Component state
   const [selectedDb, setSelectedDb] = useState("");
   const [col, setCol] = useState('');
-  const [findQuery, setFindQuery] = useState("{}");
 
   // Derived properties
   const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
@@ -102,7 +154,7 @@ const ConfigureRule = (props) => {
         break;
       case "query":
         try {
-          values.find = JSON.parse(findQuery);
+          values.find = JSON.parse(values.find);
         } catch (ex) {
           notify("error", "Error", ex.toString())
           return;
@@ -170,6 +222,24 @@ const ConfigureRule = (props) => {
       autoCompleteOptions = { auth: true, params: true, query }
   }
 
+  const formInitialValues = {
+    rule,
+    type: (rule === "force") ? getTypeFromValue(value) : type,
+    f1,
+    eval: props.selectedRule.eval,
+    f2,
+    fields,
+    field,
+    value,
+    url,
+    find: JSON.stringify(props.selectedRule.find, null, 2),
+    errorMsg: error ? true : false,
+    error
+  }
+
+  if (formInitialValues.type === "object") {
+    formInitialValues.value = JSON.stringify(formInitialValues.value, null, 2)
+  }
 
   return (
     <Drawer
@@ -183,19 +253,8 @@ const ConfigureRule = (props) => {
         name='configure'
         form={form}
         onFinish={onFinish}
-        initialValues={{
-          rule,
-          type,
-          f1,
-          eval: props.selectedRule.eval,
-          f2,
-          fields,
-          field,
-          value: value,
-          url,
-          errorMsg: error ? true : false,
-          error
-        }}
+        initialValues={formInitialValues}
+        validateMessages={{ required: "Please provide a value!" }}
       >
         <FormItemLabel name='Rule Type' />
         <Form.Item name='rule'>
@@ -212,7 +271,7 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('rule') === 'match'}
         >
           <FormItemLabel name='Operands data type' />
-          <Form.Item name='type'>
+          <Form.Item name='type' rules={[{ required: true }]}>
             <Select placeholder="Data type">
               <Select.Option value='string'>String</Select.Option>
               <Select.Option value='number'>Number</Select.Option>
@@ -220,8 +279,17 @@ const ConfigureRule = (props) => {
             </Select>
           </Form.Item>
           <FormItemLabel name='First operand' />
-          <Form.Item name='f1'>
-            <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions} />
+          <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
+            {
+              () => {
+                const type = form.getFieldValue("type")
+                return (
+                  <Form.Item name='f1' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, false) }]}>
+                    <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions} />
+                  </Form.Item>
+                )
+              }
+            }
           </Form.Item>
           <FormItemLabel name='Evaluation type' />
           <Form.Item name='eval'>
@@ -237,8 +305,17 @@ const ConfigureRule = (props) => {
             </Select>
           </Form.Item>
           <FormItemLabel name='Second operand' />
-          <Form.Item name='f2'>
-            <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
+          <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
+            {
+              () => {
+                const type = form.getFieldValue("type")
+                return (
+                  <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
+                    <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
+                  </Form.Item>
+                )
+              }
+            }
           </Form.Item>
           <Alert
             description={
@@ -315,21 +392,71 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('rule') === 'force'}
         >
           <FormItemLabel name="Field" />
-          <FormItem name="field">
+          <FormItem name="field" rules={[{ required: true }]}>
             <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
           </FormItem>
           <FormItemLabel name="Datatype" />
-          <FormItem name="type">
+          <FormItem name="type" rules={[{ required: true }]}>
             <Select placeholder="Data type">
               <Select.Option value="string">String</Select.Option>
               <Select.Option value="number">Number</Select.Option>
               <Select.Option value="bool">Bool</Select.Option>
+              <Select.Option value="object">Object</Select.Option>
+              <Select.Option value="variable">Variable</Select.Option>
             </Select>
           </FormItem>
           <FormItemLabel name="Value" />
-          <FormItem name="value">
-            <Input placeholder="Value" />
-          </FormItem>
+          <ConditionalFormBlock
+            dependency="type"
+            condition={() => form.getFieldValue('type') !== 'object'}>
+            <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
+              {
+                () => {
+                  const type = form.getFieldValue("type")
+                  return (
+                    <Form.Item name='value' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, false) }]}>
+                      <Input placeholder="Value" onChange={(e) => {
+                        if (e.target.value.includes(".") && type !== "variable") {
+                          form.setFieldsValue({ type: "variable" })
+                        }
+                      }} />
+                    </Form.Item>
+                  )
+                }
+              }
+            </Form.Item>
+          </ConditionalFormBlock>
+          <ConditionalFormBlock
+            dependency="type"
+            condition={() => form.getFieldValue('type') === 'object'}>
+            <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
+              {
+                () => {
+                  const type = form.getFieldValue("type")
+                  return (
+                    <Form.Item name='value' rules={[{ required: true }, {
+                      validator: (_, value, cb) => {
+                        if (!isJson(value)) {
+                          cb("Please provide a valid JSON object!")
+                          return
+                        }
+                        cb()
+                      }
+                    }]} validateTrigger="onBlur">
+                      <AntCodeMirror options={{
+                        mode: { name: 'javascript', json: true },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2
+                      }} />
+                    </Form.Item>
+                  )
+                }
+              }
+            </Form.Item>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
@@ -362,7 +489,7 @@ const ConfigureRule = (props) => {
             </Select>
           </Form.Item>
           <FormItemLabel name='Collection / Table name' />
-          <Form.Item name='col'>
+          <Form.Item name='col' rules={[{ required: true }]}>
             <AutoComplete
               placeholder='Collection / Table name'
               onSearch={handleSearch}
@@ -379,25 +506,17 @@ const ConfigureRule = (props) => {
                 ))}
             </AutoComplete>
           </Form.Item>
-          <FormItemLabel name='Find query' />
-          <div style={{ border: '1px solid #D9D9D9', marginBottom: 24 }}>
-            <CodeMirror
-              style={{ border: '1px solid #D9D9D9' }}
-              value={findQuery}
-              options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
-              onBeforeChange={(editor, data, value) => {
-                setFindQuery(value);
-              }}
-            />
-          </div>
+          <FormItemLabel name='Find query' style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="find" rules={[{ required: true }]}>
+            <AntCodeMirror options={{
+              mode: { name: 'javascript', json: true },
+              lineNumbers: true,
+              styleActiveLine: true,
+              matchBrackets: true,
+              autoCloseBrackets: true,
+              tabSize: 2
+            }} />
+          </Form.Item>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>

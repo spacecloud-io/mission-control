@@ -104,8 +104,6 @@ const generateGraph = (ruleType, ruleName, rule) => {
       edges.push(...rootRuleGraph.edges)
   }
 
-  console.table(nodes)
-
   return { nodes, edges };
 }
 

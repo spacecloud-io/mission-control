@@ -48,16 +48,10 @@ export const saveRemoteServiceEndpoint = (projectId, serviceId, endpointId, endp
 }
 
 export const saveRemoteServiceEndpointRule = (projectId, serviceId, endpointId, rule) => {
-  const newEndpointConfig = Object.assign({}, config, { rule })
   const state = store.getState()
-  const endpoints = getRemoteServiceEndpoints(state, serviceId)
-  // Strip out the rule from the config 
-  const { rule: _, ...config } = getRemoteServiceEndpointConfig(state, serviceId, endpointId)
-  // New config should be old config + new rule
-  const newEndpoints = Object.assign({}, endpoints, { [endpointId]: newEndpointConfig })
-  const serviceConfig = getRemoteServiceConfig(state, serviceId)
-  const newServiceConfig = Object.assign({}, serviceConfig, { endpoints: newEndpoints })
-  return saveRemoteService(projectId, serviceId, newServiceConfig)
+  const endpointConfig = getRemoteServiceEndpointConfig(state, serviceId, endpointId)
+  const newEndpointConfig = Object.assign({}, endpointConfig, { rule })
+  return saveRemoteServiceEndpoint(projectId, serviceId, endpointId, newEndpointConfig)
 }
 
 export const deleteRemoteServiceEndpoint = (projectId, serviceId, endpointId) => {

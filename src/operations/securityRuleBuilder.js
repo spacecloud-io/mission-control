@@ -1,7 +1,7 @@
 import { loadDbConfig, loadDbSchemas, loadDbRules, loadDbPreparedQueries, getCollectionSecurityRule, getPreparedQuerySecurityRule, saveColSecurityRules, savePreparedQuerySecurityRule } from "./database"
 import { securityRuleGroups } from "../constants"
 import { loadEventingSecurityRules, getEventingSecurityRule, saveEventingSecurityRule } from "./eventing"
-import { loadFileStoreRules, saveFileStoreRule, getFileStoreSecurityRule } from "./fileStore"
+import { loadFileStoreRules, getFileStoreSecurityRule, saveFileStoreSecurityRule } from "./fileStore"
 import { loadRemoteServices, getRemoteEndpointSecurityRule, saveRemoteServiceEndpointRule } from "./remoteServices"
 import { loadIngressRoutes, getIngressRouteSecurityRule, getIngressRouteURL, saveIngressRouteRule } from "./ingressRoutes"
 
@@ -61,7 +61,7 @@ export const saveSecurityRule = (projectId, ruleType, id, group, rule) => {
         req = savePreparedQuerySecurityRule(projectId, group, id, rule)
         break
       case securityRuleGroups.FILESTORE:
-        req = saveFileStoreRule(projectId, id, rule)
+        req = saveFileStoreSecurityRule(projectId, id, rule)
         break
       case securityRuleGroups.EVENTING:
         req = saveEventingSecurityRule(projectId, id, rule)
