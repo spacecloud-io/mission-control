@@ -8,6 +8,7 @@ import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
+import { getEnv, isClusterUpgraded } from '../../operations/cluster';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -45,7 +46,9 @@ const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const version = useSelector(state => state.env.version)
+  const { licenseType, version } = useSelector(state => getEnv(state))
+  const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
+  const plan = `${clusterUpgraded ? licenseType : "Open source"} plan`
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
@@ -108,6 +111,8 @@ const Sidenav = (props) => {
         <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
+          <br />
+          <span className="plan">{plan}</span>
         </div>
       </div>
     </div>

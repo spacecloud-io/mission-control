@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { dbIcons, isSignedIn } from '../../utils'
+import { dbIcons, openBillingPortal } from '../../utils'
 import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
-import { Button, Menu, Popover, Row, Col, Divider } from 'antd';
+import { Button, Menu, Popover, Row, Col } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -15,7 +15,8 @@ import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
-import avatarSvg from '../../assets/avatar.svg';
+import crownSvg from "../../assets/crown.svg";
+import { isClusterUpgraded } from '../../operations/cluster';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -23,6 +24,7 @@ const Topbar = (props) => {
   const [modalVisible, setModalVisible] = useState(false)
   const [visible, setVisible] = useState(false)
   const projects = useSelector(state => state.projects)
+  const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
   const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
@@ -46,33 +48,6 @@ const Topbar = (props) => {
         </Col>
       </Row>
     </div>
-  );
-
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.reload()
-  }
-
-  const signedIn = isSignedIn();
-  const avatarContent = (
-    <Row>
-      {signedIn && <React.Fragment>
-        <Col lg={{ span: 5 }}>
-          <img src={avatarSvg} />
-        </Col>
-        <Col lg={{ span: 17, offset: 2 }}>
-          <h4>{localStorage.getItem('name')}</h4>
-          <p>{localStorage.getItem('email')}</p>
-          <Button type="primary" onClick={handleLogout}>Logout</Button>
-        </Col>
-      </React.Fragment>}
-      {!signedIn && <Col lg={{ span: 24, offset: 0 }}>
-        <div style={{ padding: "32px" }}>
-          <p>You are not logged in</p>
-          <Button type="primary" onClick={() => store.dispatch(set("uiState.showSigninModal", true))}>Login</Button>
-        </div>
-      </Col>}
-    </Row>
   );
 
   return (
@@ -115,11 +90,14 @@ const Topbar = (props) => {
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
-            {/* <Menu.Item>
-              <Popover className="signin-popover" content={avatarContent} trigger="click" placement="bottomRight" overlayStyle={{ textAlign: 'left' }} >
-                <img src={avatarSvg} />
-              </Popover>
-            </Menu.Item> */}
+            {!clusterUpgraded && <Menu.Item>
+              <Button type="primary" ghost onClick={openBillingPortal}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <span>Upgrade</span>
+                  <img style={{ marginLeft: 8 }} src={crownSvg} alt="Crown" />
+                </div>
+              </Button>
+            </Menu.Item>}
           </Menu>
         </div>
       </div>
