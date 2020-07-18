@@ -1,6 +1,6 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute, BillingRoute } from "./utils";
+import { PrivateRoute } from "./utils";
 import history from "./history";
 
 import Home from "./pages/home/Home";
@@ -40,12 +40,9 @@ import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "./pages/settings/project/ProjectSettings";
 import ClusterSettings from "./pages/settings/cluster/ClusterSettings";
+import ApplyLicense from "./pages/settings/apply-license/ApplyLicense";
 import RoutingOverview from './pages/routing/overview/Overview';
 import RoutingSettings from './pages/routing/settings/Settings';
-import UpgradeCluster from './pages/billing/UpgradeCluster';
-import ChangePlan from './pages/billing/ChangePlan';
-import RegisterCluster from './pages/billing/RegisterCluster';
-import ContactUs from './pages/billing/ContactUs';
 import SecretsIndex from "./pages/secrets/Index";
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
@@ -83,6 +80,7 @@ export default () => {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/cluster" component={ClusterSettings} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/settings/apply-license" component={ApplyLicense} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes"
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/ingress-routes/overview`} />} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes/overview" component={RoutingOverview} />
@@ -107,10 +105,6 @@ export default () => {
       <PrivateRoute path="/mission-control/projects/:projectID/deployments" component={DeploymentsIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/billing/upgrade-cluster" component={UpgradeCluster} />
-      <BillingRoute exact path="/mission-control/projects/:projectID/billing/change-plan" component={ChangePlan} />
-      <BillingRoute exact path="/mission-control/projects/:projectID/billing/register-cluster" component={RegisterCluster} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/billing/contact-us" component={ContactUs} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/security-rules/editor" component={RulesEditor} />
       <PrivateRoute path="/mission-control/projects/:projectID/secrets" component={SecretsIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />

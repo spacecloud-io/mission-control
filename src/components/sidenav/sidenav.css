@@ -55,19 +55,20 @@
   margin-top: auto;
 }
 
-.version-no{
+.version-no {
   font-weight: 700;
   font-size: 18px;
   margin-left: 10%;
 }
 
-.plan{
+.plan {
   font-weight: 500;
-  font-size: 12px;
+  font-size: 14px;
   margin-left: 20%;
+  color: rgba(0, 0, 0, 0.45);
 }
 
-.sidenav-container .upgrade-btn{
+.sidenav-container .upgrade-btn {
   width: 100%;
 }
 
@@ -83,7 +84,10 @@
   border: 0;
 }
 
-.sidenav-container .ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header {
+.sidenav-container
+  .ant-collapse-icon-position-right
+  > .ant-collapse-item
+  > .ant-collapse-header {
   padding: 0;
 }
 
@@ -91,7 +95,8 @@
   padding: 0;
 }
 
-.sidenav-container .ant-collapse-borderless
+.sidenav-container
+  .ant-collapse-borderless
   > .ant-collapse-item
   > .ant-collapse-content
   > .ant-collapse-content-box {

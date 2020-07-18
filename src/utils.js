@@ -6,7 +6,6 @@ import uri from "lil-uri"
 import { dbTypes, SPACE_CLOUD_USER_ID, securityRuleGroups } from './constants';
 
 import store from "./store"
-import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
@@ -16,6 +15,7 @@ import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
+import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfNeeded } from './operations/cluster'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -198,6 +198,14 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
+export function openBillingPortal() {
+  window.open("https://billing.spaceuptech.com", "_blank")
+}
+
+export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
+  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  window.open(url, '_blank')
+}
 
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
@@ -218,170 +226,27 @@ export const openProject = (projectId) => {
   }
 }
 
-export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
-  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
-  window.open(url, '_blank')
-}
+// Performs actions to be done when an user is logged in to space cloud cluster
+// Note: In dev mode these actions are performed even if an user is not logged in
+export function performActionsOnAuthenticated() {
+  incrementPendingRequests()
+  loadProjects()
+    .then(projects => {
+      if (projects.length === 0) {
+        history.push(`/mission-control/welcome`)
+        return
+      }
 
-export const fetchBillingDetails = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchBillingDetails().then(({ details, amount }) => {
-      store.dispatch(set("billing", { status: true, details, balanceCredits: amount }))
-      resolve()
-    }).catch(ex => reject(ex))
-  })
-}
+      // Decide which project to open
+      let projectToBeOpened = getProjectToBeOpened()
+      if (!projectToBeOpened) {
+        projectToBeOpened = projects[0].id
+      }
 
-export const fetchInvoices = (startingAfter) => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchInvoices(startingAfter).then((invoices) => {
-      const oldInvoices = store.getState().invoices
-      const newInvoices = [...oldInvoices, ...invoices]
-      const hasMore = invoices.length === 10
-      let invoicesMap = newInvoices.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
-      const uniqueInvoices = Object.values(invoicesMap)
-      const sortedInvoices = uniqueInvoices.sort((a, b) => a.number < b.number ? -1 : 1)
-      store.dispatch(set("invoices", sortedInvoices))
-      resolve(hasMore)
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchClusters = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchClusters().then((clusters) => {
-      store.dispatch(set("clusters", clusters))
-      resolve()
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchGlobalEntities = (token, spaceUpToken) => {
-  // Save the new token value
-  if (token) {
-    saveToken(token)
-  }
-
-  if (spaceUpToken) {
-    saveSpaceUpToken(spaceUpToken)
-  }
-
-  // Redirect if needed
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
-
-  if (shouldFetchGlobalEntities()) {
-    // Fetch projects
-    incrementPendingRequests()
-    loadProjects()
-      .then(projects => {
-        if (projects.length === 0) {
-          history.push(`/mission-control/welcome`)
-          return
-        }
-
-        // Decide which project to open
-        let projectToBeOpened = getProjectToBeOpened()
-        if (!projectToBeOpened) {
-          projectToBeOpened = projects[0].id
-        }
-
-        openProject(projectToBeOpened)
-      })
-      .catch(ex => notify("error", "Could not fetch projects", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-
-    // if (spaceUpToken) {
-    //   store.dispatch(increment("pendingRequests"))
-    //   fetchBillingDetails()
-    //     .catch(ex => console.log("Error fetching billing details", ex))
-    //     .finally(() => store.dispatch(decrement("pendingRequests")))
-    // }
-  }
-}
-
-function shouldFetchGlobalEntities() {
-  const prodMode = isProdMode()
-  const token = getToken()
-
-  if (prodMode && !token) return false
-  return true
-}
-
-function getTokenClaims(token) {
-  const temp = token.split(".")
-  const decoded = atob(temp[1])
-  let claims = {}
-  try {
-    const decodedObj = JSON.parse(decoded)
-    claims = decodedObj
-  } catch (error) {
-    console.log("Error decoding token", error)
-  }
-  return claims
-}
-
-export function isProdMode() {
-  return localStorage.getItem("isProd") === "true" ? true : false
-}
-
-export function isBillingEnabled(state) {
-  return get(state, "billing.status", false)
-}
-
-export function isSignedIn() {
-  const spaceUpToken = getSpaceUpToken()
-  return spaceUpToken ? true : false
-}
-
-export function getClusterId(state) {
-  return get(state, "env.clusterId", undefined)
-}
-
-export function getClusterPlan(state) {
-  const plan = get(state, "env.plan", "space-cloud-open--monthly")
-  return plan ? plan : "space-cloud-open--monthly"
-}
-
-export function getToken() {
-  return localStorage.getItem("token")
-}
-export function getSpaceUpToken() {
-  return localStorage.getItem("spaceUpToken")
-}
-
-
-function storeToken(token) {
-  localStorage.setItem("token", token)
-}
-
-function storeSpaceUpToken(token) {
-  localStorage.setItem("spaceUpToken", token)
-}
-
-function saveToken(token) {
-  storeToken(token)
-  client.setToken(token)
-}
-
-function saveSpaceUpToken(token) {
-  // Get claims of the token
-  const { email, name } = getTokenClaims(token)
-
-  // Save token claims to local storage
-  localStorage.setItem("email", email)
-  localStorage.setItem("name", name)
-
-  // Save token to local storage and set the token on the API
-  storeSpaceUpToken(token)
-}
-
-function saveEnv(isProd, version, clusterId, plan, quotas) {
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("env", { version, clusterId, plan, quotas }))
+      openProject(projectToBeOpened)
+    })
+    .catch(ex => notify("error", "Could not fetch projects", ex))
+    .finally(() => decrementPendingRequests())
 }
 
 function isCurrentRoutePublic() {
@@ -395,7 +260,7 @@ function shouldRedirect() {
     return { redirect: false, redirectUrl: "" }
   }
 
-  const productionMode = localStorage.getItem("isProd") === "true"
+  const productionMode = isProdMode()
   const token = getToken()
 
   if (productionMode && !token) {
@@ -405,7 +270,7 @@ function shouldRedirect() {
   return { redirect: false, redirectUrl: "" }
 }
 
-function redirectIfNeeded() {
+export function redirectIfNeeded() {
   const { redirect, redirectUrl } = shouldRedirect()
   if (redirect) {
     history.push(redirectUrl)
@@ -453,94 +318,28 @@ const registerSecurityRulesBroadCastListener = () => {
 }
 
 export const onAppLoad = () => {
-  client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
-    // Store env
-    saveEnv(isProd, version, clusterId, plan, quotas)
+  loadClusterEnv()
+    .then(() => {
+      refreshClusterTokenIfNeeded()
+        .then((tokenRefreshed) => {
+          redirectIfNeeded()
+          // Note: In case of dev mode tokenRefreshed will always be true
+          if (tokenRefreshed) {
+            performActionsOnAuthenticated()
+          }
+        })
+        .catch(ex => {
+          notify("error", "Error refreshing token", ex)
+          redirectIfNeeded()
+        })
 
-    // Redirect if needed
-    redirectIfNeeded()
+      setInterval(() => {
+        refreshClusterTokenIfNeeded().finally(() => redirectIfNeeded())
+      }, 15 * 60 * 1000)
 
-    const token = getToken()
-    const spaceUpToken = getSpaceUpToken()
-    if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, spaceUpToken)).catch(ex => {
-        console.log("Error refreshing token: ", ex.toString())
-        localStorage.removeItem("token")
-        redirectIfNeeded()
-      })
-      return
-    }
-
-    fetchGlobalEntities(token, spaceUpToken)
-  })
-
-  registerSecurityRulesBroadCastListener()
-}
-
-export function enterpriseSignin(token) {
-  return new Promise((resolve, reject) => {
-    client.billing.signIn(token)
-      .then(newToken => {
-        saveSpaceUpToken(newToken)
-        fetchBillingDetails().finally(() => resolve())
-      })
-      .catch((error) => reject(error))
-  })
-}
-
-export function registerCluster(clusterName, doesExist = false) {
-  return new Promise((resolve, reject) => {
-    const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
-    if (isClusterIdAlreadySet) {
-      reject(new Error("This space cloud cluster is already registered"))
-      return
-    }
-
-    client.billing.registerCluster(clusterName, doesExist)
-      .then(({ ack, clusterId, clusterKey }) => {
-        if (!ack) {
-          resolve({ registered: false })
-          return
-        }
-
-        client.setClusterIdentity(clusterId, clusterKey)
-          .then(() => {
-            resolve({ registered: true, notifiedToCluster: true })
-            store.dispatch(set("env.clusterId", clusterId))
-            client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => saveEnv(isProd, version, clusterId, plan, quotas))
-          })
-          .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export function setClusterPlan(plan) {
-  return new Promise((resolve, reject) => {
-    const clusterId = getClusterId(store.getState())
-    client.billing.setPlan(clusterId, plan)
-      .then((plan) => {
-        client.renewClusterLicense()
-          .then(() => {
-            store.dispatch(set("env.plan", plan))
-            resolve()
-          })
-          .catch(ex => reject(ex))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export function applyCoupon(couponCode) {
-  return new Promise((resolve, reject) => {
-    client.billing.applyCoupon(couponCode)
-      .then((couponValue) => {
-        if (couponValue > 0) couponValue = couponValue * -1 // store balance credits in redux as negative number. 
-        store.dispatch(increment("billing.balanceCredits", couponValue))
-        resolve(couponValue)
-      })
-      .catch(ex => reject(ex))
-  })
+      registerSecurityRulesBroadCastListener()
+    })
+    .catch((ex) => notify("error", "Error fetching cluster environment", ex))
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {
@@ -553,23 +352,6 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
           <Redirect to={redirectUrl} />
         ) : (
             <Component {...props} />
-          )
-      }
-    />
-  )
-}
-
-
-export const BillingRoute = ({ component: Component, ...rest }) => {
-  const billingEnabled = isBillingEnabled(store.getState())
-  return (
-    <Route
-      {...rest}
-      render={props =>
-        !billingEnabled ? (
-          <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
-        ) : (
-            <PrivateRoute {...props} component={Component} />
           )
       }
     />
