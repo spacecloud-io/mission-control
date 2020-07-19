@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './rules-editor.css';
 import Topbar from '../../components/topbar/Topbar';
-import { Tabs, Button } from 'antd';
+import { Tabs, Button, Tooltip } from 'antd';
 
 import { notify, decrementPendingRequests, incrementPendingRequests } from '../../utils';
 import rabbit from '../../assets/rabbit.png';
@@ -39,6 +39,7 @@ const RulesEditor = () => {
   // Derived state
   const ruleExists = Object.keys(rule).length > 0
   const rulesChanged = activeTab === "builder" ? JSON.stringify(initialRule) !== JSON.stringify(rule) : stringifiedRule !== initialRuleStringified
+  const defaultRulesPossible = ruleType === securityRuleGroups.DB_COLLECTIONS || ruleType === securityRuleGroups.DB_PREPARED_QUERIES
 
   useDeepCompareEffect(() => {
     setRule(initialRule)
@@ -98,8 +99,10 @@ const RulesEditor = () => {
       const rules = tab === "builder" ? rule : JSON.parse(stringifiedRule);
       saveSecurityRule(projectID, ruleType, id, group, rules)
         .then(() => {
-          window.opener.focus()
-          window.close()
+          if (window.opener && !window.opener.closed) {
+            window.opener.focus()
+            window.close()
+          }
         })
         .catch(ex => notify("error", "Error saving rules", ex))
         .finally(() => decrementPendingRequests())
@@ -128,7 +131,16 @@ const RulesEditor = () => {
     }
   };
 
-  const UseDefaultRulesButton = () => <Button onClick={handleUseDefaultRules} style={{ marginRight: 16 }}>Use default rules</Button>
+  const UseDefaultRulesButton = () => {
+    if (!defaultRulesPossible) {
+      return (
+        <Tooltip title="Default rules work only for database" >
+          <Button style={{ marginRight: 16 }} disabled>Use default rules</Button>
+        </Tooltip>
+      )
+    }
+    return <Button onClick={handleUseDefaultRules} style={{ marginRight: 16 }}>Use default rules</Button>
+  }
 
   return (
     <React.Fragment>
@@ -184,7 +196,7 @@ const RulesEditor = () => {
             </div>
             <div className='rabbit'>
               <img src={rabbit} alt='rabbit.png' />
-              <p style={{ margin: '30px 0px' }}>No rules defined yet. Default rules are being applied.</p>
+              <p style={{ margin: '30px 0px' }}>No rules defined yet. {defaultRulesPossible ? "Default rules are being applied." : "Define rules to secure the resource."}</p>
               <Button onClick={addDefaultSecurityRules} type='primary' size='large'>Add security rules</Button>
             </div>
           </div>

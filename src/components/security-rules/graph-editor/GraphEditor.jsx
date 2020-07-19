@@ -21,7 +21,6 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
   const { ruleType } = ruleMetaData
 
   // Component state
-  const [selectedRule, setSelectedRule] = useState({});
   const [selectedNodeId, setselectedNodeId] = useState();
   const [doubleClickedNodeId, setDoubleClickedNodeId] = useState("");
   const [network, setNetwork] = useState();
@@ -46,7 +45,13 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     oncontext: (event) => {
       const position = event.pointer.DOM;
       const nodeId = network.getNodeAt(position);
-      if (nodeId) network.selectNodes([nodeId], false);
+      if (nodeId) {
+        network.selectNodes([nodeId], false);
+        const group = graph.nodes.find(val => val.id === nodeId).group;
+        if (group !== "add_rule") {
+          setselectedNodeId(nodeId);
+        }
+      }
     },
     select: (event) => {
       const node = event.nodes[0];

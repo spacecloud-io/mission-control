@@ -24,6 +24,15 @@ import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
 
+const getInputValueFromActualValue = (value, dataType) => {
+  if (value === null || value === undefined) {
+    return ""
+  }
+  if (dataType === "object") {
+    return JSON.stringify(value, null, 2)
+  }
+  return String(value)
+}
 
 const getTypeFromValue = (value) => {
   if (value === "") {
@@ -46,7 +55,7 @@ const createValueAndTypeValidator = (type, arrayAllowed) => {
       return
     }
 
-    if (type === "string" || type === "variable") {
+    if (type === "string") {
       cb()
       return
     }
@@ -64,9 +73,30 @@ const createValueAndTypeValidator = (type, arrayAllowed) => {
     }
 
     const values = value.split(",").map(v => v.trim())
-    const areValuesValid = values.every(v => (type === "number") ? !isNaN(v) : (v === "true" || v === "false"))
+    const areValuesValid = values.every(v => {
+      switch (type) {
+        case "number":
+          return !isNaN(v)
+        case "bool":
+          return v === "true" || v === "false"
+        case "variable":
+          return v.includes(".")
+      }
+    })
     if (!areValuesValid) {
-      cb(`Value must be a ${type === "bool" ? "boolean" : "number"} or a variable!`)
+      let error = ""
+      switch (type) {
+        case "number":
+          error = "Value must be a number or a variable"
+          break
+        case "bool":
+          error = "Value must be a boolean or a variable"
+          break
+        case "variable":
+          error = "Value must be a variable"
+          break
+      }
+      cb(error)
       return
     }
     cb()
@@ -103,7 +133,7 @@ const parseArray = (value, type) => {
   return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
 }
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'remove', 'force', 'query', 'encrypt', 'decrypt', 'hash', 'and', 'or', 'webhook'];
+const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
 
 const ConfigureRule = (props) => {
   // form
@@ -222,16 +252,19 @@ const ConfigureRule = (props) => {
       autoCompleteOptions = { auth: true, params: true, query }
   }
 
+  const inheritedDataType = getTypeFromValue(value)
   const formInitialValues = {
     rule,
-    type: (rule === "force") ? getTypeFromValue(value) : type,
-    f1,
+    type: (rule === "force") ? inheritedDataType : type,
+    f1: getInputValueFromActualValue(f1, type),
     eval: props.selectedRule.eval,
-    f2,
+    f2: getInputValueFromActualValue(f2, type),
     fields,
     field,
-    value,
+    value: getInputValueFromActualValue(value, inheritedDataType),
     url,
+    db: props.selectedRule.db,
+    col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
     errorMsg: error ? true : false,
     error
@@ -337,7 +370,7 @@ const ConfigureRule = (props) => {
             form.getFieldValue('rule') === "hash"
           }
         >
-          <FormItemLabel name='Fields to encrypt' />
+          <FormItemLabel name='Fields' />
           <Form.List name='fields'>
             {(fields, { add, remove }) => {
               return (
@@ -348,8 +381,10 @@ const ConfigureRule = (props) => {
                         <Form.Item
                           name={[field.name]}
                           key={[field.name]}
+                          validateTrigger="onBlur"
                           rules={[
-                            { required: true, message: 'Please enter column!' },
+                            { required: true, message: 'Please enter field!' },
+                            { validator: createValueAndTypeValidator("variable", false) }
                           ]}
                         >
                           <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
@@ -392,7 +427,7 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('rule') === 'force'}
         >
           <FormItemLabel name="Field" />
-          <FormItem name="field" rules={[{ required: true }]}>
+          <FormItem name="field" validateTrigger="onBlur" rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false) }]}>
             <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
           </FormItem>
           <FormItemLabel name="Datatype" />
@@ -415,8 +450,8 @@ const ConfigureRule = (props) => {
                   const type = form.getFieldValue("type")
                   return (
                     <Form.Item name='value' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, false) }]}>
-                      <Input placeholder="Value" onChange={(e) => {
-                        if (e.target.value.includes(".") && type !== "variable") {
+                      <ObjectAutoComplete placeholder="Value" options={autoCompleteOptions} onChange={(value) => {
+                        if (value.includes(".") && type !== "variable") {
                           form.setFieldsValue({ type: "variable" })
                         }
                       }} />
