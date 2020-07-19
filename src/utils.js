@@ -3,14 +3,18 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID, securityRuleGroups } from './constants';
 
 import store from "./store"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
 import { loadProjects, getJWTSecret } from './operations/projects'
-import { getDbType } from './operations/database'
+import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
+import { setRemoteEndpointRule } from './operations/remoteServices'
+import { setIngressRouteRule } from './operations/ingressRoutes'
+import { setEventingSecurityRule } from './operations/eventing'
+import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfNeeded } from './operations/cluster'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
@@ -19,10 +23,39 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
+export function isJson(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+export function copyObjectToClipboard(obj) {
+  return navigator.clipboard.writeText(JSON.stringify(obj))
+}
+
+export function getCopiedObjectFromClipboard() {
+  return new Promise((resolve, reject) => {
+    navigator.clipboard.readText()
+      .then(data => {
+        const isValueJson = isJson(data)
+        if (!isValueJson) {
+          reject("Copied object is not a valid JSON")
+          return
+        }
+        resolve(JSON.parse(data))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export function upsertArray(array, predicate, getItem) {
   const index = array.findIndex(predicate)
   return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]
 }
+
 export function incrementPendingRequests() {
   store.dispatch(increment("pendingRequests"))
 }
@@ -169,6 +202,11 @@ export function openBillingPortal() {
   window.open("https://billing.spaceuptech.com", "_blank")
 }
 
+export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
+  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  window.open(url, '_blank')
+}
+
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
   const doesExist = projects.some(project => project.id === projectId)
@@ -249,6 +287,36 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+const registerSecurityRulesBroadCastListener = () => {
+  const bc = new BroadcastChannel('security-rules');
+  bc.onmessage = ({ data }) => {
+    const { rule, meta } = data
+    const { ruleType, id, group } = meta
+    switch (ruleType) {
+      case securityRuleGroups.DB_COLLECTIONS:
+        setColSecurityRule(group, id, rule)
+        break;
+      case securityRuleGroups.DB_PREPARED_QUERIES:
+        setPreparedQueryRule(group, id, rule)
+        break;
+      case securityRuleGroups.EVENTING:
+        setEventingSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.FILESTORE:
+        setFileStoreSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.REMOTE_SERVICES:
+        setRemoteEndpointRule(group, id, rule)
+        break;
+      case securityRuleGroups.INGRESS_ROUTES:
+        setIngressRouteRule(id, rule)
+        break
+    }
+    notify("success", "Success", "Saved security rules successfully")
+  }
+  window.addEventListener("beforeunload", (ev) => bc.close());
+}
+
 export const onAppLoad = () => {
   loadClusterEnv()
     .then(() => {
@@ -268,7 +336,10 @@ export const onAppLoad = () => {
       setInterval(() => {
         refreshClusterTokenIfNeeded().finally(() => redirectIfNeeded())
       }, 15 * 60 * 1000)
+
+      registerSecurityRulesBroadCastListener()
     })
+    .catch((ex) => notify("error", "Error fetching cluster environment", ex))
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {

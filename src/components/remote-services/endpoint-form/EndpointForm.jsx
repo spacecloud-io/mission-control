@@ -48,9 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], resHeaders = [] } = initialValues ? initialValues : {}
-  const initialRule = rule ? rule : defaultEndpointRule
-  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
+  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
@@ -82,7 +80,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
         name,
         method,
         path,
-        JSON.parse(ruleData),
+        defaultEndpointRule,
         overrideToken ? token : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
@@ -98,12 +96,6 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   useEffect(() => {
     form.setFieldsValue(formInitialValues)
   }, [formInitialValues.kind, formInitialValues.path])
-
-  useEffect(() => {
-    if (rule) {
-      setRuleData(JSON.stringify(rule, null, 2))
-    }
-  }, [rule])
 
   useEffect(() => {
     setRequestTemplateData(requestTemplate)
@@ -192,24 +184,6 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                   <Input placeholder='Example: https://example.com/foo' />
                 </Form.Item>
               </ConditionalFormBlock>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: true,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
-                  }}
-                />
-              </Form.Item>
             </ConditionalFormBlock>
             <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.PREPARED}>
               <Alert
@@ -276,24 +250,6 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                   }}
                   onBeforeChange={(editor, data, value) => {
                     setResponseTemplateData(value);
-                  }}
-                />
-              </Form.Item>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: false,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
                   }}
                 />
               </Form.Item>

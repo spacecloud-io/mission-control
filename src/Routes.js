@@ -1,6 +1,6 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute, BillingRoute } from "./utils";
+import { PrivateRoute } from "./utils";
 import history from "./history";
 
 import Home from "./pages/home/Home";
@@ -46,6 +46,7 @@ import RoutingSettings from './pages/routing/settings/Settings';
 import SecretsIndex from "./pages/secrets/Index";
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
+import RulesEditor from './pages/security-rules/RulesEditor';
 
 export default () => {
   return (
@@ -104,6 +105,7 @@ export default () => {
       <PrivateRoute path="/mission-control/projects/:projectID/deployments" component={DeploymentsIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/overview" component={DeploymentsOverview} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/deployments/routes" component={DeploymentsRoutes} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/security-rules/editor" component={RulesEditor} />
       <PrivateRoute path="/mission-control/projects/:projectID/secrets" component={SecretsIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />

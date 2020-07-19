@@ -170,7 +170,7 @@ export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRu
     const newCollectionRules = Object.assign({}, collectionRules, { rules: securityRules })
     client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
       .then(() => {
-        store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, securityRules))
+        setColSecurityRule(dbAliasName, colName, securityRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -224,7 +224,7 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
     const config = Object.assign({}, preparedQueryConfig, { rule })
     client.database.setPreparedQuery(projectId, dbAliasName, id, config)
       .then(() => {
-        store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
+        setPreparedQueryRule(dbAliasName, id, rule)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -420,7 +420,11 @@ export const getUntrackedCollections = (state, dbAliasName) => {
 
 export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")
 export const getCollectionRules = (state, dbAliasName, colName) => get(state, `dbRules.${dbAliasName}.${colName}`, { isRealtimeEnabled: false, rules: {} })
+export const getCollectionSecurityRule = (state, dbAliasName, colName) => get(state, `dbRules.${dbAliasName}.${colName}.rules`, {})
+export const getPreparedQuerySecurityRule = (state, dbAliasName, id) => get(state, `dbPreparedQueries.${dbAliasName}.${id}.rule`, {})
 export const isPreparedQueriesSupported = (state, dbAliasName) => {
   const dbType = getDbType(state, dbAliasName)
   return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
 }
+export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
+export const setColSecurityRule = (dbAliasName, colName, rule) => store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))

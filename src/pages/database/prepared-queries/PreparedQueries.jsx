@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import SecurityRulesForm from '../../../components/security-rules-form/SecurityRulesForm';
 import { Button, Table, Popconfirm, Alert } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { defaultPreparedQueryRule } from '../../../constants';
-import { deletePreparedQuery, savePreparedQuerySecurityRule, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
+import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
+import { defaultPreparedQueryRule, securityRuleGroups } from '../../../constants';
+import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-  const [ruleModal, setRuleModal] = useState(false)
 
   // Global state
   const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
@@ -24,7 +22,6 @@ const PreparedQueries = () => {
 
   // Derived state
   const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default")
-  const [clickedQuery, setClickedQuery] = useState("");
   if (Object.keys(defaultRule).length === 0) {
     defaultRule = defaultPreparedQueryRule
   }
@@ -33,20 +30,8 @@ const PreparedQueries = () => {
     ReactGA.pageview("/projects/database/prepared-queries");
   }, [])
 
-  const handleSecureClick = (queryName) => {
-    setClickedQuery(queryName)
-    setRuleModal(true)
-  }
-
-  const handleSecureSubmit = (rule) => {
-    return new Promise((resolve, reject) => {
-      incrementPendingRequests()
-      savePreparedQuerySecurityRule(projectID, selectedDB, clickedQuery, rule)
-        .then(() => resolve())
-        .catch(ex => reject(ex))
-        .finally(() => decrementPendingRequests())
-    })
-  }
+  // Handlers
+  const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)
 
   const handleDeletePreparedQuery = (id) => {
     incrementPendingRequests()
@@ -56,7 +41,6 @@ const PreparedQueries = () => {
       .finally(() => decrementPendingRequests());
   }
 
-  // TODO: Add links here
   const alertDesc = <React.Fragment>
     <p><a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/">Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/#securing-prepared-queries">security rules</a>.</p>
   </React.Fragment>
@@ -100,6 +84,7 @@ const PreparedQueries = () => {
               description={alertDesc}
               type="info"
               showIcon
+              style={{ marginBottom: 16 }}
             />}
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>
               Prepared queries
@@ -112,11 +97,6 @@ const PreparedQueries = () => {
           </div>
         </div>
       </div>
-      {ruleModal && <SecurityRulesForm
-        currentRule={clickedQuery ? preparedQueries[clickedQuery].rule : undefined}
-        defaultRule={defaultRule}
-        handleSubmit={handleSecureSubmit}
-        handleCancel={() => setRuleModal(false)} />}
     </React.Fragment>
   );
 }

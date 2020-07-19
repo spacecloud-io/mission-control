@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
@@ -6,16 +6,9 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, savePreparedQuerySecurityRule, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, getDbDefaultPreparedQuerySecurityRule, isPreparedQueriesSupported } from "../../../operations/database"
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import { dbTypes } from '../../../constants';
+import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
+import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
+import { dbTypes, securityRuleGroups } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 
@@ -26,16 +19,15 @@ const Settings = () => {
   const history = useHistory()
 
   const [form] = Form.useForm();
-  const [form1] = Form.useForm();
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/settings");
   }, [])
   // Global state
-  const defaultPreparedQueryRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
   const eventingDB = useSelector(state => getEventingDbAliasName(state))
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
   const type = useSelector(state => getDbType(state, selectedDB))
+  const preparedQueriesSupported = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
 
   // Derived state
   const canDisableDB = eventingDB !== selectedDB
@@ -46,8 +38,6 @@ const Settings = () => {
     databaseLabelName = `${databaseLabel} schema`
     databaseLabelDescription = `The schema inside ${databaseLabel} database that Space Cloud will connect to. Space Cloud will create this schema if it doesn’t exist already.`
   }
-
-  const [defaultPreparedQueryRuleString, setDefaultPreparedQueryRuleString] = useState(JSON.stringify(defaultPreparedQueryRule, null, 2));
 
   // This is used to bind the form initial values on page reload. 
   // On page reload the redux is intially empty leading the form initial values to be empty. 
@@ -72,6 +62,9 @@ const Settings = () => {
       .catch(ex => notify("error", "Error disabling database", ex))
       .finally(() => decrementPendingRequests())
   }
+
+  const handleConfigureDefaultTableRule = () => openSecurityRulesPage(projectID, securityRuleGroups.DB_COLLECTIONS, "default", selectedDB)
+  const handleConfigureDefaultPreparedQueriesRule = () => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, "default", selectedDB)
 
   const handleReloadDB = () => {
     incrementPendingRequests()
@@ -112,18 +105,6 @@ const Settings = () => {
       .finally(() => decrementPendingRequests())
   }
 
-  const handleChangeDefaultPreparedQueryRule = () => {
-    try {
-      incrementPendingRequests()
-      savePreparedQuerySecurityRule(projectID, selectedDB, "default", JSON.parse(defaultPreparedQueryRuleString))
-        .then(() => notify("success", "Success", "Successfully changed default security rules of prepared queries"))
-        .catch(ex => notify("error", "Error changing default security rules of prepared queries", ex))
-        .finally(() => decrementPendingRequests())
-    } catch (ex) {
-      notify("error", "Error changing default security rules of prepared queries", ex)
-    }
-  }
-
   return (
     <React.Fragment>
       <Topbar
@@ -153,34 +134,14 @@ const Settings = () => {
                 <Button htmlType="submit">Save</Button>
               </Form.Item>
             </Form>
-            {isPreparedQueriesSupported(selectedDB) &&
+            <Divider style={{ margin: "16px 0px" }} />
+            <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
+            <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
+            {preparedQueriesSupported &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
-                <Form layout="vertical" form={form1} onFinish={handleChangeDefaultPreparedQueryRule}>
-                  <FormItemLabel name="Default rules for prepared queries" />
-                  <div style={{ width: 600 }}>
-                    <Form.Item >
-                      <CodeMirror
-                        value={defaultPreparedQueryRuleString}
-                        options={{
-                          mode: { name: "javascript", json: true },
-                          lineNumbers: true,
-                          styleActiveLine: true,
-                          matchBrackets: true,
-                          autoCloseBrackets: true,
-                          tabSize: 2,
-                          autofocus: true
-                        }}
-                        onBeforeChange={(editor, data, value) => {
-                          setDefaultPreparedQueryRuleString(value)
-                        }}
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button htmlType="submit">Save</Button>
-                    </Form.Item>
-                  </div>
-                </Form>
+                <FormItemLabel name="Default rules for prepared queries" description="Not configured yet. Used when a prepared query doesn’t have a rule specified." />
+                <Button onClick={handleConfigureDefaultPreparedQueriesRule}>Configure</Button>
               </React.Fragment>
             }
             <Divider style={{ margin: "16px 0px" }} />

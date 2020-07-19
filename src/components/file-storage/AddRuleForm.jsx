@@ -11,19 +11,21 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import "./add-rule-modal.css"
 import { notify } from "../../utils";
-import { defaultFileRootPathRule } from "../../constants";
+import { defaultFileRule } from "../../constants";
 
-const defaultRule = JSON.stringify(defaultFileRootPathRule, null, 2)
+const defaultRule = JSON.stringify(defaultFileRule, null, 2)
 const AddRuleForm = (props) => {
   const [form] = Form.useForm()
   const [data, setData] = useState(defaultRule)
 
-  const handleSubmit = e => {
+  const handleSubmit = () => {
     form.validateFields().then(values => {
       try {
-        props.handleSubmit(values.name, JSON.parse(data));
-        props.handleCancel();
-        form.resetFields();
+        props.handleSubmit(values.name, values.prefix, JSON.parse(data))
+          .then(() => {
+            props.handleCancel();
+            form.resetFields();
+          })
       } catch (ex) {
         notify("error", "Error", ex.toString())
       }
@@ -40,10 +42,14 @@ const AddRuleForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmit}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} >
         <FormItemLabel name="Name" />
         <Form.Item name="name" rules={[{ required: true, message: 'Please provide a name to your rule!' }]}>
           <Input placeholder="Example: profile-files" />
+        </Form.Item>
+        <FormItemLabel name="Prefix" />
+        <Form.Item name="prefix" rules={[{ required: true, message: 'Please enter prefix!' }]}>
+          <Input placeholder="File path prefix. Example: /posts" />
         </Form.Item>
         <FormItemLabel name="Rule" />
         <CodeMirror

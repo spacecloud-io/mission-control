@@ -54,15 +54,17 @@ export const dbRules = [
       isRealtimeEnabled: true,
       rules: {
         "create": {
-          "rule": "deny"
+          "rule": "and",
+          "clauses": [
+            {
+              "rule": "force"
+            }
+          ]
         },
         "read": {
           "rule": "deny"
         },
         "update": {
-          "rule": "deny"
-        },
-        "delete": {
           "rule": "deny"
         }
       }
@@ -75,7 +77,15 @@ export const dbPreparedQueries = [
     "id": "preparedQuery1",
     "db": "mydb",
     "sql": "select * from users",
-    "rule": { "rule": "allow" },
+    "rule": {
+      "rule": "and",
+      "clauses": [
+        {
+          "rule": "webhook",
+          "url": "localhost"
+        }
+      ]
+    },
     "args": ['args.args1']
   }
 ]
@@ -89,7 +99,12 @@ export const eventingConfig = [
 
 export const eventingSchemas = []
 
-export const eventingRules = []
+export const eventingRules = [
+  {
+    "id": "MY_CUSTOM_EVENT",
+    "rule": "allow" 
+  }
+]
 
 export const eventingTriggers = [
   {

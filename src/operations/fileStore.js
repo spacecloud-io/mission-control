@@ -29,7 +29,7 @@ export const loadFileStoreRules = (projectId) => {
   return new Promise((resolve, reject) => {
     client.fileStore.getRules(projectId)
       .then((fileStoreRules) => {
-        store.dispatch(set("fileStoreRules", fileStoreRules))
+        setFileStoreRules(fileStoreRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -55,11 +55,23 @@ export const saveFileStoreRule = (projectId, ruleName, rule) => {
       .then(() => {
         const fileStoreRules = get(store.getState(), "fileStoreRules", [])
         const newFileStoreRules = upsertArray(fileStoreRules, obj => obj.id === ruleName, () => fileRule)
-        store.dispatch(set("fileStoreRules", newFileStoreRules))
+        setFileStoreRules(newFileStoreRules)
         resolve()
       })
       .catch(ex => reject(ex))
   })
+}
+
+export const saveFileStoreSecurityRule = (projectId, ruleName, securityRule) => {
+  const rule = getFileStoreRule(store.getState(), ruleName)
+  const newRule = Object.assign({}, rule, { rule: securityRule })
+  return saveFileStoreRule(projectId, ruleName, newRule)
+}
+
+export const saveFileStorePrefix = (projectId, ruleName, prefix) => {
+  const rule = getFileStoreRule(store.getState(), ruleName)
+  const newRule = Object.assign({}, rule, { prefix })
+  return saveFileStoreRule(projectId, ruleName, newRule)
 }
 
 export const deleteFileStoreRule = (projectId, ruleName) => {
@@ -68,7 +80,7 @@ export const deleteFileStoreRule = (projectId, ruleName) => {
       .then(() => {
         const fileStoreRules = get(store.getState(), "fileStoreRules", [])
         const newFileStoreRules = fileStoreRules.filter(obj => obj.id !== ruleName)
-        store.dispatch(set("fileStoreRules", newFileStoreRules))
+        setFileStoreRules(newFileStoreRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -79,6 +91,28 @@ export const deleteFileStoreRule = (projectId, ruleName) => {
 // Getters && setters
 
 export const getFileStoreRules = (state) => get(state, "fileStoreRules", [])
+export const getFileStoreRule = (state, id) => {
+  const fileStoreRules = getFileStoreRules(state)
+  const index = fileStoreRules.findIndex(obj => obj.id === id)
+  return index === -1 ? {} : fileStoreRules[index]
+}
+
+export const getFileStoreSecurityRule = (state, id) => {
+  const fileStoreRules = getFileStoreRules(state)
+  const index = fileStoreRules.findIndex(obj => obj.id === id)
+  if (index === -1) return {}
+  const rule = fileStoreRules[index]
+  return rule ? rule.rule : {}
+}
 export const getFileStoreConfig = (state) => get(state, "fileStoreConfig", {})
 const setFileStoreConnState = (connected) => store.dispatch(set("fileStoreConnState", connected))
 export const getFileStoreConnState = (state) => get(state, "fileStoreConnState", false)
+const setFileStoreRules = (rules) => store.dispatch(set("fileStoreRules", rules))
+export const setFileStoreSecurityRule = (ruleId, securityRule) => {
+  const rules = getFileStoreRules(store.getState())
+  const newRules = rules.map(obj => {
+    if (obj.id === ruleId) return Object.assign({}, obj, { rule: securityRule })
+    return obj
+  })
+  setFileStoreRules(newRules)
+} 

@@ -13,10 +13,10 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import disconnectedImg from '../../../assets/disconnected.jpg';
 
-import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, loadCollections } from "../../../operations/database"
-import { dbTypes } from '../../../constants';
+import { dbTypes, securityRuleGroups } from '../../../constants';
 
 
 const Overview = () => {
@@ -80,6 +80,8 @@ const Overview = () => {
     dispatch(set("uiState.selectedCollection", colName));
     history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/browse`)
   }
+
+  const handleSecureClick = (colName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_COLLECTIONS, colName, selectedDB)
 
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false)
@@ -183,6 +185,7 @@ const Overview = () => {
       render: (_, { name }) => (
         <span>
           <a onClick={() => handleEditClick(name)}>Edit</a>
+          <a onClick={() => handleSecureClick(name)}>Secure</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>

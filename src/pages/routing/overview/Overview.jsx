@@ -7,14 +7,15 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag, Space } from "antd";
 import IngressRoutingModal from "../../../components/ingress-routing/IngressRoutingModal";
-import { notify, generateId, decrementPendingRequests, incrementPendingRequests } from "../../../utils";
-import { deleteIngressRoute, saveIngressRoute, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage} from "../../../utils";
+import { deleteIngressRoute, saveIngressRouteConfig, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
 import { FilterOutlined } from "@ant-design/icons";
 import FilterForm from "../../../components/ingress-routing/FilterForm";
 import { set } from "automate-redux";
 import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
+import { securityRuleGroups } from "../../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -112,7 +113,7 @@ function RoutingOverview() {
         }
       };
       incrementPendingRequests()
-      saveIngressRoute(projectID, config.id, config)
+      saveIngressRouteConfig(projectID, config.id, config)
         .then(() => {
           notify("success", "Success", "Saved routing config successfully");
           resolve()
@@ -124,6 +125,8 @@ function RoutingOverview() {
         .finally(() => decrementPendingRequests());
     });
   };
+
+  const handleSecureClick = id => openSecurityRulesPage(projectID, securityRuleGroups.INGRESS_ROUTES, id)
 
   const handleRouteClick = id => {
     setRouteClicked(id);
@@ -168,23 +171,17 @@ function RoutingOverview() {
     },
     {
       title: <b>{"Actions"}</b>,
-      className: "actions",
+      className: "column-actions",
       render: (_, record) => {
         return (
           <span>
-            <a
-              style={{ color: "#40A9FF" }}
-              onClick={() => {
-                handleRouteClick(record.id);
-              }}
-            >
-              Edit
-            </a>
+            <a onClick={() => handleRouteClick(record.id)}>Edit</a>
+            <a onClick={() => handleSecureClick(record.id)}>Secure</a>
             <Popconfirm
               title={`This will delete all the data. Are you sure?`}
               onConfirm={() => handleDelete(record.id)}
             >
-              <a style={{ color: "red", paddingLeft: 10 }}>Delete</a>
+              <a style={{ color: "red" }}>Delete</a>
             </Popconfirm>
           </span>
         );
