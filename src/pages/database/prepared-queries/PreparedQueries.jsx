@@ -84,6 +84,7 @@ const PreparedQueries = () => {
               description={alertDesc}
               type="info"
               showIcon
+              style={{ marginBottom: 16 }}
             />}
             <h3 style={{ display: "flex", justifyContent: "space-between" }}>
               Prepared queries

@@ -5,12 +5,13 @@ import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import AddRuleForm from "../../components/file-storage/AddRuleForm"
+import EditPrefixForm from "../../components/file-storage/EditPrefixForm"
 import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge, Popconfirm, Table } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
-import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
+import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, saveFileStorePrefix, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
 import { securityRuleGroups } from '../../constants';
 
 const Rules = () => {
@@ -25,7 +26,12 @@ const Rules = () => {
 
 	// Component state
 	const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
-	let [selectedRuleName, setSelectedRuleName] = useState("")
+	const [prefixModalVisible, setPrefixModalVisible] = useState(false)
+	const [selectedRuleName, setSelectedRuleName] = useState("")
+
+	// Derived state
+	const selectedRuleInfo = rules.find(obj => obj.id === selectedRuleName)
+	const selectedRulePrefix = selectedRuleInfo ? selectedRuleInfo.prefix : ""
 
 	useEffect(() => {
 		ReactGA.pageview("/projects/file-storage");
@@ -34,12 +40,6 @@ const Rules = () => {
 	// Derived state
 	const { enabled, ...connConfig } = config
 	const noOfRules = rules.length;
-
-	useEffect(() => {
-		if (!selectedRuleName && noOfRules > 0) {
-			setSelectedRuleName(rules[0].id)
-		}
-	}, [selectedRuleName, noOfRules])
 
 	// Handlers
 	const handleFileConfig = () => {
@@ -56,11 +56,19 @@ const Rules = () => {
 	}
 
 	const handleAddRule = (ruleName, prefix, securityRule) => {
-		incrementPendingRequests()
-		saveFileStoreRule(projectID, ruleName, { prefix: prefix, rule: securityRule })
-			.then(() => notify("success", "Success", "Added rule successfully"))
-			.catch(ex => notify("error", "Error adding rule", ex))
-			.finally(() => decrementPendingRequests())
+		return new Promise((resolve, reject) => {
+			incrementPendingRequests()
+			saveFileStoreRule(projectID, ruleName, { prefix: prefix, rule: securityRule })
+				.then(() => {
+					notify("success", "Success", "Added rule successfully")
+					resolve()
+				})
+				.catch(ex => {
+					notify("error", "Error adding rule", ex)
+					reject(ex)
+				})
+				.finally(() => decrementPendingRequests())
+		})
 	}
 
 	const handleDeleteRule = (ruleName) => {
@@ -72,6 +80,32 @@ const Rules = () => {
 	}
 
 	const handleSecureClick = (ruleName) => openSecurityRulesPage(projectID, securityRuleGroups.FILESTORE, ruleName)
+
+	const handleClickEditPrefix = (ruleName) => {
+		setSelectedRuleName(ruleName)
+		setPrefixModalVisible(true)
+	}
+
+	const handleCancelEditPrefix = () => {
+		setSelectedRuleName("")
+		setPrefixModalVisible(false)
+	}
+
+	const handleEditPrefix = (newPrefix) => {
+		return new Promise((resolve, reject) => {
+			incrementPendingRequests()
+			saveFileStorePrefix(projectID, selectedRuleName, newPrefix)
+				.then(() => {
+					notify("success", "Success", "Saved prefix successfully")
+					resolve()
+				})
+				.catch(ex => {
+					notify("error", "Error saving prefix", ex)
+					reject(ex)
+				})
+				.finally(() => decrementPendingRequests())
+		})
+	}
 
 	useEffect(() => {
 		incrementPendingRequests()
@@ -105,6 +139,7 @@ const Rules = () => {
 			render: (record) => {
 				return (
 					<span>
+						<a onClick={() => handleClickEditPrefix(record.id)}>Edit prefix</a>
 						<a onClick={() => handleSecureClick(record.id)}>Secure</a>
 						<Popconfirm
 							title="Are you sure you want to delete this rule?"
@@ -161,6 +196,10 @@ const Rules = () => {
 					{addRuleModalVisible && <AddRuleForm
 						handleSubmit={handleAddRule}
 						handleCancel={() => setAddRuleModalVisible(false)} />}
+					{prefixModalVisible && <EditPrefixForm
+						prefix={selectedRulePrefix}
+						handleSubmit={handleEditPrefix}
+						handleCancel={handleCancelEditPrefix} />}
 				</div>
 			</div>
 		</div>

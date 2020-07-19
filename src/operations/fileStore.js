@@ -68,6 +68,12 @@ export const saveFileStoreSecurityRule = (projectId, ruleName, securityRule) => 
   return saveFileStoreRule(projectId, ruleName, newRule)
 }
 
+export const saveFileStorePrefix = (projectId, ruleName, prefix) => {
+  const rule = getFileStoreRule(store.getState(), ruleName)
+  const newRule = Object.assign({}, rule, { prefix })
+  return saveFileStoreRule(projectId, ruleName, newRule)
+}
+
 export const deleteFileStoreRule = (projectId, ruleName) => {
   return new Promise((resolve, reject) => {
     client.fileStore.deleteRule(projectId, ruleName)
@@ -88,7 +94,7 @@ export const getFileStoreRules = (state) => get(state, "fileStoreRules", [])
 export const getFileStoreRule = (state, id) => {
   const fileStoreRules = getFileStoreRules(state)
   const index = fileStoreRules.findIndex(obj => obj.id === id)
-  if (index === -1) return {}
+  return index === -1 ? {} : fileStoreRules[index]
 }
 
 export const getFileStoreSecurityRule = (state, id) => {

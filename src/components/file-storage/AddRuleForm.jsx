@@ -18,12 +18,14 @@ const AddRuleForm = (props) => {
   const [form] = Form.useForm()
   const [data, setData] = useState(defaultRule)
 
-  const handleSubmit = e => {
+  const handleSubmit = () => {
     form.validateFields().then(values => {
       try {
-        props.handleSubmit(values.name, values.prefix, JSON.parse(data));
-        props.handleCancel();
-        form.resetFields();
+        props.handleSubmit(values.name, values.prefix, JSON.parse(data))
+          .then(() => {
+            props.handleCancel();
+            form.resetFields();
+          })
       } catch (ex) {
         notify("error", "Error", ex.toString())
       }
@@ -46,7 +48,7 @@ const AddRuleForm = (props) => {
           <Input placeholder="Example: profile-files" />
         </Form.Item>
         <FormItemLabel name="Prefix" />
-        <Form.Item name="prefix">
+        <Form.Item name="prefix" rules={[{ required: true, message: 'Please enter prefix!' }]}>
           <Input placeholder="File path prefix. Example: /posts" />
         </Form.Item>
         <FormItemLabel name="Rule" />
