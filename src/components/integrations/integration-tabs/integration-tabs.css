@@ -1,0 +1,17 @@
+.integration-tabs .ant-tabs-nav-animated {
+  margin-left: 32px;
+}
+
+.integration-tabs .ant-tabs-tab {
+  color: #979797;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.integration-tabs .ant-tabs {
+  height: 48px;
+}
+
+.integration-tabs .ant-tabs-tab-active {
+  color: #ff8629
+}
