@@ -2,11 +2,13 @@ import React from "react"
 import { Modal, Input, Alert, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 
-const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, conformLoading }) => {
+const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues }) => {
   const [form] = Form.useForm();
 
   const handleOk = () => {
-    form.validateFields().then(values => handleSubmit(values.conn))
+    form.validateFields().then(values => {
+      handleSubmit(values.conn).then(() => handleCancel())
+    })
   }
 
   const alertMsg = <div>
@@ -19,7 +21,6 @@ const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, conform
       okText="Save"
       visible={true}
       onCancel={handleCancel}
-      confirmLoading={conformLoading}
       onOk={handleOk}
     >
       <Form form={form} layout="vertical" initialValues={initialValues}>

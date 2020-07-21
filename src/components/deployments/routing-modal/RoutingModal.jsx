@@ -18,10 +18,7 @@ const RoutingRule = props => {
         return
       }
       values.port = Number(values.port)
-      props.handleSubmit(values).then(() => {
-        notify("success", "Success", "Saved routing config successfully");
-        props.handleCancel();
-      });
+      props.handleSubmit(values).then(() => props.handleCancel());
     });
   };
 
@@ -188,11 +185,11 @@ const RoutingRule = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.name,"type"]),
-                            ...fields.map(obj => ["targets", obj.name,"version"]),
-                            ...fields.map(obj => ["targets", obj.name,"host"]),
-                            ...fields.map(obj => ["targets", obj.name,"port"]),
-                            ...fields.map(obj => ["targets", obj.name,"weight"])
+                            ...fields.map(obj => ["targets", obj.name, "type"]),
+                            ...fields.map(obj => ["targets", obj.name, "version"]),
+                            ...fields.map(obj => ["targets", obj.name, "host"]),
+                            ...fields.map(obj => ["targets", obj.name, "port"]),
+                            ...fields.map(obj => ["targets", obj.name, "weight"])
                           ]
                           form.validateFields(fieldKeys)
                             .then(() => add({ type: "version" }))

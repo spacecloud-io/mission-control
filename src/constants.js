@@ -22,6 +22,15 @@ export const defaultDbConnectionStrings = {
 
 export const SPACE_CLOUD_USER_ID = "internal-sc-user"
 
+export const securityRuleGroups = {
+  DB_COLLECTIONS: "collections",
+  DB_PREPARED_QUERIES: "prepared-queries",
+  FILESTORE: "file-store",
+  EVENTING: "eventing",
+  REMOTE_SERVICES: "remote-services",
+  INGRESS_ROUTES: "ingress-routes"
+}
+
 export const defaultDBRules = {
   create: {
     rule: 'allow'
@@ -53,11 +62,6 @@ export const defaultEventRule = {
   rule: "allow"
 }
 
-export const defaultFileRootPathRule = {
-  prefix: "/",
-  rule: defaultFileRule
-}
-
 export const defaultEndpointRule = {
   rule: "allow"
 }
@@ -80,4 +84,3 @@ const getURL = (productionURL, developmentURL, mockURL) => {
 }
 
 export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
-export const enterpriseServerGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")

@@ -34,7 +34,7 @@ const generateSchemaASTFromGraphQLSchemaDefinition = (def) => {
       (ar) => ar.name.value === "table"
     );
     const fieldArgument = foreignDirective.arguments.find(
-      (ar) => ar.name.value === "field"
+      (ar) => ar.name.value === "field" ||  ar.name.value === "to"
     );
     foreignTable = tableArgument.value.value;
     foreignField = fieldArgument.value.value;
@@ -140,12 +140,12 @@ export const generateGraphQLQueryFromGraphQLAST = (ast = { queryType: "query", f
   return result
 }
 
-export const generateDBSchemaAST = (collections) => {
-  const schemaAST = Object.values(collections).reduce((prev, { schema }) => {
-    if (!schema) {
+export const generateDBSchemaAST = (schemas) => {
+  const schemaAST = Object.values(schemas).reduce((prev, curr) => {
+    if (!curr) {
       return prev
     }
-    return Object.assign({}, prev, generateSchemaAST(schema))
+    return Object.assign({}, prev, generateSchemaAST(curr))
   }, {})
   return schemaAST
 }

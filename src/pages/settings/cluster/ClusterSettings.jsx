@@ -1,58 +1,65 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import ReactGA from "react-ga";
-import { useSelector, useDispatch } from "react-redux";
-import { set, increment, decrement } from "automate-redux";
+import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
 import Credentials from "../../../components/settings/cluster/Credentials";
 import LetsEncryptEmail from "../../../components/settings/cluster/LetsEncryptEmail";
 import Telemetry from "../../../components/settings/cluster/Telemetry";
+import License from "../../../components/settings/cluster/License";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
-import { notify } from "../../../utils";
-import client from "../../../client";
+import { notify, incrementPendingRequests, decrementPendingRequests, openBillingPortal } from "../../../utils";
 import { Row, Col, Divider } from "antd";
-import store from "../../../store";
+import { loadClusterSettings, saveClusterSetting, removeClusterLicense, getEnv } from "../../../operations/cluster";
 
 const ClusterSettings = () => {
+  const history = useHistory();
   const { projectID } = useParams();
 
   useEffect(() => {
     ReactGA.pageview("/projects/settings/cluster");
   }, []);
 
-  const dispatch = useDispatch();
+  useEffect(() => {
+    incrementPendingRequests()
+    loadClusterSettings()
+      .catch(ex => notify("error", "Error fetching cluster settings", ex))
+      .finally(() => decrementPendingRequests())
+  }, []);
 
-  const { credentials, ...globalConfig } = useSelector(state => state.clusterConfig);
-
-  const letsEncryptEmail = globalConfig.email;
-  const telemetry = globalConfig.telemetry;
+  const clusterConfig = useSelector(state => state.clusterConfig);
+  const credentials = clusterConfig.credentials;
+  const letsEncryptEmail = clusterConfig.email;
+  const telemetry = clusterConfig.telemetry;
   const loading = useSelector(state => state.pendingRequests > 0)
+  const { clusterName, licenseType, licenseKey, nextRenewal } = useSelector(state => getEnv(state))
 
   const handleLetsEncryptEmail = newEmail => {
-    dispatch(increment("pendingRequests"));
-    client.clusterConfig
-      .setConfig(Object.assign({}, globalConfig, { email: newEmail }))
-      .then(() => {
-        store.dispatch(set("clusterConfig.email", newEmail));
-        notify("success", "Success", "Changed LetsEncrypt email successfully");
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+    incrementPendingRequests()
+    saveClusterSetting("email", newEmail)
+      .then(() => notify("success", "Success", "Changed letsencrypt email successfully"))
+      .catch(ex => notify("error", "Error changing letsencrypt email", ex))
+      .finally(() => decrementPendingRequests());
   };
 
   const handleTelemetry = newTelemetry => {
-    dispatch(increment("pendingRequests"));
-    client.clusterConfig
-      .setConfig(Object.assign({}, globalConfig, { telemetry: newTelemetry }))
-      .then(() => {
-        store.dispatch(set("clusterConfig.telemetry", newTelemetry));
-        notify("success", "Success", `${newTelemetry ? "Enabled": "Disabled"} telemetry successfully`);
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+    incrementPendingRequests()
+    saveClusterSetting("telemetry", newTelemetry)
+      .then(() => notify("success", "Success", `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
+      .catch(ex => notify("error", `Error ${newTelemetry ? "enabling" : "disabling"} telemetry`, ex))
+      .finally(() => decrementPendingRequests());
   };
+
+  const handleOpenApplyLicensePage = () => history.push(`/mission-control/projects/${projectID}/settings/apply-license`)
+  const handleRemoveLicense = () => {
+    incrementPendingRequests()
+    removeClusterLicense()
+      .then(() => notify("success", "Success", "Removed license successfully"))
+      .catch((ex) => notify("error", "Error removing license", ex))
+      .finally(() => decrementPendingRequests())
+  }
 
   return (
     <React.Fragment>
@@ -64,6 +71,8 @@ const ClusterSettings = () => {
           <Row>
             <Col lg={{ span: 12 }}>
               <Credentials credentials={credentials} />
+              <Divider />
+              <License handleApplyLicense={handleOpenApplyLicensePage} handleGetLicense={openBillingPortal} handleRemoveLicense={handleRemoveLicense} clusterName={clusterName} licenseKey={licenseKey} licenseType={licenseType} nextRenewal={nextRenewal} />
               <Divider />
               <LetsEncryptEmail letsEncryptEmail={letsEncryptEmail} loading={loading} handleSubmit={handleLetsEncryptEmail} />
               <Divider />

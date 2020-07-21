@@ -3,13 +3,19 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID, defaultPreparedQueryRule } from './constants';
+import { dbTypes, SPACE_CLOUD_USER_ID, securityRuleGroups } from './constants';
 
 import store from "./store"
-import client from "./client"
 import history from "./history"
 import { Redirect, Route } from "react-router-dom"
 import jwt from 'jsonwebtoken';
+import { loadProjects, getJWTSecret } from './operations/projects'
+import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
+import { setRemoteEndpointRule } from './operations/remoteServices'
+import { setIngressRouteRule } from './operations/ingressRoutes'
+import { setEventingSecurityRule } from './operations/eventing'
+import { setFileStoreSecurityRule } from './operations/fileStore'
+import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfNeeded } from './operations/cluster'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -17,15 +23,50 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
+export function isJson(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+export function copyObjectToClipboard(obj) {
+  return navigator.clipboard.writeText(JSON.stringify(obj))
+}
+
+export function getCopiedObjectFromClipboard() {
+  return new Promise((resolve, reject) => {
+    navigator.clipboard.readText()
+      .then(data => {
+        const isValueJson = isJson(data)
+        if (!isValueJson) {
+          reject("Copied object is not a valid JSON")
+          return
+        }
+        resolve(JSON.parse(data))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function upsertArray(array, predicate, getItem) {
+  const index = array.findIndex(predicate)
+  return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]
+}
+
+export function incrementPendingRequests() {
+  store.dispatch(increment("pendingRequests"))
+}
+
+export function decrementPendingRequests() {
+  store.dispatch(decrement("pendingRequests"))
+}
+
 export function capitalizeFirstCharacter(str) {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-export const getJWTSecret = (state, projectId) => {
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
-  if (secrets.length === 0) return ""
-  return secrets[0].secret
 }
 
 export const generateToken = (state, projectId, claims) => {
@@ -64,12 +105,6 @@ export const parseDbConnString = conn => {
   }
   return urlObj
 }
-export const getProjectConfig = (projects, projectId, path, defaultValue) => {
-  const project = projects.find(project => project.id === projectId)
-  if (!project) return defaultValue
-  const returnValue = get(project, path, defaultValue)
-  return (returnValue == undefined || returnValue == null) ? defaultValue : returnValue
-}
 
 export const setProjectConfig = (projectId, path, value) => {
   const projects = get(store.getState(), "projects", [])
@@ -98,19 +133,7 @@ export const generateProjectConfig = (projectId, name) => ({
   id: projectId,
   secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
-  contextTimeGraphQL: 5,
-  modules: {
-    db: {},
-    eventing: {},
-    userMan: {},
-    remoteServices: {
-      externalServices: {}
-    },
-    fileStore: {
-      enabled: false,
-      rules: []
-    }
-  }
+  contextTimeGraphQL: 5
 })
 
 export const notify = (type, title, msg, duration) => {
@@ -175,8 +198,13 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
-export const getEventingDB = (projectId) => {
-  return getProjectConfig(store.getState().projects, projectId, "modules.eventing.dbAlias", "")
+export function openBillingPortal() {
+  window.open("https://billing.spaceuptech.com", "_blank")
+}
+
+export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
+  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  window.open(url, '_blank')
 }
 
 export const openProject = (projectId) => {
@@ -198,61 +226,12 @@ export const openProject = (projectId) => {
   }
 }
 
-export const fetchBillingDetails = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchBillingDetails().then(({ details, amount }) => {
-      store.dispatch(set("billing", { status: true, details, balanceCredits: amount }))
-      resolve()
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchInvoices = (startingAfter) => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchInvoices(startingAfter).then((invoices) => {
-      const oldInvoices = store.getState().invoices
-      const newInvoices = [...oldInvoices, ...invoices]
-      const hasMore = invoices.length === 10
-      let invoicesMap = newInvoices.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
-      const uniqueInvoices = Object.values(invoicesMap)
-      const sortedInvoices = uniqueInvoices.sort((a, b) => a.number < b.number ? -1 : 1)
-      store.dispatch(set("invoices", sortedInvoices))
-      resolve(hasMore)
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchClusters = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchClusters().then((clusters) => {
-      store.dispatch(set("clusters", clusters))
-      resolve()
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchGlobalEntities = (token, spaceUpToken) => {
-  // Save the new token value
-  if (token) {
-    saveToken(token)
-  }
-
-  if (spaceUpToken) {
-    saveSpaceUpToken(spaceUpToken)
-  }
-
-  // Redirect if needed
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
-
-  if (shouldFetchGlobalEntities()) {
-    // Fetch projects
-    store.dispatch(increment("pendingRequests"))
-    client.projects.getProjects().then(projects => {
-      store.dispatch(set("projects", projects))
+// Performs actions to be done when an user is logged in to space cloud cluster
+// Note: In dev mode these actions are performed even if an user is not logged in
+export function performActionsOnAuthenticated() {
+  incrementPendingRequests()
+  loadProjects()
+    .then(projects => {
       if (projects.length === 0) {
         history.push(`/mission-control/welcome`)
         return
@@ -265,103 +244,9 @@ export const fetchGlobalEntities = (token, spaceUpToken) => {
       }
 
       openProject(projectToBeOpened)
-    }).catch(ex => notify("error", "Could not fetch projects", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-      
-      store.dispatch(increment("pendingRequests"))
-      client.clusterConfig.getConfig()
-        .then(data => store.dispatch(set("clusterConfig", data)))
-        .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-        .finally(() => store.dispatch(decrement("pendingRequests")))
-
-    if (spaceUpToken) {
-      store.dispatch(increment("pendingRequests"))
-      fetchBillingDetails()
-        .catch(ex => console.log("Error fetching billing details", ex))
-        .finally(() => store.dispatch(decrement("pendingRequests")))
-    }
-  }
-}
-
-function shouldFetchGlobalEntities() {
-  const prodMode = isProdMode()
-  const token = getToken()
-
-  if (prodMode && !token) return false
-  return true
-}
-
-function getTokenClaims(token) {
-  const temp = token.split(".")
-  const decoded = atob(temp[1])
-  let claims = {}
-  try {
-    const decodedObj = JSON.parse(decoded)
-    claims = decodedObj
-  } catch (error) {
-    console.log("Error decoding token", error)
-  }
-  return claims
-}
-
-export function isProdMode() {
-  return localStorage.getItem("isProd") === "true" ? true : false
-}
-
-export function isBillingEnabled(state) {
-  return get(state, "billing.status", false)
-}
-
-export function isSignedIn() {
-  const spaceUpToken = getSpaceUpToken()
-  return spaceUpToken ? true : false
-}
-
-export function getClusterId(state) {
-  return get(state, "env.clusterId", undefined)
-}
-
-export function getClusterPlan(state) {
-  const plan = get(state, "env.plan", "space-cloud-open--monthly")
-  return plan ? plan : "space-cloud-open--monthly"
-}
-
-export function getToken() {
-  return localStorage.getItem("token")
-}
-export function getSpaceUpToken() {
-  return localStorage.getItem("spaceUpToken")
-}
-
-
-function storeToken(token) {
-  localStorage.setItem("token", token)
-}
-
-function storeSpaceUpToken(token) {
-  localStorage.setItem("spaceUpToken", token)
-}
-
-function saveToken(token) {
-  storeToken(token)
-  client.setToken(token)
-}
-
-function saveSpaceUpToken(token) {
-  // Get claims of the token
-  const { email, name } = getTokenClaims(token)
-
-  // Save token claims to local storage
-  localStorage.setItem("email", email)
-  localStorage.setItem("name", name)
-
-  // Save token to local storage and set the token on the API
-  storeSpaceUpToken(token)
-}
-
-function saveEnv(isProd, version, clusterId, plan, quotas) {
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("env", { version, clusterId, plan, quotas }))
+    })
+    .catch(ex => notify("error", "Could not fetch projects", ex))
+    .finally(() => decrementPendingRequests())
 }
 
 function isCurrentRoutePublic() {
@@ -375,7 +260,7 @@ function shouldRedirect() {
     return { redirect: false, redirectUrl: "" }
   }
 
-  const productionMode = localStorage.getItem("isProd") === "true"
+  const productionMode = isProdMode()
   const token = getToken()
 
   if (productionMode && !token) {
@@ -385,7 +270,7 @@ function shouldRedirect() {
   return { redirect: false, redirectUrl: "" }
 }
 
-function redirectIfNeeded() {
+export function redirectIfNeeded() {
   const { redirect, redirectUrl } = shouldRedirect()
   if (redirect) {
     history.push(redirectUrl)
@@ -402,93 +287,59 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+const registerSecurityRulesBroadCastListener = () => {
+  const bc = new BroadcastChannel('security-rules');
+  bc.onmessage = ({ data }) => {
+    const { rule, meta } = data
+    const { ruleType, id, group } = meta
+    switch (ruleType) {
+      case securityRuleGroups.DB_COLLECTIONS:
+        setColSecurityRule(group, id, rule)
+        break;
+      case securityRuleGroups.DB_PREPARED_QUERIES:
+        setPreparedQueryRule(group, id, rule)
+        break;
+      case securityRuleGroups.EVENTING:
+        setEventingSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.FILESTORE:
+        setFileStoreSecurityRule(id, rule)
+        break;
+      case securityRuleGroups.REMOTE_SERVICES:
+        setRemoteEndpointRule(group, id, rule)
+        break;
+      case securityRuleGroups.INGRESS_ROUTES:
+        setIngressRouteRule(id, rule)
+        break
+    }
+    notify("success", "Success", "Saved security rules successfully")
+  }
+  window.addEventListener("beforeunload", (ev) => bc.close());
+}
+
 export const onAppLoad = () => {
-  client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
-    // Store env
-    saveEnv(isProd, version, clusterId, plan, quotas)
+  loadClusterEnv()
+    .then(() => {
+      refreshClusterTokenIfNeeded()
+        .then((tokenRefreshed) => {
+          redirectIfNeeded()
+          // Note: In case of dev mode tokenRefreshed will always be true
+          if (tokenRefreshed) {
+            performActionsOnAuthenticated()
+          }
+        })
+        .catch(ex => {
+          notify("error", "Error refreshing token", ex)
+          redirectIfNeeded()
+        })
 
-    // Redirect if needed
-    redirectIfNeeded()
+      setInterval(() => {
+        refreshClusterTokenIfNeeded().finally(() => redirectIfNeeded())
+      }, 15 * 60 * 1000)
 
-    const token = getToken()
-    const spaceUpToken = getSpaceUpToken()
-    if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, spaceUpToken)).catch(ex => {
-        console.log("Error refreshing token: ", ex.toString())
-        localStorage.removeItem("token")
-        redirectIfNeeded()
-      })
-      return
-    }
-
-    fetchGlobalEntities(token, spaceUpToken)
-  })
-}
-
-export function enterpriseSignin(token) {
-  return new Promise((resolve, reject) => {
-    client.billing.signIn(token)
-      .then(newToken => {
-        saveSpaceUpToken(newToken)
-        fetchBillingDetails().finally(() => resolve())
-      })
-      .catch((error) => reject(error))
-  })
-}
-
-export function registerCluster(clusterName, doesExist = false) {
-  return new Promise((resolve, reject) => {
-    const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
-    if (isClusterIdAlreadySet) {
-      reject(new Error("This space cloud cluster is already registered"))
-      return
-    }
-
-    client.billing.registerCluster(clusterName, doesExist)
-      .then(({ ack, clusterId, clusterKey }) => {
-        if (!ack) {
-          resolve({ registered: false })
-          return
-        }
-
-        client.setClusterIdentity(clusterId, clusterKey)
-          .then(() => {
-            resolve({ registered: true, notifiedToCluster: true })
-            store.dispatch(set("env.clusterId", clusterId))
-            client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => saveEnv(isProd, version, clusterId, plan, quotas))
-          })
-          .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export function setClusterPlan(plan) {
-  return new Promise((resolve, reject) => {
-    const clusterId = getClusterId(store.getState())
-    client.billing.setPlan(clusterId, plan)
-      .then((plan) => {
-        client.renewClusterLicense()
-          .then(() => {
-            store.dispatch(set("env.plan", plan))
-            resolve()
-          })
-          .catch(ex => reject(ex))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export function applyCoupon(couponCode) {
-  return new Promise((resolve, reject) => {
-    client.billing.applyCoupon(couponCode)
-      .then((couponValue) => {
-        if (couponValue > 0) couponValue = couponValue * -1 // store balance credits in redux as negative number. 
-        store.dispatch(increment("billing.balanceCredits", couponValue))
-        resolve(couponValue)
-      })
-      .catch(ex => reject(ex))
-  })
+      registerSecurityRulesBroadCastListener()
+    })
+    .catch((ex) => notify("error", "Error fetching cluster environment", ex))
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {
@@ -507,61 +358,26 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   )
 }
 
-
-export const BillingRoute = ({ component: Component, ...rest }) => {
-  const billingEnabled = isBillingEnabled(store.getState())
-  return (
-    <Route
-      {...rest}
-      render={props =>
-        !billingEnabled ? (
-          <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
-        ) : (
-            <PrivateRoute {...props} component={Component} />
-          )
-      }
-    />
-  )
-}
-
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
-}
-
-export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
-  const dbType = getDBTypeFromAlias(projectId, dbAlias)
-  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
-}
-
-export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbAliasName}.preparedQueries.default.rule`, defaultPreparedQueryRule)
-}
-
 export const getDatabaseLabelFromType = (dbType) => {
   switch (dbType) {
-    case dbTypes.MONGO: 
-    return "MongoDB"
-    case dbTypes.POSTGRESQL: 
-    return "PostgreSQL"
-    case dbTypes.MYSQL: 
-    return "MySQL"
-    case dbTypes.SQLSERVER: 
-    return "SQL Server"
-    case dbTypes.EMBEDDED: 
-    return "Embedded"
+    case dbTypes.MONGO:
+      return "MongoDB"
+    case dbTypes.POSTGRESQL:
+      return "PostgreSQL"
+    case dbTypes.MYSQL:
+      return "MySQL"
+    case dbTypes.SQLSERVER:
+      return "SQL Server"
+    case dbTypes.EMBEDDED:
+      return "Embedded"
   }
 }
 
-export const dbIcons = (project, projectId, selectedDb) => {
-
-  const dbModule = getProjectConfig(project, projectId, "modules.db", {})
-
-  let checkDB = ''
-  if (dbModule[selectedDb]) checkDB = dbModule[selectedDb].type
+export const dbIcons = (selectedDb) => {
+  const dbType = getDbType(store.getState(), selectedDb)
 
   var svg = mongoSvg
-  switch (checkDB) {
+  switch (dbType) {
     case dbTypes.MONGO:
       svg = mongoSvg
       break;
@@ -581,32 +397,6 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
   }
   return svg;
-}
-
-const getProjects = state => state.projects
-
-export const getTrackedCollectionNames = (state, projectId, dbName) => {
-  const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections = Object.keys(collections)
-    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-  return trackedCollections
-}
-
-export const getTrackedCollections = (state, projectId, dbName) => {
-  const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections =  Object.keys(collections)
-  .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-  .reduce((obj, key) => {
-    obj[key] = collections[key];
-    return obj;
-  }, {})
-  return trackedCollections
-}
-
-export const getSchema = (projectId, dbName, colName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections.${colName}.schema`, "")
 }
 
 export const parseJSONSafely = (str) => {

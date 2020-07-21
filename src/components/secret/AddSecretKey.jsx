@@ -3,7 +3,7 @@ import { Modal, Input, Form } from "antd";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 
 const getModalTitle = (initialValue, secretType) => {
-  return `${initialValue ? "Add" : "Update"} ${
+  return `${initialValue ? "Update" : "Add"} ${
     secretType === "env" ? "environment variable" : "file secret"
     }`;
 };

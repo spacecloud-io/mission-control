@@ -100,13 +100,11 @@ body {
 }
 
 .panel {
-  margin: 24px;
-  height: 100%;
-  padding: 16px;
+  margin-top: 48px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
 .panel > img {
@@ -211,4 +209,9 @@ body {
   .file-storage .ant-row-flex .panel .panel__graphic .file-storage-svg {
     width: 100% !important;
   }
+}
+
+
+.ant-notification-notice-icon-info {
+  color: #1890ff !important;
 }

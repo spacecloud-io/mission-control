@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig, notify, getJWTSecret } from '../../../utils';
+import { notify } from '../../../utils';
 import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -17,6 +17,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
+import { getJWTSecret } from '../../../operations/projects';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -43,25 +44,17 @@ function AlertMsgPreparedQueries() {
   );
 }
 
-const EndpointForm = ({ initialValues, handleSubmit }) => {
+const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
-  const { projectID, serviceName } = useParams();
-  const projects = useSelector((state) => state.projects);
+  const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
-  const initialRule = rule ? rule : defaultEndpointRule
-  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
+  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
 
   const [form] = Form.useForm();
-  const url = getProjectConfig(
-    projects,
-    projectID,
-    `modules.remoteServices.externalServices.${serviceName}.url`
-  );
 
   const secret = useSelector(state => getJWTSecret(state, projectID))
 
@@ -72,8 +65,8 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     path: path,
     overrideToken: token ? true : false,
     token: token,
-    setHeaders: headers.length > 0 ? true : false,
-    headers: headers.length > 0 ? headers : [{ key: "", value: "" }],
+    setHeaders: headers && headers.length > 0 ? true : false,
+    headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
@@ -87,13 +80,13 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
         name,
         method,
         path,
-        JSON.parse(ruleData),
+        defaultEndpointRule,
         overrideToken ? token : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
         (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
         kind === endpointTypes.PREPARED ? graphTemplateData : "",
-        setHeaders ? headers : undefined,
+        setHeaders ? headers : undefined
       )
     } catch (error) {
       notify("error", "Error", error)
@@ -103,12 +96,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
   useEffect(() => {
     form.setFieldsValue(formInitialValues)
   }, [formInitialValues.kind, formInitialValues.path])
-
-  useEffect(() => {
-    if (rule) {
-      setRuleData(JSON.stringify(rule, null, 2))
-    }
-  }, [rule])
 
   useEffect(() => {
     setRequestTemplateData(requestTemplate)
@@ -124,7 +111,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
 
   return (
     <Row>
-      <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }}>
+      <Col lg={{ span: 20, offset: 2 }} sm={{ span: 24 }}>
         <Card>
           <Form
             layout='vertical'
@@ -185,7 +172,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   name='path'
                   rules={[{ required: true, message: 'Please provide path!' }]}
                 >
-                  <Input addonBefore={url} placeholder='Example: /v1/payments' />
+                  <Input addonBefore={serviceURL} placeholder='Example: /v1/payments' />
                 </Form.Item>
               </ConditionalFormBlock>
               <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.EXTERNAL}>
@@ -197,24 +184,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   <Input placeholder='Example: https://example.com/foo' />
                 </Form.Item>
               </ConditionalFormBlock>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: true,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
-                  }}
-                />
-              </Form.Item>
             </ConditionalFormBlock>
             <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.PREPARED}>
               <Alert
@@ -284,24 +253,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   }}
                 />
               </Form.Item>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: false,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
-                  }}
-                />
-              </Form.Item>
             </ConditionalFormBlock>
             <Collapse
               style={{ background: "white" }}
@@ -337,17 +288,17 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   </Input.Group>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
-                  <FormItemLabel name='Set headers' />
+                  <FormItemLabel name='Modify request headers' />
                   <Form.Item name='setHeaders' valuePropName='checked'>
                     <Checkbox>
-                      Set the value of headers in the request
+                      Modify the value of headers in the request
                   </Checkbox>
                   </Form.Item>
                   <ConditionalFormBlock
                     dependency='setHeaders'
                     condition={() => form.getFieldValue('setHeaders') === true}
                   >
-                    <FormItemLabel name='Headers' />
+                    <FormItemLabel name='Specify request header modifications' />
                     <Form.List name="headers">
                       {(fields, { add, remove }) => {
                         return (
@@ -355,30 +306,44 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                             {fields.map((field, index) => (
                               <React.Fragment>
                                 <Row key={field}>
-                                  <Col span={10}>
+                                  <Col span={5}>
+                                    <Form.Item
+                                      name={[field.name, "op"]}
+                                      key={[field.name, "op"]}
+                                      validateTrigger={["onChange", "onBlur"]}
+                                      rules={[{ required: true, message: "Please input header operation" }]}
+                                      style={{ marginRight: 16 }}
+                                    >
+                                      <Select placeholder="Select header operation">
+                                        <Option value='set'>Set</Option>
+                                        <Option value='add'>Add</Option>
+                                        <Option value='del'>Delete</Option>
+                                      </Select>
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={8}>
                                     <Form.Item name={[field.name, "key"]}
                                       key={[field.name, "key"]}
                                       validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please input header key" }]}>
-                                      <Input
-                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                        placeholder="Header key"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={10}>
-                                    <Form.Item
-                                      validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please input header value" }]}
-                                      name={[field.name, "value"]}
-                                      key={[field.name, "value"]}
+                                      rules={[{ required: true, message: "Please input header key" }]}
+                                      style={{ marginRight: 16 }}
                                     >
-                                      <Input
-                                        placeholder="Header value"
-                                        style={{ width: "90%", marginRight: "6%", float: "left" }}
-                                      />
+                                      <Input placeholder="Header key" />
                                     </Form.Item>
                                   </Col>
+                                  <ConditionalFormBlock dependency="headers" condition={() => form.getFieldValue(["headers", field.name, "op"]) !== "del"}>
+                                    <Col span={8}>
+                                      <Form.Item
+                                        validateTrigger={["onChange", "onBlur"]}
+                                        rules={[{ required: true, message: "Please input header value" }]}
+                                        name={[field.name, "value"]}
+                                        key={[field.name, "value"]}
+                                        style={{ marginRight: 16 }}
+                                      >
+                                        <Input placeholder="Header value" />
+                                      </Form.Item>
+                                    </Col>
+                                  </ConditionalFormBlock>
                                   <Col span={3}>
                                     <Button
                                       onClick={() => remove(field.name)}
@@ -402,7 +367,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                                 }}
                                 style={{ marginRight: "2%", float: "left" }}
                               >
-                                <PlusOutlined /> Add header</Button>
+                                <PlusOutlined /> Add modification</Button>
                             </Form.Item>
                           </div>
                         );

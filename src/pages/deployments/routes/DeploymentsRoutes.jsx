@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import { RightOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm, Collapse } from "antd";
@@ -9,48 +9,32 @@ import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
 import RoutingModal from "../../../components/deployments/routing-modal/RoutingModal"
 import routingSvg from "../../../assets/routing.svg";
-import client from "../../../client";
-import { getProjectConfig, notify } from "../../../utils";
-import { increment, decrement, set } from "automate-redux";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { loadServiceRoutes, saveServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
-
-  const [modalVisible, setModalVisible] = useState(false)
-  const [routeClicked, setRouteClicked] = useState(null)
-
-  const getRoutes = () => {
-    dispatch(increment("pendingRequests"))
-    client.deployments.fetchDeploymentRoutes(projectID).then((res = []) => {
-      const serviceRoutes = res.reduce((prev, curr) => {
-        if (!prev[curr.id]) {
-          return Object.assign({}, prev, { [curr.id]: [curr] })
-        }
-        const oldRoutes = prev[curr.id]
-        const newRoutes = [...oldRoutes, curr]
-        return Object.assign({}, prev, { [curr.id]: newRoutes })
-      }, {})
-      dispatch(set("serviceRoutes", serviceRoutes))
-    })
-      .catch(ex => notify("error", "Error fetching routes. This page is only available for Kubernetes cluster", ex.toString()))
-      .finally(() => dispatch(decrement("pendingRequests")))
-  }
 
   useEffect(() => {
     ReactGA.pageview("/projects/deployments/ingress-routes");
-    getRoutes()
   }, [])
 
-  const serviceRoutes = useSelector(state => state.serviceRoutes)
+  useEffect(() => {
+    incrementPendingRequests()
+    loadServiceRoutes(projectID)
+      .catch(ex => notify("error", "Error fetching routes. This page is only available for Kubernetes cluster", ex.toString()))
+      .finally(() => decrementPendingRequests())
+  }, [projectID])
+
+  // Global state
+  const deployments = useSelector(state => getServices(state))
+  const serviceRoutes = useSelector(state => getServiceRoutes(state))
+
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false)
+  const [routeClicked, setRouteClicked] = useState(null)
+
 
   deployments.forEach(obj => {
     if (!serviceRoutes[obj.id]) {
@@ -97,35 +81,33 @@ const DeploymentsRoutes = () => {
 
   const handleSubmit = (serviceId, values) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
+      incrementPendingRequests()
       const { port, targets } = values
       const routeConfig = {
         source: { port },
         targets
       }
       const routes = [routeConfig, ...serviceRoutes[serviceId].filter(obj => obj.source.port !== port)]
-      client.deployments
-        .setDeploymentRoutes(projectID, serviceId, routes)
+      saveServiceRoutes(projectID, serviceId, routes)
         .then(() => {
-          dispatch(set(`serviceRoutes.${serviceId}`, routes))
-          resolve();
+          notify("success", "Success", "Saved service routes successfully")
+          resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", "Error saving service routes", ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDelete = (serviceId, port) => {
-    dispatch(increment("pendingRequests"));
+    incrementPendingRequests()
     const routes = serviceRoutes[serviceId].filter(obj => obj.source.port !== port)
-    client.deployments
-      .setDeploymentRoutes(projectID, serviceId, routes)
-      .then(() => {
-        dispatch(set(`serviceRoutes.${serviceId}`, routes))
-        notify("success", "Success", "Successfully deleted routing rule");
-      })
-      .catch(ex => notify("error", "Error deleting deprouting ruleloyment", ex))
-      .finally(() => dispatch(decrement("pendingRequests")));
+    saveServiceRoutes(projectID, serviceId, routes)
+      .then(() => notify("success", "Success", "Successfully deleted service route"))
+      .catch(ex => notify("error", "Error deleting service route", ex))
+      .finally(() => decrementPendingRequests());
   };
 
   const handleCancel = () => {
