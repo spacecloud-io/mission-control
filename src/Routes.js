@@ -46,11 +46,11 @@ import RoutingSettings from './pages/routing/settings/Settings';
 import SecretsIndex from "./pages/secrets/Index";
 import Secrets from './pages/secrets/Secrets';
 import SecretDetails from './pages/secrets/SecretDetails';
-import ExploreIntegration from './pages/integration/ExploreIntegration';
-import InstalledIntegration from './pages/integration/InstalledIntegration';
-import InstallIntegration from './pages/integration/InstallIntegration';
-import IntegrationDetails from './pages/integration/IntegrationDetails';
-import IntegrationPermissions from './pages/integration/IntegrationPermissions';
+import ExploreIntegrations from './pages/integrations/ExploreIntegrations';
+import InstalledIntegrations from './pages/integrations/InstalledIntegrations';
+import InstallIntegration from './pages/integrations/InstallIntegration';
+import IntegrationDetails from './pages/integrations/IntegrationDetails';
+import IntegrationPermissions from './pages/integrations/IntegrationPermissions';
 import RulesEditor from './pages/security-rules/RulesEditor';
 
 export default () => {
@@ -114,13 +114,13 @@ export default () => {
       <PrivateRoute path="/mission-control/projects/:projectID/secrets" component={SecretsIndex} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/secrets" component={Secrets} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/secrets/:secretId" component={SecretDetails} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration"
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/integration/explore`} />} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration/explore" component={ExploreIntegration} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration/installed" component={InstalledIntegration} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration/details/:integrationid" component={IntegrationDetails} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration/install/:integrationid" component={InstallIntegration} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/integration/permissions/:integrationid" component={IntegrationPermissions} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations"
+        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/integrations/explore`} />} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations/explore" component={ExploreIntegrations} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations/installed" component={InstalledIntegrations} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations/details/:integrationId" component={IntegrationDetails} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations/install/:integrationId" component={InstallIntegration} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/integrations/permissions/:integrationId" component={IntegrationPermissions} />
     </Router>
   );
 };

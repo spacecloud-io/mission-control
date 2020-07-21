@@ -4,6 +4,29 @@ export const endpointTypes = {
   PREPARED: "prepared"
 }
 
+export const resourceTypeLabels = {
+  "db-config": "Database config",
+  "db-rule": "Database rules",
+  "db-schema": "Database schema",
+  "db-prepared-query": "Database prepared queries",
+  "eventing-config": "Eventing config",
+  "eventing-trigger": "Eventing triggers",
+  "eventing-schema": "Eventing schema",
+  "eventing-rule": "Eventing rules",
+  "filestore-config": "Filestore config",
+  "filestore-rule": "Filestore rules",
+  "letsencrypt": "Letsencrypt",
+  "project": "Project settings",
+  "ingress-global": "Ingress global config",
+  "ingress-route": "Ingress routes",
+  "remote-service": "Remote services",
+  "service": "Services",
+  "service-route": "Service routes",
+  "secret": "Secrets",
+  "integration": "Integrations",
+  "integration-hook": "Integration hooks",
+}
+
 export const dbTypes = {
   MONGO: "mongo",
   POSTGRESQL: "postgres",

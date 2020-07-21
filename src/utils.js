@@ -69,6 +69,10 @@ export function capitalizeFirstCharacter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+export function formatIntegrationImageUrl(integrationId) {
+  return `https://storage.googleapis.com/space-cloud/assets/${integrationId}.svg`
+}
+
 export const generateToken = (state, projectId, claims) => {
   const secret = getJWTSecret(state, projectId)
   if (!secret) return ""
