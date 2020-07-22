@@ -8,71 +8,30 @@ class Integrations {
 
   fetchSupportedIntegrations() {
     return new Promise((resolve, reject) => {
-      resolve(
-        [
-          {
-            id: "team-management",
-            name: "Team Management",
-            description: "Enterprise grade team management module for granular login permissions and much more",
-            details: "## Introduction\n This is a great integration",
-            app: "/integrations/team-management",
-            configPermissions: [
-              {
-                resources: ["*"],
-                verbs: ["hijack"]
-              }
-            ],
-            apiPermissions: []
-          },
-          {
-            id: "elastic-search",
-            name: "Elastic Search",
-            description: "Enterprise grade team management module for granular login permissions and much more",
-            details: "## Introduction\n This is a great integration",
-            app: "/integrations/elastic-search",
-            configPermissions: [
-              {
-                resources: ["db-config", "db-schema"],
-                verbs: ["read"]
-              }
-            ],
-            apiPermissions: [
-              {
-                resources: ["db-read"],
-                verbs: ["hijack", "access"]
-              },
-              {
-                resources: ["db-create", "db-update", "db-delete"],
-                verbs: ["hook"]
-              }
-            ]
+      this.spaceUpClient.query({
+        query: gql`
+        query {
+          integrations @db {
+            id
+            name
+            description
+            details
+            app
+            configPermissions
+            apiPermissions
+            key
+            version
+            level
+            deployments
+            secretSource
+            hooks
+            compatibleVersion
           }
-        ]
-      )
-      // this.spaceUpClient.query({
-      //   query: gql`
-      //   query {
-      //     integrations @db {
-      //       id
-      //       name
-      //       description
-      //       details
-      //       app
-      //       configPermissions
-      //       apiPermissions
-      //       key
-      //       version
-      //       level
-      //       deployments
-      //       secretSource
-      //       hooks
-      //       compatibleVersion
-      //     }
-      //   }`,
-      //   variables: {}
-      // })
-      //   .then(res => resolve(res.data.integrations))
-      //   .catch(ex => reject(ex))
+        }`,
+        variables: {}
+      })
+        .then(res => resolve(res.data.integrations))
+        .catch(ex => reject(ex))
     })
   }
 
