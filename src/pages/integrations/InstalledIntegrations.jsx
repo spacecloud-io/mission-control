@@ -7,21 +7,15 @@ import IntegrationTabs from '../../components/integrations/integration-tabs/Inte
 import emptyStateSvg from '../../assets/routing.svg';
 import IntegrationsList from "../../components/integrations/integrations-list/IntegrationsList";
 import { Row, Col, Button } from "antd";
+import { useSelector } from 'react-redux';
+import { getIntegrations } from '../../operations/integrations';
 
 const InstalledIntegrations = () => {
 
   const { projectID } = useParams();
   const history = useHistory();
 
-  const installedIntegrations = [
-    {
-      id: "team-management",
-      name: "Team Management",
-      desc: "Enterprise grade team management module for granular login permissions and much more",
-      installed: true
-    }
-  ]
-
+  const installedIntegrations = useSelector(state => getIntegrations(state)).filter(obj => obj.installed)
 
   const emptyState =
     <React.Fragment>

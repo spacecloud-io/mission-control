@@ -102,7 +102,7 @@ export const eventingSchemas = []
 export const eventingRules = [
   {
     "id": "MY_CUSTOM_EVENT",
-    "rule": "allow" 
+    "rule": "allow"
   }
 ]
 
@@ -390,6 +390,50 @@ export const serviceRoutes = [
         "version": "v2",
         "port": 8080,
         "weight": 20
+      }
+    ]
+  }
+]
+
+export const installedIntegrations = [
+  { id: "team-management" }
+]
+
+export const supportedInterations = [
+  {
+    id: "team-management",
+    name: "Team Management",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    app: "/integrations/team-management",
+    configPermissions: [
+      {
+        resources: ["*"],
+        verbs: ["hijack"]
+      }
+    ],
+    apiPermissions: []
+  },
+  {
+    id: "elastic-search",
+    name: "Elastic Search",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    app: "/integrations/elastic-search",
+    configPermissions: [
+      {
+        resources: ["db-config", "db-schema"],
+        verbs: ["read"]
+      }
+    ],
+    apiPermissions: [
+      {
+        resources: ["db-read"],
+        verbs: ["hijack", "access"]
+      },
+      {
+        resources: ["db-create", "db-update", "db-delete"],
+        verbs: ["hook"]
       }
     ]
   }

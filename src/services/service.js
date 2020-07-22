@@ -1,6 +1,6 @@
 import SpaceAPI from 'space-api';
 import gql from 'graphql-tag';
-import { spaceCloudClusterOrigin } from "../constants"
+import { spaceCloudClusterOrigin, spaceUpAPIGraphQLURL } from "../constants"
 import { createRESTClient, createGraphQLClient } from "./client";
 
 import Database from "./database"
@@ -14,6 +14,7 @@ import Routes from "./routes"
 import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
 import Cluster from "./cluster";
+import Integrations from "./integrations";
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -22,6 +23,7 @@ const and = SpaceAPI.and
 class Service {
   constructor(token) {
     this.client = createRESTClient(spaceCloudClusterOrigin)
+    this.spaceAPIClient = createGraphQLClient(spaceUpAPIGraphQLURL)
     this.spaceSiteClient = createRESTClient("https://api.spaceuptech.com", { credentials: "omit" })
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
@@ -34,6 +36,7 @@ class Service {
     this.letsencrypt = new LetsEncrypt(this.client)
     this.secrets = new Secrets(this.client)
     this.cluster = new Cluster(this.client)
+    this.integrations = new Integrations(this.client, this.spaceAPIClient)
     if (token) this.client.setToken(token);
   }
 
