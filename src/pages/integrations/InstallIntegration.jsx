@@ -7,17 +7,16 @@ import { PlayCircleOutlined } from '@ant-design/icons';
 import PermissionsSection from '../../components/integrations/permissions/PermissionsSection';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions } from '../../operations/integrations';
-import { formatIntegrationImageUrl } from '../../utils';
+import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
+import { formatIntegrationImageUrl, incrementPendingRequests, notify, decrementPendingRequests } from '../../utils';
 const { Step } = Steps;
 
 const InstallIntegration = () => {
-
   const history = useHistory()
   const { projectID, integrationId } = useParams()
 
   // Global state
-  const { name } = useSelector(state => getIntegrationDetails(state, integrationId))
+  const { name, app } = useSelector(state => getIntegrationDetails(state, integrationId))
   const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
   const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
 
@@ -29,11 +28,22 @@ const InstallIntegration = () => {
 
   // Handlers
   const handleStartIntegration = () => {
-    setCurrent(current + 1)
+    incrementPendingRequests()
+    installIntegration(integrationId)
+      .then(() => {
+        notify("success", "Success", "Installed integration successfully")
+        setCurrent(current + 1)
+      })
+      .catch(ex => notify("error", "Error installing integration", ex))
+      .finally(() => decrementPendingRequests())
   }
 
-  const handleOpenConsole = (integratonId) => {
-    history.push(`/integrations/${integratonId}`)
+  const handleOpenConsole = () => {
+    window.open(app, "_blank")
+  }
+
+  const handleBackToIntegrations = () => {
+    history.push(`/mision-control/projects/${projectID}/integrations`)
   }
 
   const steps = [
@@ -77,7 +87,8 @@ const InstallIntegration = () => {
                 title="Success"
                 subTitle="Integration installed sucessfully"
                 extra={[
-                  <Button type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>
+                  <Button key="console" type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>,
+                  <Button key="back" size="large" onClick={handleBackToIntegrations}>Back to integrations page</Button>
                 ]} />
             </Card>
           </Col>

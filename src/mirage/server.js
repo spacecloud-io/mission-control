@@ -125,6 +125,11 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/projects/:projectId/letsencrypt/config", () => respondOk({ result: fixtures.letsencryptConfig }));
       this.post("/config/projects/:projectId/letsencrypt/config/letsencrypt-config", () => respondOk())
 
+      // Integration endpoints
+      this.get("/config/integrations", () => respondOk({ result: fixtures.installedIntegrations }));
+      this.post("/config/integrations", () => respondOk())
+      this.delete("/config/integrations/:integrationId", () => respondOk())
+
       // API endpoints 
       this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
       this.post("/api/:projectId/eventing/queue", () => respondOk())

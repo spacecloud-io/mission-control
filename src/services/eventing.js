@@ -66,7 +66,7 @@ class Eventing {
   fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType, getToken) {
     let uri = `/v1/api/${projectId}/graphql`
     if (spaceCloudClusterOrigin) {
-      uri = "http://localhost:4122" + uri;
+      uri = spaceCloudClusterOrigin + uri;
     }
     const graphqlClient = createGraphQLClient(uri, getToken)
     return new Promise((resolve, reject) => {

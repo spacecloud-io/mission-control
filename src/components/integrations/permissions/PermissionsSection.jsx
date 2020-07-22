@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Divider, Radio, Table, Empty } from 'antd';
 import upLogo from '../../../logo.png';
 import { CheckOutlined, CloseOutlined, SwapOutlined } from '@ant-design/icons';
-import { resourceTypeLabels } from '../../../constants';
+import { configResourceTypeLabels, apiResourceTypeLabels } from '../../../constants';
 
 const PermissionIcon = ({ allowed }) => {
   if (allowed) {
@@ -19,7 +19,7 @@ const PermissionsSection = ({ configPermissions, apiPermissions, name, imgUrl, s
   const configColumns = [
     {
       title: 'Config resource',
-      render: (_, record) => resourceTypeLabels[record.resource]
+      render: (_, record) => configResourceTypeLabels[record.resource]
     },
     {
       title: 'Read',
@@ -34,12 +34,12 @@ const PermissionsSection = ({ configPermissions, apiPermissions, name, imgUrl, s
     {
       title: 'Webhook',
       align: "center",
-      render: (_, record) => <PermissionIcon allowed={record.webhook} />
+      render: (_, record) => <PermissionIcon allowed={record.hook} />
     },
     {
       title: 'Override',
       align: "center",
-      render: (_, record) => <PermissionIcon allowed={record.override} />
+      render: (_, record) => <PermissionIcon allowed={record.hijack} />
     }
   ];
 
@@ -47,7 +47,7 @@ const PermissionsSection = ({ configPermissions, apiPermissions, name, imgUrl, s
     {
       title: 'API',
       key: 'resource',
-      dataIndex: 'resource'
+      render: (_, record) => apiResourceTypeLabels[record.resource]
     },
     {
       title: 'Access',
@@ -57,12 +57,12 @@ const PermissionsSection = ({ configPermissions, apiPermissions, name, imgUrl, s
     {
       title: 'Webhook',
       align: "center",
-      render: (_, record) => <PermissionIcon allowed={record.webhook} />
+      render: (_, record) => <PermissionIcon allowed={record.hook} />
     },
     {
       title: 'Override',
       align: "center",
-      render: (_, record) => <PermissionIcon allowed={record.override} />
+      render: (_, record) => <PermissionIcon allowed={record.hijack} />
     }
   ];
 

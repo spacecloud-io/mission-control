@@ -6,9 +6,9 @@ const { Paragraph } = Typography;
 const CardOptions = ({ handleViewDetails, handleViewPermissions, handleDelete, handleClick }) => {
 
   const DeleteWarning = () => Modal.confirm({
-    title: 'Are you sure to delete this integration?',
+    title: 'Are you sure to uninstall this integration?',
     content: 'This is permanent and can’t be undone',
-    okText: 'Yes, delete',
+    okText: 'Yes, uninstall',
     cancelText: 'No',
     onOk: (handleDelete)
   })
@@ -17,7 +17,7 @@ const CardOptions = ({ handleViewDetails, handleViewPermissions, handleDelete, h
     <Menu style={{ borderRight: "none" }} onClick={handleClick}>
       <Menu.Item onClick={handleViewDetails}>View Details</Menu.Item>
       <Menu.Item onClick={handleViewPermissions}>View Permissions</Menu.Item>
-      <Menu.Item onClick={DeleteWarning}>Delete integration</Menu.Item>
+      <Menu.Item onClick={DeleteWarning}>Uninstall integration</Menu.Item>
     </Menu>
   );
 }

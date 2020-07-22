@@ -14,7 +14,7 @@ function IntegrationsList({ integrations }) {
   const handleDelete = (integratonId) => {
     incrementPendingRequests()
     deleteIntegration(integratonId)
-      .then(() => notify("success", "Success", "Deleted integration successfully"))
+      .then(() => notify("success", "Success", "Uninstalled integration successfully"))
       .catch((ex) => notify("error", "Error deleting integration", ex))
       .finally(() => decrementPendingRequests())
   }
@@ -31,24 +31,24 @@ function IntegrationsList({ integrations }) {
     history.push(`/mission-control/projects/${projectID}/integrations/details/${integratonId}`)
   }
 
-  const handleOpenConsole = (integratonId) => {
-    history.push(`/integrations/${integratonId}`)
+  const handleOpenConsole = (app) => {
+    window.open(app, "_blank")
   }
 
   return (
     <Row gutter={[24, 24]}>
-      {integrations.map(({ id, name, desc, installed }) => {
+      {integrations.map(({ id, name, description, installed, app }) => {
         return (
           <Col lg={{ span: 8 }}>
             <IntegrationCard
               name={name}
-              desc={desc}
+              desc={description}
               imgUrl={formatIntegrationImageUrl(id)}
               installed={installed}
               handleDelete={() => handleDelete(id)}
               handleViewDetails={() => handleViewDetails(id)}
               handleViewPermissions={() => handleViewPermissions(id)}
-              handleOpenConsole={() => handleOpenConsole(id)}
+              handleOpenConsole={() => handleOpenConsole(app)}
               handleInstall={() => handleInstall(id)}
             />
           </Col>

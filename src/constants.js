@@ -4,7 +4,7 @@ export const endpointTypes = {
   PREPARED: "prepared"
 }
 
-export const resourceTypeLabels = {
+export const configResourceTypeLabels = {
   "db-config": "Database config",
   "db-rule": "Database rules",
   "db-schema": "Database schema",
@@ -25,6 +25,17 @@ export const resourceTypeLabels = {
   "secret": "Secrets",
   "integration": "Integrations",
   "integration-hook": "Integration hooks",
+}
+
+export const apiResourceTypeLabels = {
+  "db-create": "Database create",
+  "db-read": "Database read",
+  "db-update": "Database update",
+  "db-delete": "Database delete",
+  "db-aggregate": "Database aggregate",
+  "db-prepared-sql": "Database prepared query",
+  "eventing-trigger": "Custom events",
+  "service-call": "Remote service"
 }
 
 export const dbTypes = {
@@ -107,3 +118,4 @@ const getURL = (productionURL, developmentURL, mockURL) => {
 }
 
 export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
+export const spaceUpAPIGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")
