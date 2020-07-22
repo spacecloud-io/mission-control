@@ -7,7 +7,7 @@ const IntegrationIndex = () => {
   useEffect(() => {
     incrementPendingRequests()
     loadSupportedIntegrations()
-      .catch(ex => notify("error", "Error fetching integrations list config", ex))
+      .catch(ex => notify("error", "Error fetching supported integrations", ex))
       .finally(() => decrementPendingRequests())
 
     incrementPendingRequests()
