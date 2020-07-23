@@ -87,7 +87,7 @@ export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
 
 export function removeClusterLicense() {
   return new Promise((resolve, reject) => {
-    client.cluster.setClusterLicense("", "", "")
+    client.cluster.removeClusterLicense()
       .then(() => {
         const env = getEnv(store.getState())
         const newEnv = Object.assign({}, env)
@@ -114,8 +114,8 @@ export function isProdMode() {
 }
 
 export function isClusterUpgraded(state) {
-  const { licenseKey } = getEnv(state)
-  return licenseKey ? true : false
+  const { licenseKey, licenseType } = getEnv(state)
+  return licenseKey && licenseType && !licenseType.startsWith("space-cloud-open") ? true : false
 }
 
 export function getToken() {

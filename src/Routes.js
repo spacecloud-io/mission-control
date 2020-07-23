@@ -40,6 +40,7 @@ import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "./pages/settings/project/ProjectSettings";
 import ClusterSettings from "./pages/settings/cluster/ClusterSettings";
+import LicenseSettings from "./pages/settings/license/LicenseSettings";
 import ApplyLicense from "./pages/settings/apply-license/ApplyLicense";
 import RoutingOverview from './pages/routing/overview/Overview';
 import RoutingSettings from './pages/routing/settings/Settings';
@@ -86,6 +87,7 @@ export default () => {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/project" component={ProjectSettings} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/cluster" component={ClusterSettings} />
+      <PrivateRoute exact path="/mission-control/projects/:projectID/settings/license" component={LicenseSettings} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/settings/apply-license" component={ApplyLicense} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/ingress-routes"
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/ingress-routes/overview`} />} />

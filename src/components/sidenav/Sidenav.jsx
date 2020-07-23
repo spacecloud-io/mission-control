@@ -8,7 +8,7 @@ import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
-import { getEnv, isClusterUpgraded } from '../../operations/cluster';
+import { getEnv } from '../../operations/cluster';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -33,6 +33,7 @@ const PanelItem = (props) => {
   )
 }
 const getPlanName = (planId) => {
+  if (!planId) return "Opensource"
   // Strip the monthly/yearly and inr details from the plan id
   const temp = planId.split("--")[0]
   // Remove the space-cloud- prefix
@@ -47,8 +48,7 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const { licenseType, version } = useSelector(state => getEnv(state))
-  const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
-  const plan = `${clusterUpgraded ? licenseType : "Open source"} plan`
+  const planName = getPlanName(licenseType)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
@@ -115,7 +115,7 @@ const Sidenav = (props) => {
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
           <br />
-          <span className="plan">{plan}</span>
+          <span className="plan">{planName}</span>
         </div>
       </div>
     </div>
