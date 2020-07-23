@@ -87,12 +87,7 @@ export function removeClusterLicense() {
   return new Promise((resolve, reject) => {
     client.cluster.removeClusterLicense()
       .then(() => {
-        const env = getEnv(store.getState())
-        const newEnv = Object.assign({}, env)
-        delete newEnv["clusterName"]
-        delete newEnv["licenseKey"]
-        delete newEnv["licenseValue"]
-        setEnv(newEnv)
+        loadClusterEnv()
         resolve()
       })
       .catch(ex => reject(ex))
