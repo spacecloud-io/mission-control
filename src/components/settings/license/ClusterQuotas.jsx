@@ -16,7 +16,7 @@ function Quotas({ quotas, clusterUpgraded, handleGetLicense }) {
       </Card>
       {
         !clusterUpgraded && (
-          <Button onClick={handleGetLicense} >Get a license <ArrowUpOutlined rotate={45} /></Button>
+          <Button style={{ marginTop: 16 }} onClick={handleGetLicense} >Get a license <ArrowUpOutlined rotate={45} /></Button>
         )
       }
     </React.Fragment>

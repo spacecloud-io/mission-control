@@ -2,13 +2,18 @@ import React from "react";
 import { Button, Space, Card } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons"
 import crownSvg from "../../../assets/crown.svg"
-import { formatDate } from "../../../utils";
+import { formatDate, capitalizeFirstCharacter } from "../../../utils";
 
-function LicenseDetailsCard({ clusterName, licenseKey, licenseType, nextRenewal }) {
+function formatPlan(plan) {
+  const temp = plan.split("--")[0]
+  return temp.split("-").map(v => capitalizeFirstCharacter(v)).join(" ")
+}
+
+function LicenseDetailsCard({ clusterName, licenseKey, plan, nextRenewal }) {
   return (
     <Card>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
-        <span style={{ color: "rgba(0,0,0,0.56)", fontWeight: "bold", fontSize: "16px", marginRight: 4 }}>{licenseType}</span>
+        <span style={{ color: "rgba(0,0,0,0.56)", fontWeight: "bold", fontSize: "16px", marginRight: 4 }}>{formatPlan(plan)} Plan</span>
         <img src={crownSvg} alt="Crown" />
       </div>
       <p style={{ marginBottom: 8 }}>License key: {licenseKey}</p>
@@ -18,7 +23,7 @@ function LicenseDetailsCard({ clusterName, licenseKey, licenseType, nextRenewal 
   )
 }
 
-function LicenseDetails({ clusterUpgraded, handleApplyLicense, handleGetLicense, handleRemoveLicense, clusterName, licenseKey, licenseType, nextRenewal }) {
+function LicenseDetails({ clusterUpgraded, handleApplyLicense, handleGetLicense, handleRemoveLicense, clusterName, licenseKey, plan, nextRenewal }) {
   return (
     <React.Fragment>
       <h2>License</h2>
@@ -36,7 +41,7 @@ function LicenseDetails({ clusterUpgraded, handleApplyLicense, handleGetLicense,
       {
         clusterUpgraded && (
           <React.Fragment>
-            <LicenseDetailsCard clusterName={clusterName} licenseKey={licenseKey} licenseType={licenseType} nextRenewal={nextRenewal} />
+            <LicenseDetailsCard clusterName={clusterName} licenseKey={licenseKey} plan={plan} nextRenewal={nextRenewal} />
             <Space size="middle" style={{ marginTop: 16 }}>
               <Button onClick={handleApplyLicense} >Apply a new license key</Button>
               <Button type="danger" onClick={handleRemoveLicense} >Remove license</Button>

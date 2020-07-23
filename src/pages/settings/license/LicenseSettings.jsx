@@ -27,7 +27,7 @@ const LicenseSettings = () => {
       .finally(() => decrementPendingRequests())
   }, []);
 
-  const { clusterName, licenseType, licenseKey, nextRenewal, quotas } = useSelector(state => getEnv(state))
+  const { clusterName, plan, licenseKey, nextRenewal, quotas } = useSelector(state => getEnv(state))
   const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
 
   const handleOpenApplyLicensePage = () => history.push(`/mission-control/projects/${projectID}/settings/apply-license`)
@@ -48,7 +48,7 @@ const LicenseSettings = () => {
         <Content>
           <Row>
             <Col lg={{ span: 12 }}>
-              <License clusterUpgraded={clusterUpgraded} handleApplyLicense={handleOpenApplyLicensePage} handleGetLicense={openBillingPortal} handleRemoveLicense={handleRemoveLicense} clusterName={clusterName} licenseKey={licenseKey} licenseType={licenseType} nextRenewal={nextRenewal} />
+              <License clusterUpgraded={clusterUpgraded} handleApplyLicense={handleOpenApplyLicensePage} handleGetLicense={openBillingPortal} handleRemoveLicense={handleRemoveLicense} clusterName={clusterName} licenseKey={licenseKey} plan={plan} nextRenewal={nextRenewal} />
               <Divider />
               <ClusterQuotas clusterUpgraded={clusterUpgraded} handleGetLicense={openBillingPortal} quotas={quotas} />
             </Col>

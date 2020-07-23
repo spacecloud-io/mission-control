@@ -24,7 +24,7 @@ const ApplyLicenseForm = ({ clusterName, handleSubmit }) => {
           <Input placeholder="License key" addonBefore="Key" />
         </Form.Item>
         <Form.Item name="licenseValue">
-          <Input placeholder="License key secret" addonBefore="Secret" />
+          <Input.Password placeholder="License key secret" addonBefore="Secret" />
         </Form.Item>
         <Form.Item>
           <Button type='primary' htmlType='submit' size="large" block >Apply license key</Button>

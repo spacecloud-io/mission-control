@@ -47,8 +47,8 @@ const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const { licenseType, version } = useSelector(state => getEnv(state))
-  const planName = getPlanName(licenseType)
+  const { plan, version } = useSelector(state => getEnv(state))
+  const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
