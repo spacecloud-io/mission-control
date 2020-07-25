@@ -24,7 +24,7 @@ let editRowData = {};
 const getUniqueKeys = (colSchemaFields = []) => {
   return colSchemaFields.filter(val => val.isPrimary || val.hasUniqueConstraint).map(val => val.name)
 }
-let page = 1;
+
 const Browse = () => {
 
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
@@ -61,31 +61,29 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = (skip = 0, append = false) => {
+  const getTableData = (skip = 0) => {
+    return new Promise((resolve, reject) => {
     if (selectedCol) {
 
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
       const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
-      incrementPendingRequests()
+      incrementPendingRequests();
       db.get(selectedCol)
         .where(...filterConditions)
         .sort(...sortConditions)
         .skip(skip)
         .limit(maxRows)
         .apply()
-        .then((response) => {
-          if (response.status !== 200) {
-            notify("error", "Error fetching data", response.data.error, 5);
-            setData([]);
-            return
+        .then(({data, status}) => {
+          if (status !== 200) {
+            notify("error", "Error fetching data", data.error, 5);
+            resolve([]);
           }
 
-          if (response.data.result.length < maxRows) {
-            setHasMoreRows(false);
-          }
-
-          response.data.result.forEach(obj => {
+          data.result.length < maxRows ? setHasMoreRows(false) : setHasMoreRows(true);
+          
+          data.result.forEach(obj => {
             Object.entries(obj).forEach(([key, value]) => {
               // Stringifying certain data types to render them in table 
               if (typeof value === "boolean") {
@@ -101,13 +99,14 @@ const Browse = () => {
               }
             })
           })
-
-          const newData = append ? data.concat(response.data.result) : response.data.result
-          setData(newData);
+          console.log(data.result)
+          resolve(data.result);
         })
-        .catch(ex => notify("error", "Error fetching data", ex, 5))
+        .catch(ex => reject(ex))
         .finally(() => decrementPendingRequests());
+        
     }
+  })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -156,7 +155,9 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    getTableData();
+    getTableData()
+    .then(response => setData(response))
+    .catch(ex => notify("error", "Error fetching data", ex, 5));
   }, [filters, sorters, selectedCol])
 
 
@@ -173,47 +174,47 @@ const Browse = () => {
   }
 
   const insertRow = values => {
-    return new Promise((resolve, reject) => {
-      let doc = {};
-      for (let row of values) {
-        doc[row.column] = row.value;
-      }
+    let doc = {};
+    for (let row of values) {
+      doc[row.column] = row.value;
+    }
 
-      incrementPendingRequests()
-      db.insert(selectedCol).doc(doc).apply()
-        .then(res => {
-          if (res.status !== 200) {
-            notify("error", "Error inserting row", res.data.error);
-            reject()
-            return;
-          }
-          notify("success", "Success", "Successfully inserted a row!");
-          resolve()
-          getTableData();
-        })
-        .catch(ex => {
-          notify("error", "Error inserting row", ex)
-          reject()
-        })
-        .finally(() => decrementPendingRequests())
-    })
+    incrementPendingRequests();
+    db.insert(selectedCol).doc(doc).apply()
+      .then(res => {
+        if (res.status !== 200) {
+          notify("error", "Error inserting row", res.data.error, 5);
+          return;
+        }
+        notify("success", "Success", "Successfully inserted a row!", 5);
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));
+      })
+      .catch(ex => notify("error", "Error inserting row", ex, 5))
+      .finally(() => {
+        setInsertRowFormVisibility(false)
+        decrementPendingRequests();
+      })
   }
 
   const deleteRow = (record) => {
     const conditions = uniqueKeys.map(key => cond(key, "==", record[key]))
-    incrementPendingRequests()
+    incrementPendingRequests();
     db.delete(selectedCol)
       .where(...conditions)
       .apply()
       .then((res) => {
         if (res.status !== 200) {
-          notify("error", "Error deleting row", res.data.error)
+          notify("error", "Error deleting row", res.data.error, 5)
           return;
         }
-        notify("success", "Success", "Row deleted successfully")
-        getTableData();
+        notify("success", "Success", "Row deleted successfully", 5)
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));;
       })
-      .catch(ex => notify("error", "Error deleting row", ex))
+      .catch(ex => notify("error", "Error deleting row", ex, 5))
       .finally(() => decrementPendingRequests())
   }
 
@@ -320,34 +321,32 @@ const Browse = () => {
       })
     }
 
-    return new Promise((resolve, reject) => {
-      incrementPendingRequests()
-      updateOperation.apply()
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            notify("error", "Error updating row", data.error);
-            reject()
-            return;
-          }
-          notify("success", "Success", "Row updated successfully!");
-          resolve()
-          getTableData();
-        })
-        .catch(ex => {
-          notify("error", "Error updating row", ex)
-          reject()
-        })
-        .finally(() => decrementPendingRequests())
-    })
+    incrementPendingRequests();
+    updateOperation.apply()
+      .then(({ status, data }) => {
+        if (status !== 200) {
+          notify("error", "Error updating row", data.error, 5);
+          return;
+        }
+        notify("success", "Success", "Row updated successfully!", 5);
+        getTableData()
+        .then(response => setData(response))
+        .catch(ex => notify("error", "Error fetching data", ex, 5));;
+      })
+      .catch(ex => notify("error", "Error updating row", ex, 5))
+      .finally(() => {
+        setEditRowFormVisibility(false);
+        decrementPendingRequests();
+      })
   }
 
   const loadNextPageFunc = () => {
-    console.log("Load Next page")
-    const skip = (page) * maxRows;
-    getTableData(skip, true);
-    page++
+    console.log('called')
+    getTableData(data.length)
+    .then(response => setData(data.concat(response)))
+    .catch(ex => notify("error", "Error fetching data", ex, 5));
   }
-
+  
   const tableColumns = getColumnNames(colSchemaFields, data)
   return (
     <React.Fragment>
