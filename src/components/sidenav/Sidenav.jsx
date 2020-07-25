@@ -6,9 +6,9 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider, Button } from "antd";
-import history from "../../history"
-import { capitalizeFirstCharacter, getClusterPlan } from '../../utils';
+import { Collapse, Divider } from "antd";
+import { capitalizeFirstCharacter } from '../../utils';
+import { getEnv } from '../../operations/cluster';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -33,6 +33,7 @@ const PanelItem = (props) => {
   )
 }
 const getPlanName = (planId) => {
+  if (!planId) return "Opensource"
   // Strip the monthly/yearly and inr details from the plan id
   const temp = planId.split("--")[0]
   // Remove the space-cloud- prefix
@@ -46,8 +47,7 @@ const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const version = useSelector(state => state.env.version)
-  const plan = useSelector(state => getClusterPlan(state))
+  const { plan, version } = useSelector(state => getEnv(state))
   const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
@@ -56,9 +56,6 @@ const Sidenav = (props) => {
   const setActiveKeys = (activeKeys) => {
     store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
   }
-
-  const handleClickUpgrade = () => history.push(`/mission-control/projects/${projectID}/billing`)
-
 
   return (
     <div className="sidenav-container">
@@ -103,29 +100,22 @@ const Sidenav = (props) => {
           <Link to={`/mission-control/projects/${projectID}/userman`} onClick={closeSidenav}>
             <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'userman'} />
           </Link>
+          <Link to={`/mission-control/projects/${projectID}/integrations`} onClick={closeSidenav}>
+            <SidenavItem name="Integrations" icon="extension" active={props.selectedItem === 'integrations'} />
+          </Link>
           <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
             <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
           </Link>
-          {/* <Divider />
-        <Link to={`/mission-control/projects/${projectID}/guides`} onClick={closeSidenav}>
-          <SidenavItem name="Guides" icon="import_contacts" active={props.selectedItem === 'guides'} />
-        </Link> */}
           <Divider />
           <Link to={`/mission-control/projects/${projectID}/settings`} onClick={closeSidenav}>
             <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
           </Link>
-          {/* <Link to={`/mission-control/projects/${projectID}/teams`} onClick={closeSidenav}>
-          <SidenavItem name="Teams" icon="people_alt" active={props.selectedItem === 'teams'} />
-        </Link> */}
-          {/* <Link to={`/mission-control/projects/${projectID}/billing/overview`} onClick={closeSidenav}>
-            <SidenavItem name="Billing" icon="attach_money" active={props.selectedItem === 'billing'} />
-          </Link> */}
         </div>
         <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <span className="version-no">Version - v{version}</span>
-          {/* <p className="plan">{planName} plan</p>
-          {plan.startsWith("space-cloud-open") && <Button className="upgrade-btn" type="primary" ghost onClick={handleClickUpgrade}>Upgrade</Button>} */}
+          <br />
+          <span className="plan">{planName}</span>
         </div>
       </div>
     </div>

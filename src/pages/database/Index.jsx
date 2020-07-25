@@ -1,45 +1,39 @@
-import React, { useEffect } from 'react'
-import { Redirect, useParams } from "react-router-dom";
-import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
-
-import Sidenav from '../../components/sidenav/Sidenav'
-import Topbar from '../../components/topbar/Topbar'
-import DatabaseEmptyState from '../../components/database-card/DatabaseEmptyState'
+import { useEffect } from 'react'
+import { useParams } from "react-router-dom";
+import { loadDbSchemas, loadDbConfig, loadDbRules, loadDbPreparedQueries } from '../../operations/database';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 
 import './database.css'
 import '../../index.css'
 
-import { getProjectConfig, notify } from "../../utils"
-
 const Database = () => {
   const { projectID } = useParams()
-  const projects = useSelector(state => state.projects)
-  const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
-  const activeDB = Object.keys(dbModule).find(db => {
-    return dbModule[db].enabled
-  })
 
   useEffect(() => {
-    ReactGA.pageview("/projects/database");
-  }, [])
+    if (projectID) {
+      incrementPendingRequests()
+      loadDbConfig(projectID)
+        .catch(ex => notify("error", "Error fetching database config", ex))
+        .finally(() => decrementPendingRequests())
 
-  if (activeDB) {
-    return <Redirect to={`/mission-control/projects/${projectID}/database/${activeDB}/overview`} />;
-  }
-  return (
-    <div className="database">
-      <Topbar showProjectSelector />
-      <div>
-        <Sidenav selectedItem="database" />
-        <div className="page-content">
-          <div style={{ marginTop: 24 }}>
-            <DatabaseEmptyState />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+      incrementPendingRequests()
+      loadDbSchemas(projectID)
+        .catch(ex => notify("error", "Error fetching database schemas", ex))
+        .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadDbRules(projectID)
+        .catch(ex => notify("error", "Error fetching database rules", ex))
+        .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadDbPreparedQueries(projectID)
+        .catch(ex => notify("error", "Error fetching prepared queries", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
+  return null
 }
 
 export default Database;

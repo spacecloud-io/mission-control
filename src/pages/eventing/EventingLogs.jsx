@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { set, increment, decrement } from "automate-redux";
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-import {
-  CheckOutlined,
-  CloseOutlined,
-  FilterOutlined,
-  HourglassOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
 
+import { CheckOutlined, CloseOutlined, FilterOutlined, HourglassOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Button, Table } from "antd";
-import '../../index.css';
-import client from "../../client";
-import { getProjectConfig, notify, parseJSONSafely, generateInternalToken } from "../../utils";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import FilterForm from "../../components/eventing/FilterForm";
+
+
+import client from "../../client";
+import { notify, parseJSONSafely, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { getEventingDbAliasName } from '../../operations/eventing';
+import store from '../../store';
+
+import '../../index.css';
 import './event.css';
-//redux
-import { useDispatch, useSelector } from "react-redux";
-import { set, increment, decrement } from "automate-redux";
-import InfiniteScroll from 'react-infinite-scroll-component';
 
 const getIconByStatus = (status) => {
   switch (status) {
@@ -45,19 +43,24 @@ const columns = [
 const EventingLogs = () => {
   // Router params
   const { projectID } = useParams()
-  const [modalVisible, setModalVisible] = useState(false);
+
   const dispatch = useDispatch();
+
+  // Global state
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
-  const [hasMoreEventLogs, setHasMoreEventLogs] = useState(true);
   const projects = useSelector(state => state.projects);
-  const adminToken = useSelector(state => generateInternalToken(state, projectID))
+  const internalToken = useSelector(state => generateInternalToken(state, projectID))
+
+  // Component state  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [hasMoreEventLogs, setHasMoreEventLogs] = useState(true);
 
   useEffect(() => {
     if (projects.length > 0) {
-      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
-      dispatch(increment("pendingRequests"));
-      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
+      const dbType = getEventingDbAliasName(store.getState());
+      incrementPendingRequests()
+      client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => internalToken)
         .then(res => {
           dispatch(set("eventLogs", res))
           if (res.length < 100) {
@@ -65,9 +68,40 @@ const EventingLogs = () => {
           }
         })
         .catch(ex => notify("error", "Error loading event logs", ex.toString()))
-        .finally(() => dispatch(decrement("pendingRequests")))
+        .finally(() => decrementPendingRequests())
     }
   }, [eventFilters, projects])
+
+  // Handlers
+
+  const filterTable = (values) => {
+    dispatch(set("uiState.eventFilters", values))
+    setHasMoreEventLogs(true);
+  }
+
+  const loadFunc = () => {
+    if (projects.length > 0) {
+      const dbType = getEventingDbAliasName(store.getState())
+      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => internalToken)
+        .then(res => {
+          if (res.length < 100) {
+            setHasMoreEventLogs(false);
+          }
+          const eventLogsIDMap = [...new Set(eventLogs.map(obj => obj._id))].reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }), {})
+          dispatch(set("eventLogs", eventLogs.concat(res.filter(obj => !eventLogsIDMap[obj._id]))))
+        })
+        .catch(ex => notify("error", "Error loading event logs", ex.toString()))
+    }
+  }
+
+  const handleRefresh = () => {
+    const dbType = getEventingDbAliasName(store.getState())
+    dispatch(increment("pendingRequests"));
+    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => internalToken)
+      .then(res => dispatch(set("eventLogs", res)))
+      .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
+      .finally(() => dispatch(decrement("pendingRequests")))
+  }
 
   const expandedInvocations = record => {
     return (
@@ -120,35 +154,6 @@ const EventingLogs = () => {
       />);
   }
 
-  const filterTable = (values) => {
-    dispatch(set("uiState.eventFilters", values))
-    setHasMoreEventLogs(true);
-  }
-
-  const loadFunc = () => {
-    if (projects.length > 0) {
-      const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => adminToken)
-        .then(res => {
-          if (res.length < 100) {
-            setHasMoreEventLogs(false);
-          }
-          const eventLogsIDMap = [...new Set(eventLogs.map(obj => obj._id))].reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }), {})
-          dispatch(set("eventLogs", eventLogs.concat(res.filter(obj => !eventLogsIDMap[obj._id]))))
-        })
-        .catch(ex => notify("error", "Error loading event logs", ex.toString()))
-    }
-  }
-
-  const handleRefresh = () => {
-    const dbType = getProjectConfig(projects, projectID, "modules.eventing.dbAlias");
-    dispatch(increment("pendingRequests"));
-    client.eventing.fetchEventLogs(projectID, eventFilters, new Date().toISOString(), dbType, () => adminToken)
-      .then(res => dispatch(set("eventLogs", res)))
-      .catch(ex => notify("error", "Error refreshing event logs", ex.toString()))
-      .finally(() => dispatch(decrement("pendingRequests")))
-  }
-
   return (
     <div>
       <Topbar showProjectSelector />
@@ -159,11 +164,11 @@ const EventingLogs = () => {
           <Button size="large" style={{ marginRight: 16 }} onClick={handleRefresh}>Refresh <ReloadOutlined /></Button>
           <Button size="large" onClick={() => setModalVisible(true)}>Filters <FilterOutlined /></Button>
           <InfiniteScroll
-             dataLength={eventLogs.length}
-             next={loadFunc}
-             hasMore={hasMoreEventLogs}
-             loader={<h4 style={{textAlign: "center"}}>Loading...</h4>}
-            >
+            dataLength={eventLogs.length}
+            next={loadFunc}
+            hasMore={hasMoreEventLogs}
+            loader={<h4 style={{ textAlign: "center" }}>Loading...</h4>}
+          >
             <Table
               className="event-logs-table"
               columns={columns}

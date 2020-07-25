@@ -4,17 +4,26 @@ import ReactGA from 'react-ga';
 import { Row, Col } from 'antd'
 
 import LoginForm from './LoginForm';
-import client from '../../client';
-import { notify, fetchGlobalEntities } from "../../utils"
+import { notify, incrementPendingRequests, decrementPendingRequests, performActionsOnAuthenticated } from "../../utils"
 
 import './login.css'
 import logo from '../../assets/logo-black.svg'
 import loginBg from '../../assets/login.svg'
+import { login } from '../../operations/cluster';
 
 const Login = () => {
   const isLoading = useSelector(state => state.pendingRequests > 0)
   const handleSubmit = (user, key) => {
-    client.login(user, key).then(newToken => fetchGlobalEntities(newToken)).catch(ex => notify("error", "Error logging in", ex))
+    incrementPendingRequests()
+    login(user, key)
+      .then(() => {
+        notify("success", "Success", "Logged in successfully")
+
+        // This fetches projects and either opens a project or redirects to welcome page accordingly
+        performActionsOnAuthenticated()
+      })
+      .catch(ex => notify("error", "Error logging in", ex))
+      .finally(() => decrementPendingRequests())
   }
   useEffect(() => {
     ReactGA.pageview("/login");
