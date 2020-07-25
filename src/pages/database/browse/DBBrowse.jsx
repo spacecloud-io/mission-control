@@ -61,7 +61,7 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = (skip = 0) => {
+  const getTableData = (skip = 0, append = false) => {
     if (selectedCol) {
 
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
@@ -74,9 +74,9 @@ const Browse = () => {
         .skip(skip)
         .limit(maxRows)
         .apply()
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            notify("error", "Error fetching data", data.error, 5);
+        .then((response) => {
+          if (response.status !== 200) {
+            notify("error", "Error fetching data", response.data.error, 5);
             setData([]);
             return
           }
@@ -102,7 +102,7 @@ const Browse = () => {
             })
           })
 
-          const newData = data.concat(response.data.result);
+          const newData = append ? data.concat(response.data.result) : response.data.result
           setData(newData);
         })
         .catch(ex => notify("error", "Error fetching data", ex, 5))
@@ -341,9 +341,11 @@ const Browse = () => {
     })
   }
 
-  const loadFunc = () => {
-    getTableData(page*maxRows);
-    page++;
+  const loadNextPageFunc = () => {
+    console.log("Load Next page")
+    const skip = (page) * maxRows;
+    getTableData(skip, true);
+    page++
   }
 
   const tableColumns = getColumnNames(colSchemaFields, data)
@@ -377,18 +379,18 @@ const Browse = () => {
               </>
             )}
             <InfiniteScroll
-             dataLength={data.length} //This is important field to render the next data
-             next={loadFunc}
-             hasMore={hasMoreRows}
-             loader={<h4 style={{textAlign: "center"}}>Loading...</h4>}
+              dataLength={data.length} //This is important field to render the next data
+              next={loadNextPageFunc}
+              hasMore={hasMoreRows}
+              loader={<h4 style={{ textAlign: "center" }}>Loading...</h4>}
             >
               <Table
-               className="db-browse-table"
-               columns={tableColumns}
-               dataSource={data}
-               style={{ marginTop: 21 }}
-               bordered
-               pagination={false}
+                className="db-browse-table"
+                columns={tableColumns}
+                dataSource={data}
+                style={{ marginTop: 21 }}
+                bordered
+                pagination={false}
               />
             </InfiniteScroll>
           </div>
