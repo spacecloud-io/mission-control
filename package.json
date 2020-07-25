@@ -31,15 +31,10 @@
     "react-codemirror2": "^6.0.0",
     "react-dom": "^16.13.1",
     "react-ga": "^2.6.0",
-<<<<<<< HEAD
-    "react-infinite-scroll-component": "^5.0.5",
-=======
     "react-graph-vis": "^1.0.5",
->>>>>>> 9ac14137acb3457111b885d97ac4a78d1ccbfbe5
-    "react-infinite-scroller": "^1.2.4",
+    "react-infinite-scroll-component": "^5.0.5",
     "react-keyboard-event-handler": "^1.5.4",
     "react-markdown": "^4.3.1",
-    "react-payment-inputs": "^1.1.4",
     "react-redux": "^7.1.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",
