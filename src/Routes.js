@@ -33,7 +33,7 @@ import ConfigureEndpoint from "./pages/remote-services/ConfigureEndpoint";
 import UserManagement from "./pages/user-management/UserManagement";
 import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
-import DeploymentsLogs from "./pages/deployments/logs/DeploymentLogs";
+import DeploymentsLogs from "./pages/deployments/deployment-logs/DeploymentLogs";
 import Graphql from "./pages/explorer/graphql/Graphql";
 import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "./pages/settings/project/ProjectSettings";
