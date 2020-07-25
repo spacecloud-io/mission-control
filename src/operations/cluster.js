@@ -76,9 +76,7 @@ export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
   return new Promise((resolve, reject) => {
     client.cluster.setClusterLicense(clusterName, licenseKey, licenseValue)
       .then(() => {
-        const env = getEnv(store.getState())
-        const newEnv = Object.assign({}, env, { clusterName, licenseKey, licenseValue })
-        setEnv(newEnv)
+        loadClusterEnv()
         resolve()
       })
       .catch(ex => reject(ex))
@@ -87,14 +85,9 @@ export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
 
 export function removeClusterLicense() {
   return new Promise((resolve, reject) => {
-    client.cluster.setClusterLicense("", "", "")
+    client.cluster.removeClusterLicense()
       .then(() => {
-        const env = getEnv(store.getState())
-        const newEnv = Object.assign({}, env)
-        delete newEnv["clusterName"]
-        delete newEnv["licenseKey"]
-        delete newEnv["licenseValue"]
-        setEnv(newEnv)
+        loadClusterEnv()
         resolve()
       })
       .catch(ex => reject(ex))
@@ -114,8 +107,9 @@ export function isProdMode() {
 }
 
 export function isClusterUpgraded(state) {
-  const { licenseKey } = getEnv(state)
-  return licenseKey ? true : false
+  const { plan } = getEnv(state)
+  if (!plan) return false
+  return !plan.startsWith("space-cloud-open") ? true : false
 }
 
 export function getToken() {

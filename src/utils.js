@@ -23,6 +23,8 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
+const months = ["Jan", "Feb", "March", "April", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 export function isJson(str) {
   try {
     JSON.parse(str);
@@ -67,6 +69,16 @@ export function decrementPendingRequests() {
 export function capitalizeFirstCharacter(str) {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export function formatDate(dateString) {
+  if (!dateString) return dateString
+  const date = new Date(dateString)
+  const month = date.getMonth()
+  const day = date.getDate()
+  const year = date.getFullYear()
+  const monthText = months[month]
+  return `${monthText} ${day}, ${year}`
 }
 
 export function formatIntegrationImageUrl(integrationId) {
@@ -141,7 +153,7 @@ export const generateProjectConfig = (projectId, name) => ({
 })
 
 export const notify = (type, title, msg, duration) => {
-  notification[type]({ message: title, description: msg.toString(), duration: duration });
+  notification[type]({ message: title, description: String(msg), duration: duration });
 }
 
 export const getEventSourceFromType = (type, defaultValue) => {

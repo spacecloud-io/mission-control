@@ -46,13 +46,7 @@ const initialState = {
 		clusterId: null,
 		plan: "space-cloud-open--monthly",
 		quotas: { maxDatabases: 1, maxProjects: 1 }
-	},
-	billing: {
-		status: false,
-		balanceCredits: 0,
-		details: {}
-	},
-	invoices: []
+	}
 };
 
 // Generate reducers with the initial state and pass it to the redux store
