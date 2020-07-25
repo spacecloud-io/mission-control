@@ -36,6 +36,7 @@ const GenerateTokenForm = (props) => {
     <Modal
       title="Generate token"
       visible={true}
+      width={720}
       okText="Use this token"
       onCancel={props.handleCancel}
       onOk={handleSubmit}

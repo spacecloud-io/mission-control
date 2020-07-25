@@ -1,7 +1,7 @@
-const projects = [
+export const projects = [
   {
-    "name": "TodoApp",
-    "id": "todoapp",
+    "name": "MockProject1",
+    "id": "mockproject1",
     "secrets": [
       {
         "secret": "8cdd996458124490abf166b408068fb1",
@@ -9,281 +9,364 @@ const projects = [
       }
     ],
     "aesKey": "ZDA4Y2FiNWQxNzIzNGI4MmJhNTM2YzUzZGFjNTJmOTc=",
-    "contextTime": 5,
-    "modules": {
-      "db": {
-        "postgres": {
-          "type": 'postgres',
-          "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
-          "dbName": "public",
-          "collections": {
-            "users": {
-              "isRealtimeEnabled": true,
-              "rules": {},
-              "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
-            },
-            "default": {
-              "isRealtimeEnabled": false,
-              "rules": {
-                "create": {
-                  "rule": "deny"
-                },
-                "read": {
-                  "rule": "deny"
-                },
-                "update": {
-                  "rule": "deny"
-                },
-                "delete": {
-                  "rule": "deny"
-                }
-              },
-              "schema": 'type users {\n  id: ID! @primary\n  email: ID!\n  name: String!\n  pass: String!\n  role: String!\n}'
-            }
-          },
-          "preparedQueries": {
-            "preparedQuery1": {
-              "id": "preparedQuery1",
-              "sql": "select * from users",
-              "rule": { "rule": "allow" },
-              "args": ['args.args1']
-            },
-            "preparedQuery2": {
-              "id": "preparedQuery2",
-              "sql": "select * from posts",
-              "rule": { "rule": "deny" },
-              "args": ['args1', 'args2']
-            }
-          },
-          "isPrimary": false,
-          "enabled": true
-        }
-      },
-      "eventing": {
-        "enabled": true,
-        "dbAlias": "postgres",
-        "triggers": {
-          "Trigger1": {
-            "type": "MY_CUSTOM_EVENT",
-            "url": "http://localhost:3000/v1/my-event",
-            "retries": 3,
-            "timeout": 5000
-          }
-        }
-      },
-      "userMan": {},
-      "remoteServices": {
-        "externalServices": {
-          "auth": {
-            "url": "localhost:3000",
-            "endpoints": {
-              "login": {
-                "method":"POST",
-                "path":"/v1/login",
-                "kind":"simple",
-                "rule": {
-                  "rule": "allow"
-                }
-              },
-              "profile": {
-                "method":"GET",
-                "path":"/v1/profile/{args.id}",
-                "kind":"transform-go",
-                "rule": {
-                  "rule": "authenticated"
-                },
-                "type": "transform-go",
-                "outputFormat": "json",
-                "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
-                "template":`{ "id": "args.id"}`
-              },
-            }
-          }
-        }
-      },
-      "deployments": {
-        "services": [
-          {
-            "id": "service1",
-            "version": "v1",
-            "projectId": "todoapp",
-            "scale": {
-              "replicas": 0,
-              "minReplicas": 0,
-              "maxReplicas": 10,
-              "concurrency": 50,
-              "mode": "per-second"
-            },
-            "tasks": [
-              {
-                "id": "service1",
-                "ports": [
-                  {
-                    "protocol": "http",
-                    "port": 8080,
-                    "name": "http"
-                  },
-                  {
-                    "protocol": "http",
-                    "port": 8081,
-                    "name": "http"
-                  }
-                ],
-                "resources": {
-                  "cpu": 200,
-                  "memory": 200,
-                  "gpu": {
-                    "type": "amd",
-                    "value": 25
-                  }
-                },
-                "docker": {
-                  "image": "asd",
-                  "secret": "DockerHubSecret",
-                  "imagePullPolicy": "always"
-                },
-                "secrets": [
-                  "EnvSecret"
-                ],
-                "env": {
-                  "f00": "bar",
-                  "key1": "val1"
-                },
-                "runtime": "image"
-              }
-            ],
-            "whitelists": [
-              {
-                "projectId": "todoapp",
-                "service": "s1"
-              },
-              {
-                "projectId": "todoapp",
-                "service": "s2"
-              }
-            ],
-            "upstreams": [
-              {
-                "projectId": "todoapp",
-                "service": "s3"
-              },
-              {
-                "projectId": "myapp",
-                "service": "s4"
-              }
-            ]
-          }
-        ]
-      },
-      "secrets": [
-        {
-          "id": "EnvSecret",
-          "type": "env",
-          "data": {
-            "foo": "bar"
-          }
-        },
-        {
-          "id": "FileSecret",
-          "type": "file",
-          "rootPath": "/constants",
-          "data": {
-            "constants.json": "secret content"
-          }
-        },
-        {
-          "id": "DockerHubSecret",
-          "type": "docker",
-          "data": {
-            "username": "user1",
-            "password": "123",
-            "url": "http://localhost:5000"
-          }
-        }
-      ],
-      "ingressRoutes": [
-        {
-          "id": "3f020b02cacd48e59e70fc371172a9b5",
-          "source": {
-            "hosts": [
-              "example.com",
-              "foo.bar"
-            ],
-            "methods": [
-              "GET",
-              "POST"
-            ],
-            "url": "/v1",
-            "rewrite": "/v2",
-            "type": "exact"
-          },
-          "targets": [
+    "contextTimeGraphQL": 20
+  },
+  {
+    "name": "MockProject2",
+    "id": "mockproject2",
+    "secrets": [
+      {
+        "secret": "8cdd996458124490abf166b408068fb1",
+        "isPrimary": true
+      }
+    ],
+    "aesKey": "ZDA4Y2FiNWQxNzIzNGI4MmJhNTM2YzUzZGFjNTJmOTc=",
+    "contextTimeGraphQL": 10
+  }
+]
+
+export const dbConfigs = [
+  {
+    "mydb": {
+      "type": 'postgres',
+      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+      "name": "public",
+      "enabled": true
+    }
+  }
+]
+
+export const dbSchemas = [
+  {
+    "mydb-users": {
+      schema: `type users {
+        id: ID! @primary
+        name: String!
+        age: Integer
+      }`
+    }
+  }
+]
+
+export const dbRules = [
+  {
+    "mydb-users": {
+      isRealtimeEnabled: true,
+      rules: {
+        "create": {
+          "rule": "and",
+          "clauses": [
             {
-              "scheme": "http",
-              "host": "service1.project1.svc.cluster.local",
-              "port": 80,
-              "weight": 40
-            },
-            {
-              "scheme": "https",
-              "host": "qwertyu",
-              "port": 443,
-              "weight": 60
+              "rule": "force"
             }
           ]
+        },
+        "read": {
+          "rule": "deny"
+        },
+        "update": {
+          "rule": "deny"
         }
-      ],
-      "fileStore": {
-        "enabled": true,
-        "storeType": "amazon-s3",
-        "bucket": "my-bucket",
-        "conn": "us-east-1",
-        "secret": "secrets.FileSecret.constants.json",
-        "rules": [
-          {
-            "id": "Default Rule",
-            "prefix": "/",
-            "rule": {
-              "create": {
-                "rule": "allow"
-              },
-              "read": {
-                "rule": "allow"
-              },
-              "delete": {
-                "rule": "allow"
-              }
-            }
-          },
-          {
-            "id": "Posts",
-            "prefix": "/posts",
-            "rule": {
-              "create": {
-                "rule": "allow"
-              },
-              "read": {
-                "rule": "allow"
-              },
-              "delete": {
-                "rule": "deny"
-              }
-            }
-          }
-        ]
       }
     }
   }
 ]
 
-const clusterConfig = 
+export const dbPreparedQueries = [
   {
-    "email": "admin@gmail.com",
-    "telemetry": true, 
-    "credentials": { "user": "admin", "pass": "123" }
+    "id": "preparedQuery1",
+    "db": "mydb",
+    "sql": "select * from users",
+    "rule": {
+      "rule": "and",
+      "clauses": [
+        {
+          "rule": "webhook",
+          "url": "localhost"
+        }
+      ]
+    },
+    "args": ['args.args1']
   }
+]
 
-const serviceRoutes = [
+export const eventingConfig = [
+  {
+    "enabled": true,
+    "dbAlias": "mydb"
+  }
+]
+
+export const eventingSchemas = []
+
+export const eventingRules = [
+  {
+    "id": "MY_CUSTOM_EVENT",
+    "rule": "allow"
+  }
+]
+
+export const eventingTriggers = [
+  {
+    "id": "Trigger1",
+    "type": "MY_CUSTOM_EVENT",
+    "url": "http://localhost:3000/v1/my-event",
+    "retries": 3,
+    "timeout": 5000
+  }
+]
+
+export const fileStoreConfig = [
+  {
+    "enabled": true,
+    "storeType": "amazon-s3",
+    "bucket": "my-bucket",
+    "conn": "us-east-1",
+    "secret": "secrets.FileSecret.constants.json"
+  }
+]
+
+export const fileStoreRules = [
+  {
+    "id": "Default Rule",
+    "prefix": "/",
+    "rule": {
+      "create": {
+        "rule": "allow"
+      },
+      "read": {
+        "rule": "allow"
+      },
+      "delete": {
+        "rule": "allow"
+      }
+    }
+  }
+]
+
+export const ingressRoutes = [
+  {
+    "id": "3f020b02cacd48e59e70fc371172a9b5",
+    "source": {
+      "hosts": [
+        "example.com",
+        "foo.bar"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "url": "/v1",
+      "rewrite": "/v2",
+      "type": "exact"
+    },
+    "targets": [
+      {
+        "scheme": "http",
+        "host": "service1.project1.svc.cluster.local",
+        "port": 80,
+        "weight": 40
+      },
+      {
+        "scheme": "https",
+        "host": "qwerty",
+        "port": 443,
+        "weight": 60
+      }
+    ],
+    "rule": { "rule": "allow" },
+    "modify": {
+      "headers": [
+        { "key": "headerKey1", "value": "headerValue1", "op": "add" },
+        { "key": "headerKey2", "value": "headerValue2" }
+      ],
+      "resHeaders": [
+        { "key": "headerKey1", "value": "headerValue1", "op": "del" },
+        { "key": "headerKey2", "value": "headerValue2", "op": "set" }
+      ],
+      "outputFormat": "json",
+      "requestTemplate": "{\"yo\": \"lo\"}"
+    }
+  }
+]
+
+export const ingressRoutesGlobal = [
+  {
+    "headers": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "add" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ],
+    "resHeaders": [
+      { "key": "globalHeader1", "value": "Global Header 1", "op": "del" },
+      { "key": "globalHeader2", "value": "Global Header 2", "op": "set" }
+    ]
+  }
+]
+
+export const letsencryptConfig = [
+  {
+    domains: ["example.com"]
+  }
+]
+
+export const remoteServices = [
+  {
+    "id": "auth",
+    "url": "localhost:3000",
+    "endpoints": {
+      "login": {
+        "method": "POST",
+        "path": "/v1/login",
+        "rule": {
+          "rule": "allow"
+        },
+        "headers": [
+          { "key": "headerKey1", "value": "headerValue1", "op": "add" },
+          { "key": "headerKey2", "value": "headerValue2", "op": "del" }
+        ]
+      },
+      "externalEndpoint": {
+        "method": "GET",
+        "path": "https://foo.com/bar",
+        "kind": "external",
+        "rule": {
+          "rule": "authenticated"
+        },
+        "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+        "requestTemplate": `{ "id": "args.id"}`,
+        "responseTemplate": `{ "key1": "res.val1"}`
+      },
+      "preparedQuery": {
+        "kind": "prepared",
+        "rule": {
+          "rule": "authenticated"
+        },
+        "outputFormat": "json",
+        "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
+        "graphTemplate": `query { users @db }`,
+        "requestTemplate": `{ "id": "args.id"}`,
+        "responseTemplate": `{ "key1": "res.val1"}`
+      },
+    }
+  }
+]
+
+export const services = [
+  {
+    "id": "service1",
+    "version": "v1",
+    "projectId": "todoapp",
+    "scale": {
+      "replicas": 0,
+      "minReplicas": 0,
+      "maxReplicas": 10,
+      "concurrency": 50,
+      "mode": "per-second"
+    },
+    "tasks": [
+      {
+        "id": "service1",
+        "ports": [
+          {
+            "protocol": "http",
+            "port": 8080,
+            "name": "http"
+          },
+          {
+            "protocol": "http",
+            "port": 8081,
+            "name": "http"
+          }
+        ],
+        "resources": {
+          "cpu": 200,
+          "memory": 200,
+          "gpu": {
+            "type": "amd",
+            "value": 25
+          }
+        },
+        "docker": {
+          "cmd": ["node ./index.js"],
+          "image": "asd",
+          "secret": "DockerHubSecret",
+          "imagePullPolicy": "always"
+        },
+        "secrets": [
+          "EnvSecret"
+        ],
+        "env": {
+          "f00": "bar",
+          "key1": "val1"
+        },
+        "runtime": "image"
+      }
+    ],
+    "whitelists": [
+      {
+        "projectId": "todoapp",
+        "service": "s1"
+      },
+      {
+        "projectId": "todoapp",
+        "service": "s2"
+      }
+    ],
+    "upstreams": [
+      {
+        "projectId": "todoapp",
+        "service": "s3"
+      },
+      {
+        "projectId": "myapp",
+        "service": "s4"
+      }
+    ]
+  }
+]
+
+export const secrets = [
+  {
+    "id": "EnvSecret",
+    "type": "env",
+    "data": {
+      "foo": "bar"
+    }
+  },
+  {
+    "id": "FileSecret",
+    "type": "file",
+    "rootPath": "/constants",
+    "data": {
+      "constants.json": "secret content"
+    }
+  },
+  {
+    "id": "DockerHubSecret",
+    "type": "docker",
+    "data": {
+      "username": "user1",
+      "password": "123",
+      "url": "http://localhost:5000"
+    }
+  }
+]
+
+export const userMan = [
+  {
+    id: "email",
+    enabled: true
+  }
+]
+
+export const clusterConfig =
+{
+  "email": "admin@gmail.com",
+  "telemetry": true,
+  "credentials": { "user": "admin", "pass": "123" }
+}
+
+export const serviceRoutes = [
   {
     "id": "service1",
     "source": {
@@ -312,7 +395,51 @@ const serviceRoutes = [
   }
 ]
 
-const eventLogs = [
+export const installedIntegrations = [
+  { id: "team-management" }
+]
+
+export const supportedInterations = [
+  {
+    id: "team-management",
+    name: "Team Management",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    app: "/integrations/team-management",
+    configPermissions: [
+      {
+        resources: ["*"],
+        verbs: ["hijack"]
+      }
+    ],
+    apiPermissions: []
+  },
+  {
+    id: "elastic-search",
+    name: "Elastic Search",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    app: "/integrations/elastic-search",
+    configPermissions: [
+      {
+        resources: ["db-config", "db-schema"],
+        verbs: ["read"]
+      }
+    ],
+    apiPermissions: [
+      {
+        resources: ["db-read"],
+        verbs: ["hijack", "access"]
+      },
+      {
+        resources: ["db-create", "db-update", "db-delete"],
+        verbs: ["hook"]
+      }
+    ]
+  }
+]
+
+export const eventLogs = [
   {
     "_id": "1akiOBtFJRbXVZylSrHk0v81g0T",
     "event_ts": "2020-04-19T08:45:57Z",
@@ -354,4 +481,3 @@ const eventLogs = [
     "status": "failed"
   }
 ]
-export default { projects, clusterConfig, serviceRoutes, eventLogs }

@@ -45,7 +45,7 @@ const EditRowForm = (props) => {
             val.value = val.value === "true" ? true : false
           }
         })
-        props.editRow(values.rows);
+        props.editRow(values.rows).then(() => props.handleCancel())
       } catch (ex) {
         notify("error", "Error", ex.toString())
       }

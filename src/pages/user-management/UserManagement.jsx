@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
 import Email from '../../components/user-management/Email'
@@ -10,9 +10,8 @@ import Topbar from '../../components/topbar/Topbar'
 import mailIcon from '../../assets/mailIcon.svg'
 import CollapseHeader from './CollapseHeader'
 import './user-management.css'
-import { decrement, increment } from 'automate-redux';
-import { setProjectConfig, notify, getProjectConfig } from '../../utils';
-import client from "../../client"
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { saveUserManConfig, loadUserManConfig, getEmailConfig } from '../../operations/userMan';
 const { Panel } = Collapse;
 
 //const Panel = Collapse.Panel;
@@ -24,24 +23,22 @@ const UserManagement = () => {
     ReactGA.pageview("/projects/userman");
   }, [])
 
-  const dispatch = useDispatch()
+  useEffect(() => {
+    incrementPendingRequests()
+    loadUserManConfig(projectID)
+      .catch(ex => notify("error", "Error fetching user management config", ex))
+      .finally(() => decrementPendingRequests())
+  }, [projectID])
 
-  // Global state
-  const projects = useSelector(state => state.projects)
-
-  // Derived properties
-  const emailConfig = getProjectConfig(projects, projectID, "modules.userMan.email", {})
+  const emailConfig = useSelector(state => getEmailConfig(state))
 
   // Handlers
   const handleProviderConfig = (provider, config) => {
-    dispatch(increment("pendingRequests"))
-    client.userManagement.setUserManConfig(projectID, provider, config)
-      .then(() => {
-        setProjectConfig(projectID, `modules.userMan.${provider}`, config)
-        notify("success", "Success", "Saved user management config successfully")
-      })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+    incrementPendingRequests()
+    saveUserManConfig(projectID, provider, config)
+      .then(() => notify("success", "Success", "Saved user management config successfully"))
+      .catch(ex => notify("error", "Error saving user management config", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   return (
