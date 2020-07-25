@@ -113,6 +113,14 @@ const Overview = () => {
       .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
   }
 
+  const handleReloadSchema = (colName) => {
+    incrementPendingRequests()
+    inspectColSchema(projectID, selectedDB, colName)
+      .then(() => notify("success", "Success", "Reloaded schema successfully"))
+      .catch((ex) => notify("error", "Error reloading schema of table", ex))
+      .finally(() => decrementPendingRequests())
+  }
+
   const handleTrackCollections = (collections) => {
     incrementPendingRequests()
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
@@ -188,6 +196,7 @@ const Overview = () => {
           <a onClick={() => handleSecureClick(name)}>Secure</a>
           <a onClick={() => handleBrowseClick(name)}>Browse</a>
           <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
+          <a onClick={() => handleReloadSchema(name)}>Reload schema</a>
           <a onClick={() => handleUntrackClick(name)}>Untrack</a>
           <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
             <a style={{ color: "red" }}>Delete</a>
