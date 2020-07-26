@@ -1,3 +1,43 @@
+export const endpointTypes = {
+  INTERNAL: "internal",
+  EXTERNAL: "external",
+  PREPARED: "prepared"
+}
+
+export const configResourceTypeLabels = {
+  "db-config": "Database config",
+  "db-rule": "Database rules",
+  "db-schema": "Database schema",
+  "db-prepared-query": "Database prepared queries",
+  "eventing-config": "Eventing config",
+  "eventing-trigger": "Eventing triggers",
+  "eventing-schema": "Eventing schema",
+  "eventing-rule": "Eventing rules",
+  "filestore-config": "Filestore config",
+  "filestore-rule": "Filestore rules",
+  "letsencrypt": "Letsencrypt",
+  "project": "Project settings",
+  "ingress-global": "Ingress global config",
+  "ingress-route": "Ingress routes",
+  "remote-service": "Remote services",
+  "service": "Services",
+  "service-route": "Service routes",
+  "secret": "Secrets",
+  "integration": "Integrations",
+  "integration-hook": "Integration hooks",
+}
+
+export const apiResourceTypeLabels = {
+  "db-create": "Database create",
+  "db-read": "Database read",
+  "db-update": "Database update",
+  "db-delete": "Database delete",
+  "db-aggregate": "Database aggregate",
+  "db-prepared-sql": "Database prepared query",
+  "eventing-trigger": "Custom events",
+  "service-call": "Remote service"
+}
+
 export const dbTypes = {
   MONGO: "mongo",
   POSTGRESQL: "postgres",
@@ -15,6 +55,15 @@ export const defaultDbConnectionStrings = {
 }
 
 export const SPACE_CLOUD_USER_ID = "internal-sc-user"
+
+export const securityRuleGroups = {
+  DB_COLLECTIONS: "collections",
+  DB_PREPARED_QUERIES: "prepared-queries",
+  FILESTORE: "file-store",
+  EVENTING: "eventing",
+  REMOTE_SERVICES: "remote-services",
+  INGRESS_ROUTES: "ingress-routes"
+}
 
 export const defaultDBRules = {
   create: {
@@ -47,12 +96,11 @@ export const defaultEventRule = {
   rule: "allow"
 }
 
-export const defaultFileRootPathRule = {
-  prefix: "/",
-  rule: defaultFileRule
+export const defaultEndpointRule = {
+  rule: "allow"
 }
 
-export const defaultEndpointRule = {
+export const defaultIngressRoutingRule = {
   rule: "allow"
 }
 
@@ -70,4 +118,4 @@ const getURL = (productionURL, developmentURL, mockURL) => {
 }
 
 export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
-export const enterpriseServerGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")
+export const spaceUpAPIGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")

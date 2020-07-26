@@ -1,5 +1,5 @@
 import Service from "./services/service";
-import { getToken, getSpaceUpToken } from "./utils"
+import { getToken } from "./operations/cluster";
 
-const service = new Service(getToken(), getSpaceUpToken())
+const service = new Service(getToken())
 export default service

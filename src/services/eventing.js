@@ -7,12 +7,68 @@ class Eventing {
     this.client = client
   }
 
-  fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType) {
+  fetchEventingConfig(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/config`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result[0])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingSchemas(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/schema`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingRules(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/rules`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventingTriggers(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchEventLogs(projectId, { status, showName, name, showDate, startDate, endDate }, lastEventDate, dbType, getToken) {
     let uri = `/v1/api/${projectId}/graphql`
     if (spaceCloudClusterOrigin) {
-      uri = "http://localhost:4122" + uri;
+      uri = spaceCloudClusterOrigin + uri;
     }
-    const graphqlClient = createGraphQLClient(uri)
+    const graphqlClient = createGraphQLClient(uri, getToken)
     return new Promise((resolve, reject) => {
       graphqlClient.query({
         query: gql`
@@ -44,7 +100,7 @@ class Eventing {
           }
         }
       `,
-        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-.*$).*` }
+        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-).*` }
       }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
     })
   }

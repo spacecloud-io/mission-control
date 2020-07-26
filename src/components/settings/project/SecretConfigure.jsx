@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, notify } from '../../../utils';
+import { generateJWTSecret } from '../../../utils';
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();
@@ -49,49 +49,15 @@ const SecretValue = ({ secret }) => {
         lineHeight: "32px",
         borderRadius: 5,
         padding: "0 16px"
-      }} >{showSecret ? secret : secret.slice(0, 5) + secret.slice(5).split("").map(() => "*").join("")}</span>
+      }} >{showSecret ? secret : secret.slice(0, 4) + secret.slice(4).split("").map(() => "*").join("")}</span>
       {showSecret ? <EyeInvisibleOutlined onClick={() => setShowSecret(false)} /> : <EyeOutlined onClick={() => setShowSecret(true)} />}
     </span>
   );
 }
 
-const SecretConfigure = ({ secrets, handleSetSecrets }) => {
+const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecret, handleAddSecret }) => {
 
   const [modalVisible, setModalVisible] = useState(false);
-
-  const handleRemoveSecret = (secret) => {
-    const newSecrets = secrets.filter((obj) => obj.secret !== secret)
-    const primarySecretPresent = newSecrets.some(obj => obj.isPrimary)
-    if (!primarySecretPresent && newSecrets.length > 0) newSecrets[0].isPrimary = true
-    handleSetSecrets(newSecrets)
-      .then(() => notify("success", "Success", "Removed secret successfully"))
-      .catch(ex => notify("error", "Error removing secret", ex.toString()))
-  }
-
-  const handleChangePrimarySecret = (secret) => {
-    const newSecrets = secrets.map(obj => Object.assign({}, obj, { isPrimary: obj.secret === secret ? true : false }))
-    handleSetSecrets(newSecrets)
-      .then(() => notify("success", "Success", "Changed primary secret successfully"))
-      .catch(ex => notify("error", "Error changing primary secret", ex.toString()))
-  }
-
-  const handleAddSecret = (secret, isPrimary) => {
-    const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-    const newSecret = { secret, isPrimary }
-    const newSecrets = [...oldSecrets, newSecret]
-
-    return new Promise((resolve, reject) => {
-      handleSetSecrets(newSecrets)
-        .then(() => {
-          notify("success", "Success", "Added new secret successfully")
-          resolve()
-        })
-        .catch(ex => {
-          notify("error", "Error adding secret", ex.toString())
-          reject()
-        })
-    })
-  }
 
   const columns = [
     {

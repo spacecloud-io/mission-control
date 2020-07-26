@@ -6,6 +6,66 @@ class Database {
     this.client = client
   }
 
+  // fetches config of all databases of a project
+  fetchDbConfig(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/config`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches schemas of all databases of a project
+  fetchDbSchemas(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/collections/schema/mutate`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches rules of all databases of a project
+  fetchDbRules(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/collections/rules`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches prepared queries of all databases of a project
+  fetchDbPreparedueries(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/prepared-queries`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
   getConnectionState(projectId, dbName) {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/external/projects/${projectId}/database/${dbName}/connection-state`)
@@ -148,7 +208,7 @@ class Database {
     })
   }
 
-  setPreparedQueries(projectId, dbName, id, config) {
+  setPreparedQuery(projectId, dbName, id, config) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/prepared-queries/${id}`, config)
         .then(({ status, data }) => {
@@ -162,7 +222,7 @@ class Database {
     })
   }
 
-  deletePreparedQueries(projectId, dbName, id) {
+  deletePreparedQuery(projectId, dbName, id) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/prepared-queries/${id}`)
         .then(({ status, data }) => {
