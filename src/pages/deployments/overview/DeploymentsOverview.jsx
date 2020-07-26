@@ -8,9 +8,9 @@ import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
 import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
 import source_code from "../../../assets/source_code.svg";
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
-import { deleteService, saveService, getServices } from "../../../operations/deployments";
+import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
@@ -19,17 +19,8 @@ const DeploymentsOverview = () => {
   const history = useHistory();
   const dispatch = useDispatch();
 
-  const getStatus = () => {
-    dispatch(increment("pendingRequests"));
-    client.deployments.fetchDeploymentStatus(projectID)
-      .then(res => dispatch(set("deploymentStatus", res)))
-      .catch(ex => notify("error", "Error", ex, 5))
-      .finally(() => dispatch(decrement("pendingRequests")));
-  }
-
   useEffect(() => {
     ReactGA.pageview("/projects/deployments/overview");
-    getStatus();
   }, []);
 
   useEffect(() => {
@@ -38,12 +29,17 @@ const DeploymentsOverview = () => {
       loadSecrets(projectID)
         .catch(ex => notify("error", "Error fetching secrets", ex))
         .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadServicesStatus(projectID)
+        .catch(ex => notify("error", "Error fetching status of services", ex))
+        .finally(() => decrementPendingRequests());
     }
   }, [projectID])
 
   // Global state
   const deployments = useSelector(state => getServices(state))
-  const deploymentStatus = useSelector(state => state.deploymentStatus);
+  const deploymentStatus = useSelector(state => getServicesStatus(state));
   const totalSecrets = useSelector(state => getSecrets(state))
 
   // Component state
@@ -87,9 +83,9 @@ const DeploymentsOverview = () => {
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams,
-      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].desiredReplicas : 0,
-      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].replicas.length : 0,
-      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id].find(val => val[obj.version]) ? deploymentStatus[obj.id].find(val => val[obj.version])[obj.version].replicas : []
+      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
+      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.length : 0,
+      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
 
@@ -184,30 +180,28 @@ const DeploymentsOverview = () => {
     const column = [
       {
         title: 'Replica',
-        dataIndex: 'ID',
-        key: 'Replica'
+        dataIndex: 'id',
+        key: 'id'
       },
       {
         title: 'Status',
-        dataIndex: 'Status',
-        key: 'status',
-        render: (row) => {
-          const status = row.charAt(0).toUpperCase() + row.slice(1);
-          if (status === "Running") return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {status}</span>
-          else if (status === "Failed") return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {status}</span>
-          else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {status}</span>
+        render: (_, { status }) => {
+          const statusText = capitalizeFirstCharacter(status)
+          if (status === "running") return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
+          else if (status === "failed") return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
+          else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {statusText}</span>
         }
       },
       {
         title: 'Action',
         key: 'Action',
-        render: (row) =>
+        render: (_, row) =>
           <Button
             type="link"
             style={{ color: "#008dff" }}
             onClick={() => {
               const task = deployments.find(({ id, version }) => id === record.id && version === record.version).tasks[0].id
-              history.push(`/mission-control/projects/${projectID}/deployments/logs`, { id: record.id, version: record.version, replica: row.ID, task: task });
+              history.push(`/mission-control/projects/${projectID}/deployments/logs`, { id: record.id, version: record.version, replica: row.id, task: task });
             }}
           >
             View logs

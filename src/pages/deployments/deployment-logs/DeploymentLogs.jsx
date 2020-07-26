@@ -6,11 +6,12 @@ import client from "../../../client";
 import ReactGA from 'react-ga';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Cascader } from "antd";
-import { getProjectConfig } from "../../../utils";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import DOMPurify from 'dompurify';
+import { getServices, loadServicesStatus, getServicesStatus } from "../../../operations/deployments";
+import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 
 const DeploymentTopBar = ({ projectID }) => {
 
@@ -41,10 +42,9 @@ let result = '';
 const DeploymentLogs = (props) => {
   const { projectID } = useParams()
   const [logs, setLogs] = useState("");
-  const projects = useSelector(state => state.projects)
-  const deployments = getProjectConfig(projects, projectID, "modules.deployments.services", []);
-  const deploymentStatus = useSelector(state => state.deploymentStatus);
-  const {id, version, replica, task} = props.location.state;
+  const deployments = useSelector(state => getServices(state))
+  const deploymentStatus = useSelector(state => getServicesStatus(state));
+  const { id, version, replica, task } = props.location.state;
 
   const fetchLogs = (id, task, replica) => {
     result = '';
@@ -67,43 +67,55 @@ const DeploymentLogs = (props) => {
       setLogs(result);
     })
   }
-  
+
   useEffect(() => {
     ReactGA.pageview("/projects/deployments/logs");
+  }, [])
+
+  useEffect(() => {
     fetchLogs(id, task, replica);
   }, [])
 
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadServicesStatus(projectID)
+        .catch(ex => notify("error", "Error fetching status of services", ex))
+        .finally(() => decrementPendingRequests());
+    }
+  }, [projectID])
+
   let options = [];
-  let versions = {};
-    Object.entries(deploymentStatus).forEach(([serviceID, valueID]) => {
-      versions[serviceID] = [];
-      valueID.forEach(val => {
-        Object.entries(val).forEach(([keyVersion]) => {
-          versions[serviceID].push(keyVersion); 
-        })
-      })
-      const replicas = deploymentStatus[serviceID];
-      options.push(
-        {
-          value: serviceID,
-          label: serviceID,
-          children: versions[serviceID].map(version => ({
+  Object.entries(deploymentStatus).forEach(([serviceID, serviceObj = {}]) => {
+    options.push(
+      {
+        value: serviceID,
+        label: serviceID,
+        children: Object.keys(serviceObj).map(version => {
+          const replicas = serviceObj[version] && serviceObj[version].replicas ? serviceObj[version].replicas : []
+          return {
             value: version,
             label: version,
-            children: replicas.find(val => val[version])[version].replicas.map(replica => ({
-              value: replica.ID,
-              label: replica.ID,
-              children: deployments.find(val => val.id === serviceID && val.version === version).tasks.map(task => (
-                {
-                  value: task.id,
-                  label: task.id
-                }
-              ))
-            }))
-          }))
-        }
-      )
-    })
+            children: replicas.map(replica => {
+              const index = deployments.findIndex(val => val.id === serviceID && val.version === version)
+              const deploymentObj = index === -1 ? {} : deployments[index]
+              const tasks = deploymentObj.tasks ? deploymentObj.tasks : []
+              return {
+                value: replica.id,
+                label: replica.id,
+                children: tasks.map(task => (
+                  {
+                    value: task.id,
+                    label: task.id
+                  }
+                ))
+              }
+            })
+          }
+        })
+      }
+    )
+  })
 
   const onChange = ([id, version, replica, task]) => {
     fetchLogs(id, task, replica)
@@ -117,15 +129,15 @@ const DeploymentLogs = (props) => {
         <DeploymentTopBar projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           <FormItemLabel name="Select target" />
-          <Cascader 
-           style={{marginBottom: 24}} 
-           options={options} 
-           onChange={onChange} 
-           placeholder="Please select"
-           defaultValue={[id, version, replica, task]} 
+          <Cascader
+            style={{ marginBottom: 24, width: 400 }}
+            options={options}
+            onChange={onChange}
+            placeholder="Please select"
+            defaultValue={[id, version, replica, task]}
           />
           <FormItemLabel name="Logs" />
-          {logs && <div className="terminal-wrapper" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(logs)}}></div>   
+          {logs && <div className="terminal-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(logs) }}></div>
           }
         </div>
       </div>

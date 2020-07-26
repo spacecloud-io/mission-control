@@ -336,19 +336,6 @@ export const deploymentsStatus = {
         { id: "ghjksd9122", status: "starting" }
       ]
     }
-  },
-  "service2": {
-    "v1": {
-      desiredReplicas: 5,
-      replicas: [
-        { id: "fghj2345kj", status: "running" },
-        { id: "ghjk3456av", status: "pending" }
-      ]
-    },
-    "v2": {
-      desiredReplicas: 1,
-      replicas: []
-    }
   }
 }
 

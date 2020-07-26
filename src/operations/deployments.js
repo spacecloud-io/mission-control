@@ -33,6 +33,17 @@ export const loadServices = (projectId) => {
   })
 }
 
+export const loadServicesStatus = (projectId) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.fetchDeploymentStatus(projectId)
+      .then((result) => {
+        store.dispatch(set("servicesStatus", result))
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const saveService = (projectId, serviceId, version, serviceConfig) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentConfig(projectId, serviceId, version, serviceConfig)
@@ -74,3 +85,4 @@ export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
 export const getServices = (state) => get(state, "services", [])
 export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
+export const getServicesStatus = (state) => get(state, "servicesStatus", {})
