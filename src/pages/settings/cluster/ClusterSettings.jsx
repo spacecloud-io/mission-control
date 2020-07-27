@@ -12,6 +12,7 @@ import ProjectPageLayout, { Content } from "../../../components/project-page-lay
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { Row, Col, Divider } from "antd";
 import { loadClusterSettings, saveClusterSetting } from "../../../operations/cluster";
+import { projectModules } from "../../../constants";
 
 const ClusterSettings = () => {
   const { projectID } = useParams();
@@ -52,7 +53,7 @@ const ClusterSettings = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='settings' />
+      <Sidenav selectedItem={projectModules.SETTINGS} />
       <ProjectPageLayout>
         <SettingsTabs activeKey="cluster" projectID={projectID} />
         <Content>

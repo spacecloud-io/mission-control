@@ -8,6 +8,7 @@ import IntegrationsList from "../../components/integrations/integrations-list/In
 import { Row, Col } from "antd";
 import { useSelector } from 'react-redux';
 import { getIntegrations } from '../../operations/integrations';
+import { projectModules } from '../../constants';
 
 const ExploreIntegrations = () => {
 
@@ -19,7 +20,7 @@ const ExploreIntegrations = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='integrations' />
+      <Sidenav selectedItem={projectModules.INTEGRATIONS} />
       <ProjectPageLayout>
         <IntegrationTabs activeKey='explore' projectID={projectID} />
         <Content>

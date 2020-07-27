@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { notify } from '../../../utils';
-import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio } from 'antd';
+import { notify, canGenerateToken } from '../../../utils';
+import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import GenerateTokenForm from '../../explorer/generateToken/GenerateTokenForm';
@@ -53,6 +53,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
+  const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
   const [form] = Form.useForm();
 
@@ -284,7 +285,9 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                     >
                       <Input.Password placeholder="JWT Token" />
                     </Form.Item>
-                    <Button onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                    <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                      <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                    </Tooltip>
                   </Input.Group>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>

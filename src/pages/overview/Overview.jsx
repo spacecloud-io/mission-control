@@ -13,6 +13,7 @@ import UpgradeCard from '../../components/overview/upgrade/UpgradeCard';
 import { Row, Col } from 'antd';
 import { isClusterUpgraded } from '../../operations/cluster';
 import { openBillingPortal } from '../../utils';
+import { projectModules } from '../../constants';
 
 function Overview() {
   const { projectID } = useParams()
@@ -27,7 +28,7 @@ function Overview() {
   return (
     <div className="overview">
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="overview" />
+      <Sidenav selectedItem={projectModules.OVERVIEW} />
       <div className="page-content ">
         <Row>
           <Col lg={{ span: 20 }} sm={{ span: 24 }}>

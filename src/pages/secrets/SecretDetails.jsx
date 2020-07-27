@@ -11,6 +11,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import './secretDetail.css';
 import { saveSecretKey, deleteSecretKey, saveRootPath, getSecrets } from "../../operations/secrets";
+import { projectModules } from "../../constants";
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -159,7 +160,7 @@ const SecretDetails = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="secrets" />
+      <Sidenav selectedItem={projectModules.SECRETS} />
       <div>
         {secretKeyModalVisible && (
           <AddSecretKey

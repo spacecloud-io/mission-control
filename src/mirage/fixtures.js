@@ -359,12 +359,24 @@ export const userMan = [
   }
 ]
 
-export const clusterConfig =
-{
+export const clusterConfig = {
   "email": "admin@gmail.com",
   "telemetry": true,
   "credentials": { "user": "admin", "pass": "123" }
 }
+
+export const permissions = [
+  {
+    project: "mockproject1",
+    resource: "db-config",
+    verb: "*"
+  },
+  {
+    project: "mockproject2",
+    resource: "filestore-config",
+    verb: "read"
+  }
+]
 
 export const serviceRoutes = [
   {

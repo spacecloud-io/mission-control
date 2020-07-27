@@ -9,6 +9,7 @@ import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
 import { getEnv } from '../../operations/cluster';
+import { projectModules } from '../../constants';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -62,8 +63,8 @@ const Sidenav = (props) => {
       <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
       <div className={showSidenav ? 'sidenav' : 'no-sidenav'}>
         <div style={{ overflowY: "auto" }}>
-          <Link to={`/mission-control/projects/${projectID}/overview`} onClick={closeSidenav}>
-            <SidenavItem name="Overview" icon="home" active={props.selectedItem === 'overview'} />
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.OVERVIEW}`} onClick={closeSidenav}>
+            <SidenavItem name="Overview" icon="home" active={props.selectedItem === projectModules.OVERVIEW} />
           </Link>
           <Collapse
             bordered={false}
@@ -72,43 +73,43 @@ const Sidenav = (props) => {
             activeKey={sideNavActiveKeys}
             expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}>
             <Panel header={<Header name="Storage" icon="dns" />} key="1">
-              <Link to={`/mission-control/projects/${projectID}/database`} onClick={closeSidenav}>
-                <PanelItem name="Database" active={props.selectedItem === 'database'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.DATABASE}`} onClick={closeSidenav}>
+                <PanelItem name="Database" active={props.selectedItem === projectModules.DATABASE} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/file-storage`} onClick={closeSidenav}>
-                <PanelItem name="File Store" active={props.selectedItem === 'file-storage'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.FILESTORE}`} onClick={closeSidenav}>
+                <PanelItem name="File Store" active={props.selectedItem === projectModules.FILESTORE} />
               </Link>
             </Panel>
             <Panel header={<Header name="Microservices" icon="widgets" />} key="2">
-              <Link to={`/mission-control/projects/${projectID}/remote-services`} onClick={closeSidenav}>
-                <PanelItem name="GraphQL API" active={props.selectedItem === 'remote-services'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.REMOTE_SERVICES}`} onClick={closeSidenav}>
+                <PanelItem name="GraphQL API" active={props.selectedItem === projectModules.REMOTE_SERVICES} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/eventing/overview`} onClick={closeSidenav}>
-                <PanelItem name="Eventing" active={props.selectedItem === 'eventing'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.EVENTING}`} onClick={closeSidenav}>
+                <PanelItem name="Eventing" active={props.selectedItem === projectModules.EVENTING} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/deployments`} onClick={closeSidenav}>
-                <PanelItem name="Deployments" active={props.selectedItem === 'deployments'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.DEPLOYMENTS}`} onClick={closeSidenav}>
+                <PanelItem name="Deployments" active={props.selectedItem === projectModules.DEPLOYMENTS} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/secrets`} onClick={closeSidenav}>
-                <PanelItem name="Secrets" active={props.selectedItem === 'secrets'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.SECRETS}`} onClick={closeSidenav}>
+                <PanelItem name="Secrets" active={props.selectedItem === projectModules.SECRETS} />
               </Link>
-              <Link to={`/mission-control/projects/${projectID}/ingress-routes`} onClick={closeSidenav}>
-                <PanelItem name="Ingress Routing" active={props.selectedItem === 'routing'} />
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.INGRESS_ROUTES}`} onClick={closeSidenav}>
+                <PanelItem name="Ingress Routing" active={props.selectedItem === projectModules.INGRESS_ROUTES} />
               </Link>
             </Panel>
           </Collapse>
-          <Link to={`/mission-control/projects/${projectID}/userman`} onClick={closeSidenav}>
-            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === 'userman'} />
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.USER_MANAGEMENT}`} onClick={closeSidenav}>
+            <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === projectModules.USER_MANAGEMENT} />
           </Link>
-          <Link to={`/mission-control/projects/${projectID}/integrations`} onClick={closeSidenav}>
-            <SidenavItem name="Integrations" icon="extension" active={props.selectedItem === 'integrations'} />
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.INTEGRATIONS}`} onClick={closeSidenav}>
+            <SidenavItem name="Integrations" icon="extension" active={props.selectedItem === projectModules.INTEGRATIONS} />
           </Link>
-          <Link to={`/mission-control/projects/${projectID}/explorer`} onClick={closeSidenav}>
-            <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === 'explorer'} />
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.EXPLORER}`} onClick={closeSidenav}>
+            <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === projectModules.EXPLORER} />
           </Link>
           <Divider />
-          <Link to={`/mission-control/projects/${projectID}/settings`} onClick={closeSidenav}>
-            <SidenavItem name="Settings" icon="settings" active={props.selectedItem === 'settings'} />
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.SETTINGS}`} onClick={closeSidenav}>
+            <SidenavItem name="Settings" icon="settings" active={props.selectedItem === projectModules.SETTINGS} />
           </Link>
         </div>
         <div className="sidenav-version">

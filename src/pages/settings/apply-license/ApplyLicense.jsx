@@ -9,6 +9,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import ApplyLicenseForm from "../../../components/settings/apply-license/ApplyLicenseForm";
 import { getEnv, applyClusterLicense } from '../../../operations/cluster';
+import { projectModules } from '../../../constants';
 
 const ApplyLicense = () => {
   const history = useHistory()
@@ -34,7 +35,7 @@ const ApplyLicense = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='settings' />
+      <Sidenav selectedItem={projectModules.SETTINGS} />
       <ProjectPageLayout>
         <InnerTopBar title="Apply license key" />
         <Content>

@@ -10,7 +10,7 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 import { deleteEventingSecurityRule, saveEventingSecurityRule, loadEventingSecurityRules, getEventingTriggerRules, getEventingSecurityRules, getEventingDefaultSecurityRule } from '../../operations/eventing';
-import { securityRuleGroups } from '../../constants';
+import { securityRuleGroups, projectModules } from '../../constants';
 
 const EventingRules = () => {
   const { projectID } = useParams()
@@ -109,7 +109,7 @@ const EventingRules = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="eventing" />
+      <Sidenav selectedItem={projectModules.EVENTING} />
       <div className='page-content page-content--no-padding'>
         <EventTabs activeKey="rules" projectID={projectID} />
         <div className="event-tab-content">

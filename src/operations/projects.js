@@ -85,13 +85,13 @@ export const removeSecret = (projectId, secret) => {
 
 // Getters
 
-export const getProjectConfig = (state, projectId) => {
+export function getProjectConfig(state, projectId) {
   const projects = get(state, "projects", [])
   const index = projects.findIndex(obj => obj.id === projectId)
   return index === -1 ? {} : projects[index]
 }
 
-export const getJWTSecret = (state, projectId) => {
+export function getJWTSecret(state, projectId) {
   const projectConfig = getProjectConfig(state, projectId)
   const secrets = get(projectConfig, "secrets", [])
   if (secrets.length === 0) return ""

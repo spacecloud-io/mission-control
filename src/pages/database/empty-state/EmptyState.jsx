@@ -7,6 +7,7 @@ import Topbar from '../../../components/topbar/Topbar'
 import DatabaseEmptyState from '../../../components/database-card/DatabaseEmptyState'
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { getDbConfigs } from "../../../operations/database";
+import { projectModules } from "../../../constants";
 
 function EmptyState() {
 
@@ -33,7 +34,7 @@ function EmptyState() {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="database" />
+      <Sidenav selectedItem={projectModules.DATABASE} />
       <ProjectPageLayout>
         <Content>
           <DatabaseEmptyState />

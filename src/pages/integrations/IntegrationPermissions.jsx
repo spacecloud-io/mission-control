@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions } from '../../operations/integrations';
 import { formatIntegrationImageUrl } from '../../utils';
+import { projectModules } from '../../constants';
 
 const IntegrationPermissions = () => {
   const { integrationId } = useParams()
@@ -23,7 +24,7 @@ const IntegrationPermissions = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='integrations' />
+      <Sidenav selectedItem={projectModules.INTEGRATIONS} />
       <ProjectPageLayout>
         <InnerTopBar title='Integration details' />
         <Content>

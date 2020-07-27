@@ -9,6 +9,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
 import { formatIntegrationImageUrl, incrementPendingRequests, notify, decrementPendingRequests } from '../../utils';
+import { projectModules } from '../../constants';
 const { Step } = Steps;
 
 const InstallIntegration = () => {
@@ -98,7 +99,7 @@ const InstallIntegration = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='integrations' />
+      <Sidenav selectedItem={projectModules.INTEGRATIONS} />
       <ProjectPageLayout>
         <InnerTopBar title='Install integration' />
         <Content>

@@ -10,6 +10,7 @@ import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
+import { projectModules } from '../../constants';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
@@ -44,7 +45,7 @@ const EventingSettings = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="eventing" />
+      <Sidenav selectedItem={projectModules.EVENTING} />
       <div className='page-content page-content--no-padding'>
         <EventTabs activeKey="settings" projectID={projectID} />
         <div className="event-tab-content">

@@ -14,7 +14,9 @@ import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
 import { getJWTSecret } from '../../../operations/projects';
-import { generateInternalToken } from '../../../utils';
+import { projectModules } from '../../../constants';
+import { getAPIToken } from '../../../operations/cluster';
+import { canGenerateToken } from '../../../utils';
 
 const Graphql = props => {
 
@@ -41,7 +43,7 @@ const Graphql = props => {
   return (
     <div className='explorer'>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='explorer' />
+      <Sidenav selectedItem={projectModules.EXPLORER} />
       <div className='page-content page-content--no-padding'>
         <ExplorerTabs activeKey="graphql" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
@@ -68,9 +70,9 @@ const Graphql = props => {
                 value={props.userToken}
                 onChange={e => props.setUserToken(e.target.value)}
               />
-              <Button onClick={() => setGenerateTokenModal(true)}>
-                Generate Token
-                            </Button>
+              <Tooltip title={props.generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                <Button disabled={!props.generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+              </Tooltip>
             </div>
           )
           }
@@ -92,7 +94,7 @@ const Graphql = props => {
           secret={props.secret}
         />}
       </div>
-    </div>
+    </div >
   );
 
 };
@@ -110,7 +112,8 @@ const mapStateToProps = (state, ownProps) => {
       true
     ),
     userToken: get(state, 'uiState.explorer.userToken'),
-    internalToken: generateInternalToken(state, projectId) 
+    internalToken: getAPIToken(state),
+    generateTokenAllowed: canGenerateToken(state, projectId)
   };
 };
 

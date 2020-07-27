@@ -17,10 +17,12 @@ import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import '../explorer.css';
-import { notify, generateInternalToken } from '../../../utils';
+import { notify, canGenerateToken } from '../../../utils';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
 import { getJWTSecret } from '../../../operations/projects';
+import { projectModules } from '../../../constants';
+import { getAPIToken } from '../../../operations/cluster';
 
 const { Option } = Select;
 
@@ -71,7 +73,7 @@ const SpaceApi = props => {
   return (
     <div className="explorer">
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='explorer' />
+      <Sidenav selectedItem={projectModules.EXPLORER} />
       <div className='page-content page-content--no-padding'>
         <ExplorerTabs activeKey="spaceApi" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
@@ -105,9 +107,9 @@ const SpaceApi = props => {
                   value={props.userToken}
                   onChange={e => props.setUserToken(e.target.value)}
                 />
-                <Button onClick={() => setGenerateTokenModal(true)}>
-                  Generate Token
-                                </Button>
+                <Tooltip title={props.generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                  <Button disabled={!props.generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                </Tooltip>
               </div>
             )}
             <div className='row'>
@@ -202,7 +204,8 @@ const mapStateToProps = (state, ownProps) => {
       true
     ),
     userToken: get(state, 'uiState.explorer.userToken'),
-    internalToken: generateInternalToken(state, projectId)
+    internalToken: getAPIToken(state),
+    generateTokenAllowed: canGenerateToken(state, projectId)
   };
 };
 

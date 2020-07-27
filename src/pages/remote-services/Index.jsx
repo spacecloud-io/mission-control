@@ -11,6 +11,7 @@ import Sidenav from "../../components/sidenav/Sidenav"
 import { saveRemoteService, deleteRemoteService, getRemoteServices } from "../../operations/remoteServices"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
+import { projectModules } from "../../constants";
 
 const RemoteServices = () => {
   // Router params
@@ -106,7 +107,7 @@ const RemoteServices = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='remote-services' />
+      <Sidenav selectedItem={projectModules.REMOTE_SERVICES} />
       <div className='page-content'>
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
           <div className="panel">

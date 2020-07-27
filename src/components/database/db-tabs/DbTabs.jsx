@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import "./db-tabs.css"
 import { useSelector } from 'react-redux';
 import { isPreparedQueriesSupported } from '../../../operations/database';
+import { projectModules } from '../../../constants';
 const { TabPane } = Tabs;
 
 export default ({ activeKey, projectID, selectedDB }) => {
@@ -14,35 +15,35 @@ export default ({ activeKey, projectID, selectedDB }) => {
         <TabPane tab='Overview' key='overview'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/overview`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DATABASE}/${selectedDB}/overview`
             }}
           />
         </TabPane>
         {showPreparedQueriesTab && <TabPane tab='Prepared queries' key='preparedQueries'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DATABASE}/${selectedDB}/prepared-queries`
             }}
           />
         </TabPane>}
         <TabPane tab='Browse' key='browse'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/browse`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DATABASE}/${selectedDB}/browse`
             }}
           />
         </TabPane>
         <TabPane tab='Sample queries' key='queries'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/queries`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DATABASE}/${selectedDB}/queries`
             }}
           />
         </TabPane>
         <TabPane tab='Settings' key='settings'>
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/database/${selectedDB}/settings`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DATABASE}/${selectedDB}/settings`
             }}
           />
         </TabPane>

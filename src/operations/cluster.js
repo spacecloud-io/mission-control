@@ -13,6 +13,28 @@ export function loadClusterSettings() {
   })
 }
 
+export function loadPermissions() {
+  return new Promise((resolve, reject) => {
+    client.cluster.fetchPermissions()
+      .then(permissions => {
+        setPermissions(permissions)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function loadAPIToken(projectId) {
+  return new Promise((resolve, reject) => {
+    client.cluster.fetchAPIToken(projectId)
+      .then((token) => {
+        setAPIToken(token)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export function saveClusterSetting(key, value) {
   return new Promise((resolve, reject) => {
     const { credentials, ...config } = get(store.getState(), "clusterConfig", {})
@@ -31,7 +53,6 @@ export function loadClusterEnv() {
     client.cluster.fetchEnv()
       .then(env => {
         setEnv(env)
-        localStorage.setItem("isProd", String(env.isProd))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -49,21 +70,19 @@ export function login(user, key) {
   })
 }
 
-export function refreshClusterTokenIfNeeded() {
+export function refreshClusterTokenIfPresent() {
   return new Promise((resolve, reject) => {
-    const prodMode = isProdMode()
     const token = getToken()
-    if (!prodMode) {
-      resolve(true)
+
+    if (!token) {
+      resolve()
       return
     }
-    if (!token) {
-      resolve(false)
-    }
+
     client.cluster.refreshToken(token)
       .then((newToken) => {
         setToken(newToken)
-        resolve(true)
+        resolve()
       })
       .catch((ex) => {
         localStorage.removeItem("token")
@@ -102,8 +121,9 @@ export function setEnv(env) {
   store.dispatch(set("env", env))
 }
 
-export function isProdMode() {
-  return localStorage.getItem("isProd") === "true" ? true : false
+export function isProdMode(state) {
+  const env = getEnv(state)
+  return get(env, "isProd", false)
 }
 
 export function isClusterUpgraded(state) {
@@ -118,4 +138,36 @@ export function getToken() {
 
 function setToken(token) {
   localStorage.setItem("token", token)
+}
+
+function setPermissions(permissions) {
+  store.dispatch(set("permissions", permissions))
+}
+
+export function getPermisions(state) {
+  return get(state, "permissions", [])
+}
+
+export function getAPIToken(state) {
+  return get(state, "apiToken", "")
+}
+
+export function setAPIToken(token) {
+  store.dispatch(set("apiToken", token))
+}
+
+export function getLoginURL(state) {
+  const env = getEnv(state)
+  return get(env, "loginURL")
+}
+
+export function isLoggedIn(state) {
+  const prodMode = isProdMode(state)
+  const token = getToken()
+
+  if (prodMode && !token) {
+    return false
+  }
+
+  return true
 }
