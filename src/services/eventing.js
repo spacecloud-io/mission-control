@@ -101,7 +101,15 @@ class Eventing {
         }
       `,
         variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-).*` }
-      }).then(res => resolve(res.data.event_logs)).catch(ex => reject(ex.toString()))
+      }).then(res => {
+        const { data, errors } = res
+        if (errors && errors.length > 0) {
+          reject(errors[0].message)
+          return
+        }
+
+        resolve(data.event_logs) 
+      }).catch(ex => reject(ex.toString()))
     })
   }
 

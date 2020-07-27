@@ -9,7 +9,7 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { defaultPreparedQueryRule, securityRuleGroups } from '../../../constants';
+import { defaultPreparedQueryRule, securityRuleGroups, projectModules } from '../../../constants';
 import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
@@ -75,7 +75,7 @@ const PreparedQueries = () => {
         showDbSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <DBTabs activeKey='preparedQueries' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">

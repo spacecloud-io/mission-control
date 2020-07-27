@@ -14,6 +14,7 @@ import { generateDBSchemaAST, generateSampleQueryDBInsert, generateSampleQueryDB
 
 import bookReadingSvg from "../../../assets/bookReading.svg"
 import { getCollectionSchema, getDbSchemas, getTrackedCollections } from "../../../operations/database";
+import { projectModules } from "../../../constants";
 
 const VariablesPanel = () => {
   return <div style={{
@@ -129,7 +130,7 @@ const Queries = () => {
         showDbSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <DBTabs
             selectedDB={selectedDB}

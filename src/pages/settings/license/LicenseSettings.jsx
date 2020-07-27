@@ -11,6 +11,7 @@ import ProjectPageLayout, { Content } from "../../../components/project-page-lay
 import { notify, incrementPendingRequests, decrementPendingRequests, openBillingPortal } from "../../../utils";
 import { Row, Col, Divider } from "antd";
 import { loadClusterSettings, removeClusterLicense, getEnv, isClusterUpgraded } from "../../../operations/cluster";
+import { projectModules } from "../../../constants";
 
 const LicenseSettings = () => {
   const history = useHistory();
@@ -42,7 +43,7 @@ const LicenseSettings = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='settings' />
+      <Sidenav selectedItem={projectModules.SETTINGS} />
       <ProjectPageLayout>
         <SettingsTabs activeKey="license" projectID={projectID} />
         <Content>

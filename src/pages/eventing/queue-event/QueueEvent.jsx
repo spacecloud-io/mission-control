@@ -8,9 +8,11 @@ import { Row, Col, Button } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
-import { getEventSourceFromType, generateInternalToken, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
+import { getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
 import { getJWTSecret } from '../../../operations/projects';
+import { projectModules } from '../../../constants';
+import { getAPIToken } from '../../../operations/cluster';
 
 const QueueEvent = () => {
   const { projectID } = useParams()
@@ -22,7 +24,7 @@ const QueueEvent = () => {
   // Global state
   const eventTriggerRules = useSelector(state => getEventingTriggerRules(state))
   const secret = useSelector(state => getJWTSecret(state, projectID))
-  const internalToken = useSelector(state => generateInternalToken(state, projectID))
+  const internalToken = useSelector(state => getAPIToken(state, projectID))
 
   // Derived state
   const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
@@ -53,7 +55,7 @@ const QueueEvent = () => {
         showProjectSelector
       />
       <div>
-        <Sidenav selectedItem='eventing' />
+        <Sidenav selectedItem={projectModules.EVENTING} />
         <div className='page-content page-content--no-padding'>
           <div style={{
             boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
@@ -77,6 +79,7 @@ const QueueEvent = () => {
             <Row>
               <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
                 <TriggerForm
+                  projectId={projectID}
                   initialEventType={initialEventType}
                   eventTypes={customEventTypes}
                   handleSubmit={handleTriggerEvent}

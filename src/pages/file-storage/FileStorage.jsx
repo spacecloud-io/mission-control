@@ -12,7 +12,7 @@ import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge, Popconfirm, Table } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, saveFileStorePrefix, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
-import { securityRuleGroups } from '../../constants';
+import { securityRuleGroups, projectModules } from '../../constants';
 
 const Rules = () => {
 	const history = useHistory();
@@ -156,7 +156,7 @@ const Rules = () => {
 		<div className="file-storage">
 			<Topbar showProjectSelector />
 			<div>
-				<Sidenav selectedItem="file-storage" />
+				<Sidenav selectedItem={projectModules.FILESTORE} />
 				<div className="page-content">
 					{!enabled && <div className="panel">
 						<img src={fileStorageSvg} />

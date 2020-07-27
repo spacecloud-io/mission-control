@@ -10,7 +10,7 @@ import mongodb from '../../assets/mongodb.svg'
 import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
-import { defaultDbConnectionStrings, dbTypes } from "../../constants"
+import { defaultDbConnectionStrings, dbTypes, projectModules } from "../../constants"
 import { enableDb, getDbConfig } from "../../operations/database"
 
 const Database = () => {
@@ -77,7 +77,7 @@ const Database = () => {
   return (
     <div>
       <Topbar showProjectSelector showDbSelector />
-      <Sidenav selectedItem="database" />
+      <Sidenav selectedItem={projectModules.DATABASE} />
       <div className="page-content ">
         <div className="panel" style={{ margin: 24 }}>
           <img src={graphic} style={{ width: 120 }} />

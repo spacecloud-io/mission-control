@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from "react-redux";
 import store from "./store";
-import { onAppLoad } from './utils';
+import { performSetup, markSetupComplete } from './utils';
 import App from './App';
 import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
@@ -29,4 +29,8 @@ ReactDOM.render(
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-onAppLoad()
+// Perform setup on app (re)load
+// It performs all the actions required to be done before user can start interacting with mission control.
+// This includes loading space cloud environment, refreshing token and fetching all resources that needs to be fetched.
+// A special loading page is shown untill this setup gets complete. 
+performSetup().then(() => markSetupComplete())

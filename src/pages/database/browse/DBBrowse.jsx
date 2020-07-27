@@ -11,12 +11,13 @@ import FilterSorterForm from "../../../components/database/filter-sorter-form/Fi
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
 
-import { notify, incrementPendingRequests, decrementPendingRequests, generateInternalToken } from '../../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Table, Popconfirm } from "antd";
 import { API, cond } from "space-api";
-import { spaceCloudClusterOrigin } from "../../../constants"
+import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
+import { getAPIToken } from '../../../operations/cluster';
 
 let editRowData = {};
 
@@ -40,7 +41,7 @@ const Browse = () => {
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const collectionSchemaString = useSelector(state => getCollectionSchema(state, selectedDB, selectedCol))
   const collections = useSelector(state => getTrackedCollections(state, selectedDB))
-  const internalToken = useSelector(state => generateInternalToken(state, projectID))
+  const internalToken = useSelector(state => getAPIToken(state))
   const api = new API(projectID, spaceCloudClusterOrigin);
   api.setToken(internalToken)
   const db = api.DB(selectedDB);
@@ -338,7 +339,7 @@ const Browse = () => {
         showDbSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <DBTabs
             selectedDB={selectedDB}

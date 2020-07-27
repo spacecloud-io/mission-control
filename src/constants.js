@@ -4,38 +4,118 @@ export const endpointTypes = {
   PREPARED: "prepared"
 }
 
+export const configResourceTypes = {
+  DB_CONFIG: "db-config",
+  DB_RULES: "db-rule",
+  DB_SCHEMA: "db-schema",
+  DB_PREPARED_QUERIES: "db-prepared-query",
+  FILESTORE_CONFIG: "filestore-config",
+  FILESTORE_RULES: "filestore-rule",
+  EVENTING_CONFIG: "eventing-config",
+  EVENTING_TRIGGERS: "eventing-trigger",
+  EVENTING_RULES: "eventing-rule",
+  EVENTING_SCHEMA: "eventing-schema",
+  REMOTE_SERVICES: "remote-service",
+  SERVICES: "service",
+  SERVICE_LOGS: "service-logs",
+  SERVICE_ROUTES: "service-route",
+  SECRETS: "secret",
+  INGRESS_ROUTES: "ingress-route",
+  INGRESS_GLOBAL: "ingress-global",
+  USER_MANAGEMENT: "auth-provider",
+  PROJECT_CONFIG: "project",
+  CLUSTER_CONFIG: "cluster",
+  LETSENCRYPT: "letsencrypt",
+  INTEGRATIONS: "integration",
+  INTEGRATION_HOOKS: "integration-hook"
+}
+
+export const apiResourceTypes = {
+  DB_CREATE: "db-create",
+  DB_READ: "db-read",
+  DB_UPDATE: "db-update",
+  DB_DELETE: "db-delete",
+  DB_AGGREGATE: "db-aggregate",
+  DB_PREPARED_QUERY: "db-prepared-query",
+  EVENTING_QUEUE: "eventing-queue",
+  EVENTING_LOGS: "eventing-logs",
+  FILE_CREATE: "file-create",
+  FILE_READ: "file-read",
+  FILE_DELETE: "file-delete",
+  SERVICE_CALL: "service-call"
+}
+
+// These are UI modules/sections (sidenav items). These should not be confused with the space cloud modules 
+export const projectModules = {
+  OVERVIEW: "overview",
+  DATABASE: "database",
+  FILESTORE: "file-storage",
+  EVENTING: "eventing",
+  REMOTE_SERVICES: "remote-services",
+  DEPLOYMENTS: "deployments",
+  SECRETS: "secrets",
+  INGRESS_ROUTES: "ingress-routes",
+  USER_MANAGEMENT: "user-management",
+  INTEGRATIONS: "integrations",
+  EXPLORER: "explorer",
+  SETTINGS: "settings",
+  SECURITY_RULES: "security-rules"
+}
+
+export const moduleResources = {
+  [projectModules.OVERVIEW]: [],
+  [projectModules.DATABASE]: [configResourceTypes.DB_CONFIG, configResourceTypes.DB_RULES, configResourceTypes.DB_SCHEMA, configResourceTypes.DB_PREPARED_QUERIES],
+  [projectModules.FILESTORE]: [configResourceTypes.FILESTORE_CONFIG, configResourceTypes.FILESTORE_RULES],
+  [projectModules.EVENTING]: [configResourceTypes.EVENTING_CONFIG, configResourceTypes.EVENTING_RULES, configResourceTypes.EVENTING_SCHEMA, configResourceTypes.EVENTING_TRIGGER],
+  [projectModules.REMOTE_SERVICES]: [configResourceTypes.REMOTE_SERVICES],
+  [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES],
+  [projectModules.SECRETS]: [configResourceTypes.SECRETS],
+  [projectModules.INGRESS_ROUTES]: [configResourceTypes.INGRESS_ROUTES, configResourceTypes.INGRESS_GLOBAL],
+  [projectModules.INTEGRATIONS]: [configResourceTypes.INTEGRATIONS],
+  [projectModules.EXPLORER]: [],
+  [projectModules.SETTINGS]: [],
+  [projectModules.SECURITY_RULES]: []
+}
+
 export const configResourceTypeLabels = {
-  "db-config": "Database config",
-  "db-rule": "Database rules",
-  "db-schema": "Database schema",
-  "db-prepared-query": "Database prepared queries",
-  "eventing-config": "Eventing config",
-  "eventing-trigger": "Eventing triggers",
-  "eventing-schema": "Eventing schema",
-  "eventing-rule": "Eventing rules",
-  "filestore-config": "Filestore config",
-  "filestore-rule": "Filestore rules",
-  "letsencrypt": "Letsencrypt",
-  "project": "Project settings",
-  "ingress-global": "Ingress global config",
-  "ingress-route": "Ingress routes",
-  "remote-service": "Remote services",
-  "service": "Services",
-  "service-route": "Service routes",
-  "secret": "Secrets",
-  "integration": "Integrations",
-  "integration-hook": "Integration hooks",
+  [configResourceTypes.DB_CONFIG]: "Database config",
+  [configResourceTypes.DB_RULES]: "Database rules",
+  [configResourceTypes.DB_SCHEMA]: "Database schema",
+  [configResourceTypes.DB_PREPARED_QUERIES]: "Database prepared queries",
+  [configResourceTypes.FILESTORE_CONFIG]: "Filestore config",
+  [configResourceTypes.FILESTORE_RULES]: "Filestore rules",
+  [configResourceTypes.EVENTING_CONFIG]: "Eventing config",
+  [configResourceTypes.EVENTING_TRIGGERS]: "Eventing triggers",
+  [configResourceTypes.EVENTING_SCHEMA]: "Eventing schema",
+  [configResourceTypes.EVENTING_RULES]: "Eventing rules",
+  [configResourceTypes.REMOTE_SERVICES]: "Remote services",
+  [configResourceTypes.SERVICES]: "Services",
+  [configResourceTypes.SERVICE_LOGS]: "Service logs",
+  [configResourceTypes.SERVICE_ROUTES]: "Service routes",
+  [configResourceTypes.SECRETS]: "Secrets",
+  [configResourceTypes.INGRESS_GLOBAL]: "Ingress global config",
+  [configResourceTypes.INGRESS_ROUTES]: "Ingress routes",
+  [configResourceTypes.USER_MANAGEMENT]: "User Management",
+  [configResourceTypes.INTEGRATIONS]: "Integrations",
+  [configResourceTypes.INTEGRATION_HOOKS]: "Integration hooks",
+  [configResourceTypes.LETSENCRYPT]: "Letsencrypt",
+  [configResourceTypes.PROJECT_CONFIG]: "Project config",
+  [configResourceTypes.CLUSTER_CONFIG]: "Cluster config"
 }
 
 export const apiResourceTypeLabels = {
-  "db-create": "Database create",
-  "db-read": "Database read",
-  "db-update": "Database update",
-  "db-delete": "Database delete",
-  "db-aggregate": "Database aggregate",
-  "db-prepared-sql": "Database prepared query",
-  "eventing-trigger": "Custom events",
-  "service-call": "Remote service"
+  [apiResourceTypes.DB_CREATE]: "Database create",
+  [apiResourceTypes.DB_READ]: "Database read",
+  [apiResourceTypes.DB_UPDATE]: "Database update",
+  [apiResourceTypes.DB_DELETE]: "Database delete",
+  [apiResourceTypes.DB_AGGREGATE]: "Database aggregate",
+  [apiResourceTypes.DB_PREPARED_QUERY]: "Database prepared query",
+  [apiResourceTypes.EVENTING_QUEUE]: "Queue Custom events",
+  [apiResourceTypes.EVENTING_LOGS]: "View Custom events",
+  [apiResourceTypes.FILE_CREATE]: "File create",
+  [apiResourceTypes.FILE_READ]: "File read",
+  [apiResourceTypes.FILE_DELETE]: "File delete",
+  [apiResourceTypes.SERVICE_CALL]: "Remote service call"
 }
 
 export const dbTypes = {
@@ -53,8 +133,6 @@ export const defaultDbConnectionStrings = {
   [dbTypes.SQLSERVER]: "Data Source=localhost,1433;Initial Catalog=master;User ID=yourID;Password=yourPassword@#;",
   [dbTypes.EMBEDDED]: "embedded.db"
 }
-
-export const SPACE_CLOUD_USER_ID = "internal-sc-user"
 
 export const securityRuleGroups = {
   DB_COLLECTIONS: "collections",

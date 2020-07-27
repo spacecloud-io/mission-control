@@ -8,6 +8,7 @@ import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EndpointForm from '../../components/remote-services/endpoint-form/EndpointForm';
 import { saveRemoteServiceEndpoint, getRemoteServiceEndpoints, getRemoteServiceURL } from '../../operations/remoteServices';
+import { projectModules } from '../../constants';
 
 const ConfigureEndpoint = () => {
   // Router params
@@ -38,7 +39,7 @@ const ConfigureEndpoint = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='remote-services' />
+      <Sidenav selectedItem={projectModules.REMOTE_SERVICES} />
       <ProjectPageLayout>
         <InnerTopBar title={endpointName ? "Edit endpoint" : "Add endpoint"} />
         <Content>

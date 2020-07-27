@@ -15,7 +15,7 @@ import { FilterOutlined } from "@ant-design/icons";
 import FilterForm from "../../../components/ingress-routing/FilterForm";
 import { set } from "automate-redux";
 import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
-import { securityRuleGroups } from "../../../constants";
+import { securityRuleGroups, projectModules } from "../../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -192,7 +192,7 @@ function RoutingOverview() {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="routing" />
+      <Sidenav selectedItem={projectModules.INGRESS_ROUTES} />
       <ProjectPageLayout>
         <IngressTabs projectID={projectID} activeKey="overview" />
         <Content>

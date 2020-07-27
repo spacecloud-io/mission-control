@@ -13,6 +13,7 @@ import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
 import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
 import { getSecrets, loadSecrets } from '../../operations/secrets';
+import { projectModules } from '../../constants';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -97,7 +98,7 @@ const FileStorageConfig = () => {
     <div className="file-storage">
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="file-storage" />
+        <Sidenav selectedItem={projectModules.FILESTORE} />
         <div className="page-content page-content--no-padding">
           <div
             style={{

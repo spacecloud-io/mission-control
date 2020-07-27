@@ -17,6 +17,34 @@ class Cluster {
     })
   }
 
+  fetchPermissions() {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/permissions`)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchAPIToken(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/config/projects/${projectId}/generate-internal-token`, {})
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result)
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
   setConfig(clusterConfig) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/cluster`, clusterConfig)
@@ -80,6 +108,8 @@ class Cluster {
           reject("Invalid token")
           return
         }
+        
+        this.client.setToken(data.token)
         resolve(data.token)
       }).catch(ex => reject(ex.toString()))
     })
@@ -97,6 +127,7 @@ class Cluster {
           return
         }
 
+        this.client.setToken(data.token)
         resolve(data.token)
       }).catch(ex => reject(ex.toString()))
     })

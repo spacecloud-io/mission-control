@@ -12,6 +12,7 @@ import { notify, incrementPendingRequests, decrementPendingRequests } from "../.
 import { decrement } from "automate-redux";
 import { deleteService, saveService, getServices } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
+import { projectModules } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -220,7 +221,7 @@ const DeploymentsOverview = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="deployments" />
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <div className="page-content page-content--no-padding">
         <DeploymentTabs activeKey="overview" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>

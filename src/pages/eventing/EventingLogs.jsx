@@ -13,12 +13,14 @@ import FilterForm from "../../components/eventing/FilterForm";
 
 
 import client from "../../client";
-import { notify, parseJSONSafely, generateInternalToken, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { notify, parseJSONSafely, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { getEventingDbAliasName } from '../../operations/eventing';
 import store from '../../store';
 
 import '../../index.css';
 import './event.css';
+import { projectModules } from '../../constants';
+import { getAPIToken } from '../../operations/cluster';
 
 const getIconByStatus = (status) => {
   switch (status) {
@@ -49,7 +51,7 @@ const EventingLogs = () => {
   const eventLogs = useSelector(state => state.eventLogs);
   const eventFilters = useSelector(state => state.uiState.eventFilters);
   const projects = useSelector(state => state.projects);
-  const internalToken = useSelector(state => generateInternalToken(state, projectID))
+  const internalToken = useSelector(state => getAPIToken(state))
 
   // Component state  
   const [modalVisible, setModalVisible] = useState(false);
@@ -151,7 +153,7 @@ const EventingLogs = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="eventing" />
+      <Sidenav selectedItem={projectModules.EVENTING} />
       <div className='page-content page-content--no-padding'>
         <EventTabs activeKey="event-logs" projectID={projectID} />
         <div className="event-tab-content">

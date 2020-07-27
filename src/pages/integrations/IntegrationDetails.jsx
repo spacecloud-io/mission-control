@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { getIntegrationDetails } from '../../operations/integrations';
 import { useHistory, useParams } from 'react-router-dom';
 import { formatIntegrationImageUrl } from '../../utils';
+import { projectModules } from '../../constants';
 
 const IntegrationDetails = () => {
   const history = useHistory()
@@ -27,7 +28,7 @@ const IntegrationDetails = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='integrations' />
+      <Sidenav selectedItem={projectModules.INTEGRATIONS} />
       <ProjectPageLayout>
         <InnerTopBar title='Integration details' />
         <Content>

@@ -11,6 +11,7 @@ import IngressTabs from "../../../components/ingress-routing/ingress-tabs/Ingres
 import Headers from "../../../components/ingress-routing/Headers";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getIngressRoutesGlobalConfig, saveIngressGlobalRequestHeaders, saveIngressGlobalResponseHeaders, loadIngressRoutesGlobalConfig } from "../../../operations/ingressRoutes";
+import { projectModules } from "../../../constants";
 
 function RoutingSettings() {
   const { projectID } = useParams();
@@ -53,7 +54,7 @@ function RoutingSettings() {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="routing" />
+      <Sidenav selectedItem={projectModules.INGRESS_ROUTES} />
       <ProjectPageLayout>
         <IngressTabs projectID={projectID} activeKey="settings" />
         <Content>

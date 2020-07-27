@@ -17,6 +17,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
 import { notify } from '../../../utils';
 import { savePreparedQueryConfig, getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
+import { projectModules } from '../../../constants';
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
@@ -56,7 +57,7 @@ const AddPreparedQueries = () => {
         showProjectSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <div style={{
             boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
