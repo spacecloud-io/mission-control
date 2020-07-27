@@ -469,7 +469,6 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
           if (!hasPermissions) {
             // If the NoPermissions page is already opened, then pick the moduleId from the query string 
             const queryParams = qs.parse(history.location.search, { ignoreQueryPrefix: true })
-            console.log("QueryParams", queryParams)
             const adjustedModuleId = moduleId === "no-permissions" ? queryParams.moduleId : moduleId
             return (
               <Redirect to={`/mission-control/projects/${projectId}/no-permissions?moduleId=${adjustedModuleId}`} />
