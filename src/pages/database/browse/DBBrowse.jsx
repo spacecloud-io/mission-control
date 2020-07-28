@@ -10,15 +10,18 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import FilterSorterForm from "../../../components/database/filter-sorter-form/FilterSorterForm";
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
+import InfiniteScrollingTable from "../../../components/utils/infinite-scrolling-table/InfiniteScrollingTable";
 
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
-import { Button, Select, Icon, Table, Popconfirm } from "antd";
+import { Button, Select, Icon, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 import { getAPIToken } from '../../../operations/cluster';
 
+let pageNumber = 0;
+const pageSize = 10;
 let editRowData = {};
 
 const getUniqueKeys = (colSchemaFields = []) => {
@@ -30,7 +33,8 @@ const Browse = () => {
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
   const [isEditRowFormVisible, setEditRowFormVisibility] = useState(false);
-  const [data, setData] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
 
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
@@ -58,46 +62,63 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = () => {
-    if (selectedCol) {
+  const getTableData = (skip = 0) => {
+    console.log("GetTableData", skip, tableData.length)
+    return new Promise((resolve, reject) => {
+      if (selectedCol) {
 
-      const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
-      const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
+        const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
+        const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
-      incrementPendingRequests()
-      db.get(selectedCol)
-        .where(...filterConditions)
-        .sort(...sortConditions)
-        .apply()
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            notify("error", "Error fetching data", data.error);
-            setData([]);
-            return
-          }
+        db.get(selectedCol)
+          .where(...filterConditions)
+          .sort(...sortConditions)
+          .limit(pageSize)
+          .skip(skip)
+          .apply()
+          .then(({ status, data }) => {
+            if (status !== 200) {
+              notify("error", "Error fetching data", data.error);
+              setTableData([]);
+              resolve()
+              return
+            }
 
-          data.result.forEach(obj => {
-            Object.entries(obj).forEach(([key, value]) => {
-              // Stringifying certain data types to render them in table 
-              if (typeof value === "boolean") {
-                obj[key] = value.toString()
-                return
-              }
-              if (typeof value === "object" && !Array.isArray(value) && value !== null) {
-                obj[key] = JSON.stringify(value, null, 2)
-                return
-              }
-              if (typeof value === "object" && Array.isArray(value) && value !== null) {
-                obj[key] = value.toString()
-              }
+            data.result.forEach(obj => {
+              Object.entries(obj).forEach(([key, value]) => {
+                // Stringifying certain data types to render them in table 
+                if (typeof value === "boolean") {
+                  obj[key] = value.toString()
+                  return
+                }
+                if (typeof value === "object" && !Array.isArray(value) && value !== null) {
+                  obj[key] = JSON.stringify(value, null, 2)
+                  return
+                }
+                if (typeof value === "object" && Array.isArray(value) && value !== null) {
+                  obj[key] = value.toString()
+                }
+              })
             })
-          })
 
-          setData(data.result);
-        })
-        .catch(ex => notify("error", "Error fetching data", ex))
-        .finally(() => decrementPendingRequests());
-    }
+            if (skip === 0) {
+              setTableData(data.result)
+            } else {
+              setTableData([...tableData, ...data.result])
+              if (data.result.length < pageSize) {
+                setHasMore(false)
+              }
+            }
+            resolve()
+          })
+          .catch(ex => {
+            notify("error", "Error fetching data", ex)
+            reject()
+          })
+      } else {
+        resolve()
+      }
+    })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -221,7 +242,6 @@ const Browse = () => {
     let currentDate = [];
     let currentTimestamp = [];
 
-    console.log("Values", values)
     for (let row of values) {
       switch (row.operation) {
         case "set":
@@ -331,7 +351,7 @@ const Browse = () => {
     })
   }
 
-  const tableColumns = getColumnNames(colSchemaFields, data)
+  const tableColumns = getColumnNames(colSchemaFields, tableData)
   return (
     <React.Fragment>
       <Topbar
@@ -361,13 +381,19 @@ const Browse = () => {
                 <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
               </>
             )}
-            <Table
+            <InfiniteScrollingTable
+              id="db-browse-table"
               className="db-browse-table"
               columns={tableColumns}
-              dataSource={data}
+              dataSource={tableData}
               style={{ marginTop: 21 }}
               bordered
-              pagination={false}
+              hasMore={hasMore}
+              loadNext={() => {
+                pageNumber++
+                return getTableData(pageNumber * pageSize)
+              }}
+              scrollHeight={550}
             />
           </div>
         </div>
