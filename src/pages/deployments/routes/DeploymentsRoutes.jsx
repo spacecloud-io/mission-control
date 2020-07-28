@@ -11,6 +11,7 @@ import RoutingModal from "../../../components/deployments/routing-modal/RoutingM
 import routingSvg from "../../../assets/routing.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { loadServiceRoutes, saveServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
+import { projectModules } from "../../../constants";
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
@@ -127,7 +128,7 @@ const DeploymentsRoutes = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="deployments" />
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <div className="page-content page-content--no-padding">
         <DeploymentTabs activeKey='routes' projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>

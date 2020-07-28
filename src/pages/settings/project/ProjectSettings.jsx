@@ -18,6 +18,7 @@ import DockerRegistry from "../../../components/settings/project/DockerRegistry"
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { loadLetsEncryptConfig, saveWhiteListedDomains, getWhiteListedDomains } from "../../../operations/letsencrypt";
 import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
+import { projectModules } from "../../../constants";
 
 const ProjectSettings = () => {
   // Router params
@@ -42,7 +43,7 @@ const ProjectSettings = () => {
   // Derived state
   let selectedProject = projects.find(project => project.id === projectID);
   if (!selectedProject) selectedProject = {}
-  
+
   const secrets = selectedProject.secrets ? selectedProject.secrets : []
   const aesKey = selectedProject.aesKey
   const contextTimeGraphQL = selectedProject.contextTimeGraphQL
@@ -132,7 +133,7 @@ const ProjectSettings = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='settings' />
+      <Sidenav selectedItem={projectModules.SETTINGS} />
       <ProjectPageLayout>
         <SettingsTabs activeKey="project" projectID={projectID} />
         <Content>

@@ -10,6 +10,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notify } from "../../utils";
 import { saveSecret, deleteSecret, getSecrets } from "../../operations/secrets";
+import { projectModules } from "../../constants";
 
 const Secrets = () => {
   const history = useHistory();
@@ -118,7 +119,7 @@ const Secrets = () => {
     <div>
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="secrets" />
+        <Sidenav selectedItem={projectModules.SECRETS} />
         <div className="page-content">
           <h3 style={{ display: "flex", justifyContent: "space-between" }}>
             Secrets{" "}

@@ -10,12 +10,12 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, parseJSONSafely } from "../../utils";
+import { notify, parseJSONSafely, canGenerateToken } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
-const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken }) => {
+const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken, projectId }) => {
   const [form] = Form.useForm()
   const [eventType, setEventType] = useState(initialEventType);
 
@@ -26,6 +26,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
   const token = useSelector(state => get(state, "uiState.eventing.token", ""))
+  const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectId))
 
   const getToken = () => useInternalToken ? internalToken : token
   const setToken = token => {
@@ -94,7 +95,9 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
                 onChange={e => dispatch(set("uiState.eventing.token", e.target.value))}
               />
             </Form.Item>
-            <Button onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
+            <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+              <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
+            </Tooltip>
           </div>
         </ConditionalFormBlock>
         <FormItemLabel name="Event data" description="JSON object" />

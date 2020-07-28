@@ -12,6 +12,7 @@ import CollapseHeader from './CollapseHeader'
 import './user-management.css'
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { saveUserManConfig, loadUserManConfig, getEmailConfig } from '../../operations/userMan';
+import { projectModules } from '../../constants';
 const { Panel } = Collapse;
 
 //const Panel = Collapse.Panel;
@@ -45,7 +46,7 @@ const UserManagement = () => {
     <div className="user-management">
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="userman" />
+        <Sidenav selectedItem={projectModules.USER_MANAGEMENT} />
         <div className="page-content">
           <h2>Auth Providers</h2>
           <Collapse style={{ marginTop: 24 }} accordion expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>

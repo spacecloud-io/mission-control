@@ -16,7 +16,7 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, loadCollections } from "../../../operations/database"
-import { dbTypes, securityRuleGroups } from '../../../constants';
+import { dbTypes, securityRuleGroups, projectModules } from '../../../constants';
 
 
 const Overview = () => {
@@ -234,7 +234,7 @@ const Overview = () => {
         showDbSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <DBTabs activeKey='overview' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">

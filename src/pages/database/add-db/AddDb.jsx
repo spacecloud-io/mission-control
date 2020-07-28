@@ -9,6 +9,7 @@ import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { projectModules } from '../../../constants';
 
 const AddDb = () => {
   const { projectID } = useParams()
@@ -38,7 +39,7 @@ const AddDb = () => {
         showProjectSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <div style={{
             boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",

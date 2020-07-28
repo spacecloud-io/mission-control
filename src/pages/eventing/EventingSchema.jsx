@@ -12,6 +12,7 @@ import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
 import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
+import { projectModules } from "../../constants";
 
 const EventingSchema = () => {
   // Router params
@@ -107,7 +108,7 @@ const EventingSchema = () => {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="eventing" />
+      <Sidenav selectedItem={projectModules.EVENTING} />
       <div className="page-content page-content--no-padding">
         <EventTabs activeKey="schema" projectID={projectID} />
         <div className="event-tab-content">

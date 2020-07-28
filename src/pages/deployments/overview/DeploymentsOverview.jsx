@@ -13,7 +13,7 @@ import { decrement } from "automate-redux";
 import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { deploymentStatuses } from "../../../constants";
+import { projectModules, deploymentStatuses } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -270,7 +270,7 @@ const DeploymentsOverview = () => {
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="deployments" />
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <div className="page-content page-content--no-padding">
         <DeploymentTabs activeKey="overview" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>

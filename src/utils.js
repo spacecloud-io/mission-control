@@ -3,11 +3,12 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID, securityRuleGroups } from './constants';
+import qs from 'qs';
+import { dbTypes, securityRuleGroups, moduleResources, projectModules, configResourceTypes } from './constants';
 
 import store from "./store"
 import history from "./history"
-import { Redirect, Route } from "react-router-dom"
+import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
 import { loadProjects, getJWTSecret } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
@@ -15,7 +16,8 @@ import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
-import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfNeeded } from './operations/cluster'
+import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getEnv, getLoginURL, loadAPIToken } from './operations/cluster'
+import { useSelector } from 'react-redux'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -62,6 +64,14 @@ export function incrementPendingRequests() {
   store.dispatch(increment("pendingRequests"))
 }
 
+export function markSetupComplete() {
+  store.dispatch(set("setupComplete", true))
+}
+
+export function isSetupComplete(state) {
+  return get(state, "setupComplete", false)
+}
+
 export function decrementPendingRequests() {
   store.dispatch(decrement("pendingRequests"))
 }
@@ -91,11 +101,9 @@ export const generateToken = (state, projectId, claims) => {
   return jwt.sign(claims, secret);
 }
 
-export const generateInternalToken = (state, projectId) => {
-  const claims = { id: SPACE_CLOUD_USER_ID }
-  return generateToken(state, projectId, claims)
-};
-
+export function canGenerateToken(state, projectId) {
+  return checkResourcePermissions(state, projectId, [configResourceTypes.PROJECT_CONFIG], "modify")
+}
 export const parseDbConnString = conn => {
   if (!conn) return {}
   const url = uri(conn)
@@ -219,15 +227,17 @@ export function openBillingPortal() {
 }
 
 export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
-  const url = `/mission-control/projects/${projectId}/security-rules/editor?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  const url = `/mission-control/projects/${projectId}/security-rules?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
   window.open(url, '_blank')
 }
 
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
+  // Check if the specified project exists  
   const doesExist = projects.some(project => project.id === projectId)
+
   if (!doesExist) {
-    // Check if some other projectExists. If not then redirect to the welcome page
+    // Check if some other project exists. If not then redirect to the welcome page
     if (projects.length === 0) {
       history.push(`/mission-control/welcome`)
       return
@@ -235,34 +245,77 @@ export const openProject = (projectId) => {
     projectId = projects[0].id
     notify("info", "Info", "Opened another existing project as the requested project does not exist")
   }
+
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}/`
-  if (!currentURL.includes(projectURL)) {
+
+  // Check if the desired project is already opened.
+  // This is necessary to check since the user might enter the a project url in the browser directly.
+  // In that case, the exact page url (especially the module name in the url) must be preserved.
+  const projectOpened = currentURL.includes(projectURL)
+
+  // Open the project if not opened already
+  if (!projectOpened) {
     history.push(projectURL)
   }
+
+  // Load api token for the project
+  loadAPIToken(projectId)
 }
 
-// Performs actions to be done when an user is logged in to space cloud cluster
-// Note: In dev mode these actions are performed even if an user is not logged in
+function checkIfValueInArray(value, array = []) {
+  return array.some(val => val === value)
+}
+
+// Checks if the user has permissions for a particular resource(s), verb in a project 
+export function checkResourcePermissions(state, projectId, resources, verb) {
+  const permissions = getPermisions(state)
+  return permissions.some((permission) => {
+    const projectMatched = checkIfValueInArray(permission.project, ["*", projectId])
+    const resourceMatched = checkIfValueInArray(permission.resource, ["*", ...resources])
+    const verbMatched = checkIfValueInArray(permission.verb, ["*", verb])
+    return projectMatched && resourceMatched && verbMatched
+  })
+}
+
+// Checks whether the user has a permission to open a module/section (sidenav item) within a project 
+export function checkModulePermissions(state, projectId, moduleId) {
+  const moduleResourcesArray = get(moduleResources, moduleId, [])
+
+  // Return true if no permissions are required for a module
+  if (moduleResourcesArray.length === 0) {
+    return true
+  }
+
+  return checkResourcePermissions(state, projectId, moduleResourcesArray, "read")
+}
+
+// Performs actions to be done when an user is logged in to space cloud cluster.
+// This includes loading projects and permissions.
+// Note: In dev mode these actions are performed even if an user is not logged in.
 export function performActionsOnAuthenticated() {
-  incrementPendingRequests()
-  loadProjects()
-    .then(projects => {
-      if (projects.length === 0) {
-        history.push(`/mission-control/welcome`)
-        return
-      }
+  return new Promise((resolve, reject) => {
+    const promises = [loadProjects(), loadPermissions()]
 
-      // Decide which project to open
-      let projectToBeOpened = getProjectToBeOpened()
-      if (!projectToBeOpened) {
-        projectToBeOpened = projects[0].id
-      }
+    Promise.all(promises)
+      .then(([projects]) => {
+        if (projects.length === 0) {
+          history.push(`/mission-control/welcome`)
+          resolve()
+          return
+        }
 
-      openProject(projectToBeOpened)
-    })
-    .catch(ex => notify("error", "Could not fetch projects", ex))
-    .finally(() => decrementPendingRequests())
+        // Decide which project to open
+        let projectToBeOpened = getProjectToBeOpened()
+        if (!projectToBeOpened) {
+          projectToBeOpened = projects[0].id
+        }
+
+        openProject(projectToBeOpened)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
 }
 
 function isCurrentRoutePublic() {
@@ -333,42 +386,99 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-export const onAppLoad = () => {
-  loadClusterEnv()
-    .then(() => {
-      refreshClusterTokenIfNeeded()
-        .then((tokenRefreshed) => {
-          redirectIfNeeded()
-          // Note: In case of dev mode tokenRefreshed will always be true
-          if (tokenRefreshed) {
-            performActionsOnAuthenticated()
-          }
-        })
-        .catch(ex => {
-          notify("error", "Error refreshing token", ex)
-          redirectIfNeeded()
-        })
+// This function performs the setup required to operate mission control.
+// It includes loading the space cloud environment, refreshing tokens, fetching all the necessary resources etc.
+// Its intended to be called whenever the mission control is (re)loaded.
+export function performSetup() {
+  return new Promise((resolve, reject) => {
 
-      setInterval(() => {
-        refreshClusterTokenIfNeeded().finally(() => redirectIfNeeded())
-      }, 15 * 60 * 1000)
+    // Load cluster environment and refresh token (if present) parallely
+    const promises = [loadClusterEnv(), refreshClusterTokenIfPresent()]
 
-      registerSecurityRulesBroadCastListener()
-    })
-    .catch((ex) => notify("error", "Error fetching cluster environment", ex))
+    Promise.all(promises)
+      .then(() => {
+
+        const state = store.getState()
+
+        // NOTE: loggedIn is always true in case of dev environment 
+        const loggedIn = isLoggedIn(state)
+
+        // If the user is not logged in, redirect to the login url
+        if (!loggedIn) {
+          const loginURL = getLoginURL(state)
+          history.replace(loginURL)
+          resolve()
+          return
+        }
+
+        // This loads all the private resources i.e. resources that require a valid token in case of prod mode
+        performActionsOnAuthenticated()
+          .then(() => resolve())
+          .catch(ex => reject(ex))
+      })
+      .catch((ex) => {
+        notify("error", "Error loading environment", ex)
+        reject(ex)
+      })
+
+    // Refresh token periodically (every 15 minutes)  
+    setInterval(() => {
+      refreshClusterTokenIfPresent().finally(() => redirectIfNeeded())
+    }, 15 * 60 * 1000)
+
+    // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
+    registerSecurityRulesBroadCastListener()
+  })
+}
+
+// This function extracts the project id and the module name from the path
+function extractPathInfo(path) {
+  if (!path) {
+    return { projectId: "", moduleId: "" }
+  }
+
+  const pathValues = path.split("/")
+  if (pathValues.length < 4) {
+    return { projectId: "", moduleId: "" }
+  }
+
+  return { projectId: pathValues[3], moduleId: pathValues[4] ? pathValues[4] : "overview" }
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { redirect, redirectUrl } = shouldRedirect()
+
+  const history = useHistory()
+  const isPrivate = !isCurrentRoutePublic()
+  const loggedIn = useSelector(state => isLoggedIn(state))
+  const loginURL = useSelector(state => getLoginURL(state))
+  const { projectId, moduleId } = extractPathInfo(history.location.pathname)
+  const hasPermissions = useSelector(state => checkModulePermissions(state, projectId, moduleId))
   return (
     <Route
       {...rest}
-      render={props =>
-        redirect ? (
-          <Redirect to={redirectUrl} />
-        ) : (
+      render={
+        props => {
+          // Redirect to login page if user is not logged in while accessing a private route
+          if (isPrivate && !loggedIn) {
+            return (
+              <Redirect to={loginURL} />
+            )
+          }
+
+          // Redirect to NoPermissions page if the user doesn't have permissions to view a particular path
+          if (!hasPermissions) {
+            // If the NoPermissions page is already opened, then pick the moduleId from the query string 
+            const queryParams = qs.parse(history.location.search, { ignoreQueryPrefix: true })
+            const adjustedModuleId = moduleId === "no-permissions" ? queryParams.moduleId : moduleId
+            return (
+              <Redirect to={`/mission-control/projects/${projectId}/no-permissions?moduleId=${adjustedModuleId}`} />
+            )
+          }
+
+          return (
             <Component {...props} />
           )
+        }
       }
     />
   )

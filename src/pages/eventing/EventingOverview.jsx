@@ -15,6 +15,7 @@ import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
+import { projectModules } from '../../constants';
 
 
 const EventingOverview = () => {
@@ -136,7 +137,7 @@ const EventingOverview = () => {
 	return (
 		<div>
 			<Topbar showProjectSelector />
-			<Sidenav selectedItem="eventing" />
+			<Sidenav selectedItem={projectModules.EVENTING} />
 			<div className='page-content page-content--no-padding'>
 				<EventTabs activeKey="overview" projectID={projectID} />
 				<div className="event-tab-content">
