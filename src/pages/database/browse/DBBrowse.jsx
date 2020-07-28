@@ -20,7 +20,6 @@ import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 import { getAPIToken } from '../../../operations/cluster';
 
-let pageNumber = 0;
 const pageSize = 10;
 let editRowData = {};
 
@@ -62,62 +61,51 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = (skip = 0) => {
-    console.log("GetTableData", skip, tableData.length)
+  const getTableData = (pageNumber = 0, previousData = []) => {
     return new Promise((resolve, reject) => {
-      if (selectedCol) {
+      const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
+      const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
-        const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
-        const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
+      db.get(selectedCol)
+        .where(...filterConditions)
+        .sort(...sortConditions)
+        .limit(pageSize)
+        .skip(pageNumber * pageSize)
+        .apply()
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            notify("error", "Error fetching data", data.error);
+            reject(data.error)
+            return
+          }
 
-        db.get(selectedCol)
-          .where(...filterConditions)
-          .sort(...sortConditions)
-          .limit(pageSize)
-          .skip(skip)
-          .apply()
-          .then(({ status, data }) => {
-            if (status !== 200) {
-              notify("error", "Error fetching data", data.error);
-              setTableData([]);
-              resolve()
-              return
-            }
-
-            data.result.forEach(obj => {
-              Object.entries(obj).forEach(([key, value]) => {
-                // Stringifying certain data types to render them in table 
-                if (typeof value === "boolean") {
-                  obj[key] = value.toString()
-                  return
-                }
-                if (typeof value === "object" && !Array.isArray(value) && value !== null) {
-                  obj[key] = JSON.stringify(value, null, 2)
-                  return
-                }
-                if (typeof value === "object" && Array.isArray(value) && value !== null) {
-                  obj[key] = value.toString()
-                }
-              })
-            })
-
-            if (skip === 0) {
-              setTableData(data.result)
-            } else {
-              setTableData([...tableData, ...data.result])
-              if (data.result.length < pageSize) {
-                setHasMore(false)
+          data.result.forEach(obj => {
+            Object.entries(obj).forEach(([key, value]) => {
+              // Stringifying certain data types to render them in table 
+              if (typeof value === "boolean") {
+                obj[key] = value.toString()
+                return
               }
-            }
-            resolve()
+              if (typeof value === "object" && !Array.isArray(value) && value !== null) {
+                obj[key] = JSON.stringify(value, null, 2)
+                return
+              }
+              if (typeof value === "object" && Array.isArray(value) && value !== null) {
+                obj[key] = value.toString()
+              }
+            })
           })
-          .catch(ex => {
-            notify("error", "Error fetching data", ex)
-            reject()
-          })
-      } else {
-        resolve()
-      }
+
+          if (data.result.length < pageSize) {
+            setHasMore(false)
+          }
+          setTableData([...previousData, ...data.result])
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error fetching data", ex)
+          reject()
+        })
     })
   }
 
@@ -167,7 +155,9 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    getTableData();
+    if (selectedCol) {
+      getTableData();
+    }
   }, [filters, sorters, selectedCol])
 
 
@@ -383,17 +373,14 @@ const Browse = () => {
             )}
             <InfiniteScrollingTable
               id="db-browse-table"
+              hasMore={hasMore}
+              loadNext={(pageNumber, previousData) => getTableData(pageNumber, previousData)}
               className="db-browse-table"
               columns={tableColumns}
               dataSource={tableData}
+              scrollHeight={550}
               style={{ marginTop: 21 }}
               bordered
-              hasMore={hasMore}
-              loadNext={() => {
-                pageNumber++
-                return getTableData(pageNumber * pageSize)
-              }}
-              scrollHeight={550}
             />
           </div>
         </div>

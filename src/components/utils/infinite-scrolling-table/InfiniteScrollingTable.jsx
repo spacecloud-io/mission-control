@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "antd";
 
+let globalState = {
+  currentPage: 0,
+  dataSource: []
+}
 // Infinite scrolling wrapper over ant design table.
 // NOTE: This requires an id in prop to work
-function InfiniteScrollingTable(props) {
+function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...tableProps }) {
   const [tableBody, setTableBody] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  globalState.dataSource = tableProps.dataSource;
 
   const onScroll = (event) => {
     const maxScroll = event.target.scrollHeight - event.target.clientHeight;
     const currentScroll = event.target.scrollTop
     if (maxScroll === currentScroll) {
-      if (!loading && props.hasMore && props.loadNext) {
-        console.log("Scroll Height", event.target.scrollHeight, "Client Height", event.target.clientHeight, "Current scroll", currentScroll, "MaxScroll", maxScroll)
+      if (!loading && hasMore && loadNext) {
         setLoading(true)
-        props.loadNext().finally(() => setLoading(false))
+        const nextPage = globalState.currentPage + 1
+        loadNext(nextPage, globalState.dataSource)
+          .then(() => globalState.currentPage = nextPage)
+          .finally(() => setLoading(false))
       }
     }
   }
@@ -25,7 +33,7 @@ function InfiniteScrollingTable(props) {
   // NOTE: The dependency array is empty here because we couldn't found a reliable dependency array for this. On mount, the table body we recieved was null. 
   useEffect(() => {
     if (!tableBody) {
-      const tableElement = document.querySelector(`#${props.id}`)
+      const tableElement = document.querySelector(`#${id}`)
       if (tableElement) {
         const tableBodyContainer = tableElement.querySelector(".ant-table-container")
         if (tableBodyContainer) {
@@ -52,14 +60,28 @@ function InfiniteScrollingTable(props) {
 
   // Check if id field is provided in the props.
   // id field is used while adding an event listener.
-  if (!props.id) {
+  if (!id) {
     console.error("`id` is required by the InfiniteScrollingTable")
     return null
   }
 
-  const scrollHeight = props.scrollHeight ? props.scrollHeight : 720
+  return (
+    <Table
+      {...tableProps}
+      id={id}
+      scroll={{ y: scrollHeight, scrollToFirstRowOnChange: true }}
+      pagination={false}
+      loading={loading} 
+      components={{body: {wrapper: (props) => {
+        
+        return (
+          <React.Fragment>
 
-  return <Table {...props} scroll={{ y: scrollHeight, scrollToFirstRowOnChange: true }} pagination={false} loading={loading} />
+            Loading
+          </React.Fragment>
+          )
+      }}}}/>
+  )
 }
 
 export default InfiniteScrollingTable;
