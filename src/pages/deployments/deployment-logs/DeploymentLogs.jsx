@@ -1,70 +1,59 @@
 import React, { useEffect, useState } from "react"
 import './deployment-logs.css';
-import { useParams, useHistory } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import client from "../../../client";
 import ReactGA from 'react-ga';
-import { LeftOutlined } from '@ant-design/icons';
-import { Button, Cascader } from "antd";
+import { Cascader, Alert } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
+import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import DOMPurify from 'dompurify';
 import { getServices, loadServicesStatus, getServicesStatus } from "../../../operations/deployments";
 import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
+import { projectModules } from "../../../constants";
+import { getToken } from "../../../operations/cluster";
 
-const DeploymentTopBar = ({ projectID }) => {
-
-  const history = useHistory()
-
-  return (
-    <div style={{
-      boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",
-      height: 48,
-      lineHeight: 48,
-      zIndex: 98,
-      display: "flex",
-      alignItems: "center",
-      padding: "0 16px"
-    }}>
-      <Button type="link" onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/overview`)}>
-        <LeftOutlined />
-        Go back
-        </Button>
-      <span style={{ marginLeft: 16 }}>
-        Deployment Logs
-      </span>
-    </div>
-  );
-}
-
-let result = '';
 const DeploymentLogs = (props) => {
   const { projectID } = useParams()
   const [logs, setLogs] = useState("");
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
   const { id, version, replica, task } = props.location.state;
+  const [cascaderValue, setCascaderValue] = useState([id, version, replica, task])
+  const [logsCompleted, setLogsCompleted] = useState(false)
+  const token = getToken()
 
-  const fetchLogs = (id, task, replica) => {
-    result = '';
-    client.deployments.fetchDeploymentLogs(projectID, id, task, replica, (chunk) => {
+  const fetchLogs = (task, replica) => {
+    let result = '';
+    client.deployments.fetchDeploymentLogs(projectID, task, replica, token, (chunk) => {
       const infoIndex = chunk.indexOf("INFO");
-      const erroIndex = chunk.indexOf("ERRO");
+      const errorIndex = chunk.indexOf("ERRO");
+      const warnIndex = chunk.indexOf("WARN");
+
       if (infoIndex !== -1) {
         const before = chunk.slice(0, infoIndex);
         const after = chunk.slice(infoIndex + 4);
         result += "<p>" + before + `<span class="info">INFO</span>` + after + "</p>";
       }
-      if (erroIndex !== -1) {
-        const before = chunk.slice(0, erroIndex);
-        const after = chunk.slice(erroIndex + 4);
-        result += "<p>" + before + `<span class="erro">ERRO</span>` + after + "</p>";
+      if (errorIndex !== -1) {
+        const before = chunk.slice(0, errorIndex);
+        const after = chunk.slice(errorIndex + 4);
+        result += "<p>" + before + `<span class="error">ERRO</span>` + after + "</p>";
       }
-      if (infoIndex === -1 && erroIndex === -1) {
+      if (warnIndex !== -1) {
+        const before = chunk.slice(0, warnIndex);
+        const after = chunk.slice(warnIndex + 4);
+        result += "<p>" + before + `<span class="warn">WARN</span>` + after + "</p>";
+      }
+      if (infoIndex === -1 && errorIndex === -1 && warnIndex === -1) {
         result += `<p>${chunk}</p>`;
       }
       setLogs(result);
+    }, () => {
+      notify("info", "Info", "Logs stream closed!")
+      setLogsCompleted(true)
     })
   }
 
@@ -73,8 +62,10 @@ const DeploymentLogs = (props) => {
   }, [])
 
   useEffect(() => {
-    fetchLogs(id, task, replica);
-  }, [])
+    const replica = cascaderValue[2]
+    const task = cascaderValue[3]
+    fetchLogs(task, replica);
+  }, cascaderValue)
 
   useEffect(() => {
     if (projectID) {
@@ -117,30 +108,36 @@ const DeploymentLogs = (props) => {
     )
   })
 
-  const onChange = ([id, version, replica, task]) => {
-    fetchLogs(id, task, replica)
-  }
-
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='remote-services' />
-      <div className='page-content page-content--no-padding'>
-        <DeploymentTopBar projectID={projectID} />
-        <div style={{ padding: "32px 32px 0" }}>
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
+      <ProjectPageLayout>
+        <InnerTopBar title="Deployment logs" />
+        <Content style={{ display: "flex", flexDirection: "column" }}>
           <FormItemLabel name="Select target" />
           <Cascader
             style={{ marginBottom: 24, width: 400 }}
             options={options}
-            onChange={onChange}
+            onChange={setCascaderValue}
             placeholder="Please select"
-            defaultValue={[id, version, replica, task]}
+            value={cascaderValue}
           />
           <FormItemLabel name="Logs" />
-          {logs && <div className="terminal-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(logs) }}></div>
+          <Alert
+            message={logsCompleted ? "The logs stream is closed. Checkout the replica status to make sure the replica is still up." : "Logs are streamed here in realtime."}
+            type="info"
+            showIcon />
+          {logs && < div className="terminal-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(logs) }} ></div>}
+          {!logs &&
+            (
+              <div className="terminal-wrapper" >
+                <p>You would see logs here as soon as there are some!</p>
+              </div>
+            )
           }
-        </div>
-      </div>
+        </Content>
+      </ProjectPageLayout>
     </React.Fragment>
   )
 }

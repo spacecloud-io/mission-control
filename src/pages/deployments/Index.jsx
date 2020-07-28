@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { useParams, Redirect } from "react-router-dom";
+import { useEffect } from 'react'
+import { useParams } from "react-router-dom";
 
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { loadServices } from '../../operations/deployments';
@@ -16,9 +16,7 @@ const DeploymentsIndex = () => {
     }
   }, [projectID])
 
-  return (
-    <Redirect to={`/mission-control/projects/${projectID}/deployments/overview`} />
-  )
+  return null
 }
 
 export default DeploymentsIndex;

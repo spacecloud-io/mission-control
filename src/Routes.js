@@ -83,7 +83,7 @@ function Routes() {
         <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/queries`} component={DBQueries} />
         <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries`} component={PreparedQueries} />
         <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/add`} component={AddPreparedQueries} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/pringress-routesepared-queries/:preparedQueryId/edit`} component={AddPreparedQueries} />
+        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/:preparedQueryId/edit`} component={AddPreparedQueries} />
       </Switch>
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorageIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorage} />
@@ -114,10 +114,11 @@ function Routes() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName/endpoints/:endpointName/edit`} component={ConfigureEndpoint} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.USER_MANAGEMENT}`} component={UserManagement} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/explorer/graphql`} />} />
+        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.EXPLORER}/graphql`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/graphql`} component={Graphql} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/spaceApi`} component={SpaceApi} />
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`} component={DeploymentsIndex} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`} component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.DEPLOYMENTS}/overview`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/overview`} component={DeploymentsOverview} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />

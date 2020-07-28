@@ -1,14 +1,21 @@
 .terminal-wrapper {
+  margin-top: 16px;
   background-color: #292929;
-  color: #FFFF;
+  flex-grow: 1;
+  color: #ffff;
   width: 100%;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .info {
-  color:#72D4D7;
+  color: cyan;
 }
 
-.erro {
+.error {
   color: red;
+}
+
+.warning {
+  color: yellow;
 }

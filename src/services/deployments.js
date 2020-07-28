@@ -73,16 +73,18 @@ class Deployments {
     })
   }
 
-  async fetchDeploymentLogs(projectId, id, task, replica, callback) {
-    const response = await fetch(`http://192.168.99.100:4122/v1/runner/${projectId}/services/logs/${id}/${task}/${replica}`)
+  async fetchDeploymentLogs(projectId, task, replica, token, onLogsAdded, onComplete) {
+    const options = { headers: {} }
+    if (token) options.headers.Authorization = `Bearer ${token}`
+    const response = await fetch(`/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`, options)
     const body = response.body
     const decoder = new TextDecoder('utf-8')
     const writableStream = new WritableStream({
       write(chunk) {
-        callback(decoder.decode(chunk))
+        onLogsAdded(decoder.decode(chunk))
       },
       close() {
-        console.log('closed!!!')
+        onComplete()
       }
     });
 

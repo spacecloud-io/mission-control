@@ -384,14 +384,9 @@ export const clusterConfig = {
 
 export const permissions = [
   {
-    project: "mockproject1",
-    resource: "db-config",
+    project: "*",
+    resource: "*",
     verb: "*"
-  },
-  {
-    project: "mockproject2",
-    resource: "filestore-config",
-    verb: "read"
   }
 ]
 
