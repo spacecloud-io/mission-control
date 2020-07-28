@@ -1,3 +1,5 @@
+import { deploymentStatuses } from "../constants"
+
 export const projects = [
   {
     "name": "MockProject1",
@@ -325,19 +327,20 @@ export const services = [
   }
 ]
 
-
-export const deploymentsStatus = {
-  "service1": {
-    "v1": {
-      desiredReplicas: 3,
-      replicas: [
-        { id: "fghj2345kj", status: "running" },
-        { id: "ghjk3456av", status: "failed" },
-        { id: "ghjksd9122", status: "starting" }
-      ]
-    }
+export const deploymentsStatus = [
+  {
+    serviceId: "service1",
+    version: "v1",
+    desiredReplicas: 5,
+    replicas: [
+      { id: "replicaid1", status: deploymentStatuses.RUNNING },
+      { id: "replicaid2", status: deploymentStatuses.PENDING },
+      { id: "replicaid3", status: deploymentStatuses.FAILED },
+      { id: "replicaid4", status: deploymentStatuses.SUCCEEDED },
+      { id: "replicaid5", status: deploymentStatuses.UNKNOWN }
+    ]
   }
-}
+]
 
 export const secrets = [
   {

@@ -13,6 +13,7 @@ import { decrement } from "automate-redux";
 import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { deploymentStatuses } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -84,7 +85,7 @@ const DeploymentsOverview = () => {
       whitelists: obj.whitelists,
       upstreams: obj.upstreams,
       desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
-      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.length : 0,
+      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
       deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
@@ -187,8 +188,8 @@ const DeploymentsOverview = () => {
         title: 'Status',
         render: (_, { status }) => {
           const statusText = capitalizeFirstCharacter(status)
-          if (status === "running") return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
-          else if (status === "failed") return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
+          if (status === deploymentStatuses.RUNNING || status === deploymentStatuses.SUCCEEDED) return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
+          else if (status === deploymentStatuses.FAILED) return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
           else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {statusText}</span>
         }
       },

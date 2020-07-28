@@ -1,6 +1,7 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
+import dotProp from "dot-prop-immutable";
 import { upsertArray } from "../utils";
 
 export const loadServiceRoutes = (projectId) => {
@@ -37,7 +38,18 @@ export const loadServicesStatus = (projectId) => {
   return new Promise((resolve, reject) => {
     client.deployments.fetchDeploymentStatus(projectId)
       .then((result) => {
-        store.dispatch(set("servicesStatus", result))
+        if (!result) result = []
+        const statusMap = result.reduce((prev, curr) => {
+          const { serviceId, version, ...rest } = curr
+          prev = Object.assign({}, prev)
+          if (!prev[serviceId]) {
+            prev[serviceId] = {}
+          }
+          prev[serviceId][version] = rest
+
+          return prev
+        }, {})
+        store.dispatch(set("servicesStatus", statusMap))
         resolve()
       })
       .catch(ex => reject(ex))
