@@ -1,3 +1,5 @@
+import { spaceCloudClusterOrigin } from "../constants"
+
 class Deployments {
   constructor(client) {
     this.client = client
@@ -76,7 +78,9 @@ class Deployments {
   async fetchDeploymentLogs(projectId, task, replica, token, onLogsAdded, onComplete) {
     const options = { headers: {} }
     if (token) options.headers.Authorization = `Bearer ${token}`
-    const response = await fetch(`/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`, options)
+    const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`
+    const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
+    const response = await fetch(url, options)
     const body = response.body
     const decoder = new TextDecoder('utf-8')
     const writableStream = new WritableStream({

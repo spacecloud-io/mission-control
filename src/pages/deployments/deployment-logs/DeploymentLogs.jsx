@@ -20,7 +20,7 @@ const DeploymentLogs = (props) => {
   const [logs, setLogs] = useState("");
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
-  const { id, version, replica, task } = props.location.state;
+  const { id, version, replica, task } = props.location.state ? props.location.state : {};
   const [cascaderValue, setCascaderValue] = useState([id, version, replica, task])
   const [logsCompleted, setLogsCompleted] = useState(false)
   const token = getToken()
@@ -64,7 +64,10 @@ const DeploymentLogs = (props) => {
   useEffect(() => {
     const replica = cascaderValue[2]
     const task = cascaderValue[3]
-    fetchLogs(task, replica);
+    if (task && replica) {
+      fetchLogs(task, replica);
+    }
+    setLogsCompleted(false)
   }, cascaderValue)
 
   useEffect(() => {

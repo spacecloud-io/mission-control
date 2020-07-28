@@ -180,7 +180,7 @@ const DeploymentsOverview = () => {
   const expandedRowRender = (record) => {
     const column = [
       {
-        title: 'Replica',
+        title: 'Replica ID',
         dataIndex: 'id',
         key: 'id'
       },
