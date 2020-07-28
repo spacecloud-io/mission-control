@@ -41,7 +41,6 @@ const initialState = {
 		}
 	},
 	eventLogs: [],
-	credentials: {},
 	env: {
 		version: "",
 		clusterId: null,
