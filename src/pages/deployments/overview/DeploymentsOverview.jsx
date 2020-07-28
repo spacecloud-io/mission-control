@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Tag } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
 import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
 import source_code from "../../../assets/source_code.svg";
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
-import { deleteService, saveService, getServices } from "../../../operations/deployments";
+import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
-import { projectModules } from "../../../constants";
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { projectModules, deploymentStatuses } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
+  const history = useHistory();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -28,11 +30,17 @@ const DeploymentsOverview = () => {
       loadSecrets(projectID)
         .catch(ex => notify("error", "Error fetching secrets", ex))
         .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadServicesStatus(projectID)
+        .catch(ex => notify("error", "Error fetching status of services", ex))
+        .finally(() => decrementPendingRequests());
     }
   }, [projectID])
 
   // Global state
   const deployments = useSelector(state => getServices(state))
+  const deploymentStatus = useSelector(state => getServicesStatus(state));
   const totalSecrets = useSelector(state => getSecrets(state))
 
   // Component state
@@ -75,7 +83,10 @@ const DeploymentsOverview = () => {
         }))
         : [],
       whitelists: obj.whitelists,
-      upstreams: obj.upstreams
+      upstreams: obj.upstreams,
+      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
+      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
+      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
 
@@ -166,6 +177,47 @@ const DeploymentsOverview = () => {
     setDeploymentClicked(null);
   };
 
+  const expandedRowRender = (record) => {
+    const column = [
+      {
+        title: 'Replica ID',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'Status',
+        render: (_, { status }) => {
+          const statusText = capitalizeFirstCharacter(status)
+          if (status === deploymentStatuses.RUNNING || status === deploymentStatuses.SUCCEEDED) return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
+          else if (status === deploymentStatuses.FAILED) return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
+          else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {statusText}</span>
+        }
+      },
+      {
+        title: 'Action',
+        key: 'Action',
+        render: (_, row) =>
+          <Button
+            type="link"
+            style={{ color: "#008dff" }}
+            onClick={() => {
+              const task = deployments.find(({ id, version }) => id === record.id && version === record.version).tasks[0].id
+              history.push(`/mission-control/projects/${projectID}/deployments/logs`, { id: record.id, version: record.version, replica: row.id, task: task });
+            }}
+          >
+            View logs
+          </Button>
+      }
+    ]
+
+    return (
+      <Table
+        columns={column}
+        dataSource={record.deploymentStatus}
+        pagination={false}
+        title={() => 'Replicas'}
+      />)
+  }
   const tableColumns = [
     {
       title: "Service ID",
@@ -178,27 +230,24 @@ const DeploymentsOverview = () => {
       key: "version"
     },
     {
-      title: "Service Type",
-      dataIndex: "serviceType",
-      key: "serviceType",
-      render: (text, record) => {
-        switch (text) {
-          case "image":
-            return "Docker";
-          default:
-            return "Custom Code";
-        }
-      }
-    },
-    {
-      title: "Replicas",
-      dataIndex: "replicas",
-      key: "replicas"
-    },
-    {
       title: "Private URL",
       key: "url",
       render: (_, record) => `${record.id}.${projectID}.svc.cluster.local`
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (row) => {
+        const percent = row.totalReplicas / row.desiredReplicas * 100;
+        if (percent >= 80) return <Tag icon={<CheckCircleOutlined />} color="success">Healthy</Tag>
+        else if (percent < 80 && percent > 0) return <Tag icon={<ExclamationCircleOutlined />} color="warning" >Unhealthy</Tag>
+        else return <Tag icon={<CloseCircleOutlined />} color="error">Dead</Tag>
+      }
+    },
+    {
+      title: "Health",
+      key: "health",
+      render: (row) => `${row.totalReplicas}/${row.desiredReplicas}`
     },
     {
       title: "Actions",
@@ -265,7 +314,14 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} style={{ marginTop: 16 }} />
+              <Table
+                bordered={true}
+                columns={tableColumns}
+                dataSource={data}
+                rowKey={(record) => record.id + record.version}
+                expandedRowRender={expandedRowRender}
+                style={{ marginTop: 16 }}
+              />
             </React.Fragment>
           )}
         </div>

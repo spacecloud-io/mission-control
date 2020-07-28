@@ -1,6 +1,7 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
+import dotProp from "dot-prop-immutable";
 import { upsertArray } from "../utils";
 
 export const loadServiceRoutes = (projectId) => {
@@ -27,6 +28,28 @@ export const loadServices = (projectId) => {
     client.deployments.fetchDeployments(projectId)
       .then((deployments) => {
         store.dispatch(set("services", deployments))
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const loadServicesStatus = (projectId) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.fetchDeploymentStatus(projectId)
+      .then((result) => {
+        if (!result) result = []
+        const statusMap = result.reduce((prev, curr) => {
+          const { serviceId, version, ...rest } = curr
+          prev = Object.assign({}, prev)
+          if (!prev[serviceId]) {
+            prev[serviceId] = {}
+          }
+          prev[serviceId][version] = rest
+
+          return prev
+        }, {})
+        store.dispatch(set("servicesStatus", statusMap))
         resolve()
       })
       .catch(ex => reject(ex))
@@ -74,3 +97,4 @@ export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
 export const getServices = (state) => get(state, "services", [])
 export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
+export const getServicesStatus = (state) => get(state, "servicesStatus", {})

@@ -1,3 +1,5 @@
+import { deploymentStatuses } from "../constants"
+
 export const projects = [
   {
     "name": "MockProject1",
@@ -325,6 +327,21 @@ export const services = [
   }
 ]
 
+export const deploymentsStatus = [
+  {
+    serviceId: "service1",
+    version: "v1",
+    desiredReplicas: 5,
+    replicas: [
+      { id: "replicaid1", status: deploymentStatuses.RUNNING },
+      { id: "replicaid2", status: deploymentStatuses.PENDING },
+      { id: "replicaid3", status: deploymentStatuses.FAILED },
+      { id: "replicaid4", status: deploymentStatuses.SUCCEEDED },
+      { id: "replicaid5", status: deploymentStatuses.UNKNOWN }
+    ]
+  }
+]
+
 export const secrets = [
   {
     "id": "EnvSecret",
@@ -367,14 +384,9 @@ export const clusterConfig = {
 
 export const permissions = [
   {
-    project: "mockproject1",
-    resource: "db-config",
+    project: "*",
+    resource: "*",
     verb: "*"
-  },
-  {
-    project: "mockproject2",
-    resource: "filestore-config",
-    verb: "read"
   }
 ]
 

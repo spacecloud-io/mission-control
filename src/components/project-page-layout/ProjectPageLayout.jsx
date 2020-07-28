@@ -12,9 +12,9 @@ export default function ProjectPageLayout({ children }) {
   )
 }
 
-export function Content({ children }) {
+export function Content({ children, style = {} }) {
   return (
-    <div className="project-page-content">
+    <div className="project-page-content" style={style}>
       {children}
     </div>
   )

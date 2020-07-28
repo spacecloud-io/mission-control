@@ -99,6 +99,7 @@ export function makeServer({ environment = "development" } = {}) {
 
       // Deployment endpoints
       this.get("/runner/:projectId/services", () => respondOk({ result: fixtures.services }));
+      this.get("/runner/:projectId/services/status", () => respondOk({ result: fixtures.deploymentsStatus }));
       this.get("/runner/:projectId/service-routes", () => respondOk({ result: fixtures.serviceRoutes }));
       this.post("/runner/:projectId/services/:serviceId/:version", () => respondOk());
       this.post("/runner/:projectId/service-routes/:serviceId", () => respondOk());

@@ -185,6 +185,15 @@ export const defaultIngressRoutingRule = {
 export const defaultPreparedQueryRule = {
   rule: "allow"
 }
+
+export const deploymentStatuses = {
+  PENDING: "PENDING",
+  SUCCEEDED: "SUCCEEDED",
+  RUNNING: "RUNNING",
+  FAILED: "FAILED",
+  UNKNOWN: "UNKOWN"
+}
+
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
     return productionURL
