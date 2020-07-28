@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "antd";
+import "./infinite-scrolling-table.css"
 
 let globalState = {
   currentPage: 0,
-  dataSource: []
+  dataSource: [],
+  hasMore: false
 }
+
 // Infinite scrolling wrapper over ant design table.
 // NOTE: This requires an id in prop to work
 function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...tableProps }) {
@@ -12,12 +15,13 @@ function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...
   const [loading, setLoading] = useState(false)
 
   globalState.dataSource = tableProps.dataSource;
+  globalState.hasMore = hasMore
 
   const onScroll = (event) => {
     const maxScroll = event.target.scrollHeight - event.target.clientHeight;
     const currentScroll = event.target.scrollTop
     if (maxScroll === currentScroll) {
-      if (!loading && hasMore && loadNext) {
+      if (!loading && globalState.hasMore && loadNext) {
         setLoading(true)
         const nextPage = globalState.currentPage + 1
         loadNext(nextPage, globalState.dataSource)
@@ -65,22 +69,17 @@ function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...
     return null
   }
 
+  const { className = "", ...restTableProps } = tableProps
+  const finalClassName = className + " infinite-scrolling-table"
+
   return (
     <Table
-      {...tableProps}
+      {...restTableProps}
       id={id}
+      className={finalClassName}
       scroll={{ y: scrollHeight, scrollToFirstRowOnChange: true }}
       pagination={false}
-      loading={loading} 
-      components={{body: {wrapper: (props) => {
-        
-        return (
-          <React.Fragment>
-
-            Loading
-          </React.Fragment>
-          )
-      }}}}/>
+      loading={loading} />
   )
 }
 
