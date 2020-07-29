@@ -184,14 +184,10 @@ const Rules = () => {
 								<Button className="action-rounded" type="primary" style={{ marginLeft: 24 }} onClick={handleFileConfig}>Edit Connection</Button>
 							</div>
 						</div>}
-						{connected && <React.Fragment>
-							{noOfRules > 0 && <React.Fragment>
-								<h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
-							</React.Fragment>}
-							<div style={{ marginTop: noOfRules ? 0 : 24 }}>
-								<Table dataSource={rules} columns={columns} />
-							</div>
-						</React.Fragment>}
+						{connected && <div style={{ marginTop: 24 }}>
+							<h3 style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
+							<Table dataSource={rules} columns={columns} />
+						</div>}
 					</React.Fragment>}
 					{addRuleModalVisible && <AddRuleForm
 						handleSubmit={handleAddRule}

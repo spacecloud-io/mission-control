@@ -20,7 +20,7 @@ import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 import { getAPIToken } from '../../../operations/cluster';
 
-const pageSize = 10;
+const pageSize = 25;
 let editRowData = {};
 
 const getUniqueKeys = (colSchemaFields = []) => {
@@ -61,7 +61,7 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = (pageNumber = 0, previousData = []) => {
+  const getTableData = (previousData = [], fetchSinceStart = true) => {
     return new Promise((resolve, reject) => {
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
       const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
@@ -70,7 +70,7 @@ const Browse = () => {
         .where(...filterConditions)
         .sort(...sortConditions)
         .limit(pageSize)
-        .skip(pageNumber * pageSize)
+        .skip(fetchSinceStart ? 0 : previousData.length)
         .apply()
         .then(({ status, data }) => {
           if (status !== 200) {
@@ -96,10 +96,10 @@ const Browse = () => {
             })
           })
 
-          if (data.result.length < pageSize) {
-            setHasMore(false)
-          }
-          setTableData([...previousData, ...data.result])
+          const moreDataToFetch = data.result.length < pageSize ? false : true
+          console.log("MoreDataToFetch", moreDataToFetch)
+          setHasMore(moreDataToFetch)
+          setTableData(fetchSinceStart ? data.result : [...previousData, ...data.result])
           resolve()
         })
         .catch(ex => {
@@ -374,11 +374,11 @@ const Browse = () => {
             <InfiniteScrollingTable
               id="db-browse-table"
               hasMore={hasMore}
-              loadNext={(pageNumber, previousData) => getTableData(pageNumber, previousData)}
+              loadNext={(previousData) => getTableData(previousData, false)}
               className="db-browse-table"
               columns={tableColumns}
               dataSource={tableData}
-              scrollHeight={550}
+              scrollHeight={600}
               style={{ marginTop: 21 }}
               bordered
             />
@@ -401,7 +401,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
           />
         )
       }
@@ -412,7 +412,7 @@ const Browse = () => {
             handleCancel={() => setEditRowFormVisibility(false)}
             editRow={editRow}
             selectedDB={selectedDBType}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
             data={editRowData}
           />
         )
