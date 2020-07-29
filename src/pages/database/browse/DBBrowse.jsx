@@ -10,15 +10,17 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import FilterSorterForm from "../../../components/database/filter-sorter-form/FilterSorterForm";
 import InsertRowForm from "../../../components/database/insert-row-form/InsertRowForm";
 import EditRowForm from "../../../components/database/edit-row-form/EditRowForm";
+import InfiniteScrollingTable from "../../../components/utils/infinite-scrolling-table/InfiniteScrollingTable";
 
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
-import { Button, Select, Icon, Table, Popconfirm } from "antd";
+import { Button, Select, Icon, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 import { getAPIToken } from '../../../operations/cluster';
 
+const pageSize = 25;
 let editRowData = {};
 
 const getUniqueKeys = (colSchemaFields = []) => {
@@ -30,7 +32,8 @@ const Browse = () => {
   const [isFilterSorterFormVisible, setFilterSorterFormVisibility] = useState(false);
   const [isInsertRowFormVisible, setInsertRowFormVisibility] = useState(false);
   const [isEditRowFormVisible, setEditRowFormVisibility] = useState(false);
-  const [data, setData] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
 
   const { projectID, selectedDB } = useParams()
   const dispatch = useDispatch()
@@ -58,21 +61,21 @@ const Browse = () => {
     }
   }, [selectedCol, collections])
 
-  const getTableData = () => {
-    if (selectedCol) {
-
+  const getTableData = (previousData = [], fetchSinceStart = true) => {
+    return new Promise((resolve, reject) => {
       const filterConditions = filters.map(obj => cond(obj.column, obj.operation, obj.value));
       const sortConditions = sorters.map(obj => obj.order === "descending" ? `-${obj.column}` : obj.column);
 
-      incrementPendingRequests()
       db.get(selectedCol)
         .where(...filterConditions)
         .sort(...sortConditions)
+        .limit(pageSize)
+        .skip(fetchSinceStart ? 0 : previousData.length)
         .apply()
         .then(({ status, data }) => {
           if (status !== 200) {
             notify("error", "Error fetching data", data.error);
-            setData([]);
+            reject(data.error)
             return
           }
 
@@ -93,11 +96,17 @@ const Browse = () => {
             })
           })
 
-          setData(data.result);
+          const moreDataToFetch = data.result.length < pageSize ? false : true
+          console.log("MoreDataToFetch", moreDataToFetch)
+          setHasMore(moreDataToFetch)
+          setTableData(fetchSinceStart ? data.result : [...previousData, ...data.result])
+          resolve()
         })
-        .catch(ex => notify("error", "Error fetching data", ex))
-        .finally(() => decrementPendingRequests());
-    }
+        .catch(ex => {
+          notify("error", "Error fetching data", ex)
+          reject()
+        })
+    })
   }
 
   // Get all the possible columns for the table based on the schema and data fetched
@@ -146,7 +155,9 @@ const Browse = () => {
 
   // Fetch data whenever filters, sorters or selected column is changed
   useEffect(() => {
-    getTableData();
+    if (selectedCol) {
+      getTableData();
+    }
   }, [filters, sorters, selectedCol])
 
 
@@ -221,7 +232,6 @@ const Browse = () => {
     let currentDate = [];
     let currentTimestamp = [];
 
-    console.log("Values", values)
     for (let row of values) {
       switch (row.operation) {
         case "set":
@@ -331,7 +341,7 @@ const Browse = () => {
     })
   }
 
-  const tableColumns = getColumnNames(colSchemaFields, data)
+  const tableColumns = getColumnNames(colSchemaFields, tableData)
   return (
     <React.Fragment>
       <Topbar
@@ -361,13 +371,16 @@ const Browse = () => {
                 <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
               </>
             )}
-            <Table
+            <InfiniteScrollingTable
+              id="db-browse-table"
+              hasMore={hasMore}
+              loadNext={(previousData) => getTableData(previousData, false)}
               className="db-browse-table"
               columns={tableColumns}
-              dataSource={data}
+              dataSource={tableData}
+              scrollHeight={600}
               style={{ marginTop: 21 }}
               bordered
-              pagination={false}
             />
           </div>
         </div>
@@ -388,7 +401,7 @@ const Browse = () => {
             visible={isInsertRowFormVisible}
             handleCancel={() => setInsertRowFormVisibility(false)}
             insertRow={insertRow}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
           />
         )
       }
@@ -399,7 +412,7 @@ const Browse = () => {
             handleCancel={() => setEditRowFormVisibility(false)}
             editRow={editRow}
             selectedDB={selectedDBType}
-            schema={colSchemaFields}
+            schema={colSchemaFields.filter(val => !val.isLink)}
             data={editRowData}
           />
         )

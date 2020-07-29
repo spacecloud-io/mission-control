@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { set, increment, decrement } from "automate-redux";
-import InfiniteScroll from 'react-infinite-scroller';
 
 import { CheckOutlined, CloseOutlined, FilterOutlined, HourglassOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Button, Table } from "antd";
@@ -10,6 +9,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import FilterForm from "../../components/eventing/FilterForm";
+import InfiniteScrollingTable from "../../components/utils/infinite-scrolling-table/InfiniteScrollingTable";
 
 
 import client from "../../client";
@@ -75,19 +75,27 @@ const EventingLogs = () => {
     setHasMoreEventLogs(true);
   }
 
-  const loadFunc = () => {
-    if (projects.length > 0) {
-      const dbType = getEventingDbAliasName(store.getState())
-      client.eventing.fetchEventLogs(projectID, eventFilters, eventLogs.length > 0 ? eventLogs[eventLogs.length - 1].event_ts : new Date().toISOString(), dbType, () => internalToken)
-        .then(res => {
-          if (res.length < 100) {
-            setHasMoreEventLogs(false);
-          }
-          const eventLogsIDMap = [...new Set(eventLogs.map(obj => obj._id))].reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }), {})
-          dispatch(set("eventLogs", eventLogs.concat(res.filter(obj => !eventLogsIDMap[obj._id]))))
-        })
-        .catch(ex => notify("error", "Error loading event logs", ex.toString()))
-    }
+  const loadNext = (previousData = []) => {
+    return new Promise((resolve, reject) => {
+      if (projects.length > 0) {
+        const dbType = getEventingDbAliasName(store.getState())
+        client.eventing.fetchEventLogs(projectID, eventFilters, previousData.length > 0 ? previousData[previousData.length - 1].event_ts : new Date().toISOString(), dbType, () => internalToken)
+          .then(res => {
+            if (res.length < 100) {
+              setHasMoreEventLogs(false);
+            }
+            const eventLogsIDMap = [...new Set(eventLogs.map(obj => obj._id))].reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }), {})
+            dispatch(set("eventLogs", eventLogs.concat(res.filter(obj => !eventLogsIDMap[obj._id]))))
+            resolve()
+          })
+          .catch(ex => {
+            notify("error", "Error loading event logs", ex.toString())
+            reject()
+          })
+      } else {
+        resolve()
+      }
+    })
   }
 
   const handleRefresh = () => {
@@ -159,22 +167,17 @@ const EventingLogs = () => {
         <div className="event-tab-content">
           <Button size="large" style={{ marginRight: 16 }} onClick={handleRefresh}>Refresh <ReloadOutlined /></Button>
           <Button size="large" onClick={() => setModalVisible(true)}>Filters <FilterOutlined /></Button>
-          <InfiniteScroll
-            pageStart={0}
-            loadMore={loadFunc}
+          <InfiniteScrollingTable
+            id="event-logs-table"
             hasMore={hasMoreEventLogs}
-            loader={<div style={{ textAlign: "center" }} key={0}>Loading...</div>}
-          >
-            <Table
-              className="event-logs-table"
-              columns={columns}
-              dataSource={eventLogs}
-              expandedRowRender={expandedRowRender}
-              bordered
-              rowKey="_id"
-              pagination={false}
-            />
-          </InfiniteScroll>
+            scrollHeight={600}
+            loadNext={loadNext}
+            className="event-logs-table"
+            columns={columns}
+            dataSource={eventLogs}
+            expandedRowRender={expandedRowRender}
+            bordered
+            rowKey="_id" />
         </div>
       </div>
       {modalVisible && (
