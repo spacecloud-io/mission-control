@@ -118,7 +118,7 @@ const AddSecret = props => {
                       }}
                       style={{ marginRight: "2%", float: "left" }}
                     >
-                      <PlusOutlined /> Add another pair
+                      <PlusOutlined /> Add
                           </Button>
                   </Form.Item>
                 </div>
@@ -232,7 +232,7 @@ const AddSecret = props => {
                         }}
                         style={{ marginRight: "2%", float: "left" }}
                       >
-                        <PlusOutlined /> Add another file
+                        <PlusOutlined /> Add
                           </Button>
                     </Form.Item>
                   </div>
