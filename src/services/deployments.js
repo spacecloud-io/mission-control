@@ -82,17 +82,17 @@ class Deployments {
     const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
     const response = await fetch(url, options)
     const body = response.body
+    const readableStream = body.getReader()
     const decoder = new TextDecoder('utf-8')
-    const writableStream = new WritableStream({
-      write(chunk) {
-        onLogsAdded(decoder.decode(chunk))
-      },
-      close() {
+    readableStream.read().then(function processStrem({ done, value }) {
+      if (done) {
         onComplete()
+        return
       }
-    });
 
-    body.pipeTo(writableStream)
+      onLogsAdded(decoder.decode(value))
+      return readableStream.read().then(processStrem)
+    })
   }
 
   setDeploymentRoutes(projectId, serviceId, routes) {
