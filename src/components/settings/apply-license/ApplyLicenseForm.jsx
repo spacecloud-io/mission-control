@@ -1,11 +1,14 @@
 import React from 'react';
 import { Button, Input, Form, Card } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
+import { useEffect } from 'react';
 
 const ApplyLicenseForm = ({ clusterName, handleSubmit }) => {
   const [form] = Form.useForm()
 
-  form.setFieldsValue({ clusterName })
+  useEffect(() => {
+    form.setFieldsValue({ clusterName })
+  }, [clusterName])
 
   const handleSubmitClick = ({ clusterName, licenseKey, licenseValue }) => handleSubmit(clusterName, licenseKey, licenseValue)
   return (

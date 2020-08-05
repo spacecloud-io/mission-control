@@ -89,6 +89,14 @@ export const dbPreparedQueries = [
       ]
     },
     "args": ['args.args1']
+  },
+  {
+    "id": "default",
+    "db": "mydb",
+    "sql": "select * from users",
+    "rule": {
+      "rule": "allow"
+    }
   }
 ]
 
@@ -120,11 +128,11 @@ export const eventingTriggers = [
 
 export const fileStoreConfig = [
   {
-    "enabled": true,
-    "storeType": "amazon-s3",
-    "bucket": "my-bucket",
-    "conn": "us-east-1",
-    "secret": "secrets.FileSecret.constants.json"
+    "enabled": false,
+    // "storeType": "amazon-s3",
+    // "bucket": "my-bucket",
+    // "conn": "us-east-1",
+    // "secret": "secrets.FileSecret.constants.json"
   }
 ]
 
@@ -377,8 +385,8 @@ export const userMan = [
 ]
 
 export const clusterConfig = {
-  "email": "admin@gmail.com",
-  "telemetry": true,
+  "letsEncryptEmail": "admin@gmail.com",
+  "enableTelemetry": true,
   "credentials": { "user": "admin", "pass": "123" }
 }
 

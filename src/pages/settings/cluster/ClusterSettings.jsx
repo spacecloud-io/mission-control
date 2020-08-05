@@ -30,13 +30,13 @@ const ClusterSettings = () => {
 
   const clusterConfig = useSelector(state => state.clusterConfig);
   const credentials = clusterConfig.credentials;
-  const letsEncryptEmail = clusterConfig.email;
-  const telemetry = clusterConfig.telemetry;
+  const letsEncryptEmail = clusterConfig.letsEncryptEmail;
+  const telemetry = clusterConfig.enableTelemetry;
   const loading = useSelector(state => state.pendingRequests > 0)
 
   const handleLetsEncryptEmail = newEmail => {
     incrementPendingRequests()
-    saveClusterSetting("email", newEmail)
+    saveClusterSetting("letsEncryptEmail", newEmail)
       .then(() => notify("success", "Success", "Changed letsencrypt email successfully"))
       .catch(ex => notify("error", "Error changing letsencrypt email", ex))
       .finally(() => decrementPendingRequests());
@@ -44,7 +44,7 @@ const ClusterSettings = () => {
 
   const handleTelemetry = newTelemetry => {
     incrementPendingRequests()
-    saveClusterSetting("telemetry", newTelemetry)
+    saveClusterSetting("enableTelemetry", newTelemetry)
       .then(() => notify("success", "Success", `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
       .catch(ex => notify("error", `Error ${newTelemetry ? "enabling" : "disabling"} telemetry`, ex))
       .finally(() => decrementPendingRequests());

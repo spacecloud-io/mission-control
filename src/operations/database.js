@@ -73,14 +73,18 @@ export const loadDbPreparedQueries = (projectId) => {
       .then((result = []) => {
         const dbPreparedQueries = result.reduce((prev, curr) => {
           const { id, db, ...preparedQueryConfig } = curr
+          
+          // Make sure that prepared query object has id in it
+          const newPreparedQueryConfig = Object.assign({}, preparedQueryConfig, { id })
+
           const dbPreparedQuery = prev[db]
           if (dbPreparedQuery) {
             const newDbPreparedQuery = Object.assign({}, dbPreparedQuery)
-            newDbPreparedQuery[id] = preparedQueryConfig
+            newDbPreparedQuery[id] = newPreparedQueryConfig
             return Object.assign({}, prev, { [db]: newDbPreparedQuery })
           }
 
-          return Object.assign({}, prev, { [db]: { [id]: preparedQueryConfig } })
+          return Object.assign({}, prev, { [db]: { [id]: newPreparedQueryConfig } })
         }, {})
         store.dispatch(set("dbPreparedQueries", dbPreparedQueries))
         resolve()
@@ -93,7 +97,7 @@ const loadCollections = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.listCollections(projectId, dbAliasName)
       .then((collections = []) => {
-        store.dispatch(set(`dbCollections.${dbAliasName}`, collections))
+        setDbCollections(dbAliasName, collections)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -133,6 +137,11 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => {
     client.database.modifyColSchema(projectId, dbAliasName, colName, schema)
       .then(() => {
         store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
+        const dbCollections = getCollections(store.getState(), dbAliasName)
+        if (!dbCollections.some(col => col === colName)) {
+          const newDbCollections = [...dbCollections, colName]
+          setDbCollections(dbAliasName, newDbCollections)
+        }
         resolve()
       })
       .catch(ex => reject(ex))
@@ -428,3 +437,4 @@ export const isPreparedQueriesSupported = (state, dbAliasName) => {
 }
 export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
 export const setColSecurityRule = (dbAliasName, colName, rule) => store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))
+export const setDbCollections = (dbAliasName, collections) => store.dispatch(set(`dbCollections.${dbAliasName}`, collections))

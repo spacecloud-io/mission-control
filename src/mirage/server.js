@@ -65,7 +65,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => respondOk({ result: "type users{ id: ID! @primary email: ID! name: String! pass: String! role: String! newField: String! }" }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName/schema/untrack", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/inspect", () => respondOk());
-      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result: ["xyz", "abc", "users"] }));
+      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result: [] }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());
