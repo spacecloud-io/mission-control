@@ -18,7 +18,7 @@ import DockerRegistry from "../../../components/settings/project/DockerRegistry"
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { loadLetsEncryptConfig, saveWhiteListedDomains, getWhiteListedDomains } from "../../../operations/letsencrypt";
 import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
-import { projectModules } from "../../../constants";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 
 const ProjectSettings = () => {
   // Router params
@@ -54,8 +54,8 @@ const ProjectSettings = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       addSecret(projectID, secret, isPrimary)
-        .then(() => {
-          notify("success", "Success", "Added new secret successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Added new secret successfully")
           resolve()
         })
         .catch(ex => {
@@ -69,7 +69,7 @@ const ProjectSettings = () => {
   const handleChangePrimarySecret = (secret) => {
     incrementPendingRequests()
     changePrimarySecret(projectID, secret)
-      .then(() => notify("success", "Success", "Changed primary secret successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed primary secret successfully"))
       .catch(ex => notify("error", "Error changing primary secret", ex))
       .finally(() => decrementPendingRequests());
   }
@@ -77,7 +77,7 @@ const ProjectSettings = () => {
   const handleRemoveSecret = (secret) => {
     incrementPendingRequests()
     removeSecret(projectID, secret)
-      .then(() => notify("success", "Success", "Removed secret successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed secret successfully"))
       .catch(ex => notify("error", "Error removing secret", ex))
       .finally(() => decrementPendingRequests());
   }
@@ -85,7 +85,7 @@ const ProjectSettings = () => {
   const handleAES = aesKey => {
     incrementPendingRequests()
     saveAesKey(projectID, aesKey)
-      .then(() => notify("success", "Success", "Changed AES key successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed AES key successfully"))
       .catch(ex => notify("error", "Error changing AES key", ex))
       .finally(() => decrementPendingRequests());
   };
@@ -93,7 +93,7 @@ const ProjectSettings = () => {
   const handleDockerRegistry = dockerRegistry => {
     incrementPendingRequests()
     saveDockerRegistry(projectID, dockerRegistry)
-      .then(() => notify("success", "Success", "Changed docker registry successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed docker registry successfully"))
       .catch(ex => notify("error", "Error changing docker registry", ex))
       .finally(() => decrementPendingRequests());
   };
@@ -101,7 +101,7 @@ const ProjectSettings = () => {
   const handleContextTimeGraphQL = contextTimeGraphQL => {
     incrementPendingRequests()
     saveContextTimeGraphQL(projectID, contextTimeGraphQL)
-      .then(() => notify("success", "Success", "Changed context time successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed context time successfully"))
       .catch(ex => notify("error", "Error changing context time", ex))
       .finally(() => decrementPendingRequests());
   };
@@ -109,13 +109,17 @@ const ProjectSettings = () => {
   const removeProjectConfig = () => {
     incrementPendingRequests()
     deleteProject(projectID)
-      .then((newProjects) => {
-        notify("success", "Success", "Removed project config successfully");
-        if (newProjects.length === 0) {
-          history.push(`/mission-control/welcome`);
+      .then(({ queued, newProjects }) => {
+        if (!queued) {
+          notify("success", "Success", "Removed project config successfully");
+          if (newProjects.length === 0) {
+            history.push(`/mission-control/welcome`);
+            return
+          }
+          openProject(newProjects[0].id)
           return
         }
-        openProject(newProjects[0].id)
+        notify("success", "Success", actionQueuedMessage);
       })
       .catch(ex => notify("error", "Error removing project config", ex.toString()))
       .finally(() => decrementPendingRequests());
@@ -125,7 +129,7 @@ const ProjectSettings = () => {
   const handleDomains = domains => {
     incrementPendingRequests()
     saveWhiteListedDomains(projectID, domains)
-      .then(() => notify("success", "Success", "Saved whitelisted domains successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved whitelisted domains successfully"))
       .catch(ex => notify("error", "Error saving domains", ex))
       .finally(() => decrementPendingRequests());
   };

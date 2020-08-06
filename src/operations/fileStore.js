@@ -39,10 +39,12 @@ export const loadFileStoreRules = (projectId) => {
 export const saveFileStoreConfig = (projectId, config) => {
   return new Promise((resolve, reject) => {
     client.fileStore.setConfig(projectId, config)
-      .then(() => {
-        store.dispatch(set("fileStoreConfig", config))
-        store.dispatch(setFileStoreConnState(config.enabled))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set("fileStoreConfig", config))
+          store.dispatch(setFileStoreConnState(config.enabled))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -52,11 +54,13 @@ export const saveFileStoreRule = (projectId, ruleName, rule) => {
   return new Promise((resolve, reject) => {
     const fileRule = Object.assign({}, rule, { id: ruleName })
     client.fileStore.setRule(projectId, ruleName, fileRule)
-      .then(() => {
-        const fileStoreRules = get(store.getState(), "fileStoreRules", [])
-        const newFileStoreRules = upsertArray(fileStoreRules, obj => obj.id === ruleName, () => fileRule)
-        setFileStoreRules(newFileStoreRules)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const fileStoreRules = get(store.getState(), "fileStoreRules", [])
+          const newFileStoreRules = upsertArray(fileStoreRules, obj => obj.id === ruleName, () => fileRule)
+          setFileStoreRules(newFileStoreRules)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -77,11 +81,13 @@ export const saveFileStorePrefix = (projectId, ruleName, prefix) => {
 export const deleteFileStoreRule = (projectId, ruleName) => {
   return new Promise((resolve, reject) => {
     client.fileStore.deleteRule(projectId, ruleName)
-      .then(() => {
-        const fileStoreRules = get(store.getState(), "fileStoreRules", [])
-        const newFileStoreRules = fileStoreRules.filter(obj => obj.id !== ruleName)
-        setFileStoreRules(newFileStoreRules)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const fileStoreRules = get(store.getState(), "fileStoreRules", [])
+          const newFileStoreRules = fileStoreRules.filter(obj => obj.id !== ruleName)
+          setFileStoreRules(newFileStoreRules)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

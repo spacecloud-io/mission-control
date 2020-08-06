@@ -16,9 +16,11 @@ export const loadLetsEncryptConfig = (projectId) => {
 export const saveWhiteListedDomains = (projectId, domains) => {
   return new Promise((resolve, reject) => {
     client.letsencrypt.setConfig(projectId, { domains: domains })
-      .then(() => {
-        store.dispatch(set(`letsencryptConfig.domains`, domains))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`letsencryptConfig.domains`, domains))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

@@ -11,7 +11,7 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/config`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -25,7 +25,7 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/schema`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -39,7 +39,7 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/rules`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -53,7 +53,7 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -108,7 +108,7 @@ class Eventing {
           return
         }
 
-        resolve(data.event_logs) 
+        resolve(data.event_logs)
       }).catch(ex => reject(ex.toString()))
     })
   }
@@ -117,11 +117,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/config/eventing-config`, config)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -133,7 +133,7 @@ class Eventing {
     return new Promise((resolve, reject) => {
       client.postJSON(`/v1/api/${projectId}/eventing/queue`, event)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -147,11 +147,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, { id: triggerName, ...triggerRule })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -161,11 +161,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -175,11 +175,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/rules/${type}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -189,11 +189,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, { ...rule, id: type })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -203,11 +203,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/schema/${type}`, { id: type, schema: schema })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -217,11 +217,11 @@ class Eventing {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/schema/${type}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })

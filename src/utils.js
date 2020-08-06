@@ -4,7 +4,7 @@ import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
 import qs from 'qs';
-import { dbTypes, securityRuleGroups, moduleResources, projectModules, configResourceTypes } from './constants';
+import { dbTypes, securityRuleGroups, moduleResources, configResourceTypes, actionQueuedMessage } from './constants';
 
 import store from "./store"
 import history from "./history"
@@ -16,7 +16,7 @@ import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
-import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getEnv, getLoginURL, loadAPIToken } from './operations/cluster'
+import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL, loadAPIToken } from './operations/cluster'
 import { useSelector } from 'react-redux'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
@@ -359,29 +359,31 @@ const getProjectToBeOpened = () => {
 const registerSecurityRulesBroadCastListener = () => {
   const bc = new BroadcastChannel('security-rules');
   bc.onmessage = ({ data }) => {
-    const { rule, meta } = data
+    const { rule, meta, queued } = data
     const { ruleType, id, group } = meta
-    switch (ruleType) {
-      case securityRuleGroups.DB_COLLECTIONS:
-        setColSecurityRule(group, id, rule)
-        break;
-      case securityRuleGroups.DB_PREPARED_QUERIES:
-        setPreparedQueryRule(group, id, rule)
-        break;
-      case securityRuleGroups.EVENTING:
-        setEventingSecurityRule(id, rule)
-        break;
-      case securityRuleGroups.FILESTORE:
-        setFileStoreSecurityRule(id, rule)
-        break;
-      case securityRuleGroups.REMOTE_SERVICES:
-        setRemoteEndpointRule(group, id, rule)
-        break;
-      case securityRuleGroups.INGRESS_ROUTES:
-        setIngressRouteRule(id, rule)
-        break
+    if (!queued) {
+      switch (ruleType) {
+        case securityRuleGroups.DB_COLLECTIONS:
+          setColSecurityRule(group, id, rule)
+          break;
+        case securityRuleGroups.DB_PREPARED_QUERIES:
+          setPreparedQueryRule(group, id, rule)
+          break;
+        case securityRuleGroups.EVENTING:
+          setEventingSecurityRule(id, rule)
+          break;
+        case securityRuleGroups.FILESTORE:
+          setFileStoreSecurityRule(id, rule)
+          break;
+        case securityRuleGroups.REMOTE_SERVICES:
+          setRemoteEndpointRule(group, id, rule)
+          break;
+        case securityRuleGroups.INGRESS_ROUTES:
+          setIngressRouteRule(id, rule)
+          break
+      }
     }
-    notify("success", "Success", "Saved security rules successfully")
+    notify("success", "Success", queued ? actionQueuedMessage : "Saved security rules successfully")
   }
   window.addEventListener("beforeunload", (ev) => bc.close());
 }

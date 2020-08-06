@@ -11,7 +11,7 @@ import IngressTabs from "../../../components/ingress-routing/ingress-tabs/Ingres
 import Headers from "../../../components/ingress-routing/Headers";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getIngressRoutesGlobalConfig, saveIngressGlobalRequestHeaders, saveIngressGlobalResponseHeaders, loadIngressRoutesGlobalConfig } from "../../../operations/ingressRoutes";
-import { projectModules } from "../../../constants";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 
 function RoutingSettings() {
   const { projectID } = useParams();
@@ -37,7 +37,7 @@ function RoutingSettings() {
   const setRequestHeaders = (headers) => {
     incrementPendingRequests()
     saveIngressGlobalRequestHeaders(projectID, headers)
-      .then(() => notify("success", "Success", "Saved the headers config successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
       .catch(ex => notify("error", "Error saving the headers config", ex))
       .finally(() => decrementPendingRequests())
   }
@@ -45,7 +45,7 @@ function RoutingSettings() {
   const setResponseHeaders = (headers) => {
     incrementPendingRequests()
     saveIngressGlobalResponseHeaders(projectID, headers)
-      .then(() => notify("success", "Success", "Saved the headers config successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
       .catch(ex => notify("error", "Error saving the headers config", ex))
       .finally(() => decrementPendingRequests())
   }

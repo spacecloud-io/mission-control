@@ -11,7 +11,7 @@ import RoutingModal from "../../../components/deployments/routing-modal/RoutingM
 import routingSvg from "../../../assets/routing.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { loadServiceRoutes, saveServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
-import { projectModules } from "../../../constants";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
@@ -90,8 +90,8 @@ const DeploymentsRoutes = () => {
       }
       const routes = [routeConfig, ...serviceRoutes[serviceId].filter(obj => obj.source.port !== port)]
       saveServiceRoutes(projectID, serviceId, routes)
-        .then(() => {
-          notify("success", "Success", "Saved service routes successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved service routes successfully")
           resolve()
         })
         .catch(ex => {
@@ -106,7 +106,7 @@ const DeploymentsRoutes = () => {
     incrementPendingRequests()
     const routes = serviceRoutes[serviceId].filter(obj => obj.source.port !== port)
     saveServiceRoutes(projectID, serviceId, routes)
-      .then(() => notify("success", "Success", "Successfully deleted service route"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Successfully deleted service route"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());
   };

@@ -11,6 +11,7 @@ import { Row, Col, Steps, Card } from 'antd';
 import './create-project.css'
 import { addDatabase } from "../../operations/database"
 import { addProject } from '../../operations/projects';
+import { actionQueuedMessage } from '../../constants';
 
 const CreateProject = () => {
   const [current, setCurrent] = useState(0);
@@ -29,9 +30,11 @@ const CreateProject = () => {
 
     incrementPendingRequests()
     addProject(projectId, projectName)
-      .then(() => {
-        setCurrent(current + 1);
-        notify("success", "Success", "Project created successfully with suitable defaults")
+      .then(({ queued }) => {
+        if (!queued) {
+          setCurrent(current + 1);
+        }
+        notify("success", "Success", queued ? actionQueuedMessage : "Project created successfully with suitable defaults")
       }).catch(ex => notify("error", "Error creating project", ex))
       .finally(() => decrementPendingRequests())
   };
@@ -39,10 +42,14 @@ const CreateProject = () => {
   const handleAddDatabase = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
     addDatabase(projectId, alias, dbType, dbName, connectionString)
-      .then(() => {
-        history.push(`/mission-control/projects/${projectId}`)
-        notify("success", "Success", "Successfully added database")
-        notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+      .then(({ queued }) => {
+        if (!queued) {
+          history.push(`/mission-control/projects/${projectId}`)
+          notify("success", "Success", "Successfully added database")
+          notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+        } else {
+          notify("success", "Success", actionQueuedMessage)
+        }
       })
       .catch(ex => notify("error", "Error adding database", ex))
       .finally(() => decrementPendingRequests())

@@ -13,7 +13,7 @@ import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
 import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
 import { getSecrets, loadSecrets } from '../../operations/secrets';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -85,8 +85,8 @@ const FileStorageConfig = () => {
     const newConfig = { enabled: true, ...values }
 
     saveFileStoreConfig(projectID, newConfig)
-      .then(() => {
-        notify("success", "Success", "Configured file storage successfully")
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : "Configured file storage successfully")
         form.resetFields();
         history.goBack();
       })

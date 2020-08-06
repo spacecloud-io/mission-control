@@ -13,7 +13,7 @@ import { decrement } from "automate-redux";
 import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { projectModules, deploymentStatuses } from "../../../constants";
+import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -152,8 +152,8 @@ const DeploymentsOverview = () => {
       };
       incrementPendingRequests()
       saveService(projectID, config.id, config.version, config)
-        .then(() => {
-          notify("success", "Success", `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
           resolve()
         })
         .catch(ex => {
@@ -167,7 +167,7 @@ const DeploymentsOverview = () => {
   const handleDelete = (serviceId, version) => {
     incrementPendingRequests()
     deleteService(projectID, serviceId, version)
-      .then(() => notify("success", "Success", "Successfully deleted service"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Successfully deleted service"))
       .catch(ex => notify("error", "Error deleting service", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };

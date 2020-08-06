@@ -39,7 +39,7 @@ class Integrations {
     return new Promise((resolve, reject) => {
       this.spaceCloudClient.getJSON(`/v1/config/integrations`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -53,11 +53,11 @@ class Integrations {
     return new Promise((resolve, reject) => {
       this.spaceCloudClient.postJSON(`/v1/config/integrations`, integrationConfig)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex))
     })
@@ -67,11 +67,11 @@ class Integrations {
     return new Promise((resolve, reject) => {
       this.spaceCloudClient.delete(`/v1/config/integrations/${integrationId}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex))
     })

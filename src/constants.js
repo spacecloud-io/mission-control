@@ -55,7 +55,7 @@ export const projectModules = {
   DEPLOYMENTS: "deployments",
   SECRETS: "secrets",
   INGRESS_ROUTES: "ingress-routes",
-  USER_MANAGEMENT: "user-management",
+  USER_MANAGEMENT: "auth-provider",
   INTEGRATIONS: "integrations",
   EXPLORER: "explorer",
   SETTINGS: "settings",
@@ -71,6 +71,7 @@ export const moduleResources = {
   [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES],
   [projectModules.SECRETS]: [configResourceTypes.SECRETS],
   [projectModules.INGRESS_ROUTES]: [configResourceTypes.INGRESS_ROUTES, configResourceTypes.INGRESS_GLOBAL],
+  [projectModules.USER_MANAGEMENT]: [configResourceTypes.USER_MANAGEMENT],
   [projectModules.INTEGRATIONS]: [configResourceTypes.INTEGRATIONS],
   [projectModules.EXPLORER]: [],
   [projectModules.SETTINGS]: [],
@@ -193,6 +194,8 @@ export const deploymentStatuses = {
   FAILED: "FAILED",
   UNKNOWN: "UNKOWN"
 }
+
+export const actionQueuedMessage = "Action queued successfully"
 
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {

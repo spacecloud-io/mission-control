@@ -18,10 +18,12 @@ export const addProject = (projectId, projectName) => {
   return new Promise((resolve, reject) => {
     const projectConfig = generateProjectConfig(projectId, projectName)
     client.projects.setProjectConfig(projectId, projectConfig)
-      .then(() => {
-        const newProjects = [...store.getState().projects, projectConfig]
-        store.dispatch(set("projects", newProjects))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const newProjects = [...store.getState().projects, projectConfig]
+          store.dispatch(set("projects", newProjects))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -30,11 +32,13 @@ export const addProject = (projectId, projectName) => {
 export const deleteProject = (projectId) => {
   return new Promise((resolve, reject) => {
     client.projects.deleteProject(projectId)
-      .then(() => {
+      .then(({ queued }) => {
         const projects = store.getState().projects
         const newProjects = projects.filter(obj => obj.id !== projectId)
-        store.dispatch(set("projects", newProjects))
-        resolve(newProjects)
+        if (!queued) {
+          store.dispatch(set("projects", newProjects))
+        }
+        resolve({ queued, newProjects })
       })
       .catch(ex => reject(ex))
   })
@@ -47,9 +51,11 @@ const saveProjectSetting = (projectId, key, value) => {
     const newProjectConfig = Object.assign({}, oldProjectConfig, { [key]: value })
     const newProjects = projects.map(obj => obj.id === projectId ? newProjectConfig : obj)
     client.projects.setProjectConfig(projectId, newProjectConfig)
-      .then(() => {
-        store.dispatch(set("projects", newProjects))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set("projects", newProjects))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

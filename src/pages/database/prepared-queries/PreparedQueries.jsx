@@ -9,7 +9,7 @@ import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { defaultPreparedQueryRule, securityRuleGroups, projectModules } from '../../../constants';
+import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
@@ -36,7 +36,9 @@ const PreparedQueries = () => {
   const handleDeletePreparedQuery = (id) => {
     incrementPendingRequests()
     deletePreparedQuery(projectID, selectedDB, id)
-      .then(() => notify("success", "Success", "Removed prepared query successfully"))
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : "Removed prepared query successfully")
+      })
       .catch(ex => notify("error", "Error removing prepared query", ex))
       .finally(() => decrementPendingRequests());
   }

@@ -61,9 +61,11 @@ export const loadEventingTriggers = (projectId) => {
 export const saveEventingSecurityRule = (projectId, eventType, securityRule) => {
   return new Promise((resolve, reject) => {
     client.eventing.setSecurityRule(projectId, eventType, securityRule)
-      .then(() => {
-        setEventingSecurityRule(eventType, securityRule)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setEventingSecurityRule(eventType, securityRule)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -72,9 +74,11 @@ export const saveEventingSecurityRule = (projectId, eventType, securityRule) => 
 export const deleteEventingSecurityRule = (projectId, eventType) => {
   return new Promise((resolve, reject) => {
     client.eventing.deleteSecurityRule(projectId, eventType)
-      .then(() => {
-        store.dispatch(del(`eventingRules.${eventType}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`eventingRules.${eventType}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -83,9 +87,11 @@ export const deleteEventingSecurityRule = (projectId, eventType) => {
 export const saveEventingSchema = (projectId, eventType, schema) => {
   return new Promise((resolve, reject) => {
     client.eventing.setEventSchema(projectId, eventType, schema)
-      .then(() => {
-        store.dispatch(set(`eventingSchemas.${eventType}`, schema))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`eventingSchemas.${eventType}`, schema))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -94,9 +100,11 @@ export const saveEventingSchema = (projectId, eventType, schema) => {
 export const deleteEventingSchema = (projectId, eventType) => {
   return new Promise((resolve, reject) => {
     client.eventing.deleteEventSchema(projectId, eventType)
-      .then(() => {
-        store.dispatch(del(`eventingSchemas.${eventType}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`eventingSchemas.${eventType}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -106,9 +114,11 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
   return new Promise((resolve, reject) => {
     const eventingConfig = { enabled, dbAlias: dbAliasName }
     client.eventing.setEventingConfig(projectId, eventingConfig)
-      .then(() => {
-        store.dispatch(set("eventingConfig", eventingConfig))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set("eventingConfig", eventingConfig))
+        }
+        resolve({ queued })
 
         // Set the default eventing rule in background
         if (enabled) {
@@ -128,9 +138,11 @@ export const saveEventingTriggerRule = (projectId, triggerName, type, url, retri
   const triggerRule = { type, url, retries, timeout, options }
   return new Promise((resolve, reject) => {
     client.eventing.setTriggerRule(projectId, triggerName, triggerRule)
-      .then(() => {
-        store.dispatch(set(`eventingTriggers.${triggerName}`, triggerRule))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`eventingTriggers.${triggerName}`, triggerRule))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -139,9 +151,11 @@ export const saveEventingTriggerRule = (projectId, triggerName, type, url, retri
 export const deleteEventingTriggerRule = (projectId, triggerName) => {
   return new Promise((resolve, reject) => {
     client.eventing.deleteTriggerRule(projectId, triggerName)
-      .then(() => {
-        store.dispatch(del(`eventingTriggers.${triggerName}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`eventingTriggers.${triggerName}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

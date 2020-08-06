@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag, Space } from "antd";
 import IngressRoutingModal from "../../../components/ingress-routing/IngressRoutingModal";
-import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage} from "../../../utils";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage } from "../../../utils";
 import { deleteIngressRoute, saveIngressRouteConfig, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
@@ -15,7 +15,7 @@ import { FilterOutlined } from "@ant-design/icons";
 import FilterForm from "../../../components/ingress-routing/FilterForm";
 import { set } from "automate-redux";
 import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
-import { securityRuleGroups, projectModules } from "../../../constants";
+import { securityRuleGroups, projectModules, actionQueuedMessage } from "../../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -114,8 +114,8 @@ function RoutingOverview() {
       };
       incrementPendingRequests()
       saveIngressRouteConfig(projectID, config.id, config)
-        .then(() => {
-          notify("success", "Success", "Saved routing config successfully");
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved routing config successfully");
           resolve()
         })
         .catch(ex => {
@@ -136,7 +136,7 @@ function RoutingOverview() {
   const handleDelete = id => {
     incrementPendingRequests()
     deleteIngressRoute(projectID, id)
-      .then(() => notify("success", "Success", "Deleted rule successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
       .catch(ex => notify("error", "Error", ex.toString()))
       .finally(() => decrementPendingRequests());
   };

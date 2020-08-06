@@ -59,11 +59,13 @@ export const loadServicesStatus = (projectId) => {
 export const saveService = (projectId, serviceId, version, serviceConfig) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentConfig(projectId, serviceId, version, serviceConfig)
-      .then(() => {
-        const services = get(store.getState(), "services", [])
-        const newServices = upsertArray(services, obj => obj.id === serviceConfig.id && obj.version === version, () => serviceConfig)
-        store.dispatch(set("services", newServices))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const services = get(store.getState(), "services", [])
+          const newServices = upsertArray(services, obj => obj.id === serviceConfig.id && obj.version === version, () => serviceConfig)
+          store.dispatch(set("services", newServices))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -72,11 +74,13 @@ export const saveService = (projectId, serviceId, version, serviceConfig) => {
 export const deleteService = (projectId, serviceId, version) => {
   return new Promise((resolve, reject) => {
     client.deployments.deleteDeploymentConfig(projectId, serviceId, version)
-      .then(() => {
-        const services = get(store.getState(), "services", [])
-        const newServices = services.filter(obj => !(obj.id === serviceId && obj.version === version));
-        store.dispatch(set("services", newServices))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const services = get(store.getState(), "services", [])
+          const newServices = services.filter(obj => !(obj.id === serviceId && obj.version === version));
+          store.dispatch(set("services", newServices))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -85,9 +89,11 @@ export const deleteService = (projectId, serviceId, version) => {
 export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentRoutes(projectId, serviceId, serviceRoutes)
-      .then(() => {
-        store.dispatch(set(`serviceRoutes.${serviceId}`, serviceRoutes))
-        resolve();
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`serviceRoutes.${serviceId}`, serviceRoutes))
+        }
+        resolve({ queued });
       })
       .catch(ex => reject(ex))
   })

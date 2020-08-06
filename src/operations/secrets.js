@@ -17,11 +17,13 @@ export const loadSecrets = (projectId) => {
 export const saveSecret = (projectId, secretConfig) => {
   return new Promise((resolve, reject) => {
     client.secrets.setSecret(projectId, secretConfig)
-      .then(() => {
-        const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = upsertArray(secrets, obj => obj.id === secretConfig.id, () => secretConfig)
-        store.dispatch(set("secrets", newSecrets))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const secrets = get(store.getState(), "secrets", [])
+          const newSecrets = upsertArray(secrets, obj => obj.id === secretConfig.id, () => secretConfig)
+          store.dispatch(set("secrets", newSecrets))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -30,11 +32,13 @@ export const saveSecret = (projectId, secretConfig) => {
 export const deleteSecret = (projectId, secretId) => {
   return new Promise((resolve, reject) => {
     client.secrets.deleteSecret(projectId, secretId)
-      .then(() => {
-        const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = secrets.filter(obj => obj.id !== secretId)
-        store.dispatch(set("secrets", newSecrets))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const secrets = get(store.getState(), "secrets", [])
+          const newSecrets = secrets.filter(obj => obj.id !== secretId)
+          store.dispatch(set("secrets", newSecrets))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -43,15 +47,17 @@ export const deleteSecret = (projectId, secretId) => {
 export const saveSecretKey = (projectId, secretId, key, value) => {
   return new Promise((resolve, reject) => {
     client.secrets.setSecretKey(projectId, secretId, key, value)
-      .then(() => {
-        const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = secrets.map(obj => {
-          if (obj.id !== secretId) return obj
-          const newData = Object.assign({}, obj.data, { [key]: value })
-          return Object.assign({}, obj, { data: newData })
-        })
-        store.dispatch(set("secrets", newSecrets))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const secrets = get(store.getState(), "secrets", [])
+          const newSecrets = secrets.map(obj => {
+            if (obj.id !== secretId) return obj
+            const newData = Object.assign({}, obj.data, { [key]: value })
+            return Object.assign({}, obj, { data: newData })
+          })
+          store.dispatch(set("secrets", newSecrets))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -60,16 +66,18 @@ export const saveSecretKey = (projectId, secretId, key, value) => {
 export const deleteSecretKey = (projectId, secretId, key) => {
   return new Promise((resolve, reject) => {
     client.secrets.deleteSecretKey(projectId, secretId, key)
-      .then(() => {
-        const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = secrets.map(obj => {
-          if (obj.id !== secretId) return obj
-          const newData = Object.assign({}, obj.data)
-          delete newData[key]
-          return Object.assign({}, obj, { data: newData })
-        })
-        store.dispatch(set("secrets", newSecrets))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const secrets = get(store.getState(), "secrets", [])
+          const newSecrets = secrets.map(obj => {
+            if (obj.id !== secretId) return obj
+            const newData = Object.assign({}, obj.data)
+            delete newData[key]
+            return Object.assign({}, obj, { data: newData })
+          })
+          store.dispatch(set("secrets", newSecrets))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -78,14 +86,16 @@ export const deleteSecretKey = (projectId, secretId, key) => {
 export const saveRootPath = (projectId, secretId, rootPath) => {
   return new Promise((resolve, reject) => {
     client.secrets.setRootPath(projectId, secretId, rootPath)
-      .then(() => {
-        const secrets = get(store.getState(), "secrets", [])
-        const newSecrets = secrets.map(obj => {
-          if (obj.id !== secretId) return obj
-          return Object.assign({}, obj, { rootPath })
-        })
-        store.dispatch(set("secrets", newSecrets))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const secrets = get(store.getState(), "secrets", [])
+          const newSecrets = secrets.map(obj => {
+            if (obj.id !== secretId) return obj
+            return Object.assign({}, obj, { rootPath })
+          })
+          store.dispatch(set("secrets", newSecrets))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

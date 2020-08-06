@@ -12,7 +12,7 @@ import ProjectPageLayout, { Content } from "../../../components/project-page-lay
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { Row, Col, Divider } from "antd";
 import { loadClusterSettings, saveClusterSetting } from "../../../operations/cluster";
-import { projectModules } from "../../../constants";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 
 const ClusterSettings = () => {
   const { projectID } = useParams();
@@ -37,7 +37,7 @@ const ClusterSettings = () => {
   const handleLetsEncryptEmail = newEmail => {
     incrementPendingRequests()
     saveClusterSetting("letsEncryptEmail", newEmail)
-      .then(() => notify("success", "Success", "Changed letsencrypt email successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed letsencrypt email successfully"))
       .catch(ex => notify("error", "Error changing letsencrypt email", ex))
       .finally(() => decrementPendingRequests());
   };
@@ -45,7 +45,7 @@ const ClusterSettings = () => {
   const handleTelemetry = newTelemetry => {
     incrementPendingRequests()
     saveClusterSetting("enableTelemetry", newTelemetry)
-      .then(() => notify("success", "Success", `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
       .catch(ex => notify("error", `Error ${newTelemetry ? "enabling" : "disabling"} telemetry`, ex))
       .finally(() => decrementPendingRequests());
   };

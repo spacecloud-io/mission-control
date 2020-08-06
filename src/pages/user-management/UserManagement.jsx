@@ -12,7 +12,7 @@ import CollapseHeader from './CollapseHeader'
 import './user-management.css'
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { saveUserManConfig, loadUserManConfig, getEmailConfig } from '../../operations/userMan';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 const { Panel } = Collapse;
 
 //const Panel = Collapse.Panel;
@@ -37,7 +37,7 @@ const UserManagement = () => {
   const handleProviderConfig = (provider, config) => {
     incrementPendingRequests()
     saveUserManConfig(projectID, provider, config)
-      .then(() => notify("success", "Success", "Saved user management config successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved user management config successfully"))
       .catch(ex => notify("error", "Error saving user management config", ex))
       .finally(() => decrementPendingRequests())
   }

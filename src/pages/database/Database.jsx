@@ -10,7 +10,7 @@ import mongodb from '../../assets/mongodb.svg'
 import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
-import { defaultDbConnectionStrings, dbTypes, projectModules } from "../../constants"
+import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
 import { enableDb, getDbConfig } from "../../operations/database"
 
 const Database = () => {
@@ -30,8 +30,8 @@ const Database = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       enableDb(projectID, selectedDB, conn)
-        .then(() => {
-          notify("success", "Success", "Successfully enabled database")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Successfully enabled database")
           resolve()
         })
         .catch(ex => {

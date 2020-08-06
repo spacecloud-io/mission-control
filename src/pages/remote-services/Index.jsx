@@ -11,7 +11,7 @@ import Sidenav from "../../components/sidenav/Sidenav"
 import { saveRemoteService, deleteRemoteService, getRemoteServices } from "../../operations/remoteServices"
 
 import remoteServicesSvg from "../../assets/remote-services.svg"
-import { projectModules } from "../../constants";
+import { projectModules, actionQueuedMessage } from "../../constants";
 
 const RemoteServices = () => {
   // Router params
@@ -51,8 +51,8 @@ const RemoteServices = () => {
       const newServiceConfig = Object.assign({}, serviceConfig ? serviceConfig : { endpoints: {} }, { url })
       incrementPendingRequests()
       saveRemoteService(projectID, name, newServiceConfig)
-        .then(() => {
-          notify("success", "Success", `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
           resolve()
         })
         .catch((ex) => {
@@ -70,7 +70,7 @@ const RemoteServices = () => {
   const handleDelete = (name) => {
     incrementPendingRequests()
     deleteRemoteService(projectID, name)
-      .then(() => notify("success", "Success", "Removed remote service successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed remote service successfully"))
       .catch(ex => notify("error", "Error removing remote service", ex))
       .finally(() => decrementPendingRequests())
   }

@@ -9,7 +9,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
 import { formatIntegrationImageUrl, incrementPendingRequests, notify, decrementPendingRequests } from '../../utils';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 const { Step } = Steps;
 
 const InstallIntegration = () => {
@@ -31,8 +31,8 @@ const InstallIntegration = () => {
   const handleStartIntegration = () => {
     incrementPendingRequests()
     installIntegration(integrationId)
-      .then(() => {
-        notify("success", "Success", "Installed integration successfully")
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : "Installed integration successfully")
         setCurrent(current + 1)
       })
       .catch(ex => notify("error", "Error installing integration", ex))
