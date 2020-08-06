@@ -408,6 +408,7 @@ export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasN
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
 export const getDbSchemas = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
+export const getAllDbSchemas = (state) => get(state, "dbSchemas", {})
 export const getDbRules = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}`, {})
 export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}`, {})
 export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: preparedQueryId, sql: "", args: [], rule: {} })

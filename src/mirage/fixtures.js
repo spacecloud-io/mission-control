@@ -34,6 +34,12 @@ export const dbConfigs = [
       "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
       "name": "public",
       "enabled": true
+    },
+    "mydb2": {
+      "type": 'postgres',
+      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+      "name": "public",
+      "enabled": true
     }
   }
 ]
@@ -45,6 +51,14 @@ export const dbSchemas = [
         id: ID! @primary
         name: String!
         age: Integer
+        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
+      }`
+    },
+    "mydb2-posts": {
+      schema: `type posts {
+        id: ID! @primary
+        title: String!
+        author_id: ID
       }`
     }
   }
