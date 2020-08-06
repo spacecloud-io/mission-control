@@ -27,7 +27,7 @@ const DeploymentLogs = (props) => {
 
   const fetchLogs = (task, replica) => {
     let result = '';
-    client.deployments.fetchDeploymentLogs(projectID, task, replica, token, (chunk) => {
+    const promise = client.deployments.fetchDeploymentLogs(projectID, task, replica, token, (chunk) => {
       const infoIndex = chunk.indexOf("INFO");
       const errorIndex = chunk.indexOf("ERRO");
       const warnIndex = chunk.indexOf("WARN");
@@ -55,6 +55,7 @@ const DeploymentLogs = (props) => {
       notify("info", "Info", "Logs stream closed!")
       setLogsCompleted(true)
     })
+    return promise
   }
 
   useEffect(() => {
@@ -64,10 +65,16 @@ const DeploymentLogs = (props) => {
   useEffect(() => {
     const replica = cascaderValue[2]
     const task = cascaderValue[3]
-    if (task && replica) {
-      fetchLogs(task, replica);
-    }
     setLogsCompleted(false)
+    let promise = null
+    if (task && replica) {
+      promise = fetchLogs(task, replica)
+    }
+    return () => {
+      if (promise) {
+        promise.then((cancelFunction) => cancelFunction())
+      }
+    }
   }, cascaderValue)
 
   useEffect(() => {

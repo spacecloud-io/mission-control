@@ -93,6 +93,8 @@ class Deployments {
       onLogsAdded(decoder.decode(value))
       return readableStream.read().then(processStrem)
     })
+
+    return () => readableStream.cancel()
   }
 
   setDeploymentRoutes(projectId, serviceId, routes) {

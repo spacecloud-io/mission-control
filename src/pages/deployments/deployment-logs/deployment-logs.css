@@ -8,6 +8,10 @@
   overflow-y: auto;
 }
 
+.terminal-wrapper p {
+  margin-bottom: 0.25em;
+}
+
 .info {
   color: cyan;
 }
