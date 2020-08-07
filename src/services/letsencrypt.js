@@ -7,7 +7,7 @@ class LetsEncrypt {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/letsencrypt/config`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -21,11 +21,11 @@ class LetsEncrypt {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/letsencrypt/config/letsencrypt-config`, config)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })

@@ -39,6 +39,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/env", () => ({ isProd: false, version: "0.19.0", clusterName: "Cluster 1", plan: "space-cloud-pro--monthly-inr", licenseKey: "lic_21kj9kms8msls9", nextRenewal: "2020-04-19T08:45:57Z" }));
       this.get("/config/permissions", () => respondOk({ result: fixtures.permissions }));
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
+      this.post("/config/refresh-token", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/projects/:projectId/generate-internal-token", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/upgrade", () => respondOk());
       this.post("/config/degrade", () => respondOk());
@@ -65,7 +66,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => respondOk({ result: "type users{ id: ID! @primary email: ID! name: String! pass: String! role: String! newField: String! }" }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName/schema/untrack", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/schema/inspect", () => respondOk());
-      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result: ["xyz", "abc", "users"] }));
+      this.get("/external/projects/:projectId/database/:dbName/list-collections", () => respondOk({ result: [] }));
       this.delete("/config/projects/:projectId/database/:dbName/collections/:colName", () => respondOk());
       this.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => respondOk());
       this.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => respondOk());

@@ -15,7 +15,7 @@ import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 
 const EventingOverview = () => {
@@ -66,8 +66,8 @@ const EventingOverview = () => {
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
 			saveEventingTriggerRule(projectID, id, type, url, retries, timeout, options)
-				.then(() => {
-					notify("success", "Success", `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
+				.then(({ queued }) => {
+					notify("success", "Success", queued ? actionQueuedMessage : `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()
 				})
 				.catch(ex => {
@@ -81,7 +81,7 @@ const EventingOverview = () => {
 	const handleDeleteRule = (id) => {
 		incrementPendingRequests()
 		deleteEventingTriggerRule(projectID, id)
-			.then(() => notify("success", "Success", "Deleted trigger rule successfully"))
+			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted trigger rule successfully"))
 			.catch(ex => notify("error", "Error deleting trigger rule", ex))
 			.finally(() => decrementPendingRequests())
 	}

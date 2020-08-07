@@ -17,9 +17,11 @@ export const loadRemoteServices = (projectId) => {
 export const saveRemoteService = (projectId, serviceId, config) => {
   return new Promise((resolve, reject) => {
     client.remoteServices.setServiceConfig(projectId, serviceId, config)
-      .then(() => {
-        store.dispatch(set(`remoteServices.${serviceId}`, config))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`remoteServices.${serviceId}`, config))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -28,9 +30,11 @@ export const saveRemoteService = (projectId, serviceId, config) => {
 export const deleteRemoteService = (projectId, serviceId) => {
   return new Promise((resolve, reject) => {
     client.remoteServices.deleteServiceConfig(projectId, serviceId)
-      .then(() => {
-        store.dispatch(del(`remoteServices.${serviceId}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`remoteServices.${serviceId}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

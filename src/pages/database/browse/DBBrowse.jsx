@@ -73,7 +73,7 @@ const Browse = () => {
         .skip(fetchSinceStart ? 0 : previousData.length)
         .apply()
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             notify("error", "Error fetching data", data.error);
             reject(data.error)
             return
@@ -183,7 +183,7 @@ const Browse = () => {
       incrementPendingRequests()
       db.insert(selectedCol).doc(doc).apply()
         .then(res => {
-          if (res.status !== 200) {
+          if (res.status < 200 || res.status >= 300) {
             notify("error", "Error inserting row", res.data.error);
             reject()
             return;
@@ -207,7 +207,7 @@ const Browse = () => {
       .where(...conditions)
       .apply()
       .then((res) => {
-        if (res.status !== 200) {
+        if (res.status < 200 || res.status >= 300) {
           notify("error", "Error deleting row", res.data.error)
           return;
         }
@@ -324,7 +324,7 @@ const Browse = () => {
       incrementPendingRequests()
       updateOperation.apply()
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             notify("error", "Error updating row", data.error);
             reject()
             return;

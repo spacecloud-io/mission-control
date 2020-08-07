@@ -9,7 +9,7 @@ import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import { projectModules } from '../../../constants';
+import { projectModules, actionQueuedMessage } from '../../../constants';
 
 const AddDb = () => {
   const { projectID } = useParams()
@@ -22,15 +22,19 @@ const AddDb = () => {
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
     addDatabase(projectID, alias, dbType, dbName, connectionString)
-    .then((enabledEventing) => {
-      history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
-      notify("success", "Success", "Successfully added database")
-      if (enabledEventing) {
-        notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
-      }
-    })
-    .catch(ex => notify("error", "Error adding database", ex))
-    .finally(() => decrementPendingRequests())
+      .then(({ queued, enabledEventing }) => {
+        if (!queued) {
+          history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
+          notify("success", "Success", "Successfully added database")
+          if (enabledEventing) {
+            notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+          }
+        } else {
+          notify("success", "Success", actionQueuedMessage)
+        }
+      })
+      .catch(ex => notify("error", "Error adding database", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   return (

@@ -35,6 +35,14 @@ export const dbConfigs = [
       "name": "public",
       "enabled": true
     }
+  },
+  {
+    "mydb2": {
+      "type": 'postgres',
+      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+      "name": "public",
+      "enabled": true
+    }
   }
 ]
 
@@ -45,6 +53,14 @@ export const dbSchemas = [
         id: ID! @primary
         name: String!
         age: Integer
+        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
+      }`
+    },
+    "mydb2-posts": {
+      schema: `type posts {
+        id: ID! @primary
+        title: String!
+        author_id: ID
       }`
     }
   }
@@ -89,6 +105,14 @@ export const dbPreparedQueries = [
       ]
     },
     "args": ['args.args1']
+  },
+  {
+    "id": "default",
+    "db": "mydb",
+    "sql": "select * from users",
+    "rule": {
+      "rule": "allow"
+    }
   }
 ]
 
@@ -120,11 +144,11 @@ export const eventingTriggers = [
 
 export const fileStoreConfig = [
   {
-    "enabled": true,
-    "storeType": "amazon-s3",
-    "bucket": "my-bucket",
-    "conn": "us-east-1",
-    "secret": "secrets.FileSecret.constants.json"
+    "enabled": false,
+    // "storeType": "amazon-s3",
+    // "bucket": "my-bucket",
+    // "conn": "us-east-1",
+    // "secret": "secrets.FileSecret.constants.json"
   }
 ]
 
@@ -377,8 +401,8 @@ export const userMan = [
 ]
 
 export const clusterConfig = {
-  "email": "admin@gmail.com",
-  "telemetry": true,
+  "letsEncryptEmail": "admin@gmail.com",
+  "enableTelemetry": true,
   "credentials": { "user": "admin", "pass": "123" }
 }
 

@@ -1,4 +1,4 @@
-import { generateSchemaAST, generateGraphQLQueryFromGraphQLAST, generateRandomFieldValues, generateSampleQueryDBDelete, generateSampleQueryDBInsert, generateDBSchemaAST, generateSampleQueryDBRead, generateSampleQueryDBUpdate } from "./graphql";
+import { generateSchemaAST, generateSchemaASTs, generateGraphQLQueryFromGraphQLAST, generateRandomFieldValues, generateSampleQueryDBDelete, generateSampleQueryDBInsert, generateSampleQueryDBRead, generateSampleQueryDBUpdate } from "./graphql";
 
 describe("generateSchemaAST method", () => {
   it("generates correct schema AST from a GraphQL schema string", () => {
@@ -448,17 +448,19 @@ describe("generateRandomFieldValues method", () => {
 
 describe("generateSampleQueryDBDelete method", () => {
   it("generates proper delete query without filters", () => {
-    const collections = {
-      users: `type users {
-        id: ID! @primary
-        name: String
-        email: ID! @unique
-      }`
+    const dbSchemas = {
+      db1: {
+        users: `type users {
+          id: ID! @primary
+          name: String
+          email: ID! @unique
+        }`
+      }
     }
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `mutation {
-  delete_users @db {
+  delete_users @db1 {
     status
     error
   }
@@ -472,21 +474,23 @@ describe("generateSampleQueryDBDelete method", () => {
         }
       }
     }
-    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db", false)).toEqual(result)
+    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db1", false)).toEqual(result)
   })
 
   it("generates proper delete query filters", () => {
-    const collections = {
-      users: `type users {
-        id: ID! @primary
-        name: String
-        email: ID! @unique
-      }`
+    const dbSchemas = {
+      db1: {
+        users: `type users {
+          id: ID! @primary
+          name: String
+          email: ID! @unique
+        }`
+      }
     }
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `mutation {
-  delete_users(where: {id: {_eq: $id}}) @db {
+  delete_users(where: {id: {_eq: $id}}) @db1 {
     status
     error
   }
@@ -502,32 +506,34 @@ describe("generateSampleQueryDBDelete method", () => {
         }
       }
     }
-    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db", true)).toEqual(result)
+    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db1", true)).toEqual(result)
   })
 })
 
 describe("generateSampleQueryDBInsert method", () => {
   it("generates proper insert query for table with linked inserts", () => {
-    const collections = {
-      authors: `type authors {
-        id: ID! @primary
-        name: String
-        posts: [posts] @link(table: posts, from: id, to: author_id)
-      }`,
-      posts: `type posts {
-        id: ID! @primary
-        title: String
-        author_id: ID! @foreign(table: authors, field: id)
-        created_on: DateTime! @createdAt
-        last_updated: DateTime! @updatedAt
-        author: authors @link(table: authors, from: author_id, to: id)
-      }`
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          posts: [posts] @link(table: posts, from: id, to: author_id)
+        }`,
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID! @foreign(table: authors, field: id)
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          author: authors @link(table: authors, from: author_id, to: id)
+        }`
+      }
     }
 
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `mutation {
-  insert_authors(docs: $docs) @db {
+  insert_authors(docs: $docs) @db1 {
     status
     error
     returning
@@ -570,30 +576,104 @@ describe("generateSampleQueryDBInsert method", () => {
         }
       }
     }
-    const actualResult = generateSampleQueryDBInsert(schemaASTs, "authors", "db")
+    const actualResult = generateSampleQueryDBInsert(schemaASTs, "authors", "db1")
     expect(actualResult).toEqual(result)
   })
-  it("generates proper insert query for table that has foreign key and read only link on others table", () => {
-    const collections = {
-      authors: `type authors {
-        id: ID! @primary
-        name: String
-        posts: [posts] @link(table: posts, from: id, to: author_id)
-      }`,
-      posts: `type posts {
-        id: ID! @primary
-        title: String
-        author_id: ID! @foreign(table: authors, field: id)
-        created_on: DateTime! @createdAt
-        last_updated: DateTime! @updatedAt
-        author: authors @link(table: authors, from: author_id, to: id)
-      }`
+
+  it("generates proper insert query for table with cross db linked inserts", () => {
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          posts: [posts] @link(table: posts, from: id, to: author_id, db: db2)
+        }`
+      },
+      db2: {
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID!
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          author: authors @link(table: authors, from: author_id, to: id, db: db1)
+        }`
+      }
     }
 
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `mutation {
-  insert_posts(docs: $docs) @db {
+  insert_authors(docs: $docs) @db1 {
+    status
+    error
+    returning
+  }
+}`,
+      variables: {
+        docs: [
+          {
+            id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+            name: "lorem ipsum",
+            posts: [
+              {
+                id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                title: "lorem ipsum"
+              }
+            ]
+          }
+        ]
+      },
+      response: {
+        data: {
+          insert_authors: {
+            status: 200,
+            returning: [
+              {
+                id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                name: "lorem ipsum",
+                posts: [
+                  {
+                    id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                    title: "lorem ipsum",
+                    author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                    created_on: "2017-11-13T03:15:45.108Z",
+                    last_updated: "2017-11-13T03:15:45.108Z"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+    const actualResult = generateSampleQueryDBInsert(schemaASTs, "authors", "db1")
+    expect(actualResult).toEqual(result)
+  })
+
+  it("generates proper insert query for table that has foreign key and read only link on others table", () => {
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          posts: [posts] @link(table: posts, from: id, to: author_id)
+        }`,
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID! @foreign(table: authors, field: id)
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          author: authors @link(table: authors, from: author_id, to: id)
+        }`
+      }
+    }
+
+    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const result = {
+      query: `mutation {
+  insert_posts(docs: $docs) @db1 {
     status
     error
     returning
@@ -604,7 +684,10 @@ describe("generateSampleQueryDBInsert method", () => {
           {
             id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
             title: "lorem ipsum",
-            author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS"
+            author: {
+              id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+              name: "lorem ipsum"
+            }
           }
         ]
       },
@@ -618,47 +701,54 @@ describe("generateSampleQueryDBInsert method", () => {
                 title: "lorem ipsum",
                 author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                 created_on: "2017-11-13T03:15:45.108Z",
-                last_updated: "2017-11-13T03:15:45.108Z"
+                last_updated: "2017-11-13T03:15:45.108Z",
+                author: {
+                  id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                  name: "lorem ipsum"
+                }
               }
             ]
           }
         }
       }
     }
-    const actualResult = generateSampleQueryDBInsert(schemaASTs, "posts", "db")
+    const actualResult = generateSampleQueryDBInsert(schemaASTs, "posts", "db1")
     expect(actualResult).toEqual(result)
   })
 })
 
 describe("generateSampleQueryDBRead method", () => {
   it("generates proper read query for 1 to many relation", () => {
-    const collections = {
-      authors: `type authors {
-        id: ID! @primary
-        name: String
-        email: ID!
-        posts: [posts] @link(table: posts, from: id, to: author_id)
-        joined_on: DateTime! @createdAt
-      }`,
-      posts: `type posts {
-        id: ID! @primary
-        title: String
-        author_id: ID! @foreign(table: authors, field: id)
-        created_on: DateTime! @createdAt
-        last_updated: DateTime! @updatedAt
-        author: authors @link(table: authors, from: author_id, to: id)
-      }`
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          email: ID!
+          posts: [posts] @link(table: posts, from: id, to: author_id)
+          joined_on: DateTime! @createdAt
+        }`,
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID! @foreign(table: authors, field: id)
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          author: authors @link(table: authors, from: author_id, to: id)
+        }`
+      }
     }
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `query {
-  authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db {
+  authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
     id
     name
     email
     posts {
       id
       title
+      author_id
       created_on
       last_updated
     }
@@ -682,6 +772,7 @@ describe("generateSampleQueryDBRead method", () => {
                 {
                   id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   title: "lorem ipsum",
+                  author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   created_on: "2017-11-13T03:15:45.108Z",
                   last_updated: "2017-11-13T03:15:45.108Z"
                 }
@@ -692,44 +783,117 @@ describe("generateSampleQueryDBRead method", () => {
         }
       }
     }
-    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db", true, true, true, true)).toEqual(result)
+    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
+  })
+
+  it("generates proper read query for 1 to many relation with cross db links", () => {
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          email: ID!
+          posts: [posts] @link(table: posts, from: id, to: author_id, db: db2)
+          joined_on: DateTime! @createdAt
+        }`
+      },
+      db2: {
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID!
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          author: authors @link(table: authors, from: author_id, to: id, db: db1)
+        }`
+      }
+    }
+    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const result = {
+      query: `query {
+  authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
+    id
+    name
+    email
+    posts {
+      id
+      title
+      author_id
+      created_on
+      last_updated
+    }
+    joined_on
+  }
+}`,
+      variables: {
+        id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+        sort: ["email", "joined_on"],
+        skip: 20,
+        limit: 10
+      },
+      response: {
+        data: {
+          authors: [
+            {
+              id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+              name: "lorem ipsum",
+              email: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+              posts: [
+                {
+                  id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                  author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+                  title: "lorem ipsum",
+                  created_on: "2017-11-13T03:15:45.108Z",
+                  last_updated: "2017-11-13T03:15:45.108Z"
+                }
+              ],
+              joined_on: "2017-11-13T03:15:45.108Z"
+            }
+          ]
+        }
+      }
+    }
+    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
   })
 
   it("generates proper read query for many to many relation", () => {
-    const collections = {
-      authors: `type authors {
-        id: ID! @primary
-        name: String
-        email: ID!
-        posts: [posts] @link(table: authors_posts, field: posts, from: id, to: authors_id)
-        joined_on: DateTime! @createdAt
-      }`,
-      posts: `type posts {
-        id: ID! @primary
-        title: String
-        author_id: ID! @foreign(table: authors, field: id)
-        created_on: DateTime! @createdAt
-        last_updated: DateTime! @updatedAt
-        authors: [authors] @link(table: authors_posts, field: authors, from: id, to: posts_id)
-      }`,
-      authors_posts: `type authors_posts {
-        id: ID!
-        author_id: ID! @foreign(table: authors, field: id)
-        posts_id: ID! @foreign(table: posts, field: id)
-        posts: [posts] @link(table: posts, from: posts_id, to: id)
-        authors: [authors] @link(table: authors, from: authors_id, to: id) 
-      }`
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
+          id: ID! @primary
+          name: String
+          email: ID!
+          posts: [posts] @link(table: authors_posts, field: posts, from: id, to: authors_id)
+          joined_on: DateTime! @createdAt
+        }`,
+        posts: `type posts {
+          id: ID! @primary
+          title: String
+          author_id: ID! @foreign(table: authors, field: id)
+          created_on: DateTime! @createdAt
+          last_updated: DateTime! @updatedAt
+          authors: [authors] @link(table: authors_posts, field: authors, from: id, to: posts_id)
+        }`,
+        authors_posts: `type authors_posts {
+          id: ID!
+          author_id: ID! @foreign(table: authors, field: id)
+          posts_id: ID! @foreign(table: posts, field: id)
+          posts: [posts] @link(table: posts, from: posts_id, to: id)
+          authors: [authors] @link(table: authors, from: authors_id, to: id) 
+        }`
+      }
     }
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `query {
-  authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db {
+  authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
     id
     name
     email
     posts {
       id
       title
+      author_id
       created_on
       last_updated
     }
@@ -753,6 +917,7 @@ describe("generateSampleQueryDBRead method", () => {
                 {
                   id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   title: "lorem ipsum",
+                  author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   created_on: "2017-11-13T03:15:45.108Z",
                   last_updated: "2017-11-13T03:15:45.108Z"
                 }
@@ -763,14 +928,15 @@ describe("generateSampleQueryDBRead method", () => {
         }
       }
     }
-    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db", true, true, true, true)).toEqual(result)
+    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
   })
 })
 
 describe("generateSampleQueryDBUpdate method", () => {
   it("generates proper upsert query", () => {
-    const collections = {
-      authors: `type authors {
+    const dbSchemas = {
+      db1: {
+        authors: `type authors {
           id: ID! @primary
           name: String
           email: ID! @unique
@@ -779,7 +945,7 @@ describe("generateSampleQueryDBUpdate method", () => {
           address: JSON
           posts: [posts] @link(table: posts, from: id, to: author_id)
         }`,
-      posts: `type posts {
+        posts: `type posts {
         id: ID! @primary
         title: String
         author_id: ID! @foreign(table: authors, field: id)
@@ -787,12 +953,13 @@ describe("generateSampleQueryDBUpdate method", () => {
         last_updated: DateTime! @updatedAt
         author: authors @link(table: authors, from: author_id, to: id)
       }`
+      }
     }
 
-    const schemaASTs = generateDBSchemaAST(collections)
+    const schemaASTs = generateSchemaASTs(dbSchemas)
     const result = {
       query: `mutation {
-  update_authors(where: {id: {_eq: $id}}, set: $set, op: upsert) @db {
+  update_authors(where: {id: {_eq: $id}}, set: $set, op: upsert) @db1 {
     status
     error
   }
@@ -814,7 +981,7 @@ describe("generateSampleQueryDBUpdate method", () => {
         }
       }
     }
-    const actualResult = generateSampleQueryDBUpdate(schemaASTs, "authors", "db", true, true)
+    const actualResult = generateSampleQueryDBUpdate(schemaASTs, "authors", "db1", true, true)
     expect(actualResult).toEqual(result)
   })
 })

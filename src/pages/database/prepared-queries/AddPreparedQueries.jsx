@@ -17,7 +17,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
 import { notify } from '../../../utils';
 import { savePreparedQueryConfig, getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
-import { projectModules } from '../../../constants';
+import { projectModules, actionQueuedMessage } from '../../../constants';
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
@@ -44,9 +44,13 @@ const AddPreparedQueries = () => {
 
   const handleSubmit = formValues => {
     savePreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery)
-      .then(() => {
-        history.goBack();
-        notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)
+      .then(({ queued }) => {
+        if (!queued) {
+          history.goBack();
+          notify("success", "Success", `Sucessfully ${preparedQueryId ? "edited" : "added"} prepared query`)
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
       })
       .catch(ex => notify("error", `Error ${preparedQueryId ? "editing" : "adding"} prepared query`, ex))
   };

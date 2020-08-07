@@ -16,7 +16,7 @@ import GraphEditor from "../../components/security-rules/graph-editor/GraphEdito
 import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { getSecurityRuleInfo, loadSecurityRules, saveSecurityRule } from '../../operations/securityRuleBuilder';
-import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule } from '../../constants';
+import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage } from '../../constants';
 
 const RulesEditor = () => {
   // Router params
@@ -116,7 +116,13 @@ const RulesEditor = () => {
   const handleUseDefaultRules = () => {
     incrementPendingRequests()
     saveSecurityRule(projectID, ruleType, id, group, {})
-      .then(() => setRule({}))
+      .then(({ queued }) => {
+        if (!queued) {
+          setRule({})
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
+      })
       .catch(ex => notify("error", "Error using default rules", ex))
       .finally(() => decrementPendingRequests())
   }

@@ -15,8 +15,8 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
-import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, loadCollections } from "../../../operations/database"
-import { dbTypes, securityRuleGroups, projectModules } from '../../../constants';
+import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 
 
 const Overview = () => {
@@ -60,7 +60,13 @@ const Overview = () => {
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     incrementPendingRequests()
     saveColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
-      .then(() => notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`))
+      .then(({ queued }) => {
+        if (!queued) {
+          notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`)
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
+      })
       .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`, ex))
       .finally(() => decrementPendingRequests())
   }
@@ -92,11 +98,15 @@ const Overview = () => {
   const handleDelete = (colName) => {
     incrementPendingRequests()
     deleteCollection(projectID, selectedDB, colName)
-      .then(() => {
-        notify("success", "Success", `Deleted ${colName} successfully`)
-        if (clickedCol === colName) {
-          setClickedCol("")
+      .then(({ queued }) => {
+        if (!queued) {
+          notify("success", "Success", `Deleted ${colName} successfully`)
+          if (clickedCol === colName) {
+            setClickedCol("")
+          }
+          return
         }
+        notify("success", "Success", actionQueuedMessage)
       })
       .catch(ex => notify("error", "Error deleting table", ex))
       .finally(() => decrementPendingRequests())
@@ -109,7 +119,13 @@ const Overview = () => {
 
   const handleUntrackClick = (colName) => {
     untrackCollection(projectID, selectedDB, colName)
-      .then(() => notify("success", "Success", `Sucessfully untracked ${colName} collection`))
+      .then(({ queued }) => {
+        if (!queued) {
+          notify("success", "Success", `Sucessfully untracked ${colName} collection`)
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
+      })
       .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
   }
 
@@ -124,7 +140,13 @@ const Overview = () => {
   const handleTrackCollections = (collections) => {
     incrementPendingRequests()
     Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
-      .then(() => notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`))
+      .then(([{ queued }]) => {
+        if (!queued) {
+          notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`)
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
+      })
       .catch(ex => notify("error", `Error tracking ${collections.length > 1 ? "collections" : "collection"}`, ex))
       .finally(() => decrementPendingRequests())
   }
@@ -133,9 +155,13 @@ const Overview = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveColSchema(projectID, selectedDB, colName, schema)
-        .then(() => {
-          notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
-          dispatch(set("uiState.selectedCollection", colName))
+        .then(({ queued }) => {
+          if (!queued) {
+            notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
+            dispatch(set("uiState.selectedCollection", colName))
+          } else {
+            notify("success", "Success", actionQueuedMessage)
+          }
           resolve()
         })
         .catch(ex => {
@@ -150,14 +176,19 @@ const Overview = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       enableDb(projectID, selectedDB, conn)
-        .then(connected => {
-          if (connected) {
-            notify("success", "Connection successful", `Connected to database successfully`)
-            resolve()
+        .then(({ queued, connected }) => {
+          if (!queued) {
+            if (connected) {
+              notify("success", "Connection successful", `Connected to database successfully`)
+              resolve()
+              return
+            }
+            notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
+            reject()
             return
           }
-          notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
-          reject()
+          notify("success", "Connection successful", actionQueuedMessage)
+          resolve()
         })
         .catch(() => {
           notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)

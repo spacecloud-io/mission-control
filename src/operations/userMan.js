@@ -17,9 +17,11 @@ export const loadUserManConfig = (projectId) => {
 export const saveUserManConfig = (projectId, providerId, config) => {
   return new Promise((resolve, reject) => {
     client.userManagement.setUserManConfig(projectId, providerId, config)
-      .then(() => {
-        store.dispatch(set(`userMan.${providerId}`, config))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`userMan.${providerId}`, config))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

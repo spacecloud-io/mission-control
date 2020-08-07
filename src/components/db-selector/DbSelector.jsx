@@ -9,7 +9,7 @@ import { dbIcons } from '../../utils';
 import { getDbConfigs } from '../../operations/database';
 
 function DbSelector(props) {
-  const { projectID } = useParams();
+  const { projectID, selectedDB } = useParams();
   const history = useHistory();
   const dbConfigs = useSelector(state => getDbConfigs(state))
 
@@ -26,7 +26,7 @@ function DbSelector(props) {
       render: (_, record) => {
         return (
           <div>
-            {record.dbtype && <CheckOutlined className="checked" />}
+            {record.dbtype === selectedDB && <CheckOutlined className="checked" />}
           </div>
         );
       },

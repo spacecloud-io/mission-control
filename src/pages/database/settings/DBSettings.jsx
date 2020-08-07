@@ -8,7 +8,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
-import { dbTypes, securityRuleGroups, projectModules } from '../../../constants';
+import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 
@@ -52,12 +52,16 @@ const Settings = () => {
   const handleDisable = () => {
     incrementPendingRequests()
     disableDb(projectID, selectedDB)
-      .then((disabledEventing) => {
-        notify("success", "Success", "Disabled database successfully")
-        history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)
-        if (disabledEventing) {
-          notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
+      .then(({ queued, disabledEventing }) => {
+        if (!queued) {
+          notify("success", "Success", "Disabled database successfully")
+          history.push(`/mission-control/projects/${projectID}/database/${selectedDB}`)
+          if (disabledEventing) {
+            notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
+          }
+          return
         }
+        notify("success", "Success", actionQueuedMessage)
       })
       .catch(ex => notify("error", "Error disabling database", ex))
       .finally(() => decrementPendingRequests())
@@ -77,7 +81,7 @@ const Settings = () => {
   const handleModifyDB = () => {
     incrementPendingRequests()
     modifyDbSchema(projectID, selectedDB)
-      .then(() => notify("success", "Success", "Modified database schema successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Modified database schema successfully"))
       .catch(ex => notify("error", "Error modifying database schema", ex))
       .finally(() => decrementPendingRequests())
   }
@@ -87,8 +91,8 @@ const Settings = () => {
     let msg = "database"
     if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) msg = "schema"
     changeDbName(projectID, selectedDB, dbName)
-      .then(() => {
-        notify("success", "Success", `Changed ${msg} setting successfully`)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `Changed ${msg} setting successfully`)
       })
       .catch(ex => notify("error", `Error changing  ${msg}`, ex))
       .finally(() => decrementPendingRequests())
@@ -97,9 +101,16 @@ const Settings = () => {
   const handleRemoveDb = () => {
     incrementPendingRequests()
     removeDbConfig(projectID, selectedDB)
-      .then(() => {
-        history.push(`/mission-control/projects/${projectID}/database`)
-        notify("success", "Success", "Successfully removed database config")
+      .then(({ queued, disabledEventing }) => {
+        if (!queued) {
+          history.push(`/mission-control/projects/${projectID}/database`)
+          notify("success", "Success", "Successfully removed database config")
+          if (disabledEventing) {
+            notify("warn", "Warning", "Eventing is auto disabled. Enable it by changing eventing db or adding a new db")
+          }
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
       })
       .catch(ex => notify("error", "Error removing database config", ex))
       .finally(() => decrementPendingRequests())

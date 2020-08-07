@@ -12,7 +12,7 @@ import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
 import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
-import { projectModules } from "../../constants";
+import { projectModules, actionQueuedMessage } from "../../constants";
 
 const EventingSchema = () => {
   // Router params
@@ -61,8 +61,8 @@ const EventingSchema = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       deleteEventingSchema(projectID, type)
-        .then(() => {
-          notify("success", "Success", "Removed event schema successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Removed event schema successfully")
           resolve()
         })
         .catch(ex => {
@@ -77,8 +77,8 @@ const EventingSchema = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveEventingSchema(projectID, type, schema)
-        .then(() => {
-          notify("success", "Success", "Saved event schema successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved event schema successfully")
           resolve()
         })
         .catch(ex => {

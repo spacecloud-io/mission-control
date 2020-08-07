@@ -30,11 +30,13 @@ export const saveIngressRouteConfig = (projectId, routeId, config) => {
     const rule = getIngressRouteSecurityRule(store.getState(), routeId)
     const newConfig = Object.assign({}, config, { rule })
     client.routing.setRoutingConfig(projectId, routeId, config)
-      .then(() => {
-        const ingressRoutes = getIngressRoutes(store.getState())
-        const newIngressRoutes = upsertArray(ingressRoutes, obj => obj.id === routeId, () => newConfig)
-        setIngressRoutes(newIngressRoutes)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const ingressRoutes = getIngressRoutes(store.getState())
+          const newIngressRoutes = upsertArray(ingressRoutes, obj => obj.id === routeId, () => newConfig)
+          setIngressRoutes(newIngressRoutes)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -45,9 +47,11 @@ export const saveIngressRouteRule = (projectId, routeId, rule) => {
     const oldConfig = getIngressRoute(store.getState(), routeId)
     const newConfig = Object.assign({}, oldConfig, {}, { rule })
     client.routing.setRoutingConfig(projectId, routeId, newConfig)
-      .then(() => {
-        setIngressRouteRule(routeId, rule)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setIngressRouteRule(routeId, rule)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -56,11 +60,13 @@ export const saveIngressRouteRule = (projectId, routeId, rule) => {
 export const deleteIngressRoute = (projectId, routeId) => {
   return new Promise((resolve, reject) => {
     client.routing.deleteRoutingConfig(projectId, routeId)
-      .then(() => {
-        const ingressRoutes = get(store.getState(), "ingressRoutes", [])
-        const newIngressRoutes = ingressRoutes.filter(obj => obj.id !== routeId)
-        setIngressRoutes(newIngressRoutes)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const ingressRoutes = get(store.getState(), "ingressRoutes", [])
+          const newIngressRoutes = ingressRoutes.filter(obj => obj.id !== routeId)
+          setIngressRoutes(newIngressRoutes)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -71,9 +77,11 @@ export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
     const globalConfig = getIngressRoutesGlobalConfig(store.getState())
     const newGlobalConfig = Object.assign({}, globalConfig, { headers: headers })
     client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
-      .then(() => {
-        setIngressRoutesGlobalConfig(newGlobalConfig)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setIngressRoutesGlobalConfig(newGlobalConfig)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -84,9 +92,11 @@ export const saveIngressGlobalResponseHeaders = (projectId, headers) => {
     const globalConfig = getIngressRoutesGlobalConfig(store.getState())
     const newGlobalConfig = Object.assign({}, globalConfig, { resHeaders: headers })
     client.routing.setRoutingGlobalConfig(projectId, newGlobalConfig)
-      .then(() => {
-        setIngressRoutesGlobalConfig(newGlobalConfig)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setIngressRoutesGlobalConfig(newGlobalConfig)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -118,6 +128,6 @@ const getIngressRoute = (state, routeId) => {
   const ingressRoutes = getIngressRoutes(state)
   const index = ingressRoutes.findIndex(obj => obj.id === routeId)
   return (index === -1) ? {} : ingressRoutes[index]
-} 
+}
 export const getIngressRoutesGlobalConfig = (state) => get(state, "ingressRoutesGlobal", {})
 const setIngressRoutesGlobalConfig = (config) => store.dispatch(set("ingressRoutesGlobal", config)) 

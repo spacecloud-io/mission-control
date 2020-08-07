@@ -11,7 +11,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import './secretDetail.css';
 import { saveSecretKey, deleteSecretKey, saveRootPath, getSecrets } from "../../operations/secrets";
-import { projectModules } from "../../constants";
+import { projectModules, actionQueuedMessage } from "../../constants";
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -56,8 +56,8 @@ const SecretDetails = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveSecretKey(projectID, secretId, key, value)
-        .then(() => {
-          notify("success", "Success", "Saved secret key successfully");
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved secret key successfully");
           resolve()
         })
         .catch(ex => {
@@ -72,8 +72,8 @@ const SecretDetails = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       deleteSecretKey(projectID, secretId, name)
-        .then(() => {
-          notify("success", "Success", "Deleted secret key successfully");
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Deleted secret key successfully");
           resolve()
         })
         .catch(ex => {
@@ -93,8 +93,8 @@ const SecretDetails = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveRootPath(projectID, secretId, path)
-        .then(() => {
-          notify("success", "Success", "Saved root path successfully");
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved root path successfully");
           resolve()
         })
         .catch(ex => {

@@ -8,7 +8,7 @@ import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EndpointForm from '../../components/remote-services/endpoint-form/EndpointForm';
 import { saveRemoteServiceEndpoint, getRemoteServiceEndpoints, getRemoteServiceURL } from '../../operations/remoteServices';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 const ConfigureEndpoint = () => {
   // Router params
@@ -28,8 +28,8 @@ const ConfigureEndpoint = () => {
     const endpointConfig = { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers }
     incrementPendingRequests()
     saveRemoteServiceEndpoint(projectID, serviceName, name, endpointConfig)
-      .then(() => {
-        notify("success", "Success", `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
         history.goBack()
       })
       .catch(ex => notify("error", `Error ${isEndpointPresent ? "modifying" : "adding"} endpoint`, ex))

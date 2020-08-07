@@ -10,7 +10,7 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
 import securitySvg from '../../assets/security.svg';
 import { deleteEventingSecurityRule, saveEventingSecurityRule, loadEventingSecurityRules, getEventingTriggerRules, getEventingSecurityRules, getEventingDefaultSecurityRule } from '../../operations/eventing';
-import { securityRuleGroups, projectModules } from '../../constants';
+import { securityRuleGroups, projectModules, actionQueuedMessage } from '../../constants';
 
 const EventingRules = () => {
   const { projectID } = useParams()
@@ -45,8 +45,8 @@ const EventingRules = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveEventingSecurityRule(projectID, type, rule)
-        .then(() => {
-          notify("success", "Success", "Added eventing security rule successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Added eventing security rule successfully")
           resolve()
         })
         .catch(ex => {
@@ -62,8 +62,8 @@ const EventingRules = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       deleteEventingSecurityRule(projectID, type)
-        .then(() => {
-          notify("success", "Success", "Deleted eventing security rule successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Deleted eventing security rule successfully")
           resolve()
         })
         .catch(ex => {

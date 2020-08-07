@@ -9,11 +9,11 @@ class Deployments {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/services/${serviceId}/${version}`, serviceConfig)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -23,11 +23,11 @@ class Deployments {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/runner/${projectId}/services/${serviceId}/${version}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -37,7 +37,7 @@ class Deployments {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/runner/${projectId}/services`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -51,7 +51,7 @@ class Deployments {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/runner/${projectId}/service-routes`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -65,7 +65,7 @@ class Deployments {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/runner/${projectId}/services/status`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -93,17 +93,19 @@ class Deployments {
       onLogsAdded(decoder.decode(value))
       return readableStream.read().then(processStrem)
     })
+
+    return () => readableStream.cancel()
   }
 
   setDeploymentRoutes(projectId, serviceId, routes) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/service-routes/${serviceId}`, { routes: routes })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })

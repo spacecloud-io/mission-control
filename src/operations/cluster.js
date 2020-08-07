@@ -40,9 +40,11 @@ export function saveClusterSetting(key, value) {
     const { credentials, ...config } = get(store.getState(), "clusterConfig", {})
     const newConfig = Object.assign({}, config, { [key]: value })
     client.cluster.setConfig(newConfig)
-      .then(() => {
-        store.dispatch(set("clusterConfig", newConfig))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set("clusterConfig", newConfig))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

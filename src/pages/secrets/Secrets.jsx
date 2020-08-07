@@ -10,7 +10,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notify } from "../../utils";
 import { saveSecret, deleteSecret, getSecrets } from "../../operations/secrets";
-import { projectModules } from "../../constants";
+import { projectModules, actionQueuedMessage } from "../../constants";
 
 const Secrets = () => {
   const history = useHistory();
@@ -33,8 +33,8 @@ const Secrets = () => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       saveSecret(projectID, secretConfig)
-        .then(() => {
-          notify("success", "Success", "Saved secret successfully")
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved secret successfully")
           resolve()
         })
         .catch(ex => {
@@ -48,7 +48,7 @@ const Secrets = () => {
   const handleDeleteSecret = secretId => {
     incrementPendingRequests()
     deleteSecret(projectID, secretId)
-      .then(() => notify("success", "Success", "Deleted secret successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted secret successfully"))
       .catch(ex => notify("error", "Error deleting secret", ex))
       .finally(() => decrementPendingRequests());
   };

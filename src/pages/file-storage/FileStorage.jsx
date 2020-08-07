@@ -12,7 +12,7 @@ import fileStorageSvg from "../../assets/file-storage.svg"
 import { Button, Descriptions, Badge, Popconfirm, Table } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, saveFileStorePrefix, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
-import { securityRuleGroups, projectModules } from '../../constants';
+import { securityRuleGroups, projectModules, actionQueuedMessage } from '../../constants';
 
 const Rules = () => {
 	const history = useHistory();
@@ -39,7 +39,6 @@ const Rules = () => {
 
 	// Derived state
 	const { enabled, ...connConfig } = config
-	const noOfRules = rules.length;
 
 	// Handlers
 	const handleFileConfig = () => {
@@ -50,7 +49,7 @@ const Rules = () => {
 		const newConfig = { enabled: true, ...config }
 		incrementPendingRequests()
 		saveFileStoreConfig(projectID, newConfig)
-			.then(() => notify("success", "Success", "Configured file storage successfully"))
+			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Configured file storage successfully"))
 			.catch(ex => notify("error", "Error configuring file storage", ex))
 			.finally(() => decrementPendingRequests())
 	}
@@ -59,8 +58,8 @@ const Rules = () => {
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
 			saveFileStoreRule(projectID, ruleName, { prefix: prefix, rule: securityRule })
-				.then(() => {
-					notify("success", "Success", "Added rule successfully")
+				.then(({ queued }) => {
+					notify("success", "Success", queued ? actionQueuedMessage : "Added rule successfully")
 					resolve()
 				})
 				.catch(ex => {
@@ -74,7 +73,7 @@ const Rules = () => {
 	const handleDeleteRule = (ruleName) => {
 		incrementPendingRequests()
 		deleteFileStoreRule(projectID, ruleName)
-			.then(() => notify("success", "Success", "Deleted rule successfully"))
+			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
 			.catch(ex => notify("error", "Error deleting rule", ex))
 			.finally(() => decrementPendingRequests())
 	}
@@ -95,8 +94,8 @@ const Rules = () => {
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
 			saveFileStorePrefix(projectID, selectedRuleName, newPrefix)
-				.then(() => {
-					notify("success", "Success", "Saved prefix successfully")
+				.then(({ queued }) => {
+					notify("success", "Success", queued ? actionQueuedMessage : "Saved prefix successfully")
 					resolve()
 				})
 				.catch(ex => {

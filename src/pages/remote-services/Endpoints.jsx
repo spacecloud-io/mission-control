@@ -8,7 +8,7 @@ import { Button, Table, Popconfirm } from "antd";
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import endpointImg from "../../assets/structure.svg"
-import { endpointTypes, securityRuleGroups, projectModules } from "../../constants"
+import { endpointTypes, securityRuleGroups, projectModules, actionQueuedMessage } from "../../constants"
 import { deleteRemoteServiceEndpoint, getRemoteServiceEndpoints } from "../../operations/remoteServices"
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
@@ -57,7 +57,7 @@ const RemoteService = () => {
   const handleDelete = (name) => {
     incrementPendingRequests()
     deleteRemoteServiceEndpoint(projectID, serviceName, name)
-      .then(() => notify("success", "Success", "Removed endpoint successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed endpoint successfully"))
       .catch((ex) => notify("error", "Error removing endpoint", ex))
       .finally(() => decrementPendingRequests())
   }

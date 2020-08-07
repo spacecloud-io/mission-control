@@ -10,7 +10,7 @@ import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
-import { projectModules } from '../../constants';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
@@ -37,7 +37,7 @@ const EventingSettings = () => {
   const handleEventingConfig = ({ enabled, dbAlias }) => {
     incrementPendingRequests()
     saveEventingConfig(projectID, enabled, dbAlias)
-      .then(() => notify("success", "Success", "Saved eventing config successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved eventing config successfully"))
       .catch(ex => notify("error", "Error saving eventing config", ex))
       .finally(() => decrementPendingRequests());
   };

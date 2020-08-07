@@ -4,6 +4,7 @@ import IntegrationCard from "../integration-card/IntegrationCard";
 import { incrementPendingRequests, decrementPendingRequests, notify, formatIntegrationImageUrl } from "../../../utils";
 import { deleteIntegration } from "../../../operations/integrations";
 import { useHistory, useParams } from "react-router-dom";
+import { actionQueuedMessage } from "../../../constants";
 
 function IntegrationsList({ integrations }) {
 
@@ -14,7 +15,9 @@ function IntegrationsList({ integrations }) {
   const handleDelete = (integratonId) => {
     incrementPendingRequests()
     deleteIntegration(integratonId)
-      .then(() => notify("success", "Success", "Uninstalled integration successfully"))
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage: "Uninstalled integration successfully")
+      })
       .catch((ex) => notify("error", "Error deleting integration", ex))
       .finally(() => decrementPendingRequests())
   }

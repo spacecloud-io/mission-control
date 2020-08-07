@@ -34,11 +34,13 @@ export function installIntegration(integrationId) {
     const state = store.getState()
     const integrationConfig = getIntegrationConfig(state, integrationId)
     client.integrations.installIntegration(integrationConfig)
-      .then(() => {
-        const installedIntegrations = getInstalledIntegrations(state)
-        const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationConfig.id]: true })
-        setInstalledIntegrations(newInstalledIntegrations)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const installedIntegrations = getInstalledIntegrations(state)
+          const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationConfig.id]: true })
+          setInstalledIntegrations(newInstalledIntegrations)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -46,12 +48,14 @@ export function installIntegration(integrationId) {
 export function deleteIntegration(integrationId) {
   return new Promise((resolve, reject) => {
     client.integrations.removeIntegration(integrationId)
-      .then(() => {
-        const state = store.getState()
-        const installedIntegrations = getInstalledIntegrations(state)
-        const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationId]: false })
-        setInstalledIntegrations(newInstalledIntegrations)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          const state = store.getState()
+          const installedIntegrations = getInstalledIntegrations(state)
+          const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationId]: false })
+          setInstalledIntegrations(newInstalledIntegrations)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

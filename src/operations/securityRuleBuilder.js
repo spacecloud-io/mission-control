@@ -75,17 +75,18 @@ export const saveSecurityRule = (projectId, ruleType, id, group, rule) => {
     }
 
     req
-      .then(() => {
+      .then(({ queued }) => {
         const bc = new BroadcastChannel('security-rules');
         const message = {
           rule: rule,
           projectId: projectId,
-          meta: { ruleType, id, group }
+          meta: { ruleType, id, group },
+          queued
         }
 
         // Notify the parent tab
         bc.postMessage(message)
-        resolve()
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })

@@ -73,14 +73,18 @@ export const loadDbPreparedQueries = (projectId) => {
       .then((result = []) => {
         const dbPreparedQueries = result.reduce((prev, curr) => {
           const { id, db, ...preparedQueryConfig } = curr
+
+          // Make sure that prepared query object has id in it
+          const newPreparedQueryConfig = Object.assign({}, preparedQueryConfig, { id })
+
           const dbPreparedQuery = prev[db]
           if (dbPreparedQuery) {
             const newDbPreparedQuery = Object.assign({}, dbPreparedQuery)
-            newDbPreparedQuery[id] = preparedQueryConfig
+            newDbPreparedQuery[id] = newPreparedQueryConfig
             return Object.assign({}, prev, { [db]: newDbPreparedQuery })
           }
 
-          return Object.assign({}, prev, { [db]: { [id]: preparedQueryConfig } })
+          return Object.assign({}, prev, { [db]: { [id]: newPreparedQueryConfig } })
         }, {})
         store.dispatch(set("dbPreparedQueries", dbPreparedQueries))
         resolve()
@@ -93,7 +97,7 @@ const loadCollections = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.listCollections(projectId, dbAliasName)
       .then((collections = []) => {
-        store.dispatch(set(`dbCollections.${dbAliasName}`, collections))
+        setDbCollections(dbAliasName, collections)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -131,9 +135,16 @@ export const inspectColSchema = (projectId, dbAliasName, colName) => {
 export const saveColSchema = (projectId, dbAliasName, colName, schema) => {
   return new Promise((resolve, reject) => {
     client.database.modifyColSchema(projectId, dbAliasName, colName, schema)
-      .then(() => {
-        store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
+          const dbCollections = getCollections(store.getState(), dbAliasName)
+          if (!dbCollections.some(col => col === colName)) {
+            const newDbCollections = [...dbCollections, colName]
+            setDbCollections(dbAliasName, newDbCollections)
+          }
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -143,9 +154,11 @@ export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRe
   return new Promise((resolve, reject) => {
     const collectionRules = { rules: securityRules, isRealtimeEnabled }
     client.database.setColRule(projectId, dbAliasName, colName, collectionRules)
-      .then(() => {
-        store.dispatch(set(`dbRules.${dbAliasName}.${colName}`, collectionRules))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbRules.${dbAliasName}.${colName}`, collectionRules))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -156,9 +169,11 @@ export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealti
     const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
     const newCollectionRules = Object.assign({}, collectionRules, { isRealtimeEnabled })
     client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
-      .then(() => {
-        store.dispatch(set(`dbRules.${dbAliasName}.${colName}.isRealtimeEnabled`, isRealtimeEnabled))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbRules.${dbAliasName}.${colName}.isRealtimeEnabled`, isRealtimeEnabled))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -169,9 +184,11 @@ export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRu
     const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
     const newCollectionRules = Object.assign({}, collectionRules, { rules: securityRules })
     client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
-      .then(() => {
-        setColSecurityRule(dbAliasName, colName, securityRules)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setColSecurityRule(dbAliasName, colName, securityRules)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -180,10 +197,12 @@ export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRu
 export const untrackCollection = (projectId, dbAliasName, colName) => {
   return new Promise((resolve, reject) => {
     client.database.untrackCollection(projectId, dbAliasName, colName)
-      .then(() => {
-        store.dispatch(del(`dbSchemas.${dbAliasName}.${colName}`))
-        store.dispatch(del(`dbRules.${dbAliasName}.${colName}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`dbSchemas.${dbAliasName}.${colName}`))
+          store.dispatch(del(`dbRules.${dbAliasName}.${colName}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -192,14 +211,16 @@ export const untrackCollection = (projectId, dbAliasName, colName) => {
 export const deleteCollection = (projectId, dbAliasName, colName) => {
   return new Promise((resolve, reject) => {
     client.database.deleteCol(projectId, dbAliasName, colName)
-      .then(() => {
-        const collectionsList = get(store.getState(), `dbCollections.${dbAliasName}`, [])
-        const newCollectionsList = collectionsList.filter(col => col !== colName)
+      .then(({ queued }) => {
+        if (!queued) {
+          const collectionsList = get(store.getState(), `dbCollections.${dbAliasName}`, [])
+          const newCollectionsList = collectionsList.filter(col => col !== colName)
 
-        store.dispatch(del(`dbSchemas.${dbAliasName}.${colName}`))
-        store.dispatch(del(`dbRules.${dbAliasName}.${colName}`))
-        store.dispatch(set(`dbCollections.${dbAliasName}`, newCollectionsList))
-        resolve()
+          store.dispatch(del(`dbSchemas.${dbAliasName}.${colName}`))
+          store.dispatch(del(`dbRules.${dbAliasName}.${colName}`))
+          store.dispatch(set(`dbCollections.${dbAliasName}`, newCollectionsList))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -210,9 +231,11 @@ export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) =
     const preparedQueryConfig = getDbPreparedQuery(store.getState(), dbAliasName, id)
     const config = Object.assign({}, preparedQueryConfig, { sql, args })
     client.database.setPreparedQuery(projectId, dbAliasName, id, config)
-      .then(() => {
-        store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}`, config))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}`, config))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -223,9 +246,11 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
     const preparedQueryConfig = getDbPreparedQuery(store.getState(), dbAliasName, id)
     const config = Object.assign({}, preparedQueryConfig, { rule })
     client.database.setPreparedQuery(projectId, dbAliasName, id, config)
-      .then(() => {
-        setPreparedQueryRule(dbAliasName, id, rule)
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          setPreparedQueryRule(dbAliasName, id, rule)
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -234,9 +259,11 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
 export const deletePreparedQuery = (projectId, dbAliasName, id) => {
   return new Promise((resolve, reject) => {
     client.database.deletePreparedQuery(projectId, dbAliasName, id)
-      .then(() => {
-        store.dispatch(del(`dbPreparedQueries.${dbAliasName}.${id}`))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(del(`dbPreparedQueries.${dbAliasName}.${id}`))
+        }
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -265,7 +292,7 @@ export const modifyDbSchema = (projectId, dbAliasName) => {
       return Object.assign({}, prev, { [colName]: { schema } })
     }, {})
     client.database.modifySchema(projectId, dbAliasName, dbSchemaRequest)
-      .then(() => resolve())
+      .then(({ queued }) => resolve({ queued }))
       .catch(ex => reject(ex))
   })
 }
@@ -274,11 +301,15 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => {
   return new Promise((resolve, reject) => {
     const dbConfig = { enabled, type, conn, name: dbName }
     client.database.setDbConfig(projectId, dbAliasName, dbConfig)
-      .then(() => {
-        store.dispatch(set(`dbConfigs.${dbAliasName}`, dbConfig))
-        loadDBConnState(projectId, dbAliasName)
-          .then(connected => resolve(connected))
-          .catch(ex => reject(ex))
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbConfigs.${dbAliasName}`, dbConfig))
+          loadDBConnState(projectId, dbAliasName)
+            .then(connected => resolve({ connected }))
+            .catch(ex => reject(ex))
+        } else {
+          resolve({ queued: true })
+        }
       })
       .catch(ex => reject(ex))
   })
@@ -290,7 +321,7 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
     const dbConfigs = getDbConfigs(state)
     const isFirstDatabase = Object.keys(dbConfigs).length === 0
     saveDbConfig(projectId, dbAliasName, true, conn, dbType, dbName)
-      .then(() => {
+      .then(({ queued }) => {
         // Set default security rules for collections and prepared queries in the background
         saveColRule(projectId, dbAliasName, "default", defaultDBRules, false)
           .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
@@ -302,11 +333,11 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
         // If this is the first database, then auto configure it as the eventing database 
         if (isFirstDatabase) {
           saveEventingConfig(projectId, true, dbAliasName)
-            .then(() => resolve(true))
+            .then(() => resolve({ queued, enabledEventing: true }))
             .catch(() => reject())
           return
         }
-        resolve(false)
+        resolve({ queued, enabledEventing: false })
       })
       .catch(ex => reject(ex))
   })
@@ -316,7 +347,7 @@ export const enableDb = (projectId, dbAliasName, conn) => {
   return new Promise((resolve, reject) => {
     const { type, name } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, true, conn, type, name)
-      .then(connected => resolve(connected))
+      .then(({ queued, connected }) => resolve({ queued, connected }))
       .catch(ex => reject(ex))
   })
 }
@@ -325,29 +356,33 @@ export const disableDb = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     const { type, name, conn } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, false, conn, type, name)
-      .then(() => resolve())
+      .then(({ queued }) => resolve({ queued }))
       .catch(ex => reject(ex))
   })
 }
 
 export const removeDbConfig = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
-    client.database.removeDbConfig(projectId, dbAliasName).then(() => {
-      store.dispatch(del(`dbConfigs.${dbAliasName}`))
-      store.dispatch(del(`dbSchemas.${dbAliasName}`))
-      store.dispatch(del(`dbRules.${dbAliasName}`))
-      store.dispatch(del(`dbPreparedQueries.${dbAliasName}`))
+    client.database.removeDbConfig(projectId, dbAliasName)
+      .then(({ queued }) => {
 
-      // Disable eventing if the removed db is eventing db
-      const eventingDB = getEventingDbAliasName(store.getState())
-      if (dbAliasName === eventingDB) {
-        saveEventingConfig(projectId, false, "")
-          .then(() => resolve(true))
-          .catch(ex => reject(ex))
-        return
-      }
-      resolve(false)
-    })
+        if (!queued) {
+          store.dispatch(del(`dbConfigs.${dbAliasName}`))
+          store.dispatch(del(`dbSchemas.${dbAliasName}`))
+          store.dispatch(del(`dbRules.${dbAliasName}`))
+          store.dispatch(del(`dbPreparedQueries.${dbAliasName}`))
+        }
+
+        // Disable eventing if the removed db is eventing db
+        const eventingDB = getEventingDbAliasName(store.getState())
+        if (dbAliasName === eventingDB) {
+          saveEventingConfig(projectId, false, "")
+            .then(({ queued }) => resolve({ queued, disabledEventing: true }))
+            .catch(ex => reject(ex))
+          return
+        }
+        resolve({ queued, disabledEventing: false })
+      })
       .catch(ex => reject(ex))
   })
 }
@@ -358,7 +393,7 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
     saveDbConfig(projectId, dbAliasName, true, conn, type, dbName)
       .then(() => {
         modifyDbSchema(projectId, dbAliasName)
-          .then(() => resolve())
+          .then(({ queued }) => resolve({ queued }))
           .catch(ex => reject(ex))
       })
       .catch(ex => reject(ex))
@@ -373,6 +408,7 @@ export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasN
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
 export const getDbSchemas = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
+export const getAllDbSchemas = (state) => get(state, "dbSchemas", {})
 export const getDbRules = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}`, {})
 export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}`, {})
 export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: preparedQueryId, sql: "", args: [], rule: {} })
@@ -428,3 +464,4 @@ export const isPreparedQueriesSupported = (state, dbAliasName) => {
 }
 export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
 export const setColSecurityRule = (dbAliasName, colName, rule) => store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))
+export const setDbCollections = (dbAliasName, collections) => store.dispatch(set(`dbCollections.${dbAliasName}`, collections))
