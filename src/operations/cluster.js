@@ -37,7 +37,7 @@ export function loadAPIToken(projectId) {
 
 export function saveClusterSetting(key, value) {
   return new Promise((resolve, reject) => {
-    const { credentials, ...config } = get(store.getState(), "clusterConfig", {})
+    const config = get(store.getState(), "clusterConfig", {})
     const newConfig = Object.assign({}, config, { [key]: value })
     client.cluster.setConfig(newConfig)
       .then(({ queued }) => {

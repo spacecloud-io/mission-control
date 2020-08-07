@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
-import Credentials from "../../../components/settings/cluster/Credentials";
 import LetsEncryptEmail from "../../../components/settings/cluster/LetsEncryptEmail";
 import Telemetry from "../../../components/settings/cluster/Telemetry";
 import Sidenav from "../../../components/sidenav/Sidenav";
@@ -29,7 +28,6 @@ const ClusterSettings = () => {
   }, []);
 
   const clusterConfig = useSelector(state => state.clusterConfig);
-  const credentials = clusterConfig.credentials;
   const letsEncryptEmail = clusterConfig.letsEncryptEmail;
   const telemetry = clusterConfig.enableTelemetry;
   const loading = useSelector(state => state.pendingRequests > 0)
@@ -59,8 +57,6 @@ const ClusterSettings = () => {
         <Content>
           <Row>
             <Col lg={{ span: 12 }}>
-              <Credentials credentials={credentials} />
-              <Divider />
               <LetsEncryptEmail letsEncryptEmail={letsEncryptEmail} loading={loading} handleSubmit={handleLetsEncryptEmail} />
               <Divider />
               <Telemetry telemetry={telemetry} loading={loading} handleSubmit={handleTelemetry} />

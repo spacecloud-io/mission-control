@@ -402,8 +402,7 @@ export const userMan = [
 
 export const clusterConfig = {
   "letsEncryptEmail": "admin@gmail.com",
-  "enableTelemetry": true,
-  "credentials": { "user": "admin", "pass": "123" }
+  "enableTelemetry": true
 }
 
 export const permissions = [
