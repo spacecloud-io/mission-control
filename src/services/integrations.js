@@ -12,25 +12,27 @@ class Integrations {
         query: gql`
         query {
           integrations @db {
-            id
-            name
-            description
-            details
-            app
-            configPermissions
-            apiPermissions
-            key
-            version
-            level
-            deployments
-            secretSource
-            hooks
-            compatibleVersion
+            config {
+              id
+              name
+              description
+              details
+              app
+              configPermissions
+              apiPermissions
+              key
+              version
+              level
+              deployments
+              secretSource
+              hooks
+              compatibleVersion
+            }
           }
         }`,
         variables: {}
       })
-        .then(res => resolve(res.data.integrations))
+        .then(res => resolve(res.data.integrations.map(obj => obj.config)))
         .catch(ex => reject(ex))
     })
   }

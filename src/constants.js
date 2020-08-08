@@ -42,7 +42,8 @@ export const apiResourceTypes = {
   FILE_CREATE: "file-create",
   FILE_READ: "file-read",
   FILE_DELETE: "file-delete",
-  SERVICE_CALL: "service-call"
+  SERVICE_CALL: "service-call",
+  INTERNAL_API_ACCESS: "internal-api-access"
 }
 
 // These are UI modules/sections (sidenav items). These should not be confused with the space cloud modules 
@@ -116,7 +117,8 @@ export const apiResourceTypeLabels = {
   [apiResourceTypes.FILE_CREATE]: "File create",
   [apiResourceTypes.FILE_READ]: "File read",
   [apiResourceTypes.FILE_DELETE]: "File delete",
-  [apiResourceTypes.SERVICE_CALL]: "Remote service call"
+  [apiResourceTypes.SERVICE_CALL]: "Remote service call",
+  [apiResourceTypes.INTERNAL_API_ACCESS]: "Internal API access"
 }
 
 export const dbTypes = {

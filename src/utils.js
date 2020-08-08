@@ -92,7 +92,7 @@ export function formatDate(dateString) {
 }
 
 export function formatIntegrationImageUrl(integrationId) {
-  return `https://storage.googleapis.com/space-cloud/assets/${integrationId}.svg`
+  return `https://storage.googleapis.com/space-cloud/assets/integrations/${integrationId}.svg`
 }
 
 export const generateToken = (state, projectId, claims) => {

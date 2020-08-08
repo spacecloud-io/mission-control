@@ -443,12 +443,12 @@ export const serviceRoutes = [
 ]
 
 export const installedIntegrations = [
-  { id: "team-management" }
+  { id: "teammanagement" }
 ]
 
 export const supportedInterations = [
   {
-    id: "team-management",
+    id: "teammanagement",
     name: "Team Management",
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
@@ -462,7 +462,7 @@ export const supportedInterations = [
     apiPermissions: []
   },
   {
-    id: "elastic-search",
+    id: "elasticsearch",
     name: "Elastic Search",
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
