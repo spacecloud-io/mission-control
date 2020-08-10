@@ -1,6 +1,6 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { Form } from 'antd'
+import { Form, AutoComplete } from 'antd'
 import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 
@@ -152,11 +152,7 @@ const AddDeploymentForm = props => {
                   message: "Please input docker secret!"
                 }]
               }>
-                <Select placeholder="Select docker secret to be applied">
-                  {dockerSecrets.map(secret => (
-                    <Option value={secret}>{secret}</Option>
-                  ))}
-                </Select>
+                <AutoComplete placeholder="Select docker secret to be applied" options={dockerSecrets.map(secret => ({ value: secret }))} />
               </Form.Item>
             </ConditionalFormBlock>
             <FormItemLabel name="Ports" />
@@ -358,7 +354,7 @@ const AddDeploymentForm = props => {
                 <FormItemLabel name="Secrets" />
                 <Form.Item name="secrets">
                   <Select
-                    mode="multiple"
+                    mode="tags"
                     placeholder="Select secrets to be applied"
                     style={{ width: 410 }}
                   >

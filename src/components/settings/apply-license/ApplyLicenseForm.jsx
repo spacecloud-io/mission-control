@@ -19,14 +19,14 @@ const ApplyLicenseForm = ({ clusterName, handleSubmit }) => {
         initialValues={{ clusterName }}
       >
         <FormItemLabel name="Provide cluster name" description="Cluster name is used for you to identify the cluster associated with a license key" />
-        <Form.Item name="clusterName">
+        <Form.Item name="clusterName" rules={[{ required: true, message: "Please provide a cluster name!" }]}>
           <Input placeholder="Cluster name" />
         </Form.Item>
         <FormItemLabel name="License key details" />
-        <Form.Item name="licenseKey">
+        <Form.Item name="licenseKey" rules={[{ required: true, message: "Please provide a license key!" }]}>
           <Input placeholder="License key" addonBefore="Key" />
         </Form.Item>
-        <Form.Item name="licenseValue">
+        <Form.Item name="licenseValue" rules={[{ required: true, message: "Please provide a license key secret!" }]}>
           <Input.Password placeholder="License key secret" addonBefore="Secret" />
         </Form.Item>
         <Form.Item>

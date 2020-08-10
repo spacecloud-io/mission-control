@@ -73,7 +73,7 @@ const Settings = () => {
   const handleReloadDB = () => {
     incrementPendingRequests()
     reloadDbSchema(projectID, selectedDB)
-      .then(() => notify("success", "Success", "Reloaded database schema successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded database schema successfully"))
       .catch(ex => notify("error", "Error reloading database schema", ex))
       .finally(() => decrementPendingRequests())
   }

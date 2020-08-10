@@ -6,12 +6,12 @@ class RemoteServices {
   fetchServices(projectId) {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/config/projects/${projectId}/remote-service/service`)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -19,8 +19,8 @@ class RemoteServices {
 
   setServiceConfig(projectId, serviceName, config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/remote-service/service/${serviceName}`, {id: serviceName, ...config})
-        .then(({status, data}) => {
+      this.client.postJSON(`/v1/config/projects/${projectId}/remote-service/service/${serviceName}`, { id: serviceName, ...config })
+        .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
             return
@@ -34,7 +34,7 @@ class RemoteServices {
   deleteServiceConfig(projectId, serviceName) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/remote-service/service/${serviceName}`)
-        .then(({status, data}) => {
+        .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
             return

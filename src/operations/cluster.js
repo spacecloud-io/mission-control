@@ -6,7 +6,7 @@ export function loadClusterSettings() {
   return new Promise((resolve, reject) => {
     client.cluster.fetchConfig()
       .then(clusterConfig => {
-        store.dispatch(set("clusterConfig", clusterConfig))
+        setClusterConfig(clusterConfig)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -37,12 +37,12 @@ export function loadAPIToken(projectId) {
 
 export function saveClusterSetting(key, value) {
   return new Promise((resolve, reject) => {
-    const config = get(store.getState(), "clusterConfig", {})
+    const config = getClusterConfig(store.getState())
     const newConfig = Object.assign({}, config, { [key]: value })
     client.cluster.setConfig(newConfig)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set("clusterConfig", newConfig))
+          setClusterConfig(newConfig)
         }
         resolve({ queued })
       })
@@ -143,7 +143,7 @@ function setToken(token) {
 }
 
 function setPermissions(permissions) {
-  store.dispatch(set("permissions", permissions))
+  store.dispatch(set("permissions", permissions ? permissions : []))
 }
 
 export function getPermisions(state) {
@@ -157,6 +157,9 @@ export function getAPIToken(state) {
 export function setAPIToken(token) {
   store.dispatch(set("apiToken", token))
 }
+
+const setClusterConfig = (clusterConfig) => store.dispatch(set("clusterConfig", clusterConfig ? clusterConfig : {}))
+export const getClusterConfig = (state) => get(state, "clusterConfig", {})
 
 export function getLoginURL(state) {
   const env = getEnv(state)

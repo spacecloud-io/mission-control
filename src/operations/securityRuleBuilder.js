@@ -6,9 +6,12 @@ import { loadRemoteServices, getRemoteEndpointSecurityRule, saveRemoteServiceEnd
 import { loadIngressRoutes, getIngressRouteSecurityRule, getIngressRouteURL, saveIngressRouteRule } from "./ingressRoutes"
 
 export const loadSecurityRules = (projectId, ruleType) => {
-  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId), loadDbRules(projectId)]
+  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId)]
 
   switch (ruleType) {
+    case securityRuleGroups.DB_COLLECTIONS:
+      promises.push(loadDbRules(projectId))
+      break;
     case securityRuleGroups.DB_PREPARED_QUERIES:
       promises.push(loadDbPreparedQueries(projectId))
       break;

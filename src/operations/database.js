@@ -2,41 +2,51 @@ import { set, get, del } from "automate-redux";
 import client from "../client";
 import store from "../store";
 import { saveEventingConfig, getEventingDbAliasName } from "./eventing"
-import { defaultDBRules, defaultPreparedQueryRule, dbTypes } from "../constants";
+import { defaultDBRules, defaultPreparedQueryRule, dbTypes, configResourceTypes, permissionVerbs } from "../constants";
+import { checkResourcePermissions } from "../utils";
+import dotProp from "dot-prop-immutable";
 
 export const loadDbConfig = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_CONFIG], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch db config")
+      setDbConfigs({})
+      resolve()
+      return
+    }
+
     client.database.fetchDbConfig(projectId)
       .then((result = []) => {
         const dbConfigs = result.reduce((prev, curr) => {
           const [dbAliasName, config] = Object.entries(curr)[0]
           return Object.assign({}, prev, { [dbAliasName]: config })
         }, {})
-        store.dispatch(set("dbConfigs", dbConfigs))
+        setDbConfigs(dbConfigs)
         resolve()
       })
       .catch(ex => reject(ex))
   })
 }
 
-export const loadDbSchemas = (projectId) => {
+export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => {
   return new Promise((resolve, reject) => {
-    client.database.fetchDbSchemas(projectId)
-      .then((result = []) => {
-        const map = result[0]
-        const dbSchemas = Object.entries(map).reduce((prev, curr) => {
-          const [key, value] = curr
-          const [dbAliasName, colName] = key.split("-")
-          const dbSchema = prev[dbAliasName]
-          if (dbSchema) {
-            const newDbSchema = Object.assign({}, dbSchema)
-            newDbSchema[colName] = value.schema
-            return Object.assign({}, prev, { [dbAliasName]: newDbSchema })
-          }
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_SCHEMA], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch db schema")
+      setDbSchemas({})
+      resolve()
+      return
+    }
 
-          return Object.assign({}, prev, { [dbAliasName]: { [colName]: value.schema } })
-        }, {})
-        store.dispatch(set("dbSchemas", dbSchemas))
+    client.database.fetchDbSchemas(projectId, dbAliasName, colName)
+      .then((result = []) => {
+        let dbSchemas = Object.assign({}, getDbSchemas(store.getState()))
+        Object.entries(result[0]).forEach(([key, value]) => {
+          const [dbAliasName, colName] = key.split("-")
+          dbSchemas = dotProp.set(dbSchemas, `${dbAliasName}.${colName}`, value.schema)
+        })
+        setDbSchemas(dbSchemas)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -45,6 +55,14 @@ export const loadDbSchemas = (projectId) => {
 
 export const loadDbRules = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch db rules")
+      setDbRules({})
+      resolve()
+      return
+    }
+
     client.database.fetchDbRules(projectId)
       .then((result = []) => {
         const map = result[0]
@@ -60,7 +78,7 @@ export const loadDbRules = (projectId) => {
 
           return Object.assign({}, prev, { [dbAliasName]: { [colName]: value } })
         }, {})
-        store.dispatch(set("dbRules", dbRules))
+        setDbRules(dbRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -69,6 +87,14 @@ export const loadDbRules = (projectId) => {
 
 export const loadDbPreparedQueries = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch db prepared queries")
+      setDbPreparedQueries({})
+      resolve()
+      return
+    }
+
     client.database.fetchDbPreparedueries(projectId)
       .then((result = []) => {
         const dbPreparedQueries = result.reduce((prev, curr) => {
@@ -86,7 +112,7 @@ export const loadDbPreparedQueries = (projectId) => {
 
           return Object.assign({}, prev, { [db]: { [id]: newPreparedQueryConfig } })
         }, {})
-        store.dispatch(set("dbPreparedQueries", dbPreparedQueries))
+        setDbPreparedQueries(dbPreparedQueries)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -108,7 +134,7 @@ export const loadDBConnState = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.getConnectionState(projectId, dbAliasName)
       .then(connected => {
-        store.dispatch(set(`dbConnState.${dbAliasName}`, connected))
+        setDbConnState(dbAliasName, connected)
         if (connected) {
           loadCollections(projectId, dbAliasName)
             .then(() => resolve(connected))
@@ -124,9 +150,15 @@ export const loadDBConnState = (projectId, dbAliasName) => {
 export const inspectColSchema = (projectId, dbAliasName, colName) => {
   return new Promise((resolve, reject) => {
     client.database.inspectColSchema(projectId, dbAliasName, colName)
-      .then(schema => {
-        store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          loadDbSchemas(projectId, dbAliasName, colName)
+            .then(() => resolve({ queued }))
+            .catch(ex => reject(ex))
+          return
+        }
+
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -137,7 +169,7 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => {
     client.database.modifyColSchema(projectId, dbAliasName, colName, schema)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
+          setDbSchema(dbAliasName, colName, schema)
           const dbCollections = getCollections(store.getState(), dbAliasName)
           if (!dbCollections.some(col => col === colName)) {
             const newDbCollections = [...dbCollections, colName]
@@ -272,13 +304,15 @@ export const deletePreparedQuery = (projectId, dbAliasName, id) => {
 export const reloadDbSchema = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
     client.database.reloadSchema(projectId, dbAliasName)
-      .then(collections => {
-        const dbSchemas = getDbSchemas(store.getState(), dbAliasName)
-        Object.entries(collections).forEach(([colName, schema]) => {
-          dbSchemas[colName] = schema
-        })
-        store.dispatch(set(`dbSchemas.${dbAliasName}`, dbSchemas))
-        resolve()
+      .then(({ queued }) => {
+        if (!queued) {
+          loadDbSchemas(projectId, dbAliasName)
+            .then(() => resolve({ queued }))
+            .catch(ex => reject(ex))
+          return
+        }
+
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
@@ -286,7 +320,7 @@ export const reloadDbSchema = (projectId, dbAliasName) => {
 
 export const modifyDbSchema = (projectId, dbAliasName) => {
   return new Promise((resolve, reject) => {
-    const dbSchemas = getDbSchemas(store.getState(), dbAliasName)
+    const dbSchemas = getDbSchema(store.getState(), dbAliasName)
     const dbSchemaRequest = Object.entries(dbSchemas).reduce((prev, curr) => {
       const [colName, schema] = curr
       return Object.assign({}, prev, { [colName]: { schema } })
@@ -323,15 +357,23 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
     saveDbConfig(projectId, dbAliasName, true, conn, dbType, dbName)
       .then(({ queued }) => {
         // Set default security rules for collections and prepared queries in the background
-        saveColRule(projectId, dbAliasName, "default", defaultDBRules, false)
-          .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
-        if (isPreparedQueriesSupported(state, dbAliasName)) {
-          savePreparedQuerySecurityRule(projectId, dbAliasName, "default", defaultPreparedQueryRule)
-            .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
+        const hasPermissionToSaveRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.MODIFY)
+        if (hasPermissionToSaveRule) {
+          saveColRule(projectId, dbAliasName, "default", defaultDBRules, false)
+            .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
+        }
+
+        const hasPermissionToCreatePrepareduery = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.MODIFY)
+        if (hasPermissionToCreatePrepareduery) {
+          if (isPreparedQueriesSupported(state, dbAliasName)) {
+            savePreparedQuerySecurityRule(projectId, dbAliasName, "default", defaultPreparedQueryRule)
+              .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
+          }
         }
 
         // If this is the first database, then auto configure it as the eventing database 
-        if (isFirstDatabase) {
+        const hasPermissionToConfigureEventing = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_CONFIG], permissionVerbs.MODIFY)
+        if (isFirstDatabase && hasPermissionToConfigureEventing) {
           saveEventingConfig(projectId, true, dbAliasName)
             .then(() => resolve({ queued, enabledEventing: true }))
             .catch(() => reject())
@@ -374,12 +416,15 @@ export const removeDbConfig = (projectId, dbAliasName) => {
         }
 
         // Disable eventing if the removed db is eventing db
-        const eventingDB = getEventingDbAliasName(store.getState())
-        if (dbAliasName === eventingDB) {
-          saveEventingConfig(projectId, false, "")
-            .then(({ queued }) => resolve({ queued, disabledEventing: true }))
-            .catch(ex => reject(ex))
-          return
+        const hasPermissionToConfigureEventing = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_CONFIG], permissionVerbs.MODIFY)
+        if (hasPermissionToConfigureEventing) {
+          const eventingDB = getEventingDbAliasName(store.getState())
+          if (dbAliasName === eventingDB) {
+            saveEventingConfig(projectId, false, "")
+              .then(({ queued }) => resolve({ queued, disabledEventing: true }))
+              .catch(ex => reject(ex))
+            return
+          }
         }
         resolve({ queued, disabledEventing: false })
       })
@@ -392,6 +437,11 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
     const { conn, type } = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, true, conn, type, dbName)
       .then(() => {
+        const hasPermissionToChangeSchema = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_SCHEMA], permissionVerbs.MODIFY)
+        if (!hasPermissionToChangeSchema) {
+          resolve()
+          return
+        }
         modifyDbSchema(projectId, dbAliasName)
           .then(({ queued }) => resolve({ queued }))
           .catch(ex => reject(ex))
@@ -407,8 +457,8 @@ export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(stat
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
-export const getDbSchemas = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
-export const getAllDbSchemas = (state) => get(state, "dbSchemas", {})
+export const getDbSchema = (state, dbAliasName) => get(state, `dbSchemas.${dbAliasName}`, {})
+export const getDbSchemas = (state) => get(state, "dbSchemas", {})
 export const getDbRules = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}`, {})
 export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}`, {})
 export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: preparedQueryId, sql: "", args: [], rule: {} })
@@ -416,7 +466,7 @@ export const getDbDefaultPreparedQuerySecurityRule = (state, dbAliasName) => get
 export const getDbDefaultCollectionSecurityRule = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}.default.rules`, {})
 export const getCollections = (state, dbAliasName) => get(state, `dbCollections.${dbAliasName}`, [])
 export const getTrackedCollectionsInfo = (state, dbAliasName) => {
-  const schemas = getDbSchemas(state, dbAliasName)
+  const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = {}
   Object.entries(schemas).forEach(([colName, schema]) => {
@@ -434,21 +484,21 @@ export const getTrackedCollectionsInfo = (state, dbAliasName) => {
 }
 
 export const getTrackedCollections = (state, dbAliasName) => {
-  const schemas = getDbSchemas(state, dbAliasName)
+  const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = [...new Set([...Object.keys(schemas), ...Object.keys(rules)])]
   return collections.filter(col => col !== "default" && col !== "invocation_logs" && col !== "event_logs")
 }
 
 export const getDbGraphQLRootFields = (state, dbAliasName) => {
-  const schemas = getDbSchemas(state, dbAliasName)
+  const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const preparedQueries = getDbPreparedQueries(state, dbAliasName)
   return [...new Set([...Object.keys(schemas), ...Object.keys(rules), ...Object.keys(preparedQueries)])]
 }
 
 export const getUntrackedCollections = (state, dbAliasName) => {
-  const schemas = getDbSchemas(state, dbAliasName)
+  const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = getCollections(state, dbAliasName)
   return collections.filter(col => !schemas[col] && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
@@ -465,3 +515,9 @@ export const isPreparedQueriesSupported = (state, dbAliasName) => {
 export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
 export const setColSecurityRule = (dbAliasName, colName, rule) => store.dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))
 export const setDbCollections = (dbAliasName, collections) => store.dispatch(set(`dbCollections.${dbAliasName}`, collections))
+const setDbConfigs = (dbConfigs) => store.dispatch(set("dbConfigs", dbConfigs))
+const setDbSchemas = (dbSchemas) => store.dispatch(set("dbSchemas", dbSchemas))
+const setDbSchema = (dbAliasName, colName, schema) => store.dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
+const setDbRules = (dbRules) => store.dispatch(set("dbRules", dbRules))
+const setDbPreparedQueries = (dbPreparedQueries) => store.dispatch(set("dbPreparedQueries", dbPreparedQueries))
+const setDbConnState = (dbAliasName, connected) => store.dispatch(set(`dbConnState.${dbAliasName}`, connected))

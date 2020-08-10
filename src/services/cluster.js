@@ -11,7 +11,7 @@ class Cluster {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : {})
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -25,7 +25,7 @@ class Cluster {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -95,7 +95,7 @@ class Cluster {
           reject("Internal server error")
           return
         }
-        resolve(data)
+        resolve(data ? data : {})
       }).catch(ex => reject(ex.toString()))
     })
   }

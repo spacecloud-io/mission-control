@@ -1,10 +1,19 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { upsertArray } from "../utils";
+import { upsertArray, checkResourcePermissions } from "../utils";
+import { configResourceTypes, permissionVerbs } from "../constants";
 
 export const loadIngressRoutes = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.INGRESS_ROUTES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch ingress routes")
+      setIngressRoutes([])
+      resolve()
+      return
+    }
+
     client.routing.fetchIngressRoutes(projectId)
       .then(ingressRoutes => {
         setIngressRoutes(ingressRoutes)
@@ -16,9 +25,17 @@ export const loadIngressRoutes = (projectId) => {
 
 export const loadIngressRoutesGlobalConfig = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.INGRESS_GLOBAL], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch ingress global config")
+      setIngressRoutesGlobalConfig({})
+      resolve()
+      return
+    }
+
     client.routing.fetchIngressRoutesGlobalConfig(projectId)
       .then(ingressRoutesGlobalConfig => {
-        store.dispatch(set("ingressRoutesGlobal", ingressRoutesGlobalConfig))
+        setIngressRoutesGlobalConfig(ingressRoutesGlobalConfig)
         resolve()
       })
       .catch(ex => reject(ex))

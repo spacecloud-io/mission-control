@@ -34,13 +34,16 @@ function IntegrationsList({ integrations }) {
     history.push(`/mission-control/projects/${projectID}/integrations/details/${integratonId}`)
   }
 
-  const handleOpenConsole = (app) => {
-    window.open(app, "_blank")
+  const handleOpenConsole = (appUrl) => {
+    if (!appUrl.startsWith("http")) {
+      appUrl = window.location.origin + appUrl
+    }
+    window.open(appUrl, "_blank")
   }
 
   return (
     <Row gutter={[24, 24]}>
-      {integrations.map(({ id, name, description, installed, app }) => {
+      {integrations.map(({ id, name, description, installed, appUrl }) => {
         return (
           <Col lg={{ span: 8 }}>
             <IntegrationCard
@@ -51,7 +54,7 @@ function IntegrationsList({ integrations }) {
               handleDelete={() => handleDelete(id)}
               handleViewDetails={() => handleViewDetails(id)}
               handleViewPermissions={() => handleViewPermissions(id)}
-              handleOpenConsole={() => handleOpenConsole(app)}
+              handleOpenConsole={() => handleOpenConsole(appUrl)}
               handleInstall={() => handleInstall(id)}
             />
           </Col>

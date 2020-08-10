@@ -1,7 +1,8 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { upsertArray } from "../utils";
+import { upsertArray, checkResourcePermissions } from "../utils";
+import { configResourceTypes, permissionVerbs } from "../constants";
 
 export const loadFileStoreConnState = (projectId) => {
   return new Promise((resolve, reject) => {
@@ -16,9 +17,17 @@ export const loadFileStoreConnState = (projectId) => {
 
 export const loadFileStoreConfig = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.FILESTORE_CONFIG], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch file store config")
+      setFileStoreConfig({})
+      resolve()
+      return
+    }
+
     client.fileStore.getConfig(projectId)
       .then((fileStoreConfig) => {
-        store.dispatch(set("fileStoreConfig", fileStoreConfig))
+        setFileStoreConfig(fileStoreConfig)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -27,6 +36,14 @@ export const loadFileStoreConfig = (projectId) => {
 
 export const loadFileStoreRules = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.FILESTORE_RULES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch file store rules")
+      setFileStoreRules([])
+      resolve()
+      return
+    }
+
     client.fileStore.getRules(projectId)
       .then((fileStoreRules) => {
         setFileStoreRules(fileStoreRules)
@@ -41,8 +58,8 @@ export const saveFileStoreConfig = (projectId, config) => {
     client.fileStore.setConfig(projectId, config)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set("fileStoreConfig", config))
-          store.dispatch(setFileStoreConnState(config.enabled))
+          setFileStoreConfig(config)
+          setFileStoreConnState(config.enabled)
         }
         resolve({ queued })
       })
@@ -121,4 +138,6 @@ export const setFileStoreSecurityRule = (ruleId, securityRule) => {
     return obj
   })
   setFileStoreRules(newRules)
-} 
+}
+
+const setFileStoreConfig = (fileStoreConfig) => store.dispatch(set("fileStoreConfig", fileStoreConfig)) 

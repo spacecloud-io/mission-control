@@ -41,7 +41,7 @@ class Deployments {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -55,7 +55,8 @@ class Deployments {
             reject(data.error)
             return
           }
-          resolve(data.result)
+
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -69,7 +70,7 @@ class Deployments {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })

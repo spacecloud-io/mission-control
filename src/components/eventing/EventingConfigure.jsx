@@ -1,5 +1,5 @@
 import React from 'react'
-import { Select, Button, Form, Checkbox } from 'antd';
+import { AutoComplete, Button, Form, Checkbox } from 'antd';
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
 
@@ -24,11 +24,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => 
 			</Form.Item>
 			<ConditionalFormBlock dependency="enabled" condition={() => form.getFieldValue("enabled")}>
 				<Form.Item name="dbAlias" rules={[{ required: true, message: 'Database is required!' }]}>
-					<Select placeholder="Choose an eventing database" style={{ width: 320 }} allowClear>
-						{dbList.map((db) => (
-							<Select.Option value={db.alias} ><img src={db.svgIconSet} style={{ marginRight: 10 }} />{db.alias}</Select.Option>
-						))}
-					</Select>
+					<AutoComplete placeholder="Choose an eventing database" style={{ width: 320 }} options={dbList.map(db => ({ value: db }))} />
 				</Form.Item>
 			</ConditionalFormBlock>
 			<Form.Item>

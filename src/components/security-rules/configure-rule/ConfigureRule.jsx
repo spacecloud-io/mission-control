@@ -15,7 +15,7 @@ import {
 import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
-import { notify, dbIcons, isJson } from '../../../utils';
+import { notify, isJson } from '../../../utils';
 import { generateSchemaAST } from '../../../graphql';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -146,20 +146,13 @@ const ConfigureRule = (props) => {
   const projects = useSelector((state) => state.projects);
 
   // Component state
-  const [selectedDb, setSelectedDb] = useState("");
   const [col, setCol] = useState('');
-
+  
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, db } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
-  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
-    if (!obj.type) obj.type = alias;
-    return {
-      alias: alias,
-      dbtype: obj.type,
-      svgIconSet: dbIcons(projects, projectID, alias),
-    };
-  });
+  const dbList = Object.keys(dbConfigs)
+  const [selectedDb, setSelectedDb] = useState(db);
   const data = useSelector(state => getTrackedCollections(state, selectedDb))
   const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.ruleMetaData.group, props.ruleMetaData.id))
 
@@ -263,7 +256,7 @@ const ConfigureRule = (props) => {
     field,
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
-    db: props.selectedRule.db,
+    db: db,
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
     errorMsg: error ? true : false,
@@ -511,17 +504,11 @@ const ConfigureRule = (props) => {
             name='db'
             rules={[{ required: true, message: 'Please select a database!' }]}
           >
-            <Select
+            <AutoComplete
               placeholder='Select a database'
-              onSelect={handleSelectDatabase}
-            >
-              {dbList.map((alias) => (
-                <Select.Option value={alias.alias} key={alias.alias}>
-                  <img src={alias.svgIconSet} style={{ marginRight: 10 }} />
-                  {alias.alias}
-                </Select.Option>
-              ))}
-            </Select>
+              onChange={handleSelectDatabase}
+              options={dbList.map(db => ({ value: db }))}
+            />
           </Form.Item>
           <FormItemLabel name='Collection / Table name' />
           <Form.Item name='col' rules={[{ required: true }]}>

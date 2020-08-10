@@ -1,11 +1,19 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import dotProp from "dot-prop-immutable";
-import { upsertArray } from "../utils";
+import { upsertArray, checkResourcePermissions } from "../utils";
+import { configResourceTypes, permissionVerbs } from "../constants";
 
 export const loadServiceRoutes = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.SERVICE_ROUTES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch service routes")
+      setServiceRoutes({})
+      resolve()
+      return
+    }
+
     client.deployments.fetchDeploymentRoutes(projectId)
       .then((res = []) => {
         const serviceRoutes = res.reduce((prev, curr) => {
@@ -16,7 +24,7 @@ export const loadServiceRoutes = (projectId) => {
           const newRoutes = [...oldRoutes, curr]
           return Object.assign({}, prev, { [curr.id]: newRoutes })
         }, {})
-        store.dispatch(set("serviceRoutes", serviceRoutes))
+        setServiceRoutes(serviceRoutes)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -25,9 +33,17 @@ export const loadServiceRoutes = (projectId) => {
 
 export const loadServices = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.SERVICES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch services")
+      setServices([])
+      resolve()
+      return
+    }
+
     client.deployments.fetchDeployments(projectId)
       .then((deployments) => {
-        store.dispatch(set("services", deployments))
+        setServices(deployments)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -36,6 +52,14 @@ export const loadServices = (projectId) => {
 
 export const loadServicesStatus = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.SERVICES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch service status")
+      setServicesStatus({})
+      resolve()
+      return
+    }
+
     client.deployments.fetchDeploymentStatus(projectId)
       .then((result) => {
         if (!result) result = []
@@ -49,7 +73,7 @@ export const loadServicesStatus = (projectId) => {
 
           return prev
         }, {})
-        store.dispatch(set("servicesStatus", statusMap))
+        setServicesStatus(statusMap)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -63,7 +87,7 @@ export const saveService = (projectId, serviceId, version, serviceConfig) => {
         if (!queued) {
           const services = get(store.getState(), "services", [])
           const newServices = upsertArray(services, obj => obj.id === serviceConfig.id && obj.version === version, () => serviceConfig)
-          store.dispatch(set("services", newServices))
+          setServices(newServices)
         }
         resolve({ queued })
       })
@@ -78,7 +102,7 @@ export const deleteService = (projectId, serviceId, version) => {
         if (!queued) {
           const services = get(store.getState(), "services", [])
           const newServices = services.filter(obj => !(obj.id === serviceId && obj.version === version));
-          store.dispatch(set("services", newServices))
+          setServices(newServices)
         }
         resolve({ queued })
       })
@@ -91,7 +115,7 @@ export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
     client.deployments.setDeploymentRoutes(projectId, serviceId, serviceRoutes)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set(`serviceRoutes.${serviceId}`, serviceRoutes))
+          setServiceRoutes(serviceRoutes)
         }
         resolve({ queued });
       })
@@ -104,3 +128,6 @@ export const getServices = (state) => get(state, "services", [])
 export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
 export const getServicesStatus = (state) => get(state, "servicesStatus", {})
+const setServiceRoutes = (serviceRoutes) => store.dispatch(set("serviceRoutes", serviceRoutes))
+const setServices = (services) => store.dispatch(set("services", services))
+const setServicesStatus = (servicesStatus) => store.dispatch(set("servicesStatus", servicesStatus))

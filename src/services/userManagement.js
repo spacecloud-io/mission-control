@@ -11,7 +11,7 @@ class UserManagement {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })

@@ -407,8 +407,16 @@ export function performSetup() {
 
         // If the user is not logged in, redirect to the login url
         if (!loggedIn) {
-          const loginURL = getLoginURL(state)
-          history.replace(loginURL)
+          let loginURL = getLoginURL(state)
+
+          if (!loginURL.startsWith("http")) {
+            loginURL = window.location.origin + loginURL
+          }
+
+          if (window.location.href !== loginURL) {
+            window.location.href = loginURL
+          }
+
           resolve()
           return
         }

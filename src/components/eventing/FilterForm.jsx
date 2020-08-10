@@ -73,7 +73,7 @@ const FilterForm = (props) => {
         <ConditionalFormBlock dependency="showName" condition={() => form.getFieldValue("showName")}>
           <FormItemLabel name="Specify event triggers" />
           <Form.Item name="name" rules={[{ required: true, message: "Please select atleast one event trigger" }]}>
-            <Select mode="multiple" placeholder="Select event triggers for which you want to see the logs">
+            <Select mode="tags" placeholder="Select event triggers for which you want to see the logs">
               {triggerNames.map(val => <Option key={val}>{val}</Option>)}
             </Select>
           </Form.Item>

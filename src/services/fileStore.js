@@ -25,7 +25,9 @@ class FileStore {
             reject(data.error)
             return
           }
-          resolve(data.result[0])
+
+          const fileStoreConfig = data.result && data.result[0] ? data.result[0] : {}
+          resolve(fileStoreConfig)
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -39,7 +41,7 @@ class FileStore {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })

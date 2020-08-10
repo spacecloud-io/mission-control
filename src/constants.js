@@ -4,6 +4,11 @@ export const endpointTypes = {
   PREPARED: "prepared"
 }
 
+export const permissionVerbs = {
+  READ: "read",
+  MODIFY: "modify"
+}
+
 export const configResourceTypes = {
   DB_CONFIG: "db-config",
   DB_RULES: "db-rule",
@@ -73,7 +78,7 @@ export const moduleResources = {
   [projectModules.SECRETS]: [configResourceTypes.SECRETS],
   [projectModules.INGRESS_ROUTES]: [configResourceTypes.INGRESS_ROUTES, configResourceTypes.INGRESS_GLOBAL],
   [projectModules.USER_MANAGEMENT]: [configResourceTypes.USER_MANAGEMENT],
-  [projectModules.INTEGRATIONS]: [configResourceTypes.INTEGRATIONS],
+  [projectModules.INTEGRATIONS]: [],
   [projectModules.EXPLORER]: [],
   [projectModules.SETTINGS]: [],
   [projectModules.SECURITY_RULES]: []
@@ -210,4 +215,4 @@ const getURL = (productionURL, developmentURL, mockURL) => {
 }
 
 export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
-export const spaceUpAPIGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")
+export const spaceUpAPIGraphQLURL = getURL("https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")

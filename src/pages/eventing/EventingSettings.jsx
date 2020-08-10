@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import { dbIcons, notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
@@ -25,14 +25,7 @@ const EventingSettings = () => {
   const dbConfigs = useSelector(state => getDbConfigs(state));
 
   // Derived state
-  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
-    if (!obj.type) obj.type = alias;
-    return {
-      alias: alias,
-      dbtype: obj.type,
-      svgIconSet: dbIcons(alias)
-    };
-  });
+  const dbList = Object.keys(dbConfigs)
 
   const handleEventingConfig = ({ enabled, dbAlias }) => {
     incrementPendingRequests()

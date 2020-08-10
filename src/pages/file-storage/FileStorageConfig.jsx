@@ -7,7 +7,7 @@ import Topbar from '../../components/topbar/Topbar';
 import { LeftOutlined } from '@ant-design/icons';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
-import { Button, Card, Input, Radio, Form, Alert, Cascader, Col } from "antd"
+import { Button, Card, Input, Radio, Form, Alert, AutoComplete, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
@@ -25,18 +25,14 @@ const FileStorageConfig = () => {
   const { storeType, bucket, endpoint, conn, secret } = useSelector(state => getFileStoreConfig(state))
   const secrets = useSelector(state => getSecrets(state))
 
-  const getDataKeys = (fileSecret) => {
-    const fileChildren = Object.keys(fileSecret.data)
-      .map(keys => {
-        return ({ "value": keys, "label": keys })
-      })
-    return fileChildren;
-  }
-
   const fileSecrets = secrets.filter(secret => secret.type === 'file')
-    .map(fileSecret => {
-      return ({ "value": fileSecret.id, "label": fileSecret.id, "children": getDataKeys(fileSecret) })
-    });
+  let fileSecretsAutoCompleteOptions = []
+  fileSecrets.forEach(({ id, data }) => {
+    Object.keys(data).forEach((key) => {
+      fileSecretsAutoCompleteOptions.push({ value: `secrets.${id}.${key}` })
+    })
+  })
+
 
   useEffect(() => {
     ReactGA.pageview("/projects/file-storage/configure");
@@ -51,19 +47,13 @@ const FileStorageConfig = () => {
     }
   }, [projectID])
 
-  let initialSecretValue = ""
-  if (secret) {
-    const [_, secretName, ...secretKeyNameParts] = secret.split(".")
-    initialSecretValue = [secretName, secretKeyNameParts.join(".")]
-  }
-
   const formInitialValues = {
     storeType: storeType ? storeType : "local",
     conn: conn,
     bucket: bucket,
     endpoint: endpoint,
     credentials: (storeType && !secret) ? "direct" : "secret",
-    secret: initialSecretValue
+    secret: secret
   }
 
   // This is used to bind the form initial values on page reload. 
@@ -77,9 +67,6 @@ const FileStorageConfig = () => {
 
   // Handlers
   const handleFinish = (values) => {
-    if (values.credentials === "secret") {
-      values.secret = `secrets.${values.secret[0]}.${values.secret[1]}`
-    }
     delete values["credentials"]
     incrementPendingRequests()
     const newConfig = { enabled: true, ...values }
@@ -165,7 +152,7 @@ const FileStorageConfig = () => {
                     />
                     <p style={{ fontSize: "16px", marginTop: "21px", fontWeight: "bold" }}> Choose a secret </p>
                     <Form.Item rules={[{ required: true, message: 'Please provide a secret' }]} name="secret">
-                      <Cascader options={fileSecrets} style={{ width: "300px" }} placeholder="Please select" />
+                      <AutoComplete options={fileSecretsAutoCompleteOptions} style={{ width: "300px" }} placeholder="Please select" />
                     </Form.Item>
                   </ConditionalFormBlock>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "direct"}>
@@ -199,7 +186,7 @@ const FileStorageConfig = () => {
                     />
                     <p style={{ fontSize: "16px", marginTop: "21px", fontWeight: "bold" }}> Choose a secret </p>
                     <Form.Item rules={[{ required: true, message: 'Please provide a secret' }]} name="secret">
-                      <Cascader options={fileSecrets} style={{ width: "300px" }} placeholder="Please select" />
+                      <AutoComplete options={fileSecretsAutoCompleteOptions} style={{ width: "300px" }} placeholder="Please select" />
                     </Form.Item>
                   </ConditionalFormBlock>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "direct"}>

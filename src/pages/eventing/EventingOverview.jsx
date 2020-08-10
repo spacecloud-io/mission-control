@@ -10,7 +10,6 @@ import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { getEventSourceFromType, notify, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import eventingSvg from "../../assets/eventing.svg"
-import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
@@ -38,10 +37,7 @@ const EventingOverview = () => {
 	const activeDB = Object.keys(dbConfigs).find(db => {
 		return dbConfigs[db].enabled
 	})
-	const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
-		if (!obj.type) obj.type = alias
-		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
-	})
+	const dbList = Object.keys(dbConfigs)
 	const rulesTableData = Object.entries(rules).map(([id, { type }]) => ({ id, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { id: ruleClicked, ...rules[ruleClicked] } : undefined

@@ -1,13 +1,23 @@
 import { set, del, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
+import { checkResourcePermissions } from "../utils";
+import { configResourceTypes, permissionVerbs } from "../constants";
 
 export const loadRemoteServices = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.REMOTE_SERVICES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch remote services")
+      setRemoteServices({})
+      resolve()
+      return
+    }
+
     client.remoteServices.fetchServices(projectId)
       .then((result = []) => {
         const remoteServices = result.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
-        store.dispatch(set("remoteServices", remoteServices))
+        setRemoteServices(remoteServices)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -75,3 +85,4 @@ export const getRemoteEndpointSecurityRule = (state, serviceId, endpointId) => g
 export const getRemoteServiceEndpoints = (state, serviceId) => get(state, `remoteServices.${serviceId}.endpoints`, {})
 export const getRemoteServiceEndpointConfig = (state, serviceId, endpointId) => get(state, `remoteServices.${serviceId}.endpoints.${endpointId}`, {})
 export const setRemoteEndpointRule = (serviceId, endpointId, rule) => store.dispatch(set(`remoteServices.${serviceId}.endpoints.${endpointId}.rule`, rule))
+const setRemoteServices = (remoteServices) => store.dispatch(set("remoteServices", remoteServices))
