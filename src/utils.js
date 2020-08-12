@@ -10,7 +10,8 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects, getJWTSecret } from './operations/projects'
+import NodeRSA from "node-rsa";
+import { loadProjects, getJWTSecret, getSecretAlgorithm } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
@@ -97,8 +98,9 @@ export function formatIntegrationImageUrl(integrationId) {
 
 export const generateToken = (state, projectId, claims) => {
   const secret = getJWTSecret(state, projectId)
+  const algorithm = getSecretAlgorithm(state, projectId)
   if (!secret) return ""
-  return jwt.sign(claims, secret);
+  return jwt.sign(claims, secret, { algorithm });
 }
 
 export function canGenerateToken(state, projectId) {
@@ -147,6 +149,15 @@ export const generateId = (len = 32) => {
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+export const generateKeyPairs = () => {
+  const key = new NodeRSA();
+  key.generateKeyPair();
+  return {
+    public: key.exportKey("pkcs8-public-pem"),
+    private: key.exportKey("pkcs8-private-pem")
+  }
 }
 
 export const generateJWTSecret = generateId

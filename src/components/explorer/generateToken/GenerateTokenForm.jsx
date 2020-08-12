@@ -18,13 +18,13 @@ const GenerateTokenForm = (props) => {
   const initialPayload = decodedClaims ? decodedClaims : {}
 
   const [data, setData] = useState(JSON.stringify(initialPayload, null, 2))
-  const generatedToken = jwt.sign(data, props.secret)
+  const generatedToken = jwt.sign(data, props.secret, {algorithm: props.algorithm})
 
   const handleSubmit = e => {
     form.validateFields().then(values => {
       try {
         JSON.parse(data)
-        props.handleSubmit(jwt.sign(data, props.secret));
+        props.handleSubmit(jwt.sign(data, props.secret, {algorithm: props.algorithm}));
         props.handleCancel();
       } catch (ex) {
         notify("error", "Error", ex.toString())

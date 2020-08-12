@@ -67,10 +67,10 @@ export const saveDockerRegistry = (projectId, dockerRegistry) => saveProjectSett
 
 export const saveAesKey = (projectId, aesKey) => saveProjectSetting(projectId, "aesKey", aesKey)
 
-export const addSecret = (projectId, secret, isPrimary) => {
+export const addSecret = (projectId, secret, isPrimary, alg, publicKey, privateKey) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const newSecret = { secret, isPrimary }
+  const newSecret = { secret, isPrimary, alg, publicKey, privateKey }
   const newSecrets = [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
@@ -101,5 +101,16 @@ export function getJWTSecret(state, projectId) {
   const projectConfig = getProjectConfig(state, projectId)
   const secrets = get(projectConfig, "secrets", [])
   if (secrets.length === 0) return ""
-  return secrets[0].secret
+  const primarySecret = secrets.find(val => val.isPrimary);
+  if (!primarySecret) return secrets[0].secret
+  return primarySecret.alg === "HS256" ? primarySecret.secret : primarySecret.privateKey
+}
+
+export function getSecretAlgorithm(state, projectId) {
+  const projectConfig = getProjectConfig(state, projectId)
+  const secrets = get(projectConfig, "secrets", [])
+  if (secrets.length === 0) return "HS256"
+  const primarySecret = secrets.find(val => val.isPrimary);
+  if (!primarySecret) return secrets[0].alg
+  return primarySecret.alg
 }

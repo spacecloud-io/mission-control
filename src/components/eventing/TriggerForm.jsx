@@ -15,7 +15,7 @@ import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
-const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken, projectId }) => {
+const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, algorithm, internalToken, projectId }) => {
   const [form] = Form.useForm()
   const [eventType, setEventType] = useState(initialEventType);
 
@@ -126,6 +126,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
         handleSubmit={setToken}
         initialToken={token}
         secret={secret}
+        algorithm={algorithm}
       />}
       {eventResponse && <React.Fragment>
         <br />
