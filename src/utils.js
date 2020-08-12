@@ -10,7 +10,6 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import NodeRSA from "node-rsa";
 import { loadProjects, getJWTSecret, getSecretAlgorithm } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
@@ -19,6 +18,7 @@ import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL, loadAPIToken } from './operations/cluster'
 import { useSelector } from 'react-redux'
+import { RSA } from 'hybrid-crypto-js';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -151,12 +151,24 @@ export const generateId = (len = 32) => {
   });
 }
 
-export const generateKeyPairs = () => {
-  const key = new NodeRSA();
-  key.generateKeyPair();
+export const generateKeyPairs =  async () => {
+/*   const key = new NodeRSA();
+  key.generateKeyPair(2048);
+  const privateKey = key.exportKey("pkcs8-private-pem");
+  const key2 = new NodeRSA(privateKey);
+  const publicKey = key2.exportKey("pkcs8-public-pem")
   return {
-    public: key.exportKey("pkcs8-public-pem"),
-    private: key.exportKey("pkcs8-private-pem")
+    private: privateKey,
+    public: publicKey
+  } */
+
+  const rsa = new RSA({
+    keySize: 2048,
+});
+  const {publicKey, privateKey} = await rsa.generateKeyPairAsync();
+  return {
+    privateKey,
+    publicKey
   }
 }
 

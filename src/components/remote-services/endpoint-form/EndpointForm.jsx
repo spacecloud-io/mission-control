@@ -449,8 +449,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
         <GenerateTokenForm
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={(token) => form.setFieldsValue({ token })}
-          secret={secret}
-          algorithm={algorithm}
+          projectID={projectID}
           initialToken={form.getFieldValue("token")}
         />
       )}

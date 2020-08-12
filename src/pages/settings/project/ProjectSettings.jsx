@@ -66,17 +66,17 @@ const ProjectSettings = () => {
     })
   }
 
-  const handleChangePrimarySecret = (secret) => {
+  const handleChangePrimarySecret = (index) => {
     incrementPendingRequests()
-    changePrimarySecret(projectID, secret)
+    changePrimarySecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed primary secret successfully"))
       .catch(ex => notify("error", "Error changing primary secret", ex))
       .finally(() => decrementPendingRequests());
   }
 
-  const handleRemoveSecret = (secret) => {
+  const handleRemoveSecret = (index) => {
     incrementPendingRequests()
-    removeSecret(projectID, secret)
+    removeSecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed secret successfully"))
       .catch(ex => notify("error", "Error removing secret", ex))
       .finally(() => decrementPendingRequests());

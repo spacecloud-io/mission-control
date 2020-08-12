@@ -91,8 +91,7 @@ const Graphql = props => {
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={props.setUserToken}
           initialToken={getToken()}
-          secret={props.secret}
-          algorithm={props.algorithm}
+          projectID={projectID}
         />}
       </div>
     </div >
