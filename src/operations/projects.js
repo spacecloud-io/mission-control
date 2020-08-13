@@ -78,23 +78,23 @@ export const saveDockerRegistry = (projectId, dockerRegistry) => saveProjectSett
 
 export const saveAesKey = (projectId, aesKey) => saveProjectSetting(projectId, "aesKey", aesKey)
 
-export const addSecret = (projectId, secret, isPrimary) => {
+export const addSecret = (projectId, secret, isPrimary, alg, publicKey, privateKey) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const newSecret = { secret, isPrimary }
+  const newSecret = { secret, isPrimary, alg, publicKey, privateKey }
   const newSecrets = [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 
-export const changePrimarySecret = (projectId, secret) => {
+export const changePrimarySecret = (projectId, index) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
-  const newSecrets = secrets.map(obj => Object.assign({}, obj, { isPrimary: obj.secret === secret ? true : false }))
+  const newSecrets = secrets.map((obj, i) => Object.assign({}, obj, { isPrimary: i === index ? true : false }))
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 
-export const removeSecret = (projectId, secret) => {
+export const removeSecret = (projectId, index) => {
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
-  const newSecrets = secrets.filter((obj) => obj.secret !== secret)
+  const newSecrets = secrets.filter((_, i) => i !== index)
   const primarySecretPresent = newSecrets.some(obj => obj.isPrimary)
   if (!primarySecretPresent && newSecrets.length > 0) newSecrets[0].isPrimary = true
   return saveProjectSetting(projectId, "secrets", newSecrets)
@@ -111,8 +111,12 @@ export function getProjectConfig(state, projectId) {
 export function getJWTSecret(state, projectId) {
   const projectConfig = getProjectConfig(state, projectId)
   const secrets = get(projectConfig, "secrets", [])
-  if (secrets.length === 0) return ""
-  return secrets[0].secret
+  if (secrets.length === 0) return { value: "" }
+  const primarySecret = secrets.find(val => val.isPrimary);
+  const secret = primarySecret ? primarySecret : secrets[0]
+  const algorithm = secret.alg ? secret.alg : "HS256"
+  const value = algorithm === "HS256" ? secret.secret : secret.privateKey
+  return { value, algorithm }
 }
 
 export function getAPIToken(state) {

@@ -19,6 +19,7 @@
     "graphql": "^14.5.4",
     "graphql-prettier": "^1.0.6",
     "graphql-tag": "^2.10.3",
+    "hybrid-crypto-js": "^0.2.3",
     "jsonwebtoken": "^8.5.1",
     "less": "^3.9.0",
     "less-loader": "^5.0.0",

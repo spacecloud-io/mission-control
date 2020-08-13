@@ -20,7 +20,7 @@ import '../explorer.css';
 import { notify, canGenerateToken } from '../../../utils';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getJWTSecret, getAPIToken } from '../../../operations/projects';
+import { getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
 
 const { Option } = Select;
@@ -178,7 +178,7 @@ const SpaceApi = props => {
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={props.setUserToken}
           initialToken={getToken()}
-          secret={props.secret}
+          projectID={projectID}
         />}
       </div>
     </div>
@@ -189,7 +189,6 @@ const SpaceApi = props => {
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
   return {
-    secret: getJWTSecret(state, projectId),
     projectId: projectId,
     selectedTemplate: get(state, 'uiState.explorer.spaceApi.selectedTemplate'),
     spaceApiQuery: get(

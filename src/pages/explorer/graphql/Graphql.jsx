@@ -13,7 +13,7 @@ import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getJWTSecret, getAPIToken } from '../../../operations/projects';
+import { getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
 import { canGenerateToken } from '../../../utils';
 
@@ -92,7 +92,7 @@ const Graphql = props => {
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={props.setUserToken}
           initialToken={getToken()}
-          secret={props.secret}
+          projectID={projectID}
         />}
       </div>
     </div >
@@ -103,7 +103,6 @@ const Graphql = props => {
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
   return {
-    secret: getJWTSecret(state, projectId),
     projectId: projectId,
     query: state.uiState.graphiql.query,
     variables: state.uiState.graphiql.variables,

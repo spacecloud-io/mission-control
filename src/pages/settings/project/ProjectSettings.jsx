@@ -50,10 +50,10 @@ const ProjectSettings = () => {
   const dockerRegistry = selectedProject.dockerRegistry
 
   // Handlers
-  const handleAddSecret = (secret, isPrimary) => {
+  const handleAddSecret = (secret, isPrimary, alg, publicKey, privateKey) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      addSecret(projectID, secret, isPrimary)
+      addSecret(projectID, secret, isPrimary, alg, publicKey, privateKey)
         .then(({ queued }) => {
           notify("success", "Success", queued ? actionQueuedMessage : "Added new secret successfully")
           resolve()
@@ -66,17 +66,17 @@ const ProjectSettings = () => {
     })
   }
 
-  const handleChangePrimarySecret = (secret) => {
+  const handleChangePrimarySecret = (index) => {
     incrementPendingRequests()
-    changePrimarySecret(projectID, secret)
+    changePrimarySecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed primary secret successfully"))
       .catch(ex => notify("error", "Error changing primary secret", ex))
       .finally(() => decrementPendingRequests());
   }
 
-  const handleRemoveSecret = (secret) => {
+  const handleRemoveSecret = (index) => {
     incrementPendingRequests()
-    removeSecret(projectID, secret)
+    removeSecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed secret successfully"))
       .catch(ex => notify("error", "Error removing secret", ex))
       .finally(() => decrementPendingRequests());

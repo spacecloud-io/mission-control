@@ -10,14 +10,15 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects, getJWTSecret, loadProjectAPIToken } from './operations/projects'
+import { loadProjects, getJWTSecret, loadProjectAPIToken, getSecretAlgorithm } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
-import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
+import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
+import { RSA } from 'hybrid-crypto-js';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -96,9 +97,9 @@ export function formatIntegrationImageUrl(integrationId) {
 }
 
 export const generateToken = (state, projectId, claims) => {
-  const secret = getJWTSecret(state, projectId)
-  if (!secret) return ""
-  return jwt.sign(claims, secret);
+  const { value, algorithm } = getJWTSecret(state, projectId)
+  if (!value) return ""
+  return jwt.sign(claims, value, { algorithm });
 }
 
 export function canGenerateToken(state, projectId) {
@@ -147,6 +148,17 @@ export const generateId = (len = 32) => {
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+export const generateRSAKeyPair = async () => {
+  const rsa = new RSA({
+    keySize: 2048,
+  });
+  const { publicKey, privateKey } = await rsa.generateKeyPairAsync();
+  return {
+    privateKey,
+    publicKey
+  }
 }
 
 export const generateJWTSecret = generateId
