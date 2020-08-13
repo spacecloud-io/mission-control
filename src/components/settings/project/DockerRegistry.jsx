@@ -96,7 +96,6 @@ const DockerRegistryModal = ({ handleSubmit, handleCancel }) => {
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      console.log(values);
       const registryType = values["registryType"]
       let registryValue = ""
       switch (registryType) {

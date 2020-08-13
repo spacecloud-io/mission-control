@@ -97,7 +97,6 @@ const Browse = () => {
           })
 
           const moreDataToFetch = data.result.length < pageSize ? false : true
-          console.log("MoreDataToFetch", moreDataToFetch)
           setHasMore(moreDataToFetch)
           setTableData(fetchSinceStart ? data.result : [...previousData, ...data.result])
           resolve()

@@ -70,35 +70,6 @@ class Eventing {
       uri = spaceCloudClusterOrigin + uri;
     }
     const graphqlClient = createGraphQLClient(uri, getToken)
-    console.log('Graphl query', `
-    query {
-      event_logs (
-        sort: ["-event_ts"],
-        limit: 100,
-        where: {
-          status: {_in: $status}
-          ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
-          ${showDate ? "event_ts: {_gte: $startDate, _lte: $endDate}" : ""}
-          event_ts: {_lte: $lastEventDate}
-        }
-      ) @${dbType} {
-        _id
-        rule_name
-        status
-        event_ts
-        invocation_logs (
-          where: {event_id: {_eq: "event_logs._id"}}
-        ) @${dbType} {
-          _id
-          invocation_time
-          response_status_code
-          request_payload
-          response_body
-          error_msg
-        }
-      }
-    }
-  `)
     return new Promise((resolve, reject) => {
       graphqlClient.query({
         query: gql`
