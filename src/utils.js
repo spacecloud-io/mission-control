@@ -150,7 +150,7 @@ export const generateId = (len = 32) => {
   });
 }
 
-export const generateKeyPairs = async () => {
+export const generateRSAKeyPair = async () => {
   const rsa = new RSA({
     keySize: 2048,
   });

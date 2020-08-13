@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, generateKeyPairs } from '../../../utils';
+import { generateJWTSecret, generateRSAKeyPair } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 
 
@@ -17,7 +17,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
 
   const onAlgorithmChange = async (alg) => {
     if (alg === "RS256") {
-      const { publicKey, privateKey } = await generateKeyPairs();
+      const { publicKey, privateKey } = await generateRSAKeyPair();
       form.setFieldsValue({
         publicKey,
         privateKey
@@ -106,13 +106,13 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
   // For backword compatibility assume the `alg` as `HS256`
   const secretsData = secrets.map(obj => Object.assign({}, obj, { alg: obj.alg ? obj.alg : "HS256" }))
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [viewModal, setViewModal] = useState(false);
+  const [addSecretModalVisible, setAddSecretModalVisible] = useState(false);
+  const [viewSecretModalVisible, setViewSecretModalVisible] = useState(false);
   const [secretData, setSecretData] = useState({});
 
   const handleViewClick = (alg, secret, publicKey, privateKey) => {
     setSecretData({ alg, secret, publicKey, privateKey });
-    setViewModal(true);
+    setViewSecretModalVisible(true);
   }
 
   const columns = [
@@ -153,7 +153,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h2 style={{ display: "inline-block" }}>JWT Secrets</h2>
-        <Button onClick={() => setModalVisible(true)}>
+        <Button onClick={() => setAddSecretModalVisible(true)}>
           Add
         </Button>
       </div>
@@ -171,12 +171,12 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
         pagination={false}
         rowKey="key"
       />
-      {modalVisible && <AddSecretModal
+      {addSecretModalVisible && <AddSecretModal
         handleSubmit={handleAddSecret}
-        handleCancel={() => setModalVisible(false)} />}
-      {viewModal && <ViewSecretModal
+        handleCancel={() => setAddSecretModalVisible(false)} />}
+      {viewSecretModalVisible && <ViewSecretModal
         secretData={secretData}
-        handleCancel={() => setViewModal(false)}
+        handleCancel={() => setViewSecretModalVisible(false)}
       />}
     </div>
   )
