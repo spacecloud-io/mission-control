@@ -132,7 +132,7 @@ const Overview = () => {
   const handleReloadSchema = (colName) => {
     incrementPendingRequests()
     inspectColSchema(projectID, selectedDB, colName)
-      .then(() => notify("success", "Success", "Reloaded schema successfully"))
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded schema successfully"))
       .catch((ex) => notify("error", "Error reloading schema of table", ex))
       .finally(() => decrementPendingRequests())
   }
@@ -165,7 +165,7 @@ const Overview = () => {
           resolve()
         })
         .catch(ex => {
-          notify("error", `Error ${editMode ? "Modified" : "Added"} ${colName}`, ex)
+          notify("error", `Error ${editMode ? "modifying" : "adding"} ${colName}`, ex)
           reject()
         })
         .finally(() => decrementPendingRequests())

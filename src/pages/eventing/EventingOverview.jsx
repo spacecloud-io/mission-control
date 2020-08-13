@@ -10,10 +10,9 @@ import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { getEventSourceFromType, notify, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import eventingSvg from "../../assets/eventing.svg"
-import { dbIcons } from '../../utils';
 import './event.css'
 import history from "../../history"
-import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules } from '../../operations/eventing';
+import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
 
@@ -29,22 +28,19 @@ const EventingOverview = () => {
 	// Global state
 	const rules = useSelector(state => getEventingTriggerRules(state))
 	const dbConfigs = useSelector(state => getDbConfigs(state))
+	const eventingConfig = useSelector(state => getEventingConfig(state))
+
 
 	// Component state
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 
 	// Derived state
-	const activeDB = Object.keys(dbConfigs).find(db => {
-		return dbConfigs[db].enabled
-	})
-	const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
-		if (!obj.type) obj.type = alias
-		return { alias: alias, dbtype: obj.type, svgIconSet: dbIcons(alias) }
-	})
+	const dbList = Object.keys(dbConfigs)
 	const rulesTableData = Object.entries(rules).map(([id, { type }]) => ({ id, type }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { id: ruleClicked, ...rules[ruleClicked] } : undefined
+	const eventingConfigured = eventingConfig.enabled && eventingConfig.dbAlias
 
 	// Handlers
 	const handleEditRuleClick = (id) => {
@@ -112,19 +108,19 @@ const EventingOverview = () => {
 		}
 	]
 
-	const alertMsg = <div>
-		<span>Space Cloud needs a database to store the event logs. First</span>
-		<Link to={`/mission-control/projects/${projectID}/database/add-db`}> add a database </Link>
-		<span>to Space Cloud so that eventing module can use it.</span>
-	</div>
+  const alertMsg = <div>
+    <span>Head over to the </span>
+    <Link to={`/mission-control/projects/${projectID}/eventing/settings`}>Eventing Settings tab</Link>
+    <span> to configure eventing.</span>
+  </div>
 
 	const dbAlert = () => {
-		if (!activeDB)
+		if (!eventingConfigured)
 			return (
 				<Row>
 					<Col lg={{ span: 18, offset: 3 }}>
 						<Alert style={{ top: 15 }}
-							message="Eventing needs to be configured"
+							message={`Eventing needs to be configured${eventingConfig.enabled ? " properly" : ""}`}
 							description={alertMsg}
 							type="info"
 							showIcon
@@ -145,7 +141,7 @@ const EventingOverview = () => {
 						<div className="panel">
 							<img src={eventingSvg} />
 							<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/microservices/eventing">View Docs.</a></p>
-							<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!activeDB}>Add first event trigger</Button>
+							<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!eventingConfigured}>Add first event trigger</Button>
 							{dbAlert()}
 						</div>
 					</div>}

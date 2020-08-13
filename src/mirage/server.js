@@ -36,7 +36,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.timing = 500;
 
       // Global endpoints
-      this.get("/config/env", () => ({ isProd: false, version: "0.19.0", clusterName: "Cluster 1", plan: "space-cloud-pro--monthly-inr", licenseKey: "lic_21kj9kms8msls9", nextRenewal: "2020-04-19T08:45:57Z" }));
+      this.get("/config/env", () => ({ isProd: false, loginURL: "/mission-control/login",  version: "0.19.0", clusterName: "Cluster 1", plan: "space-cloud-pro--monthly-inr", licenseKey: "lic_21kj9kms8msls9", nextRenewal: "2020-04-19T08:45:57Z" }));
       this.get("/config/permissions", () => respondOk({ result: fixtures.permissions }));
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.post("/config/refresh-token", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));

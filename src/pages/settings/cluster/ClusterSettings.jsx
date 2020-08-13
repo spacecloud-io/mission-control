@@ -28,13 +28,13 @@ const ClusterSettings = () => {
   }, []);
 
   const clusterConfig = useSelector(state => state.clusterConfig);
-  const letsEncryptEmail = clusterConfig.letsEncryptEmail;
+  const letsEncryptEmail = clusterConfig.letsencryptEmail;
   const telemetry = clusterConfig.enableTelemetry;
   const loading = useSelector(state => state.pendingRequests > 0)
 
   const handleLetsEncryptEmail = newEmail => {
     incrementPendingRequests()
-    saveClusterSetting("letsEncryptEmail", newEmail)
+    saveClusterSetting("letsencryptEmail", newEmail)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed letsencrypt email successfully"))
       .catch(ex => notify("error", "Error changing letsencrypt email", ex))
       .finally(() => decrementPendingRequests());

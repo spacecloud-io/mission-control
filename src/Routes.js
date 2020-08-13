@@ -1,6 +1,6 @@
 import React from "react";
 import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute } from "./utils";
+import { PrivateRoute, DatabasePageRoute } from "./utils";
 import history from "./history";
 
 import NoPermissions from "./pages/no-permissions/NoPermissions";
@@ -76,14 +76,14 @@ function Routes() {
       <Switch>
         <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}`} component={DatabaseEmptyStatePage} />
         <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/add-db`} component={AddDb} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB`} component={DatabasePage} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/overview`} component={DBOverview} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/browse`} component={DBBrowse} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/settings`} component={DBSettings} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/queries`} component={DBQueries} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries`} component={PreparedQueries} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/add`} component={AddPreparedQueries} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/:preparedQueryId/edit`} component={AddPreparedQueries} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB`} component={DatabasePage} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/overview`} component={DBOverview} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/browse`} component={DBBrowse} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/settings`} component={DBSettings} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/queries`} component={DBQueries} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries`} component={PreparedQueries} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/add`} component={AddPreparedQueries} />
+        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/:preparedQueryId/edit`} component={AddPreparedQueries} />
       </Switch>
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorageIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorage} />

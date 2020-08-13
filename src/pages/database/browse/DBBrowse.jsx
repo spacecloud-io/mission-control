@@ -18,7 +18,7 @@ import { Button, Select, Icon, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
-import { getAPIToken } from '../../../operations/cluster';
+import { getAPIToken } from '../../../operations/projects';
 
 const pageSize = 25;
 let editRowData = {};
@@ -97,7 +97,6 @@ const Browse = () => {
           })
 
           const moreDataToFetch = data.result.length < pageSize ? false : true
-          console.log("MoreDataToFetch", moreDataToFetch)
           setHasMore(moreDataToFetch)
           setTableData(fetchSinceStart ? data.result : [...previousData, ...data.result])
           resolve()

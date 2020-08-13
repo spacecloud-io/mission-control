@@ -11,7 +11,9 @@ class LetsEncrypt {
             reject(data.error)
             return
           }
-          resolve(data.result[0])
+
+          const letsencryptConfig = data.result && data.result[0] ? data.result[0] : {}
+          resolve(letsencryptConfig)
         })
         .catch(ex => reject(ex.toString()))
     })

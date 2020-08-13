@@ -84,6 +84,7 @@ const DeploymentsOverview = () => {
         : [],
       whitelists: obj.whitelists,
       upstreams: obj.upstreams,
+      statsInclusionPrefixes: obj.statsInclusionPrefixes,
       desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
       totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
       deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
@@ -148,7 +149,8 @@ const DeploymentsOverview = () => {
           }
         ],
         whitelists: values.whitelists,
-        upstreams: values.upstreams
+        upstreams: values.upstreams,
+        statsInclusionPrefixes: values.statsInclusionPrefixes
       };
       incrementPendingRequests()
       saveService(projectID, config.id, config.version, config)
@@ -180,7 +182,7 @@ const DeploymentsOverview = () => {
   const expandedRowRender = (record) => {
     const column = [
       {
-        title: 'Replica ID',
+        title: 'ID',
         dataIndex: 'id',
         key: 'id'
       },

@@ -1,13 +1,22 @@
 import { set, get, del } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { defaultEventRule } from "../constants";
+import { defaultEventRule, configResourceTypes, permissionVerbs } from "../constants";
+import { checkResourcePermissions } from "../utils";
 
 export const loadEventingConfig = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_CONFIG], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch eventing config")
+      setEventingConfig({})
+      resolve()
+      return
+    }
+
     client.eventing.fetchEventingConfig(projectId)
       .then((eventingConfig) => {
-        store.dispatch(set("eventingConfig", eventingConfig))
+        setEventingConfig(eventingConfig)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -16,13 +25,21 @@ export const loadEventingConfig = (projectId) => {
 
 export const loadEventingSecurityRules = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_RULES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch eventing rules")
+      setEventingRules({})
+      resolve()
+      return
+    }
+
     client.eventing.fetchEventingRules(projectId)
       .then((result = []) => {
         const eventingRules = result.reduce((prev, curr) => {
           const { id, ...eventingRule } = curr
           return Object.assign({}, prev, { [id]: eventingRule })
         }, {})
-        store.dispatch(set("eventingRules", eventingRules))
+        setEventingRules(eventingRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -31,13 +48,21 @@ export const loadEventingSecurityRules = (projectId) => {
 
 export const loadEventingSchemas = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_SCHEMA], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch eventing schemas")
+      setEventingSchemas({})
+      resolve()
+      return
+    }
+
     client.eventing.fetchEventingSchemas(projectId)
       .then((result = []) => {
         const eventingSchemas = result.reduce((prev, curr) => {
           const { id, schema } = curr
           return Object.assign({}, prev, { [id]: schema })
         }, {})
-        store.dispatch(set("eventingSchemas", eventingSchemas))
+        setEventingSchemas(eventingSchemas)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -46,12 +71,20 @@ export const loadEventingSchemas = (projectId) => {
 
 export const loadEventingTriggers = (projectId) => {
   return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_TRIGGERS], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch eventing trigers")
+      setEventingTriggers({})
+      resolve()
+      return
+    }
+
     client.eventing.fetchEventingTriggers(projectId)
       .then((result = []) => {
         const eventingTriggers = result.reduce((prev, curr) => {
           return Object.assign({}, prev, { [curr.id]: curr })
         }, {})
-        store.dispatch(set("eventingTriggers", eventingTriggers))
+        setEventingTriggers(eventingTriggers)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -116,12 +149,13 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
     client.eventing.setEventingConfig(projectId, eventingConfig)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set("eventingConfig", eventingConfig))
+          setEventingConfig(eventingConfig)
         }
         resolve({ queued })
 
         // Set the default eventing rule in background
-        if (enabled) {
+        const hasPermissionToSetEventingRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_RULES], permissionVerbs.READ)
+        if (enabled && hasPermissionToSetEventingRule) {
           const defaultEventingSecurityRule = get(store.getState(), "eventingRules.default", {})
           const defaultEventingSecurityRuleExists = Object.keys(defaultEventingSecurityRule).length > 0
           if (!defaultEventingSecurityRuleExists) {
@@ -181,3 +215,7 @@ export const getEventingSecurityRule = (state, eventType) => get(state, `eventin
 export const getEventingSecurityRules = (state) => get(state, "eventingRules", {})
 export const getEventingDefaultSecurityRule = (state) => get(state, "eventingRules.default", {})
 export const setEventingSecurityRule = (eventType, rule) => store.dispatch(set(`eventingRules.${eventType}`, rule))
+const setEventingConfig = (eventingConfig) => store.dispatch(set("eventingConfig", eventingConfig))
+const setEventingRules = (eventingRules) => store.dispatch(set("eventingRules", eventingRules))
+const setEventingSchemas = (eventingSchemas) => store.dispatch(set("eventingSchemas", eventingSchemas))
+const setEventingTriggers = (eventingTriggers) => store.dispatch(set("eventingTriggers", eventingTriggers))

@@ -74,7 +74,7 @@ const CreateProject = () => {
     content: <React.Fragment>
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <CreateDatabase projectId={projectId} handleSubmit={handleAddDatabase} />
+          <CreateDatabase projectId={projectId} handleSubmit={handleAddDatabase} ignoreDbAliasCheck />
           <center style={{ marginTop: 16 }}><Link to={`/mission-control/projects/${projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
         </Col>
       </Row>

@@ -112,7 +112,7 @@ const CreateDatabase = (props) => {
               return
             }
             const check = dbAliasNames.some(data => value === data);
-            if (check) {
+            if (check && !props.ignoreDbAliasCheck) {
               cb("Alias name already taken by another database. Please provide an unique alias name!")
               return
             }

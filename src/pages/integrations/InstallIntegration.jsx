@@ -17,7 +17,7 @@ const InstallIntegration = () => {
   const { projectID, integrationId } = useParams()
 
   // Global state
-  const { name, app } = useSelector(state => getIntegrationDetails(state, integrationId))
+  const { name, appUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
   const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
   const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
 
@@ -40,11 +40,11 @@ const InstallIntegration = () => {
   }
 
   const handleOpenConsole = () => {
-    window.open(app, "_blank")
+    window.open(appUrl, "_blank")
   }
 
   const handleBackToIntegrations = () => {
-    history.push(`/mision-control/projects/${projectID}/integrations`)
+    history.push(`/mission-control/projects/${projectID}/integrations`)
   }
 
   const steps = [

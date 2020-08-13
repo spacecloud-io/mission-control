@@ -6,7 +6,7 @@ export function loadClusterSettings() {
   return new Promise((resolve, reject) => {
     client.cluster.fetchConfig()
       .then(clusterConfig => {
-        store.dispatch(set("clusterConfig", clusterConfig))
+        setClusterConfig(clusterConfig)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -24,25 +24,14 @@ export function loadPermissions() {
   })
 }
 
-export function loadAPIToken(projectId) {
-  return new Promise((resolve, reject) => {
-    client.cluster.fetchAPIToken(projectId)
-      .then((token) => {
-        setAPIToken(token)
-        resolve()
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
 export function saveClusterSetting(key, value) {
   return new Promise((resolve, reject) => {
-    const config = get(store.getState(), "clusterConfig", {})
+    const config = getClusterConfig(store.getState())
     const newConfig = Object.assign({}, config, { [key]: value })
     client.cluster.setConfig(newConfig)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set("clusterConfig", newConfig))
+          setClusterConfig(newConfig)
         }
         resolve({ queued })
       })
@@ -82,8 +71,13 @@ export function refreshClusterTokenIfPresent() {
     }
 
     client.cluster.refreshToken(token)
-      .then((newToken) => {
-        setToken(newToken)
+      .then(({ refreshed, token }) => {
+        if (!refreshed) {
+          localStorage.removeItem("token")
+        } else {
+          setToken(token)
+        }
+
         resolve()
       })
       .catch((ex) => {
@@ -143,20 +137,15 @@ function setToken(token) {
 }
 
 function setPermissions(permissions) {
-  store.dispatch(set("permissions", permissions))
+  store.dispatch(set("permissions", permissions ? permissions : []))
 }
 
 export function getPermisions(state) {
   return get(state, "permissions", [])
 }
 
-export function getAPIToken(state) {
-  return get(state, "apiToken", "")
-}
-
-export function setAPIToken(token) {
-  store.dispatch(set("apiToken", token))
-}
+const setClusterConfig = (clusterConfig) => store.dispatch(set("clusterConfig", clusterConfig ? clusterConfig : {}))
+export const getClusterConfig = (state) => get(state, "clusterConfig", {})
 
 export function getLoginURL(state) {
   const env = getEnv(state)

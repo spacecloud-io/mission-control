@@ -10,9 +10,8 @@ import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
 import { getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
-import { getJWTSecret } from '../../../operations/projects';
+import { getJWTSecret, getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
-import { getAPIToken } from '../../../operations/cluster';
 
 const QueueEvent = () => {
   const { projectID } = useParams()

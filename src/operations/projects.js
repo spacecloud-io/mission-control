@@ -14,6 +14,17 @@ export const loadProjects = () => {
   })
 }
 
+export function loadProjectAPIToken(projectId) {
+  return new Promise((resolve, reject) => {
+    client.projects.fetchProjectAPIToken(projectId)
+      .then((token) => {
+        setAPIToken(token)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const addProject = (projectId, projectName) => {
   return new Promise((resolve, reject) => {
     const projectConfig = generateProjectConfig(projectId, projectName)
@@ -102,4 +113,12 @@ export function getJWTSecret(state, projectId) {
   const secrets = get(projectConfig, "secrets", [])
   if (secrets.length === 0) return ""
   return secrets[0].secret
+}
+
+export function getAPIToken(state) {
+  return get(state, "apiToken", "")
+}
+
+export function setAPIToken(token) {
+  store.dispatch(set("apiToken", token))
 }

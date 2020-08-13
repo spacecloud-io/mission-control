@@ -189,7 +189,7 @@ export const ingressRoutes = [
     "targets": [
       {
         "scheme": "http",
-        "host": "service1.project1.svc.cluster.local",
+        "host": "service1.mockproject1.svc.cluster.local",
         "port": 80,
         "weight": 40
       },
@@ -347,7 +347,8 @@ export const services = [
         "projectId": "myapp",
         "service": "s4"
       }
-    ]
+    ],
+    statsInclusionPrefixes: "http.inbound,cluster_manager"
   }
 ]
 
@@ -408,7 +409,12 @@ export const clusterConfig = {
 export const permissions = [
   {
     project: "*",
-    resource: "*",
+    resource: "project",
+    verb: "*"
+  },
+  {
+    project: "*",
+    resource: "service",
     verb: "*"
   }
 ]
@@ -452,7 +458,7 @@ export const supportedInterations = [
     name: "Team Management",
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
-    app: "/integrations/team-management",
+    appUrl: "/integrations/team-management",
     configPermissions: [
       {
         resources: ["*"],
@@ -466,7 +472,7 @@ export const supportedInterations = [
     name: "Elastic Search",
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
-    app: "/integrations/elastic-search",
+    appUrl: "/integrations/elastic-search",
     configPermissions: [
       {
         resources: ["db-config", "db-schema"],

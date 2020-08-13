@@ -12,27 +12,15 @@ class Integrations {
         query: gql`
         query {
           integrations @db {
-            config {
-              id
-              name
-              description
-              details
-              app
-              configPermissions
-              apiPermissions
-              key
-              version
-              level
-              deployments
-              secretSource
-              hooks
-              compatibleVersion
-            }
+            config
           }
         }`,
         variables: {}
       })
-        .then(res => resolve(res.data.integrations.map(obj => obj.config)))
+        .then(res => {
+          const integrations = res.data && res.data.integrations ? res.data.integrations : []
+          resolve(integrations.map(obj => obj.config))
+        })
         .catch(ex => reject(ex))
     })
   }
@@ -45,7 +33,7 @@ class Integrations {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex))
     })

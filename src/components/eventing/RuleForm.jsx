@@ -11,9 +11,9 @@ const { Option } = AutoComplete;
 
 const RuleForm = (props) => {
   const [form] = Form.useForm();
-  const [selectedDb, setSelectedDb] = useState();
 
   const { id, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
+  const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
   const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
   const [value, setValue] = useState("");
@@ -72,7 +72,7 @@ const RuleForm = (props) => {
             }
           }
         ]}>
-          <Input placeholder="Trigger Name" disabled={id}/>
+          <Input placeholder="Trigger Name" disabled={id} />
         </Form.Item>
         <FormItemLabel name="Source" />
         <Form.Item name="source" rules={[{ required: true, message: 'Please select a source!' }]}>
@@ -87,11 +87,7 @@ const RuleForm = (props) => {
           <Input.Group compact>
             <Form.Item name={["options", "db"]} rules={[{ required: true, message: 'Please select a database!' }]}
               style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-              <Select placeholder="Select a database" onSelect={handleSelectDatabase}>
-                {props.dbList.map((alias) => (
-                  <Select.Option value={alias.alias}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
-                ))}
-              </Select>
+              <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={props.dbList.map(db => ({ value: db }))} />
             </Form.Item>
             <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
               <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >

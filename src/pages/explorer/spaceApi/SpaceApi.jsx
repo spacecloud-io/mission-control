@@ -20,9 +20,8 @@ import '../explorer.css';
 import { notify, canGenerateToken } from '../../../utils';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getJWTSecret } from '../../../operations/projects';
+import { getJWTSecret, getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
-import { getAPIToken } from '../../../operations/cluster';
 
 const { Option } = Select;
 

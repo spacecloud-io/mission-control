@@ -10,13 +10,13 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects, getJWTSecret } from './operations/projects'
-import { getDbType, setPreparedQueryRule, setColSecurityRule } from './operations/database'
+import { loadProjects, getJWTSecret, loadProjectAPIToken } from './operations/projects'
+import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
-import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL, loadAPIToken } from './operations/cluster'
+import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
@@ -260,7 +260,7 @@ export const openProject = (projectId) => {
   }
 
   // Load api token for the project
-  loadAPIToken(projectId)
+  loadProjectAPIToken(projectId)
 }
 
 function checkIfValueInArray(value, array = []) {
@@ -323,30 +323,6 @@ function isCurrentRoutePublic() {
   return (path === "login")
 }
 
-function shouldRedirect() {
-  // Check if we are at a public route
-  if (isCurrentRoutePublic()) {
-    return { redirect: false, redirectUrl: "" }
-  }
-
-  const productionMode = isProdMode()
-  const token = getToken()
-
-  if (productionMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/login" }
-  }
-
-  return { redirect: false, redirectUrl: "" }
-}
-
-export function redirectIfNeeded() {
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
-}
-
 const getProjectToBeOpened = () => {
   let projectId = null
   const urlParams = window.location.pathname.split("/")
@@ -388,6 +364,18 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
+function redirectToLogin() {
+  let loginURL = getLoginURL(store.getState())
+
+  if (!loginURL.startsWith("http")) {
+    loginURL = window.location.origin + loginURL
+  }
+
+  if (window.location.href !== loginURL) {
+    window.location.href = loginURL
+  }
+}
+
 // This function performs the setup required to operate mission control.
 // It includes loading the space cloud environment, refreshing tokens, fetching all the necessary resources etc.
 // Its intended to be called whenever the mission control is (re)loaded.
@@ -400,15 +388,12 @@ export function performSetup() {
     Promise.all(promises)
       .then(() => {
 
-        const state = store.getState()
-
         // NOTE: loggedIn is always true in case of dev environment 
-        const loggedIn = isLoggedIn(state)
+        const loggedIn = isLoggedIn(store.getState())
 
         // If the user is not logged in, redirect to the login url
         if (!loggedIn) {
-          const loginURL = getLoginURL(state)
-          history.replace(loginURL)
+          redirectToLogin()
           resolve()
           return
         }
@@ -423,9 +408,24 @@ export function performSetup() {
         reject(ex)
       })
 
-    // Refresh token periodically (every 15 minutes)  
     setInterval(() => {
-      refreshClusterTokenIfPresent().finally(() => redirectIfNeeded())
+      // Refresh admin token periodically (every 15 minutes)  
+      refreshClusterTokenIfPresent()
+        .then(() => {
+          // NOTE: loggedIn is always true in case of dev environment 
+          const loggedIn = isLoggedIn(store.getState())
+
+          // If the user is not logged in, redirect to the login url
+          if (!loggedIn) {
+            redirectToLogin()
+            resolve()
+            return
+          }
+        })
+
+      // Refresh admin token periodically (every 15 minutes)
+      const { projectId } = extractPathInfo(history.location.pathname)
+      loadProjectAPIToken(projectId)
     }, 15 * 60 * 1000)
 
     // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
@@ -447,33 +447,84 @@ function extractPathInfo(path) {
   return { projectId: pathValues[3], moduleId: pathValues[4] ? pathValues[4] : "overview" }
 }
 
-export const PrivateRoute = ({ component: Component, ...rest }) => {
-
+function usePagePermissions() {
   const history = useHistory()
   const isPrivate = !isCurrentRoutePublic()
   const loggedIn = useSelector(state => isLoggedIn(state))
   const loginURL = useSelector(state => getLoginURL(state))
   const { projectId, moduleId } = extractPathInfo(history.location.pathname)
   const hasPermissions = useSelector(state => checkModulePermissions(state, projectId, moduleId))
+
+  // Redirect to login page if user is not logged in while accessing a private route
+  if (isPrivate && !loggedIn) {
+    return { allowed: false, redirectUrl: loginURL }
+  }
+
+  // Redirect to NoPermissions page if the user doesn't have permissions to view a particular path
+  if (!hasPermissions) {
+    // If the NoPermissions page is already opened, then pick the moduleId from the query string 
+    const queryParams = qs.parse(history.location.search, { ignoreQueryPrefix: true })
+    const adjustedModuleId = moduleId === "no-permissions" ? queryParams.moduleId : moduleId
+    return { allowed: false, redirectUrl: `/mission-control/projects/${projectId}/no-permissions?moduleId=${adjustedModuleId}` }
+  }
+
+  return { allowed: true }
+}
+
+export const PrivateRoute = ({ component: Component, ...rest }) => {
+
+  const { allowed, redirectUrl } = usePagePermissions()
   return (
     <Route
       {...rest}
       render={
         props => {
           // Redirect to login page if user is not logged in while accessing a private route
-          if (isPrivate && !loggedIn) {
+          if (!allowed) {
             return (
-              <Redirect to={loginURL} />
+              <Redirect to={redirectUrl} />
             )
           }
 
-          // Redirect to NoPermissions page if the user doesn't have permissions to view a particular path
-          if (!hasPermissions) {
-            // If the NoPermissions page is already opened, then pick the moduleId from the query string 
-            const queryParams = qs.parse(history.location.search, { ignoreQueryPrefix: true })
-            const adjustedModuleId = moduleId === "no-permissions" ? queryParams.moduleId : moduleId
+          return (
+            <Component {...props} />
+          )
+        }
+      }
+    />
+  )
+}
+
+// This component redirects to the empty state page of a database if a database is not found in config
+export const DatabasePageRoute = ({ component: Component, ...rest }) => {
+
+  const { allowed, redirectUrl } = usePagePermissions()
+  const dbConfig = useSelector(state => getDbConfigs(state))
+  const dbAliasNames = Object.keys(dbConfig)
+  const { projectID, selectedDB } = get(rest, "computedMatch.params", {})
+  const isDbInConfig = dbConfig[selectedDB] ? true : false
+
+  return (
+    <Route
+      {...rest}
+      render={
+        props => {
+          // Redirect to login page if user is not logged in while accessing a private route
+          if (!allowed) {
             return (
-              <Redirect to={`/mission-control/projects/${projectId}/no-permissions?moduleId=${adjustedModuleId}`} />
+              <Redirect to={redirectUrl} />
+            )
+          }
+
+          if (dbAliasNames.length === 0) {
+            return (
+              <Redirect to={`/mission-control/projects/${projectID}/database`} />
+            )
+          }
+
+          if (!isDbInConfig) {
+            return (
+              <Redirect to={`/mission-control/projects/${projectID}/database/${dbAliasNames[0]}`} />
             )
           }
 
