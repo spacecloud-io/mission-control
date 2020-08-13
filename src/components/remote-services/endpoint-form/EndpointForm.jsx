@@ -17,7 +17,6 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
-import { getJWTSecret, getSecretAlgorithm } from '../../../operations/projects';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -56,9 +55,6 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
   const [form] = Form.useForm();
-
-  const secret = useSelector(state => getJWTSecret(state, projectID))
-  const algorithm = useSelector(state => getSecretAlgorithm(state, projectID))
 
   const formInitialValues = {
     kind: kind,

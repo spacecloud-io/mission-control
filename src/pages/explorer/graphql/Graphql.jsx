@@ -13,7 +13,7 @@ import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getJWTSecret, getAPIToken, getSecretAlgorithm } from '../../../operations/projects';
+import { getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
 import { canGenerateToken } from '../../../utils';
 
@@ -103,8 +103,6 @@ const Graphql = props => {
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
   return {
-    secret: getJWTSecret(state, projectId),
-    algorithm: getSecretAlgorithm(state, projectId),
     projectId: projectId,
     query: state.uiState.graphiql.query,
     variables: state.uiState.graphiql.variables,

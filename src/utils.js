@@ -16,7 +16,7 @@ import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
-import { loadClusterEnv, isProdMode, getToken, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
+import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
 import { RSA } from 'hybrid-crypto-js';
 
@@ -97,10 +97,9 @@ export function formatIntegrationImageUrl(integrationId) {
 }
 
 export const generateToken = (state, projectId, claims) => {
-  const secret = getJWTSecret(state, projectId)
-  const algorithm = getSecretAlgorithm(state, projectId)
-  if (!secret) return ""
-  return jwt.sign(claims, secret, { algorithm });
+  const { value, algorithm } = getJWTSecret(state, projectId)
+  if (!value) return ""
+  return jwt.sign(claims, value, { algorithm });
 }
 
 export function canGenerateToken(state, projectId) {
@@ -151,21 +150,11 @@ export const generateId = (len = 32) => {
   });
 }
 
-export const generateKeyPairs =  async () => {
-/*   const key = new NodeRSA();
-  key.generateKeyPair(2048);
-  const privateKey = key.exportKey("pkcs8-private-pem");
-  const key2 = new NodeRSA(privateKey);
-  const publicKey = key2.exportKey("pkcs8-public-pem")
-  return {
-    private: privateKey,
-    public: publicKey
-  } */
-
+export const generateKeyPairs = async () => {
   const rsa = new RSA({
     keySize: 2048,
-});
-  const {publicKey, privateKey} = await rsa.generateKeyPairAsync();
+  });
+  const { publicKey, privateKey } = await rsa.generateKeyPairAsync();
   return {
     privateKey,
     publicKey

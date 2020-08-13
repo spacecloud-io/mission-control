@@ -2,7 +2,6 @@ import React from "react";
 import { Form, Input, Button } from 'antd';
 
 const LetsEncryptEmail = ({ loading, letsEncryptEmail, handleSubmit }) => {
-  console.log("Letsencrypt email", letsEncryptEmail)
   const [form] = Form.useForm();
   if (!loading) {
     form.setFieldsValue({ letsEncryptEmail })

@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import { EyeInvisibleOutlined, EyeOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { generateJWTSecret, generateKeyPairs } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import { CopyOutlined } from "@ant-design/icons";
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
@@ -83,45 +81,30 @@ const ViewSecretModal = ({ secretData, handleCancel }) => {
       onCancel={handleCancel}
       width={720}
     >
-      <FormItemLabel name="Algorithm" />
+      <Typography.Paragraph style={{ fontSize: 16 }} strong>Algorithm</Typography.Paragraph>
       <div style={{ marginBottom: 24 }}>{secretData.alg}</div>
       {secretData.alg === "HS256" && (
         <React.Fragment>
-          <FormItemLabel name={<span>Secrets<CopyToClipboard text={secretData.secret}><CopyOutlined style={{ marginLeft: 5, cursor: "pointer" }} /></CopyToClipboard></span>} />
-          <div>{secretData.secret}</div>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.secret }} strong>Secret</Typography.Paragraph>
+          <Input value={secretData.secret} />
         </React.Fragment>
       )}
       {secretData.alg === "RS256" && (
         <React.Fragment>
-          <FormItemLabel name={<span>Public Key<CopyToClipboard text={secretData.publicKey}><CopyOutlined style={{ marginLeft: 5, cursor: "pointer" }} /></CopyToClipboard></span>} />
-          <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.publicKey}/></div>
-          <FormItemLabel name={<span>Private Key<CopyToClipboard text={secretData.privateKey}><CopyOutlined style={{ marginLeft: 5, cursor: "pointer" }} /></CopyToClipboard></span>} />
-          <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.privateKey}/></div>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.publicKey }} strong>Public key</Typography.Paragraph>
+          <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.publicKey} /></div>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.privateKey }} strong>Private key</Typography.Paragraph>
+          <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.privateKey} /></div>
         </React.Fragment>
       )}
     </Modal>
   )
 }
 
-const SecretValue = ({ secret }) => {
-  const [showSecret, setShowSecret] = useState(false)
-  return (
-    <span style={{ display: "flex", alignItems: "center" }}>
-      <span style={{
-        marginRight: 8,
-        background: "#f5f5f5",
-        minWidth: 320,
-        height: "32px",
-        lineHeight: "32px",
-        borderRadius: 5,
-        padding: "0 16px"
-      }} >{showSecret ? secret : secret.slice(0, 4) + secret.slice(4).split("").map(() => "*").join("")}</span>
-      {showSecret ? <EyeInvisibleOutlined onClick={() => setShowSecret(false)} /> : <EyeOutlined onClick={() => setShowSecret(true)} />}
-    </span>
-  );
-}
-
 const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecret, handleAddSecret }) => {
+
+  // For backword compatibility assume the `alg` as `HS256`
+  const secretsData = secrets.map(obj => Object.assign({}, obj, { alg: obj.alg ? obj.alg : "HS256" }))
 
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModal, setViewModal] = useState(false);
@@ -183,7 +166,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
       <Table
         style={{ marginTop: 16 }}
         columns={columns}
-        dataSource={secrets}
+        dataSource={secretsData}
         bordered={true}
         pagination={false}
         rowKey="key"

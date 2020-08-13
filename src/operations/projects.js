@@ -111,19 +111,12 @@ export function getProjectConfig(state, projectId) {
 export function getJWTSecret(state, projectId) {
   const projectConfig = getProjectConfig(state, projectId)
   const secrets = get(projectConfig, "secrets", [])
-  if (secrets.length === 0) return ""
+  if (secrets.length === 0) return { value: "" }
   const primarySecret = secrets.find(val => val.isPrimary);
-  if (!primarySecret) return secrets[0].secret
-  return primarySecret.alg === "HS256" ? primarySecret.secret : primarySecret.privateKey
-}
-
-export function getSecretAlgorithm(state, projectId) {
-  const projectConfig = getProjectConfig(state, projectId)
-  const secrets = get(projectConfig, "secrets", [])
-  if (secrets.length === 0) return "HS256"
-  const primarySecret = secrets.find(val => val.isPrimary);
-  if (!primarySecret) return secrets[0].alg
-  return primarySecret.alg
+  const secret = primarySecret ? primarySecret : secrets[0]
+  const algorithm = secret.alg ? secret.alg : "HS256"
+  const value = algorithm === "HS256" ? secret.secret : secret.privateKey
+  return { value, algorithm }
 }
 
 export function getAPIToken(state) {

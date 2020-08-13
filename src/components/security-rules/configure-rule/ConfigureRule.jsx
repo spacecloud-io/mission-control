@@ -147,7 +147,7 @@ const ConfigureRule = (props) => {
 
   // Component state
   const [col, setCol] = useState('');
-  
+
   // Derived properties
   const { rule, type, f1, f2, error, fields, field, value, url, db } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
@@ -233,7 +233,7 @@ const ConfigureRule = (props) => {
     case securityRuleGroups.REMOTE_SERVICES:
     case securityRuleGroups.EVENTING:
     case securityRuleGroups.DB_PREPARED_QUERIES:
-      autoCompleteOptions = { auth: true, params: true, token: true }
+      autoCompleteOptions = { args: { auth: true, params: true, token: true } }
       break;
     case securityRuleGroups.INGRESS_ROUTES:
       const query = {
@@ -242,7 +242,7 @@ const ConfigureRule = (props) => {
         params: true,
         headers: true
       }
-      autoCompleteOptions = { auth: true, params: true, query }
+      autoCompleteOptions = { args: { auth: true, params: true, query, token : true} }
   }
 
   const inheritedDataType = getTypeFromValue(value)

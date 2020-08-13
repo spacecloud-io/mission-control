@@ -10,7 +10,7 @@ import Topbar from '../../../components/topbar/Topbar';
 import TriggerForm from "../../../components/eventing/TriggerForm";
 import { getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { triggerCustomEvent, getEventingTriggerRules } from '../../../operations/eventing';
-import { getJWTSecret, getAPIToken, getSecretAlgorithm } from '../../../operations/projects';
+import { getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
 
 const QueueEvent = () => {
@@ -22,8 +22,6 @@ const QueueEvent = () => {
 
   // Global state
   const eventTriggerRules = useSelector(state => getEventingTriggerRules(state))
-  const secret = useSelector(state => getJWTSecret(state, projectID))
-  const algorithm = useSelector(state => getSecretAlgorithm(state, projectID))
   const internalToken = useSelector(state => getAPIToken(state, projectID))
 
   // Derived state
@@ -83,8 +81,6 @@ const QueueEvent = () => {
                   initialEventType={initialEventType}
                   eventTypes={customEventTypes}
                   handleSubmit={handleTriggerEvent}
-                  secret={secret}
-                  algorithm={algorithm}
                   internalToken={internalToken} />
               </Col>
             </Row>
