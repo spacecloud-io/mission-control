@@ -147,6 +147,9 @@ export function getPermisions(state) {
 const setClusterConfig = (clusterConfig) => store.dispatch(set("clusterConfig", clusterConfig ? clusterConfig : {}))
 export const getClusterConfig = (state) => get(state, "clusterConfig", {})
 
+const setClusterConfig = (clusterConfig) => store.dispatch(set("clusterConfig", clusterConfig ? clusterConfig : {}))
+export const getClusterConfig = (state) => get(state, "clusterConfig", {})
+
 export function getLoginURL(state) {
   const env = getEnv(state)
   return get(env, "loginURL")
