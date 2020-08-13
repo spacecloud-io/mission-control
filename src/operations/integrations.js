@@ -40,7 +40,8 @@ export function installIntegration(integrationId) {
           const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationConfig.id]: true })
           setInstalledIntegrations(newInstalledIntegrations)
         }
-        resolve({ queued })
+        // Introduce delay since the integration takes time to start 
+        setTimeout(() => resolve({ queued }), 10000)
       })
       .catch(ex => reject(ex))
   })

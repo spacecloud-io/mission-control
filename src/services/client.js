@@ -21,7 +21,7 @@ function fetchJSON(origin, url, options) {
   })
 }
 
-const defaultHeaders = {
+const defaultOptions = {
   credentials: "include",
   headers: {
     "Content-Type": "application/json"
@@ -31,7 +31,7 @@ const defaultHeaders = {
 class Client {
   constructor(origin, options) {
     this.origin = origin
-    this.options = Object.assign({}, defaultHeaders, options)
+    this.options = Object.assign({}, defaultOptions, options)
   }
 
   setToken(token) {
@@ -42,8 +42,9 @@ class Client {
     return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'GET' }))
   }
 
-  postJSON(url, obj) {
-    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'POST', body: JSON.stringify(obj) }))
+  postJSON(url, obj, token) {
+    const options = Object.assign({}, this.options, token ? { headers: Object.assign({}, this.options.headers, { Authorization: "Bearer " + token }) } : {})
+    return fetchJSON(this.origin, url, Object.assign({}, options, { method: 'POST', body: JSON.stringify(obj) }))
   }
 
   delete(url) {

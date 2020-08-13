@@ -13,9 +13,8 @@ import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getJWTSecret } from '../../../operations/projects';
+import { getJWTSecret, getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
-import { getAPIToken } from '../../../operations/cluster';
 import { canGenerateToken } from '../../../utils';
 
 const Graphql = props => {
@@ -78,8 +77,10 @@ const Graphql = props => {
           }
           <div className='graphql' style={{ marginTop: 10 }}>
             <GraphiQL
-              query={props.query}
-              variables={props.variables}
+              query={props.query ? props.query : undefined}
+              variables={props.variables ? props.variables : undefined}
+              onEditQuery={props.setGraphQLQuery}
+              onEditVariables={props.setGraphQLVariables}
               fetcher={graphQLParams =>
                 graphQLFetcher(graphQLParams, props.projectId)
               }
@@ -124,6 +125,12 @@ const mapDispatchToProps = dispatch => {
     },
     setUserToken: (userToken) => {
       dispatch(set('uiState.explorer.userToken', userToken))
+    },
+    setGraphQLQuery: (query) => {
+      dispatch(set('uiState.graphiql.query', query))
+    },
+    setGraphQLVariables: (variables) => {
+      dispatch(set('uiState.graphiql.variables', variables))
     }
   };
 };

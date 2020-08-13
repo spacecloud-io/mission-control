@@ -24,17 +24,6 @@ export function loadPermissions() {
   })
 }
 
-export function loadAPIToken(projectId) {
-  return new Promise((resolve, reject) => {
-    client.cluster.fetchAPIToken(projectId)
-      .then((token) => {
-        setAPIToken(token)
-        resolve()
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
 export function saveClusterSetting(key, value) {
   return new Promise((resolve, reject) => {
     const config = getClusterConfig(store.getState())
@@ -82,8 +71,13 @@ export function refreshClusterTokenIfPresent() {
     }
 
     client.cluster.refreshToken(token)
-      .then((newToken) => {
-        setToken(newToken)
+      .then(({ refreshed, token }) => {
+        if (!refreshed) {
+          localStorage.removeItem("token")
+        } else {
+          setToken(token)
+        }
+
         resolve()
       })
       .catch((ex) => {
@@ -148,14 +142,6 @@ function setPermissions(permissions) {
 
 export function getPermisions(state) {
   return get(state, "permissions", [])
-}
-
-export function getAPIToken(state) {
-  return get(state, "apiToken", "")
-}
-
-export function setAPIToken(token) {
-  store.dispatch(set("apiToken", token))
 }
 
 const setClusterConfig = (clusterConfig) => store.dispatch(set("clusterConfig", clusterConfig ? clusterConfig : {}))

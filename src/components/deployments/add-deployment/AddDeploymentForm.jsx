@@ -16,7 +16,6 @@ import {
   InputNumber,
   Checkbox,
 } from "antd";
-import { notify } from "../../../utils";
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -44,7 +43,8 @@ const AddDeploymentForm = props => {
     ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
     env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
     whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
-    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }]
+    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }],
+    statsInclusionPrefixes: initialValues && initialValues.statsInclusionPrefixes ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager"
   }
 
   const handleSubmitClick = e => {
@@ -504,6 +504,13 @@ const AddDeploymentForm = props => {
                     );
                   }}
                 </Form.List>
+                <FormItemLabel
+                  name="Envoy stats"
+                  description="The statistics that the envoy proxy should generate"
+                />
+                <Form.Item name="statsInclusionPrefixes">
+                  <Input placeholder="CSV of envoy statistics" />
+                </Form.Item>
               </Panel>
             </Collapse>
           </React.Fragment>

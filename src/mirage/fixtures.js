@@ -347,7 +347,8 @@ export const services = [
         "projectId": "myapp",
         "service": "s4"
       }
-    ]
+    ],
+    statsInclusionPrefixes: "http.inbound,cluster_manager"
   }
 ]
 
