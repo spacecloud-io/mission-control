@@ -33,10 +33,12 @@ function Overview() {
         <Row>
           <Col lg={{ span: 20 }} sm={{ span: 24 }}>
             <h3>GraphQL Endpoints</h3>
-            <Col lg={{ span: 24 }} style={{ marginBottom: "3%" }}>
+
+            <EndpointCard host={host} protocol={protocol} projectId={projectID} />
+            {/* <Col lg={{ span: 24 }}>
               <EndpointCard host={host} protocol={protocol} projectId={projectID} />
-            </Col>
-            <h3>Community</h3>
+            </Col> */}
+            <h3 style={{ marginTop: 24 }}>Community</h3>
             <Row>
               <Col lg={{ span: 11, offset: 0 }}>
                 <DiscordCard />

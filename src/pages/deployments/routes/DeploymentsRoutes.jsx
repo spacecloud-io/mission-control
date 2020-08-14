@@ -10,7 +10,7 @@ import DeploymentTabs from "../../../components/deployments/deployment-tabs/Depl
 import RoutingModal from "../../../components/deployments/routing-modal/RoutingModal"
 import routingSvg from "../../../assets/routing.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
-import { loadServiceRoutes, saveServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
+import { loadServiceRoutes, saveServiceRoutes, deleteServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 const { Panel } = Collapse;
 
@@ -88,8 +88,7 @@ const DeploymentsRoutes = () => {
         source: { port },
         targets
       }
-      const routes = [routeConfig, ...serviceRoutes[serviceId].filter(obj => obj.source.port !== port)]
-      saveServiceRoutes(projectID, serviceId, routes)
+      saveServiceRoutes(projectID, serviceId, routeConfig)
         .then(({ queued }) => {
           notify("success", "Success", queued ? actionQueuedMessage : "Saved service routes successfully")
           resolve()
@@ -104,9 +103,8 @@ const DeploymentsRoutes = () => {
 
   const handleDelete = (serviceId, port) => {
     incrementPendingRequests()
-    const routes = serviceRoutes[serviceId].filter(obj => obj.source.port !== port)
-    saveServiceRoutes(projectID, serviceId, routes)
-      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Successfully deleted service route"))
+    deleteServiceRoutes(projectID, serviceId, port)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted service route successfully"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());
   };
@@ -124,6 +122,8 @@ const DeploymentsRoutes = () => {
       </span>
     )
   }
+
+  console.log("Service Routes", serviceRoutes)
 
   return (
     <React.Fragment>

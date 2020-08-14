@@ -6,10 +6,11 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider } from "antd";
+import { Collapse, Divider, Typography, Space } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
 import { getEnv } from '../../operations/cluster';
 import { projectModules } from '../../constants';
+import { version as uiVersion } from '../../../package.json';
 const { Panel } = Collapse;
 
 const Header = ({ name, icon }) => {
@@ -114,9 +115,13 @@ const Sidenav = (props) => {
         </div>
         <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
-          <span className="version-no">Version - v{version}</span>
-          <br />
-          <span className="plan">{planName}</span>
+          <div className="sidenav-version-content">
+            <Space direction="vertical" size={4}>
+              <Typography.Text>SC Version - v{version}</Typography.Text>
+              <Typography.Text>UI Version - v{uiVersion}</Typography.Text>
+              <Typography.Text type="secondary">{planName}</Typography.Text>
+            </Space>
+          </div>
         </div>
       </div>
     </div>

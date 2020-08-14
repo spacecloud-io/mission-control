@@ -110,17 +110,31 @@ export const deleteService = (projectId, serviceId, version) => {
   })
 }
 
-export const saveServiceRoutes = (projectId, serviceId, serviceRoutes) => {
+const saveServiceRoutesConfig = (projectId, serviceId, serviceRoutes) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentRoutes(projectId, serviceId, serviceRoutes)
       .then(({ queued }) => {
         if (!queued) {
-          setServiceRoutes(serviceRoutes)
+          setServiceRoute(serviceId, serviceRoutes)
         }
         resolve({ queued });
       })
       .catch(ex => reject(ex))
   })
+}
+
+export const saveServiceRoutes = (projectId, serviceId, routeConfig) => {
+  const serviceRoutes = getServiceRoutes(store.getState())
+  const serviceRoute = get(serviceRoutes, serviceId, [])
+  const newServiceRoutes = [...serviceRoute.filter(obj => obj.source.port !== routeConfig.source.port), routeConfig]
+  return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
+}
+
+export const deleteServiceRoutes = (projectId, serviceId, port) => {
+  const serviceRoutes = getServiceRoutes(store.getState())
+  const serviceRoute = get(serviceRoutes, serviceId, [])
+  const newServiceRoutes = serviceRoute.filter(obj => obj.source.port !== port)
+  return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
 // Getters
@@ -129,5 +143,6 @@ export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
 export const getServicesStatus = (state) => get(state, "servicesStatus", {})
 const setServiceRoutes = (serviceRoutes) => store.dispatch(set("serviceRoutes", serviceRoutes))
+const setServiceRoute = (serviceId, routes) => store.dispatch(set(`serviceRoutes.${serviceId}`, routes))
 const setServices = (services) => store.dispatch(set("services", services))
 const setServicesStatus = (servicesStatus) => store.dispatch(set("servicesStatus", servicesStatus))
