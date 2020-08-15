@@ -235,7 +235,7 @@ export const getSecretType = (type, defaultValue) => {
 }
 
 export function openBillingPortal() {
-  window.open("https://billing.spaceuptech.com", "_blank")
+  window.open("https://console.spaceuptech.com", "_blank")
 }
 
 export const openSecurityRulesPage = (projectId, ruleType, id, group) => {

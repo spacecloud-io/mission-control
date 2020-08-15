@@ -45,7 +45,7 @@ const initialState = {
 		version: "",
 		clusterId: null,
 		plan: "space-cloud-open--monthly",
-		quotas: { maxDatabases: 1, maxProjects: 1 }
+		quotas: { maxDatabases: 1, maxProjects: 1, integrationLevel: 0 }
 	}
 };
 

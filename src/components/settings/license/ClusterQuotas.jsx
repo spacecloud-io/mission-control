@@ -6,6 +6,7 @@ import { ArrowUpOutlined } from "@ant-design/icons"
 function Quotas({ quotas, clusterUpgraded, handleGetLicense }) {
   const maxProjects = quotas && quotas.maxProjects ? quotas.maxProjects : 1
   const maxDatabases = quotas && quotas.maxDatabases ? quotas.maxDatabases : 1
+  const integrationLevel = quotas && quotas.integrationLevel ? quotas.integrationLevel : 0
 
   return (
     <React.Fragment>
@@ -13,6 +14,7 @@ function Quotas({ quotas, clusterUpgraded, handleGetLicense }) {
       <Card>
         <p style={{ marginBottom: 8 }}>Max projects: {maxProjects}</p>
         <p style={{ marginBottom: 8 }}>Max databases/project: {maxDatabases}</p>
+        <p style={{ marginBottom: 8 }}>Integration level: {integrationLevel}</p>
       </Card>
       {
         !clusterUpgraded && (
