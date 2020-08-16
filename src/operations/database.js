@@ -365,7 +365,7 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
 
         const hasPermissionToCreatePrepareduery = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.MODIFY)
         if (hasPermissionToCreatePrepareduery) {
-          if (isPreparedQueriesSupported(state, dbAliasName)) {
+          if (isPreparedQueriesSupportedForDbType(dbType)) {
             savePreparedQuerySecurityRule(projectId, dbAliasName, "default", defaultPreparedQueryRule)
               .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
           }
@@ -510,6 +510,10 @@ export const getCollectionSecurityRule = (state, dbAliasName, colName) => get(st
 export const getPreparedQuerySecurityRule = (state, dbAliasName, id) => get(state, `dbPreparedQueries.${dbAliasName}.${id}.rule`, {})
 export const isPreparedQueriesSupported = (state, dbAliasName) => {
   const dbType = getDbType(state, dbAliasName)
+  return isPreparedQueriesSupportedForDbType(dbType)
+}
+
+export const isPreparedQueriesSupportedForDbType = (dbType) => {
   return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
 }
 export const setPreparedQueryRule = (dbAliasName, id, rule) => store.dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
