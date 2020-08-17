@@ -1,38 +1,24 @@
 import React from 'react';
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Spin } from "antd"
-import SigninModal from "./components/signup/signin-modal/SigninModal"
 import Routes from './Routes';
-import { set, increment, decrement } from 'automate-redux';
-import { notify, enterpriseSignin } from './utils';
+import { isSetupComplete } from './utils';
+import Home from "./pages/home/Home";
 
 function App() {
-  const dispatch = useDispatch()
   const pendingRequests = useSelector(state => state.pendingRequests)
-  const showSigninModal = useSelector(state => state.uiState.showSigninModal)
   const loading = pendingRequests > 0 ? true : false
+  const setupComplete = useSelector(state => isSetupComplete(state))
 
-  function handleSigninModalCancel() {
-    dispatch(set("uiState.showSigninModal", false))
-  }
-
-  function handleSignin(firebaseToken) {
-    dispatch(increment("pendingRequests"))
-    enterpriseSignin(firebaseToken)
-      .then(() => {
-        handleSigninModalCancel()
-        notify("success", "Success", "You have signed in successfully")
-      })
-      .catch(ex => notify("error", "Error in signin", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+  if (!setupComplete) {
+    return <Home />
   }
 
   return (
-    <div>
+    <React.Fragment>
       <Routes />
       {loading && <Spin spinning={true} size="large" />}
-      {showSigninModal && <SigninModal handleCancel={handleSigninModalCancel} handleSignin={handleSignin} />}
-    </div>
+    </React.Fragment>
   );
 }
 

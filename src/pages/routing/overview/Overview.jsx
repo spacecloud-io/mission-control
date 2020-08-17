@@ -7,13 +7,15 @@ import { useParams } from "react-router-dom";
 import routingSvg from "../../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag, Space } from "antd";
 import IngressRoutingModal from "../../../components/ingress-routing/IngressRoutingModal";
-import FilterForm from "../../../components/ingress-routing/FilterForm";
-import { set, increment, decrement } from "automate-redux";
-import client from "../../../client";
-import { setProjectConfig, notify, getProjectConfig, generateId } from "../../../utils";
+import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage } from "../../../utils";
+import { deleteIngressRoute, saveIngressRouteConfig, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
 import { FilterOutlined } from "@ant-design/icons";
+import FilterForm from "../../../components/ingress-routing/FilterForm";
+import { set } from "automate-redux";
+import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
+import { securityRuleGroups, projectModules, actionQueuedMessage } from "../../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -30,37 +32,40 @@ const applyFilters = (data, projectId, filters = { services: [], targetHosts: []
 
 function RoutingOverview() {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const filters = useSelector(state => state.uiState.ingressFilters)
-  const [modalVisible, setModalVisible] = useState(false);
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [routeClicked, setRouteClicked] = useState("");
+  const dispatch = useDispatch()
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes");
   }, [])
 
-  let routes = getProjectConfig(projects, projectID, "modules.ingressRoutes", []);
-  const serviceNames = [...new Set(getProjectConfig(projects, projectID, "modules.deployments.services", []).map(obj => obj.id))]
-  if (!routes) routes = []
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
-  const services = deployments.map(obj => {
-    const ports =
-      obj.tasks &&
-        obj.tasks[0] &&
-        obj.tasks[0].ports &&
-        obj.tasks[0].ports.length
-        ? obj.tasks[0].ports.map(port => port.port.toString())
-        : [];
-    return { name: obj.id, ports };
-  });
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadIngressRoutes(projectID)
+        .catch(ex => notify("error", "Error fetching ingress routes", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadServices(projectID)
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
+  // Global state
+  let routes = useSelector(state => getIngressRoutes(state))
+  const serviceNames = useSelector(state => getUniqueServiceIDs(state))
+
+  // Component state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [routeClicked, setRouteClicked] = useState("");
+  const filters = useSelector(state => state.uiState.ingressFilters)
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  // Derived state
   const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
     id: id,
     allowedHosts: source.hosts,
@@ -85,9 +90,9 @@ function RoutingOverview() {
     ? data.find(obj => obj.id === routeClicked)
     : undefined;
 
+  // Handlers
   const handleSubmit = (routeId, values) => {
     return new Promise((resolve, reject) => {
-      dispatch(increment("pendingRequests"));
       const config = {
         id: routeId ? routeId : generateId(),
         source: {
@@ -107,40 +112,33 @@ function RoutingOverview() {
           outputFormat: values.outputFormat
         }
       };
-      client.routing
-        .setRoutingConfig(projectID, config.id, config)
-        .then(() => {
-          if (routeId) {
-            const newRoutes = routes.map(obj => obj.id === routeId ? config : obj)
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          } else {
-            const newRoutes = [...routes, config]
-            setProjectConfig(projectID, "modules.ingressRoutes", newRoutes)
-          }
+      incrementPendingRequests()
+      saveIngressRouteConfig(projectID, config.id, config)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved routing config successfully");
           resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", "Error saving routing config", ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
+  const handleSecureClick = id => openSecurityRulesPage(projectID, securityRuleGroups.INGRESS_ROUTES, id)
+
   const handleRouteClick = id => {
-    dispatch(set("routing", routes));
     setRouteClicked(id);
     setModalVisible(true);
   };
 
   const handleDelete = id => {
-    dispatch(increment("pendingRequests"));
-    client.routing
-      .deleteRoutingConfig(projectID, id)
-      .then(() => {
-        const newRoutes = routes.filter(route => route.id !== id);
-        setProjectConfig(projectID, `modules.ingressRoutes`, newRoutes);
-        notify("success", "Success", "Deleted rule successfully");
-      })
+    incrementPendingRequests()
+    deleteIngressRoute(projectID, id)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
       .catch(ex => notify("error", "Error", ex.toString()))
-      .finally(() => dispatch(decrement("pendingRequests")));
+      .finally(() => decrementPendingRequests());
   };
 
   const handleModalCancel = () => {
@@ -173,23 +171,17 @@ function RoutingOverview() {
     },
     {
       title: <b>{"Actions"}</b>,
-      className: "actions",
+      className: "column-actions",
       render: (_, record) => {
         return (
           <span>
-            <a
-              style={{ color: "#40A9FF" }}
-              onClick={() => {
-                handleRouteClick(record.id);
-              }}
-            >
-              Edit
-            </a>
+            <a onClick={() => handleRouteClick(record.id)}>Edit</a>
+            <a onClick={() => handleSecureClick(record.id)}>Secure</a>
             <Popconfirm
               title={`This will delete all the data. Are you sure?`}
               onConfirm={() => handleDelete(record.id)}
             >
-              <a style={{ color: "red", paddingLeft: 10 }}>Delete</a>
+              <a style={{ color: "red" }}>Delete</a>
             </Popconfirm>
           </span>
         );
@@ -200,7 +192,7 @@ function RoutingOverview() {
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="routing" />
+      <Sidenav selectedItem={projectModules.INGRESS_ROUTES} />
       <ProjectPageLayout>
         <IngressTabs projectID={projectID} activeKey="overview" />
         <Content>
@@ -249,7 +241,6 @@ function RoutingOverview() {
           {modalVisible && (
             <IngressRoutingModal
               handleSubmit={(values) => handleSubmit(routeClicked, values)}
-              services={services}
               initialValues={routeClickedInfo}
               handleCancel={handleModalCancel}
             />

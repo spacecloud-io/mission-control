@@ -19,13 +19,10 @@ const EndpointCard = (props) => {
 	const graphqlWebsocketURL = `${wsProtocol}//${host}/v1/api/${projectId}/graphql/socket`
 
 	return (
-		<Card style={{ overflow: "scroll" }}>
-			<h3 style={{ wordSpacing: 6 }}><b>HTTP URL: </b>
-				<Typography.Paragraph style={{ display: "inline" }} copyable ellipsis>{graphqlHttpURL}</Typography.Paragraph>
-			</h3>
-			<h3 style={{ wordSpacing: 6 }}><b>Websocket URL: </b>
-				<Typography.Paragraph style={{ display: "inline" }} copyable ellipsis>{graphqlWebsocketURL}</Typography.Paragraph>
-			</h3>
+		<Card style={{ overflow: "auto" }}>
+			<Typography.Text strong>HTTP URL:</Typography.Text><Typography.Text copyable ellipsis>{graphqlHttpURL}</Typography.Text>
+			<br/>
+			<Typography.Text strong>Websocket URL:</Typography.Text><Typography.Text copyable ellipsis>{graphqlWebsocketURL}</Typography.Text>
 		</Card>
 	);
 }

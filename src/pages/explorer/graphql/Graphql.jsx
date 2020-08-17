@@ -2,24 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
-import jwt from 'jsonwebtoken';
 import client from '../../../client';
-import { SPACE_CLOUD_USER_ID } from '../../../constants';
 import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { Checkbox, Input, Tooltip, Button } from 'antd';
 import '../explorer.css';
-import { getProjectConfig } from '../../../utils';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
 import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-
-const generateAdminToken = secret => {
-  return jwt.sign({ id: SPACE_CLOUD_USER_ID }, secret);
-};
+import { getAPIToken } from '../../../operations/projects';
+import { projectModules } from '../../../constants';
+import { canGenerateToken } from '../../../utils';
 
 const Graphql = props => {
 
@@ -32,7 +28,7 @@ const Graphql = props => {
   }, [])
 
   const getToken = () => {
-    return props.useAdminToken ? generateAdminToken(props.secret) : props.userToken
+    return props.useInternalToken ? props.internalToken : props.userToken
   }
 
   const graphQLFetcher = (graphQLParams, projectId) => {
@@ -43,19 +39,18 @@ const Graphql = props => {
       getToken()
     );
   }
-
   return (
     <div className='explorer'>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem='explorer' />
+      <Sidenav selectedItem={projectModules.EXPLORER} />
       <div className='page-content page-content--no-padding'>
         <ExplorerTabs activeKey="graphql" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           <div className='row'>
             <Checkbox
-              checked={props.useAdminToken}
+              checked={props.useInternalToken}
               onChange={e =>
-                props.setUseAdminToken(e.target.checked)
+                props.setUseInternalToken(e.target.checked)
               }
             >
               Bypass security rules
@@ -67,21 +62,25 @@ const Graphql = props => {
               <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
             </Tooltip>
           </div>
-          {!props.useAdminToken && (
+          {!props.useInternalToken && (
             <div className='row' style={{ display: "flex" }}>
               <Input.Password
                 placeholder='JWT Token'
                 value={props.userToken}
                 onChange={e => props.setUserToken(e.target.value)}
               />
-              <Button onClick={() => setGenerateTokenModal(true)}>
-                Generate Token
-                            </Button>
+              <Tooltip title={props.generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                <Button disabled={!props.generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+              </Tooltip>
             </div>
           )
           }
           <div className='graphql' style={{ marginTop: 10 }}>
             <GraphiQL
+              query={props.query ? props.query : undefined}
+              variables={props.variables ? props.variables : undefined}
+              onEditQuery={props.setGraphQLQuery}
+              onEditVariables={props.setGraphQLVariables}
               fetcher={graphQLParams =>
                 graphQLFetcher(graphQLParams, props.projectId)
               }
@@ -93,36 +92,44 @@ const Graphql = props => {
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={props.setUserToken}
           initialToken={getToken()}
-          secret={props.secret}
+          projectID={projectID}
         />}
       </div>
-    </div>
+    </div >
   );
 
 };
 
 const mapStateToProps = (state, ownProps) => {
   const projectId = ownProps.match.params.projectID
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
   return {
-    secret: secrets.length > 0 ? secrets[0].secret : "",
     projectId: projectId,
-    useAdminToken: get(
+    query: state.uiState.graphiql.query,
+    variables: state.uiState.graphiql.variables,
+    useInternalToken: get(
       state,
-      'uiState.explorer.useAdminToken',
+      'uiState.explorer.useInternalToken',
       true
     ),
-    userToken: get(state, 'uiState.explorer.userToken')
+    userToken: get(state, 'uiState.explorer.userToken'),
+    internalToken: getAPIToken(state),
+    generateTokenAllowed: canGenerateToken(state, projectId)
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setUseAdminToken: (useAdminToken) => {
-      dispatch(set('uiState.explorer.useAdminToken', useAdminToken))
+    setUseInternalToken: (useInternalToken) => {
+      dispatch(set('uiState.explorer.useInternalToken', useInternalToken))
     },
     setUserToken: (userToken) => {
       dispatch(set('uiState.explorer.userToken', userToken))
+    },
+    setGraphQLQuery: (query) => {
+      dispatch(set('uiState.graphiql.query', query))
+    },
+    setGraphQLVariables: (variables) => {
+      dispatch(set('uiState.graphiql.variables', variables))
     }
   };
 };

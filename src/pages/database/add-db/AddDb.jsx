@@ -2,35 +2,39 @@ import React, { useEffect } from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
-import { dbEnable } from '../dbActions';
+import { addDatabase } from '../../../operations/database';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
-import { useSelector, useDispatch } from 'react-redux';
 import '../database.css';
-import { notify } from '../../../utils';
-import { decrement, increment } from 'automate-redux';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { projectModules, actionQueuedMessage } from '../../../constants';
 
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
-  const dispatch = useDispatch()
-  const projects = useSelector(state => state.projects)
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/add-db");
   }, [])
 
-  const addDb = (alias, connectionString, defaultDBRules, dbType, dbName) => {
-    dispatch(increment("pendingRequests"))
-    dbEnable(projects, projectID, alias, dbType, dbName, connectionString, defaultDBRules)
-    .then(() => {
-      history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
-      notify("success", "Success", "Successfully added database")
-    })
-    .catch(ex => notify("error", "Error adding database", ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
+  const addDb = (alias, connectionString, dbType, dbName) => {
+    incrementPendingRequests()
+    addDatabase(projectID, alias, dbType, dbName, connectionString)
+      .then(({ queued, enabledEventing }) => {
+        if (!queued) {
+          history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
+          notify("success", "Success", "Successfully added database")
+          if (enabledEventing) {
+            notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+          }
+        } else {
+          notify("success", "Success", actionQueuedMessage)
+        }
+      })
+      .catch(ex => notify("error", "Error adding database", ex))
+      .finally(() => decrementPendingRequests())
   }
 
   return (
@@ -39,7 +43,7 @@ const AddDb = () => {
         showProjectSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <div style={{
             boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.1)",

@@ -10,12 +10,12 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, parseJSONSafely } from "../../utils";
+import { notify, parseJSONSafely, canGenerateToken } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 
-const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, internalToken }) => {
+const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken, projectId }) => {
   const [form] = Form.useForm()
   const [eventType, setEventType] = useState(initialEventType);
 
@@ -26,6 +26,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
   const token = useSelector(state => get(state, "uiState.eventing.token", ""))
+  const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectId))
 
   const getToken = () => useInternalToken ? internalToken : token
   const setToken = token => {
@@ -38,13 +39,13 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
   const handleClickSubmit = e => {
     form.validateFields().then(fieldsValue => {
       try {
-        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken()).then(res => {
-          notify("success", "Success", "Event successfully queued to Space Cloud")
-          setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
-          if (!triggeredEventOnce) setTriggeredEventOnce(true)
-        }).catch(ex => notify("error", "Error", ex.toString()))
+        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken())
+          .then(res => {
+            setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
+            if (!triggeredEventOnce) setTriggeredEventOnce(true)
+          })
       } catch (ex) {
-        notify("error", "Error", ex.toString())
+        notify("error", "Error", ex)
       }
     });
   };
@@ -55,7 +56,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
     bypassSecurityRules: useInternalToken,
     token: token
   }
-  
+
   return (
     <React.Fragment>
       <Form layout="vertical" form={form} initialValues={formInitialValues}
@@ -94,7 +95,9 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
                 onChange={e => dispatch(set("uiState.eventing.token", e.target.value))}
               />
             </Form.Item>
-            <Button onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
+            <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+              <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModalVisible(true)}>Generate Token</Button>
+            </Tooltip>
           </div>
         </ConditionalFormBlock>
         <FormItemLabel name="Event data" description="JSON object" />
@@ -122,7 +125,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, secret, inter
         handleCancel={() => setGenerateTokenModalVisible(false)}
         handleSubmit={setToken}
         initialToken={token}
-        secret={secret}
+        projectID={projectId}
       />}
       {eventResponse && <React.Fragment>
         <br />

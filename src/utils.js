@@ -3,17 +3,22 @@ import { set as setObjectPath } from "dot-prop-immutable"
 import { increment, decrement, set, get } from "automate-redux"
 import { notification } from "antd"
 import uri from "lil-uri"
-import { dbTypes, SPACE_CLOUD_USER_ID, defaultPreparedQueryRule } from './constants';
+import qs from 'qs';
+import { dbTypes, securityRuleGroups, moduleResources, configResourceTypes, actionQueuedMessage } from './constants';
 
 import store from "./store"
-import client from "./client"
 import history from "./history"
-import { Redirect, Route } from "react-router-dom"
-import gql from 'graphql-tag';
-import gqlPrettier from 'graphql-prettier';
-import { format } from 'prettier-package-json';
-import { LoremIpsum } from "lorem-ipsum";
+import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
+import { loadProjects, getJWTSecret, loadProjectAPIToken, getSecretAlgorithm } from './operations/projects'
+import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
+import { setRemoteEndpointRule } from './operations/remoteServices'
+import { setIngressRouteRule } from './operations/ingressRoutes'
+import { setEventingSecurityRule } from './operations/eventing'
+import { setFileStoreSecurityRule } from './operations/fileStore'
+import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
+import { useSelector } from 'react-redux'
+import { RSA } from 'hybrid-crypto-js';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -21,30 +26,85 @@ const mongoSvg = require(`./assets/mongoSmall.svg`)
 const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
-const lorem = new LoremIpsum();
+const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+export function isJson(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+export function copyObjectToClipboard(obj) {
+  return navigator.clipboard.writeText(JSON.stringify(obj))
+}
+
+export function getCopiedObjectFromClipboard() {
+  return new Promise((resolve, reject) => {
+    navigator.clipboard.readText()
+      .then(data => {
+        const isValueJson = isJson(data)
+        if (!isValueJson) {
+          reject("Copied object is not a valid JSON")
+          return
+        }
+        resolve(JSON.parse(data))
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function upsertArray(array, predicate, getItem) {
+  const index = array.findIndex(predicate)
+  return index === -1 ? [...array, getItem()] : [...array.slice(0, index), getItem(array[index]), ...array.slice(index + 1)]
+}
+
+export function incrementPendingRequests() {
+  store.dispatch(increment("pendingRequests"))
+}
+
+export function markSetupComplete() {
+  store.dispatch(set("setupComplete", true))
+}
+
+export function isSetupComplete(state) {
+  return get(state, "setupComplete", false)
+}
+
+export function decrementPendingRequests() {
+  store.dispatch(decrement("pendingRequests"))
+}
 
 export function capitalizeFirstCharacter(str) {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export const getJWTSecret = (state, projectId) => {
-  const secrets = getProjectConfig(state.projects, projectId, "secrets", [])
-  if (secrets.length === 0) return ""
-  return secrets[0].secret
+export function formatDate(dateString) {
+  if (!dateString) return dateString
+  const date = new Date(dateString)
+  const month = date.getMonth()
+  const day = date.getDate()
+  const year = date.getFullYear()
+  const monthText = months[month]
+  return `${monthText} ${day}, ${year}`
+}
+
+export function formatIntegrationImageUrl(integrationId) {
+  return `https://storage.googleapis.com/space-cloud/assets/integrations/${integrationId}.svg`
 }
 
 export const generateToken = (state, projectId, claims) => {
-  const secret = getJWTSecret(state, projectId)
-  if (!secret) return ""
-  return jwt.sign(claims, secret);
+  const { value, algorithm } = getJWTSecret(state, projectId)
+  if (!value) return ""
+  return jwt.sign(claims, value, { algorithm });
 }
 
-export const generateInternalToken = (state, projectId) => {
-  const claims = { id: SPACE_CLOUD_USER_ID }
-  return generateToken(state, projectId, claims)
-};
-
+export function canGenerateToken(state, projectId) {
+  return checkResourcePermissions(state, projectId, [configResourceTypes.PROJECT_CONFIG], "modify")
+}
 export const parseDbConnString = conn => {
   if (!conn) return {}
   const url = uri(conn)
@@ -70,12 +130,6 @@ export const parseDbConnString = conn => {
   }
   return urlObj
 }
-export const getProjectConfig = (projects, projectId, path, defaultValue) => {
-  const project = projects.find(project => project.id === projectId)
-  if (!project) return defaultValue
-  const returnValue = get(project, path, defaultValue)
-  return (returnValue == undefined || returnValue == null) ? defaultValue : returnValue
-}
 
 export const setProjectConfig = (projectId, path, value) => {
   const projects = get(store.getState(), "projects", [])
@@ -96,6 +150,17 @@ export const generateId = (len = 32) => {
   });
 }
 
+export const generateRSAKeyPair = async () => {
+  const rsa = new RSA({
+    keySize: 2048,
+  });
+  const { publicKey, privateKey } = await rsa.generateKeyPairAsync();
+  return {
+    privateKey,
+    publicKey
+  }
+}
+
 export const generateJWTSecret = generateId
 export const generateAESKey = () => btoa(generateId())
 
@@ -104,23 +169,11 @@ export const generateProjectConfig = (projectId, name) => ({
   id: projectId,
   secrets: [{ secret: generateJWTSecret(), isPrimary: true }],
   aesKey: generateAESKey(),
-  contextTimeGraphQL: 5,
-  modules: {
-    db: {},
-    eventing: {},
-    userMan: {},
-    remoteServices: {
-      externalServices: {}
-    },
-    fileStore: {
-      enabled: false,
-      rules: []
-    }
-  }
+  contextTimeGraphQL: 5
 })
 
 export const notify = (type, title, msg, duration) => {
-  notification[type]({ message: title, description: msg.toString(), duration: duration });
+  notification[type]({ message: title, description: String(msg), duration: duration });
 }
 
 export const getEventSourceFromType = (type, defaultValue) => {
@@ -181,15 +234,22 @@ export const getSecretType = (type, defaultValue) => {
   return secret
 }
 
-export const getEventingDB = (projectId) => {
-  return getProjectConfig(store.getState().projects, projectId, "modules.eventing.dbAlias", "")
+export function openBillingPortal() {
+  window.open("https://console.spaceuptech.com", "_blank")
+}
+
+export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
+  const url = `/mission-control/projects/${projectId}/security-rules?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
+  window.open(url, '_blank')
 }
 
 export const openProject = (projectId) => {
   const projects = get(store.getState(), "projects", [])
+  // Check if the specified project exists  
   const doesExist = projects.some(project => project.id === projectId)
+
   if (!doesExist) {
-    // Check if some other projectExists. If not then redirect to the welcome page
+    // Check if some other project exists. If not then redirect to the welcome page
     if (projects.length === 0) {
       history.push(`/mission-control/welcome`)
       return
@@ -197,206 +257,82 @@ export const openProject = (projectId) => {
     projectId = projects[0].id
     notify("info", "Info", "Opened another existing project as the requested project does not exist")
   }
+
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}/`
-  if (!currentURL.includes(projectURL)) {
+
+  // Check if the desired project is already opened.
+  // This is necessary to check since the user might enter the a project url in the browser directly.
+  // In that case, the exact page url (especially the module name in the url) must be preserved.
+  const projectOpened = currentURL.includes(projectURL)
+
+  // Open the project if not opened already
+  if (!projectOpened) {
     history.push(projectURL)
   }
+
+  // Load api token for the project
+  loadProjectAPIToken(projectId)
 }
 
-export const fetchBillingDetails = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchBillingDetails().then(({ details, amount }) => {
-      store.dispatch(set("billing", { status: true, details, balanceCredits: amount }))
-      resolve()
-    }).catch(ex => reject(ex))
+function checkIfValueInArray(value, array = []) {
+  return array.some(val => val === value)
+}
+
+// Checks if the user has permissions for a particular resource(s), verb in a project 
+export function checkResourcePermissions(state, projectId, resources, verb) {
+  const permissions = getPermisions(state)
+  return permissions.some((permission) => {
+    const projectMatched = checkIfValueInArray(permission.project, ["*", projectId])
+    const resourceMatched = checkIfValueInArray(permission.resource, ["*", ...resources])
+    const verbMatched = checkIfValueInArray(permission.verb, ["*", verb])
+    return projectMatched && resourceMatched && verbMatched
   })
 }
 
-export const fetchInvoices = (startingAfter) => {
+// Checks whether the user has a permission to open a module/section (sidenav item) within a project 
+export function checkModulePermissions(state, projectId, moduleId) {
+  const moduleResourcesArray = get(moduleResources, moduleId, [])
+
+  // Return true if no permissions are required for a module
+  if (moduleResourcesArray.length === 0) {
+    return true
+  }
+
+  return checkResourcePermissions(state, projectId, moduleResourcesArray, "read")
+}
+
+// Performs actions to be done when an user is logged in to space cloud cluster.
+// This includes loading projects and permissions.
+// Note: In dev mode these actions are performed even if an user is not logged in.
+export function performActionsOnAuthenticated() {
   return new Promise((resolve, reject) => {
-    client.billing.fetchInvoices(startingAfter).then((invoices) => {
-      const oldInvoices = store.getState().invoices
-      const newInvoices = [...oldInvoices, ...invoices]
-      const hasMore = invoices.length === 10
-      let invoicesMap = newInvoices.reduce((prev, curr) => Object.assign({}, prev, { [curr.id]: curr }), {})
-      const uniqueInvoices = Object.values(invoicesMap)
-      const sortedInvoices = uniqueInvoices.sort((a, b) => a.number < b.number ? -1 : 1)
-      store.dispatch(set("invoices", sortedInvoices))
-      resolve(hasMore)
-    }).catch(ex => reject(ex))
+    const promises = [loadProjects(), loadPermissions()]
+
+    Promise.all(promises)
+      .then(([projects]) => {
+        if (projects.length === 0) {
+          history.push(`/mission-control/welcome`)
+          resolve()
+          return
+        }
+
+        // Decide which project to open
+        let projectToBeOpened = getProjectToBeOpened()
+        if (!projectToBeOpened) {
+          projectToBeOpened = projects[0].id
+        }
+
+        openProject(projectToBeOpened)
+        resolve()
+      })
+      .catch(ex => reject(ex))
   })
-}
-
-export const fetchClusters = () => {
-  return new Promise((resolve, reject) => {
-    client.billing.fetchClusters().then((clusters) => {
-      store.dispatch(set("clusters", clusters))
-      resolve()
-    }).catch(ex => reject(ex))
-  })
-}
-
-export const fetchGlobalEntities = (token, spaceUpToken) => {
-  // Save the new token value
-  if (token) {
-    saveToken(token)
-  }
-
-  if (spaceUpToken) {
-    saveSpaceUpToken(spaceUpToken)
-  }
-
-  // Redirect if needed
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
-
-  if (shouldFetchGlobalEntities()) {
-    // Fetch projects
-    store.dispatch(increment("pendingRequests"))
-    client.projects.getProjects().then(projects => {
-      store.dispatch(set("projects", projects))
-      if (projects.length === 0) {
-        history.push(`/mission-control/welcome`)
-        return
-      }
-
-      // Decide which project to open
-      let projectToBeOpened = getProjectToBeOpened()
-      if (!projectToBeOpened) {
-        projectToBeOpened = projects[0].id
-      }
-
-      openProject(projectToBeOpened)
-    }).catch(ex => notify("error", "Could not fetch projects", ex))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-
-    store.dispatch(increment("pendingRequests"))
-    client.fetchCredentials()
-      .then(data => store.dispatch(set("credentials", data)))
-      .catch(ex => notify("error", "Error fetching credentials", ex.toString()))
-      .finally(() => store.dispatch(decrement("pendingRequests")))
-
-    if (spaceUpToken) {
-      store.dispatch(increment("pendingRequests"))
-      fetchBillingDetails()
-        .catch(ex => console.log("Error fetching billing details", ex))
-        .finally(() => store.dispatch(decrement("pendingRequests")))
-    }
-  }
-}
-
-function shouldFetchGlobalEntities() {
-  const prodMode = isProdMode()
-  const token = getToken()
-
-  if (prodMode && !token) return false
-  return true
-}
-
-function getTokenClaims(token) {
-  const temp = token.split(".")
-  const decoded = atob(temp[1])
-  let claims = {}
-  try {
-    const decodedObj = JSON.parse(decoded)
-    claims = decodedObj
-  } catch (error) {
-    console.log("Error decoding token", error)
-  }
-  return claims
-}
-
-export function isProdMode() {
-  return localStorage.getItem("isProd") === "true" ? true : false
-}
-
-export function isBillingEnabled(state) {
-  return get(state, "billing.status", false)
-}
-
-export function isSignedIn() {
-  const spaceUpToken = getSpaceUpToken()
-  return spaceUpToken ? true : false
-}
-
-export function getClusterId(state) {
-  return get(state, "env.clusterId", undefined)
-}
-
-export function getClusterPlan(state) {
-  const plan = get(state, "env.plan", "space-cloud-open--monthly")
-  return plan ? plan : "space-cloud-open--monthly"
-}
-
-export function getToken() {
-  return localStorage.getItem("token")
-}
-export function getSpaceUpToken() {
-  return localStorage.getItem("spaceUpToken")
-}
-
-
-function storeToken(token) {
-  localStorage.setItem("token", token)
-}
-
-function storeSpaceUpToken(token) {
-  localStorage.setItem("spaceUpToken", token)
-}
-
-function saveToken(token) {
-  storeToken(token)
-  client.setToken(token)
-}
-
-function saveSpaceUpToken(token) {
-  // Get claims of the token
-  const { email, name } = getTokenClaims(token)
-
-  // Save token claims to local storage
-  localStorage.setItem("email", email)
-  localStorage.setItem("name", name)
-
-  // Save token to local storage and set the token on the API
-  storeSpaceUpToken(token)
-}
-
-function saveEnv(isProd, version, clusterId, plan, quotas) {
-  localStorage.setItem("isProd", isProd.toString())
-  store.dispatch(set("env", { version, clusterId, plan, quotas }))
 }
 
 function isCurrentRoutePublic() {
   const path = window.location.pathname.split("/")[2]
   return (path === "login")
-}
-
-function shouldRedirect() {
-  // Check if we are at a public route
-  if (isCurrentRoutePublic()) {
-    return { redirect: false, redirectUrl: "" }
-  }
-
-  const productionMode = localStorage.getItem("isProd") === "true"
-  const token = getToken()
-
-  if (productionMode && !token) {
-    return { redirect: true, redirectUrl: "/mission-control/login" }
-  }
-
-  return { redirect: false, redirectUrl: "" }
-}
-
-function redirectIfNeeded() {
-  const { redirect, redirectUrl } = shouldRedirect()
-  if (redirect) {
-    history.push(redirectUrl)
-    return
-  }
 }
 
 const getProjectToBeOpened = () => {
@@ -408,166 +344,231 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
-export const onAppLoad = () => {
-  client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => {
-    // Store env
-    saveEnv(isProd, version, clusterId, plan, quotas)
-
-    // Redirect if needed
-    redirectIfNeeded()
-
-    const token = getToken()
-    const spaceUpToken = getSpaceUpToken()
-    if (token) {
-      client.refreshToken(token).then(token => fetchGlobalEntities(token, spaceUpToken)).catch(ex => {
-        console.log("Error refreshing token: ", ex.toString())
-        localStorage.removeItem("token")
-        redirectIfNeeded()
-      })
-      return
+const registerSecurityRulesBroadCastListener = () => {
+  const bc = new BroadcastChannel('security-rules');
+  bc.onmessage = ({ data }) => {
+    const { rule, meta, queued } = data
+    const { ruleType, id, group } = meta
+    if (!queued) {
+      switch (ruleType) {
+        case securityRuleGroups.DB_COLLECTIONS:
+          setColSecurityRule(group, id, rule)
+          break;
+        case securityRuleGroups.DB_PREPARED_QUERIES:
+          setPreparedQueryRule(group, id, rule)
+          break;
+        case securityRuleGroups.EVENTING:
+          setEventingSecurityRule(id, rule)
+          break;
+        case securityRuleGroups.FILESTORE:
+          setFileStoreSecurityRule(id, rule)
+          break;
+        case securityRuleGroups.REMOTE_SERVICES:
+          setRemoteEndpointRule(group, id, rule)
+          break;
+        case securityRuleGroups.INGRESS_ROUTES:
+          setIngressRouteRule(id, rule)
+          break
+      }
     }
-
-    fetchGlobalEntities(token, spaceUpToken)
-  })
+    notify("success", "Success", queued ? actionQueuedMessage : "Saved security rules successfully")
+  }
+  window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-export function enterpriseSignin(token) {
-  return new Promise((resolve, reject) => {
-    client.billing.signIn(token)
-      .then(newToken => {
-        saveSpaceUpToken(newToken)
-        fetchBillingDetails().finally(() => resolve())
-      })
-      .catch((error) => reject(error))
-  })
+function redirectToLogin() {
+  let loginURL = getLoginURL(store.getState())
+
+  if (!loginURL.startsWith("http")) {
+    loginURL = window.location.origin + loginURL
+  }
+
+  if (window.location.href !== loginURL) {
+    window.location.href = loginURL
+  }
 }
 
-export function registerCluster(clusterName, doesExist = false) {
+// This function performs the setup required to operate mission control.
+// It includes loading the space cloud environment, refreshing tokens, fetching all the necessary resources etc.
+// Its intended to be called whenever the mission control is (re)loaded.
+export function performSetup() {
   return new Promise((resolve, reject) => {
-    const isClusterIdAlreadySet = getClusterId(store.getState()) ? true : false
-    if (isClusterIdAlreadySet) {
-      reject(new Error("This space cloud cluster is already registered"))
-      return
-    }
 
-    client.billing.registerCluster(clusterName, doesExist)
-      .then(({ ack, clusterId, clusterKey }) => {
-        if (!ack) {
-          resolve({ registered: false })
+    // Load cluster environment and refresh token (if present) parallely
+    const promises = [loadClusterEnv(), refreshClusterTokenIfPresent()]
+
+    Promise.all(promises)
+      .then(() => {
+
+        // NOTE: loggedIn is always true in case of dev environment 
+        const loggedIn = isLoggedIn(store.getState())
+
+        // If the user is not logged in, redirect to the login url
+        if (!loggedIn) {
+          redirectToLogin()
+          resolve()
           return
         }
 
-        client.setClusterIdentity(clusterId, clusterKey)
-          .then(() => {
-            resolve({ registered: true, notifiedToCluster: true })
-            store.dispatch(set("env.clusterId", clusterId))
-            client.fetchEnv().then(({ isProd, version, clusterId, plan, quotas }) => saveEnv(isProd, version, clusterId, plan, quotas))
-          })
-          .catch(ex => resolve({ registered: true, notifiedToCluster: false, exceptionNotifyingToCluster: ex }))
-      })
-      .catch(ex => reject(ex))
-  })
-}
-
-export function setClusterPlan(plan) {
-  return new Promise((resolve, reject) => {
-    const clusterId = getClusterId(store.getState())
-    client.billing.setPlan(clusterId, plan)
-      .then((plan) => {
-        client.renewClusterLicense()
-          .then(() => {
-            store.dispatch(set("env.plan", plan))
-            resolve()
-          })
+        // This loads all the private resources i.e. resources that require a valid token in case of prod mode
+        performActionsOnAuthenticated()
+          .then(() => resolve())
           .catch(ex => reject(ex))
       })
-      .catch(ex => reject(ex))
+      .catch((ex) => {
+        notify("error", "Error loading environment", ex)
+        reject(ex)
+      })
+
+    setInterval(() => {
+      // Refresh admin token periodically (every 15 minutes)  
+      refreshClusterTokenIfPresent()
+        .then(() => {
+          // NOTE: loggedIn is always true in case of dev environment 
+          const loggedIn = isLoggedIn(store.getState())
+
+          // If the user is not logged in, redirect to the login url
+          if (!loggedIn) {
+            redirectToLogin()
+            resolve()
+            return
+          }
+        })
+
+      // Refresh admin token periodically (every 15 minutes)
+      const { projectId } = extractPathInfo(history.location.pathname)
+      loadProjectAPIToken(projectId)
+    }, 15 * 60 * 1000)
+
+    // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
+    registerSecurityRulesBroadCastListener()
   })
 }
 
-export function applyCoupon(couponCode) {
-  return new Promise((resolve, reject) => {
-    client.billing.applyCoupon(couponCode)
-      .then((couponValue) => {
-        if (couponValue > 0) couponValue = couponValue * -1 // store balance credits in redux as negative number. 
-        store.dispatch(increment("billing.balanceCredits", couponValue))
-        resolve(couponValue)
-      })
-      .catch(ex => reject(ex))
-  })
+// This function extracts the project id and the module name from the path
+function extractPathInfo(path) {
+  if (!path) {
+    return { projectId: "", moduleId: "" }
+  }
+
+  const pathValues = path.split("/")
+  if (pathValues.length < 4) {
+    return { projectId: "", moduleId: "" }
+  }
+
+  return { projectId: pathValues[3], moduleId: pathValues[4] ? pathValues[4] : "overview" }
+}
+
+function usePagePermissions() {
+  const history = useHistory()
+  const isPrivate = !isCurrentRoutePublic()
+  const loggedIn = useSelector(state => isLoggedIn(state))
+  const loginURL = useSelector(state => getLoginURL(state))
+  const { projectId, moduleId } = extractPathInfo(history.location.pathname)
+  const hasPermissions = useSelector(state => checkModulePermissions(state, projectId, moduleId))
+
+  // Redirect to login page if user is not logged in while accessing a private route
+  if (isPrivate && !loggedIn) {
+    return { allowed: false, redirectUrl: loginURL }
+  }
+
+  // Redirect to NoPermissions page if the user doesn't have permissions to view a particular path
+  if (!hasPermissions) {
+    // If the NoPermissions page is already opened, then pick the moduleId from the query string 
+    const queryParams = qs.parse(history.location.search, { ignoreQueryPrefix: true })
+    const adjustedModuleId = moduleId === "no-permissions" ? queryParams.moduleId : moduleId
+    return { allowed: false, redirectUrl: `/mission-control/projects/${projectId}/no-permissions?moduleId=${adjustedModuleId}` }
+  }
+
+  return { allowed: true }
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { redirect, redirectUrl } = shouldRedirect()
+
+  const { allowed, redirectUrl } = usePagePermissions()
   return (
     <Route
       {...rest}
-      render={props =>
-        redirect ? (
-          <Redirect to={redirectUrl} />
-        ) : (
+      render={
+        props => {
+          // Redirect to login page if user is not logged in while accessing a private route
+          if (!allowed) {
+            return (
+              <Redirect to={redirectUrl} />
+            )
+          }
+
+          return (
             <Component {...props} />
           )
+        }
       }
     />
   )
 }
 
+// This component redirects to the empty state page of a database if a database is not found in config
+export const DatabasePageRoute = ({ component: Component, ...rest }) => {
 
-export const BillingRoute = ({ component: Component, ...rest }) => {
-  const billingEnabled = isBillingEnabled(store.getState())
+  const { allowed, redirectUrl } = usePagePermissions()
+  const dbConfig = useSelector(state => getDbConfigs(state))
+  const dbAliasNames = Object.keys(dbConfig)
+  const { projectID, selectedDB } = get(rest, "computedMatch.params", {})
+  const isDbInConfig = dbConfig[selectedDB] ? true : false
+
   return (
     <Route
       {...rest}
-      render={props =>
-        !billingEnabled ? (
-          <Redirect to={`/mission-control/projects/${rest.computedMatch.params.projectID}/billing`} />
-        ) : (
-            <PrivateRoute {...props} component={Component} />
+      render={
+        props => {
+          // Redirect to login page if user is not logged in while accessing a private route
+          if (!allowed) {
+            return (
+              <Redirect to={redirectUrl} />
+            )
+          }
+
+          if (dbAliasNames.length === 0) {
+            return (
+              <Redirect to={`/mission-control/projects/${projectID}/database`} />
+            )
+          }
+
+          if (!isDbInConfig) {
+            return (
+              <Redirect to={`/mission-control/projects/${projectID}/database/${dbAliasNames[0]}`} />
+            )
+          }
+
+          return (
+            <Component {...props} />
           )
+        }
       }
     />
   )
-}
-
-export const getDBTypeFromAlias = (projectId, alias) => {
-  const projects = get(store.getState(), "projects", [])
-  return getProjectConfig(projects, projectId, `modules.db.${alias}.type`, alias)
-}
-
-export const canDatabaseHavePreparedQueries = (projectId, dbAlias) => {
-  const dbType = getDBTypeFromAlias(projectId, dbAlias)
-  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
-}
-
-export const getDefaultPreparedQueriesRule = (projectId, dbAliasName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbAliasName}.preparedQueries.default.rule`, defaultPreparedQueryRule)
 }
 
 export const getDatabaseLabelFromType = (dbType) => {
   switch (dbType) {
-    case dbTypes.MONGO: 
-    return "MongoDB"
-    case dbTypes.POSTGRESQL: 
-    return "PostgreSQL"
-    case dbTypes.MYSQL: 
-    return "MySQL"
-    case dbTypes.SQLSERVER: 
-    return "SQL Server"
-    case dbTypes.EMBEDDED: 
-    return "Embedded"
+    case dbTypes.MONGO:
+      return "MongoDB"
+    case dbTypes.POSTGRESQL:
+      return "PostgreSQL"
+    case dbTypes.MYSQL:
+      return "MySQL"
+    case dbTypes.SQLSERVER:
+      return "SQL Server"
+    case dbTypes.EMBEDDED:
+      return "Embedded"
   }
 }
 
-export const dbIcons = (project, projectId, selectedDb) => {
-
-  const dbModule = getProjectConfig(project, projectId, "modules.db", {})
-
-  let checkDB = ''
-  if (dbModule[selectedDb]) checkDB = dbModule[selectedDb].type
+export const dbIcons = (selectedDb) => {
+  const dbType = getDbType(store.getState(), selectedDb)
 
   var svg = mongoSvg
-  switch (checkDB) {
+  switch (dbType) {
     case dbTypes.MONGO:
       svg = mongoSvg
       break;
@@ -587,247 +588,6 @@ export const dbIcons = (project, projectId, selectedDb) => {
       svg = postgresSvg
   }
   return svg;
-}
-
-const getProjects = state => state.projects
-
-export const getTrackedCollectionNames = (state, projectId, dbName) => {
-  const projects = getProjects(state)
-  const collections = getProjectConfig(projects, projectId, `modules.db.${dbName}.collections`, {})
-  const trackedCollections = Object.keys(collections)
-    .filter(colName => colName !== "default" && colName !== "event_logs" && colName !== "invocation_logs")
-  return trackedCollections
-}
-
-const getDefType = (type, isArray) => {
-  isArray = isArray ? true : type.kind === "ListType"
-  if (type.type) {
-    return getDefType(type.type, isArray)
-  }
-  return { isArray, fieldType: type.name.value }
-}
-
-const getSimplifiedFieldDefinition = (def) => {
-  const { isArray, fieldType } = getDefType(def.type)
-  const directives = def.directives
-  const isPrimaryField = directives.some(dir => dir.name.value === "primary")
-  const hasForeignKey = directives.some(dir => dir.name.value === "foreign")
-  const hasUniqueKey = directives.some(dir => dir.name.value === "unique")
-  let hasForeignKeyOn = null
-  if (hasForeignKey) {
-    const foreignDirective = directives.find(dir => dir.name.value === "foreign")
-    const tableArgument = foreignDirective.arguments.find(ar => ar.name.value === "table")
-    hasForeignKeyOn = tableArgument.value.value
-  }
-  let hasNestedFields = false
-  if (fieldType !== "ID" && fieldType !== "String" && fieldType !== "Integer" && fieldType !== "Float"
-    && fieldType !== "Boolean" && fieldType !== "DateTime" && fieldType !== "JSON") {
-    hasNestedFields = true
-  }
-  return {
-    name: def.name.value,
-    type: fieldType,
-    isArray: isArray,
-    isPrimaryField: isPrimaryField,
-    hasUniqueKey: hasUniqueKey,
-    hasForeignKey: hasForeignKey,
-    hasForeignKeyOn: hasForeignKeyOn,
-    hasNestedFields: hasNestedFields
-  }
-}
-
-// Removes all redundant commas and quotes
-const removeRegex = (value, dataresponse) => {
-  let removeOpeningComma = /\,(?=\s*?[\{\]])/g;
-  let removeClosingComma = /\,(?=\s*?[\}\]])/g;
-  let removeQuotes = /"([^"]+)":/g;
-  value = value.replace(removeOpeningComma, '');
-  value = value.replace(removeClosingComma, '');
-  if (dataresponse) value = format(JSON.parse(value))
-  else value = value.replace(removeQuotes, '$1:')
-  return value
-}
-
-export const getSchemas = (projectId, dbName) => {
-  const collections = getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections`, {})
-  let schemaDefinitions = {}
-  Object.entries(collections).forEach(([_, { schema }]) => {
-    if (schema) {
-      const definitions = gql(schema).definitions.filter(obj => obj.kind === "ObjectTypeDefinition");
-      definitions.forEach(def => {
-        return schemaDefinitions[def.name.value] = def.fields
-          .filter(def => def.kind === "FieldDefinition")
-          .map(obj => getSimplifiedFieldDefinition(obj))
-      })
-    }
-  })
-  return schemaDefinitions
-}
-
-export const getSchema = (projectId, dbName, colName) => {
-  return getProjectConfig(store.getState().projects, projectId, `modules.db.${dbName}.collections.${colName}.schema`, "")
-}
-
-// Returns nested field definitions for a type from flat schema definitions 
-export const getNestedFieldDefinitions = (schemas, schemaName, parentSchemas = []) => {
-  let fields = schemas[schemaName]
-  if (!fields) {
-    return []
-  }
-  fields = fields.filter(field => !field.hasNestedFields || (field.hasNestedFields && !parentSchemas.some(type => type === field.type))).map(field => {
-    // If there are nested fields and there is no circular dependency in fetching the nested fields, fetch the nested fields
-    if (field.hasNestedFields && !parentSchemas.some(type => type === field.type)) {
-      return Object.assign({}, field, { fields: getNestedFieldDefinitions(schemas, field.type, [...parentSchemas, schemaName]) })
-    }
-    return Object.assign({}, field, { hasNestedFields: false })
-  })
-
-  return fields
-}
-const getFieldsQuery = (fields) => {
-  const keys = fields.map(field => {
-    if (!field.hasNestedFields) {
-      return field.name + "\n"
-    }
-    const fieldsQuery = getFieldsQuery(field.fields)
-    if (!fieldsQuery) {
-      return field.name + "\n"
-    }
-
-    return field.name + " {" + getFieldsQuery(field.fields) + "}"
-  })
-
-  return keys.join(" ")
-}
-
-const generateFieldsValue = (fields, options = {}, parentTypes = []) => {
-  const defaultOptions = {
-    generateNestedValues: true,
-    skipForeignDirectives: false,
-    generateDependentNestedFields: true,
-    generateDependentForeignKeys: true
-  }
-  const { generateNestedValues, skipForeignDirectives, generateDependentNestedFields, generateDependentForeignKeys } = Object.assign({}, defaultOptions, options)
-  let newFields = !generateDependentNestedFields ? fields.filter(field => !(field.hasNestedFields && fields.some(f => f.hasForeignKey && f.hasForeignKeyOn === field.type))) : fields
-  newFields = !generateNestedValues ? fields.filter(field => !field.hasNestedFields) : newFields
-  newFields = skipForeignDirectives ? newFields.filter(field => !field.hasForeignKey) : newFields
-  newFields = !generateDependentForeignKeys ? newFields.filter(field => !(field.hasForeignKey && parentTypes.some(t => t === field.hasForeignKeyOn))) : newFields
-  return newFields.map(field => {
-    if (field.hasNestedFields) {
-      const value = field.isArray ? [
-        generateFieldsValue(field.fields, options, [...parentTypes, field.type])
-      ] : generateFieldsValue(field.fields, options, [...parentTypes, field.type])
-      return { name: field.name, value: value }
-    }
-    return { name: field.name, value: generateRandom(field.type) }
-  }).reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: curr.value }), {})
-}
-
-export const generateGraphQLQueries = (projectId, dbName, colName) => {
-  const queries = {
-    get: { req: '', res: '' },
-    insert: { req: '', res: '' },
-    update: { req: '', res: '' },
-    delete: { req: '', res: '' }
-  }
-  if (!projectId || !dbName || !colName || !getSchema(projectId, dbName, colName)) {
-    return queries
-  }
-
-  const schemas = getSchemas(projectId, dbName)
-  const fields = getNestedFieldDefinitions(schemas, colName)
-  const primaryFields = fields.filter(field => field.isPrimaryField)
-  const uniqueFields = fields.filter(field => field.hasUniqueKey)
-  const identifyingFields = primaryFields.length ? primaryFields : uniqueFields
-  const nonIdentifyingFields = fields.filter(field => !field.isPrimaryField && !field.hasUniqueKey)
-  const whereClause = identifyingFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: generateRandom(curr.type) }), {})
-  queries.get.req = gqlPrettier(removeRegex(`query { 
-    ${colName}(where: ${JSON.stringify(whereClause)}) @${dbName} {
-      ${getFieldsQuery(fields)}
-    }
-   }`, 0))
-
-  queries.get.res = removeRegex(JSON.stringify({
-    data: {
-      [colName]: [generateFieldsValue(fields)]
-    }
-  }), 1)
-
-  queries.insert.req = gqlPrettier(removeRegex(`mutation { 
-    insert_${colName} (docs: [${JSON.stringify(generateFieldsValue(fields, { generateDependentNestedFields: false, generateDependentForeignKeys: false }, [colName]))}]) @${dbName} {
-      status
-      error
-      returning
-     }
-    }`, 0))
-
-  queries.insert.res = removeRegex(`{ 
-    "data":{ 
-      "insert_${colName}":{ 
-        "status": 200,
-        "returning": [
-          ${JSON.stringify(generateFieldsValue(fields, { generateDependentNestedFields: false }))}
-        ]
-      }
-     }
-    }`, 1)
-
-  // Update clause should contain non primary, non foreign key and non nested fields
-  const setClause = generateFieldsValue(nonIdentifyingFields, { generateNestedValues: false, skipForeignDirectives: true })
-  queries.update.req = gqlPrettier(removeRegex(`mutation { 
-    update_${colName} (where: ${JSON.stringify(whereClause)}, set: ${JSON.stringify(setClause)})  @${dbName} {
-      status
-      error
-      returning
-     }
-    }`, 0))
-
-  queries.update.res = removeRegex(`{ 
-      "data":{ 
-        "update_${colName}":{ 
-          "status": 200
-        }
-       }
-      }`, 1)
-
-  queries.delete.req = gqlPrettier(removeRegex(`mutation { 
-    delete_${colName}${identifyingFields.length ? `(where: ${JSON.stringify(whereClause)})` : ""} @${dbName} {
-      status
-      error
-     }
-    }`, 0))
-
-  queries.delete.res = removeRegex(`{ 
-      "data":{ 
-        "insert_${colName}":{ 
-          "status": 200
-        }
-       }
-      }`, 1)
-
-  return queries
-}
-
-// Generate random values for different schema types.
-const generateRandom = type => {
-  switch (type) {
-    case "ID":
-      return generateId(6)
-    case "String":
-      return lorem.generateWords(2)
-    case "Integer":
-      return Math.ceil(Math.random() * 100)
-    case "Float":
-      return Number((Math.random() * 100).toFixed(2))
-    case "Boolean":
-      return true
-    case "DateTime":
-      return new Date().toISOString()
-    case "JSON":
-      return { foo: "bar" }
-    default:
-      return type
-  }
 }
 
 export const parseJSONSafely = (str) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { Form } from 'antd'
+import { Form, AutoComplete } from 'antd'
 import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 
@@ -16,7 +16,6 @@ import {
   InputNumber,
   Checkbox,
 } from "antd";
-import { notify } from "../../../utils";
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -44,7 +43,8 @@ const AddDeploymentForm = props => {
     ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
     env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
     whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
-    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }]
+    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }],
+    statsInclusionPrefixes: initialValues && initialValues.statsInclusionPrefixes ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager"
   }
 
   const handleSubmitClick = e => {
@@ -63,15 +63,7 @@ const AddDeploymentForm = props => {
       values.serviceType = "image";
       props
         .handleSubmit(values)
-        .then(() => {
-          notify(
-            "success",
-            "Success",
-            "Saved deployment config successfully"
-          );
-          props.handleCancel();
-        })
-        .catch(ex => notify("error", "Error saving config", ex.toString()));
+        .then(() => props.handleCancel())
     });
   };
 
@@ -160,11 +152,7 @@ const AddDeploymentForm = props => {
                   message: "Please input docker secret!"
                 }]
               }>
-                <Select placeholder="Select docker secret to be applied">
-                  {dockerSecrets.map(secret => (
-                    <Option value={secret}>{secret}</Option>
-                  ))}
-                </Select>
+                <AutoComplete placeholder="Select docker secret to be applied" options={dockerSecrets.map(secret => ({ value: secret }))} />
               </Form.Item>
             </ConditionalFormBlock>
             <FormItemLabel name="Ports" />
@@ -216,7 +204,7 @@ const AddDeploymentForm = props => {
                       <Form.Item>
                         <Button
                           onClick={() => {
-                            form.validateFields([...fields.map(obj => ["ports", obj.name,"port"]), ...fields.map(obj => ["ports", obj.name,"protocol"])])
+                            form.validateFields([...fields.map(obj => ["ports", obj.name, "port"]), ...fields.map(obj => ["ports", obj.name, "protocol"])])
                               .then(() => add({ protocol: "http", port: "" }))
                               .catch(ex => console.log("Exception", ex))
                           }}
@@ -350,7 +338,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["env", obj.name,"key"]), ...fields.map(obj => ["env", obj.name,"value"])])
+                              form.validateFields([...fields.map(obj => ["env", obj.name, "key"]), ...fields.map(obj => ["env", obj.name, "value"])])
                                 .then(() => add())
                                 .catch(ex => console.log("Exception", ex))
                             }}
@@ -366,7 +354,7 @@ const AddDeploymentForm = props => {
                 <FormItemLabel name="Secrets" />
                 <Form.Item name="secrets">
                   <Select
-                    mode="multiple"
+                    mode="tags"
                     placeholder="Select secrets to be applied"
                     style={{ width: 410 }}
                   >
@@ -433,7 +421,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["whitelists", obj.name,"projectId"]), ...fields.map(obj => ["whitelists", obj.name,"service"])])
+                              form.validateFields([...fields.map(obj => ["whitelists", obj.name, "projectId"]), ...fields.map(obj => ["whitelists", obj.name, "service"])])
                                 .then(() => add({ projectId }))
                                 .catch(ex => console.log("Exception", ex))
                             }}
@@ -503,7 +491,7 @@ const AddDeploymentForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["upstreams", obj.name,"projectId"]), ...fields.map(obj => ["upstreams", obj.name,"service"])])
+                              form.validateFields([...fields.map(obj => ["upstreams", obj.name, "projectId"]), ...fields.map(obj => ["upstreams", obj.name, "service"])])
                                 .then(() => add({ projectId }))
                                 .catch(ex => console.log("Exception", ex))
                             }}
@@ -516,6 +504,13 @@ const AddDeploymentForm = props => {
                     );
                   }}
                 </Form.List>
+                <FormItemLabel
+                  name="Envoy stats"
+                  description="The statistics that the envoy proxy should generate"
+                />
+                <Form.Item name="statsInclusionPrefixes">
+                  <Input placeholder="CSV of envoy statistics" />
+                </Form.Item>
               </Panel>
             </Collapse>
           </React.Fragment>

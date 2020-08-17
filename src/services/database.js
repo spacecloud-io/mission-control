@@ -6,11 +6,71 @@ class Database {
     this.client = client
   }
 
+  // fetches config of all databases of a project
+  fetchDbConfig(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/config`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches schemas of all databases of a project
+  fetchDbSchemas(projectId, dbAliasName, colName) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/collections/schema/mutate?dbAlias=${dbAliasName}&col=${colName}`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches rules of all databases of a project
+  fetchDbRules(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/collections/rules`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  // fetches prepared queries of all databases of a project
+  fetchDbPreparedueries(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/config/projects/${projectId}/database/prepared-queries`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
   getConnectionState(projectId, dbName) {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/external/projects/${projectId}/database/${dbName}/connection-state`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
@@ -24,11 +84,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/config/database-config`, config)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -38,11 +98,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/config/database-config`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -52,11 +112,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.getJSON(`/v1/external/projects/${projectId}/database/${dbName}/list-collections`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve(data.result ? data.result : [])
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -66,11 +126,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/schema/mutate`, { collections })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -80,11 +140,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/schema/inspect`, {})
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -94,11 +154,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/schema/mutate`, { schema })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -106,13 +166,13 @@ class Database {
 
   inspectColSchema(projectId, dbName, colName) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/schema/inspect`)
+      this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/schema/track`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve(data.result)
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -122,11 +182,11 @@ class Database {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
@@ -138,39 +198,53 @@ class Database {
         isRealtimeEnabled: typeof rule.isRealtimeEnabled === "string" ? false : rule.isRealtimeEnabled, ...rule
       })
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
   }
 
-  setPreparedQueries(projectId, dbName, id, config) {
+  setPreparedQuery(projectId, dbName, id, config) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/config/projects/${projectId}/database/${dbName}/prepared-queries/${id}`, config)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })
   }
 
-  deletePreparedQueries(projectId, dbName, id) {
+  deletePreparedQuery(projectId, dbName, id) {
     return new Promise((resolve, reject) => {
       this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/prepared-queries/${id}`)
         .then(({ status, data }) => {
-          if (status !== 200) {
+          if (status < 200 || status >= 300) {
             reject(data.error)
             return
           }
-          resolve()
+          resolve({ queued: status === 202 })
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  untrackCollection(projectId, dbName, colName) {
+    return new Promise((resolve, reject) => {
+      this.client.delete(`/v1/config/projects/${projectId}/database/${dbName}/collections/${colName}/schema/untrack`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve({ queued: status === 202 })
         })
         .catch(ex => reject(ex.toString()))
     })

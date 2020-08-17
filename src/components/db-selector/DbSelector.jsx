@@ -5,19 +5,17 @@ import './db-selector.css'
 import { useHistory } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig } from '../../utils';
-import { dbTypes } from '../../constants';
 import { dbIcons } from '../../utils';
+import { getDbConfigs } from '../../operations/database';
 
 function DbSelector(props) {
   const { projectID, selectedDB } = useParams();
   const history = useHistory();
-  const projects = useSelector(state => state.projects)
-  const dbModule = getProjectConfig(projects, projectID, "modules.db", {})
+  const dbConfigs = useSelector(state => getDbConfigs(state))
 
-  const dbList = Object.entries(dbModule).map(([alias, obj]) => {
+  const dbList = Object.entries(dbConfigs).map(([alias, obj]) => {
     if (!obj.type) obj.type = alias
-    return { alias: alias, dbtype: obj.type, setSvgIcon: dbIcons(projects, projectID, alias) }
+    return { alias: alias, type: obj.type, name: obj.name, setSvgIcon: dbIcons(alias) }
   })
 
   const dbcolumns = [
@@ -28,14 +26,14 @@ function DbSelector(props) {
       render: (_, record) => {
         return (
           <div>
-            {record.dbtype && <CheckOutlined className="checked" />}
+            {record.alias === selectedDB && <CheckOutlined className="checked" />}
           </div>
         );
       },
 
       onCell: (record, _) => {
         return {
-          selected: record.dbtype
+          selected: record.type
         };
       }
     },
@@ -45,18 +43,23 @@ function DbSelector(props) {
       key: 'alias'
     },
     {
-      title: 'DB Type',
-      dataIndex: 'dbtype',
-      key: 'dbtype',
+      title: 'DB type',
+      dataIndex: 'type',
+      key: 'type',
       render: (text, record) => {
         return (
           <div>
-            <img src={record.setSvgIcon} alt={record.dbtype} style={{ marginRight: 10 }} />
+            <img src={record.setSvgIcon} alt={record.type} style={{ marginRight: 10 }} />
             {text}
           </div>
         );
       }
-    }
+    },
+    {
+      title: 'DB / Schema name',
+      dataIndex: 'name',
+      key: 'name'
+    },
   ];
 
   return (
@@ -82,6 +85,7 @@ function DbSelector(props) {
 
           onRow={(record) => {
             return {
+              style: { cursor: "pointer" },
               onClick: () => {
                 {
                   props.handleSelect(record.alias)

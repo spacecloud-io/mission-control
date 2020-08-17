@@ -1,31 +1,25 @@
 import React, { useState } from "react"
-import { useParams } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber, Form } from 'antd';
-import { getEventSourceFromType, getProjectConfig } from "../../utils";
+import { getEventSourceFromType } from "../../utils";
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import RadioCards from "../radio-cards/RadioCards";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import { getTrackedCollections } from "../../operations/database";
 
 const { Option } = AutoComplete;
 
 const RuleForm = (props) => {
   const [form] = Form.useForm();
-  const [selectedDb, setSelectedDb] = useState();
 
-  const { projectID } = useParams()
-  const projects = useSelector(state => state.projects)
-
-  const { name, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
-
-  const collections = getProjectConfig(projects, projectID, `modules.db.${selectedDb}.collections`, {})
-  const trackedCollections = Object.keys(collections);
-  const data = trackedCollections.filter(name => name !== "default" && name !== "event_logs" && name !== "invocation_logs")
+  const { id, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
+  const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
+  const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
   const [value, setValue] = useState("");
 
   const formInitialValues = {
-    'name': name,
+    'id': id,
     'source': getEventSourceFromType(type, "database"),
     'type': type ? type : "DB_INSERT",
     'options': options ? options : {},
@@ -46,9 +40,10 @@ const RuleForm = (props) => {
         delete options["col"]
       }
 
-      props.handleSubmit(values.name, values.type, values.url, values.retries, values.timeout, options);
-      props.handleCancel();
-      form.resetFields();
+      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options).then(() => {
+        props.handleCancel();
+        form.resetFields();
+      })
     });
   }
 
@@ -62,7 +57,7 @@ const RuleForm = (props) => {
     >
       <Form layout="vertical" form={form} initialValues={formInitialValues}>
         <FormItemLabel name="Trigger name" />
-        <Form.Item name="name" rules={[
+        <Form.Item name="id" rules={[
           {
             validator: (_, value, cb) => {
               if (!value) {
@@ -77,7 +72,7 @@ const RuleForm = (props) => {
             }
           }
         ]}>
-          <Input placeholder="Trigger Name" />
+          <Input placeholder="Trigger Name" disabled={id} />
         </Form.Item>
         <FormItemLabel name="Source" />
         <Form.Item name="source" rules={[{ required: true, message: 'Please select a source!' }]}>
@@ -92,16 +87,12 @@ const RuleForm = (props) => {
           <Input.Group compact>
             <Form.Item name={["options", "db"]} rules={[{ required: true, message: 'Please select a database!' }]}
               style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-              <Select placeholder="Select a database" onSelect={handleSelectDatabase}>
-                {props.dbList.map((alias) => (
-                  <Select.Option value={alias.alias}><img src={alias.svgIconSet} style={{ marginRight: 10 }} />{alias.alias}</Select.Option>
-                ))}
-              </Select>
+              <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={props.dbList.map(db => ({ value: db }))} />
             </Form.Item>
             <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
               <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
                 {
-                  data.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                  trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
                     <Option key={data} value={data}>
                       {data}
                     </Option>

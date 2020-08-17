@@ -1,18 +1,19 @@
 import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ReactGA from 'react-ga';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { LeftOutlined } from '@ant-design/icons';
-import { set, increment, decrement } from "automate-redux";
-import { getProjectConfig, notify, setProjectConfig } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
-import { Button, Card, Input, Radio, Form, Alert, Cascader, Row, Col } from "antd"
-import client from "../../client"
+import { Button, Card, Input, Radio, Form, Alert, AutoComplete, Col } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
+import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
+import { getSecrets, loadSecrets } from '../../operations/secrets';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -20,37 +21,31 @@ const FileStorageConfig = () => {
   // Router params
   const { projectID } = useParams()
 
-  const dispatch = useDispatch()
-
   // Global state
-  const projects = useSelector(state => state.projects)
+  const { storeType, bucket, endpoint, conn, secret } = useSelector(state => getFileStoreConfig(state))
+  const secrets = useSelector(state => getSecrets(state))
 
-  // Secrets
-  const getDataKeys = (fileSecret) => {
-    const fileChildren = Object.keys(fileSecret.data)
-      .map(keys => {
-        return ({ "value": keys, "label": keys })
-      })
-    return fileChildren;
-  }
+  const fileSecrets = secrets.filter(secret => secret.type === 'file')
+  let fileSecretsAutoCompleteOptions = []
+  fileSecrets.forEach(({ id, data }) => {
+    Object.keys(data).forEach((key) => {
+      fileSecretsAutoCompleteOptions.push({ value: `secrets.${id}.${key}` })
+    })
+  })
 
-  const fileSecrets = getProjectConfig(projects, projectID, "modules.secrets", [])
-    .filter(secret => secret.type === 'file')
-    .map(fileSecret => {
-      return ({ "value": fileSecret.id, "label": fileSecret.id, "children": getDataKeys(fileSecret) })
-    });
 
   useEffect(() => {
     ReactGA.pageview("/projects/file-storage/configure");
   }, [])
 
-  const { storeType, bucket, endpoint, conn, secret } = getProjectConfig(projects, projectID, "modules.fileStore", {})
-
-  let initialSecretValue = ""
-  if (secret) {
-    const [_, secretName, ...secretKeyNameParts] = secret.split(".")
-    initialSecretValue = [secretName, secretKeyNameParts.join(".")]
-  }
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        // .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
   const formInitialValues = {
     storeType: storeType ? storeType : "local",
@@ -58,7 +53,7 @@ const FileStorageConfig = () => {
     bucket: bucket,
     endpoint: endpoint,
     credentials: (storeType && !secret) ? "direct" : "secret",
-    secret: initialSecretValue
+    secret: secret
   }
 
   // This is used to bind the form initial values on page reload. 
@@ -72,30 +67,25 @@ const FileStorageConfig = () => {
 
   // Handlers
   const handleFinish = (values) => {
-    if (values.credentials === "secret") {
-      values.secret = `secrets.${values.secret[0]}.${values.secret[1]}`
-    }
     delete values["credentials"]
-    dispatch(increment("pendingRequests"))
+    incrementPendingRequests()
     const newConfig = { enabled: true, ...values }
-    client.fileStore.setConfig(projectID, newConfig).then(() => {
-      const curentConfig = getProjectConfig(projects, projectID, "modules.fileStore", {})
-      setProjectConfig(projectID, "modules.fileStore", Object.assign({}, curentConfig, newConfig))
-      dispatch(set(`extraConfig.${projectID}.fileStore.connected`, true))
-      notify("success", "Success", "Configured file storage successfully")
-    })
-      .catch(ex => notify("error", "Error", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
-    form.resetFields();
-    history.goBack();
-  }
 
+    saveFileStoreConfig(projectID, newConfig)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : "Configured file storage successfully")
+        form.resetFields();
+        history.goBack();
+      })
+      .catch(ex => notify("error", "Error configuring file storage", ex))
+      .finally(() => decrementPendingRequests())
+  }
 
   return (
     <div className="file-storage">
       <Topbar showProjectSelector />
       <div>
-        <Sidenav selectedItem="file-storage" />
+        <Sidenav selectedItem={projectModules.FILESTORE} />
         <div className="page-content page-content--no-padding">
           <div
             style={{
@@ -162,7 +152,7 @@ const FileStorageConfig = () => {
                     />
                     <p style={{ fontSize: "16px", marginTop: "21px", fontWeight: "bold" }}> Choose a secret </p>
                     <Form.Item rules={[{ required: true, message: 'Please provide a secret' }]} name="secret">
-                      <Cascader options={fileSecrets} style={{ width: "300px" }} placeholder="Please select" />
+                      <AutoComplete options={fileSecretsAutoCompleteOptions} style={{ width: "300px" }} placeholder="Please select" />
                     </Form.Item>
                   </ConditionalFormBlock>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "direct"}>
@@ -196,7 +186,7 @@ const FileStorageConfig = () => {
                     />
                     <p style={{ fontSize: "16px", marginTop: "21px", fontWeight: "bold" }}> Choose a secret </p>
                     <Form.Item rules={[{ required: true, message: 'Please provide a secret' }]} name="secret">
-                      <Cascader options={fileSecrets} style={{ width: "300px" }} placeholder="Please select" />
+                      <AutoComplete options={fileSecretsAutoCompleteOptions} style={{ width: "300px" }} placeholder="Please select" />
                     </Form.Item>
                   </ConditionalFormBlock>
                   <ConditionalFormBlock dependency="credentials" condition={() => form.getFieldValue("credentials") === "direct"}>
@@ -218,7 +208,6 @@ const FileStorageConfig = () => {
             </Card>
           </Col>
         </div>
-
       </div>
     </div >
   )

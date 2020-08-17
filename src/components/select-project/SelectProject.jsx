@@ -54,6 +54,7 @@ function SelectProject({ visible, handleCancel }) {
 
           onRow={(record) => {
             return {
+              style: { cursor: "pointer" },
               onClick: () => {
                 if (!record.selected) {
                   openProject(record.id)

@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
-import { set, increment, decrement } from "automate-redux"
 import { Link } from 'react-router-dom';
-import client from '../../client';
-import store from "../../store"
 import history from "../../history"
-import { generateProjectConfig, notify } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
 import CreateProjectForm from "../../components/create-project-form/CreateProjectForm";
 
 import { Row, Col, Steps, Card } from 'antd';
 import './create-project.css'
-import { dbEnable } from '../database/dbActions'
+import { addDatabase } from "../../operations/database"
+import { addProject } from '../../operations/projects';
+import { actionQueuedMessage } from '../../constants';
 
 const CreateProject = () => {
-  const [selectedDB, setSelectedDB] = useState("mongo");
   const [current, setCurrent] = useState(0);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/create-project");
@@ -30,27 +27,32 @@ const CreateProject = () => {
 
   const handleSubmit = (projectName, projectId) => {
     setProjectId(projectId);
-    const projectConfig = generateProjectConfig(projectId, projectName, selectedDB)
 
-    dispatch(increment("pendingRequests"))
-    client.projects.addProject(projectConfig.id, projectConfig).then(() => {
-      const updatedProjects = [...store.getState().projects, projectConfig]
-      dispatch(set("projects", updatedProjects))
-      setCurrent(current + 1);
-      notify("success", "Success", "Project created successfully with suitable defaults")
-    }).catch(ex => notify("error", "Error creating project", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+    incrementPendingRequests()
+    addProject(projectId, projectName)
+      .then(({ queued }) => {
+        if (!queued) {
+          setCurrent(current + 1);
+        }
+        notify("success", "Success", queued ? actionQueuedMessage : "Project created successfully with suitable defaults")
+      }).catch(ex => notify("error", "Error creating project", ex))
+      .finally(() => decrementPendingRequests())
   };
 
-  const addDatabase = (alias, connectionString, defaultDBRules, dbType, dbName) => {
-    dispatch(increment("pendingRequests"))
-    dbEnable(projects, projectId, alias, dbType, dbName, connectionString, defaultDBRules)
-      .then(() => {
-        history.push(`/mission-control/projects/${projectId}`)
-        notify("success", "Success", "Successfully added database")
+  const handleAddDatabase = (alias, connectionString, dbType, dbName) => {
+    incrementPendingRequests()
+    addDatabase(projectId, alias, dbType, dbName, connectionString)
+      .then(({ queued }) => {
+        if (!queued) {
+          history.push(`/mission-control/projects/${projectId}`)
+          notify("success", "Success", "Successfully added database")
+          notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+        } else {
+          notify("success", "Success", actionQueuedMessage)
+        }
       })
       .catch(ex => notify("error", "Error adding database", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }
 
   const steps = [{
@@ -72,7 +74,7 @@ const CreateProject = () => {
     content: <React.Fragment>
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <CreateDatabase projectId={projectId} handleSubmit={addDatabase} />
+          <CreateDatabase projectId={projectId} handleSubmit={handleAddDatabase} ignoreDbAliasCheck />
           <center style={{ marginTop: 16 }}><Link to={`/mission-control/projects/${projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
         </Col>
       </Row>

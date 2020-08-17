@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getProjectConfig, notify, getJWTSecret } from '../../../utils';
-import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio } from 'antd';
+import { notify, canGenerateToken } from '../../../utils';
+import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import GenerateTokenForm from '../../explorer/generateToken/GenerateTokenForm';
@@ -43,27 +43,18 @@ function AlertMsgPreparedQueries() {
   );
 }
 
-const EndpointForm = ({ initialValues, handleSubmit }) => {
+const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
-  const { projectID, serviceName } = useParams();
-  const projects = useSelector((state) => state.projects);
+  const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], resHeaders = [] } = initialValues ? initialValues : {}
-  const initialRule = rule ? rule : defaultEndpointRule
-  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
+  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
+  const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
   const [form] = Form.useForm();
-  const url = getProjectConfig(
-    projects,
-    projectID,
-    `modules.remoteServices.externalServices.${serviceName}.url`
-  );
-
-  const secret = useSelector(state => getJWTSecret(state, projectID))
 
   const formInitialValues = {
     kind: kind,
@@ -72,8 +63,8 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
     path: path,
     overrideToken: token ? true : false,
     token: token,
-    setHeaders: headers.length > 0 ? true : false,
-    headers: headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
+    setHeaders: headers && headers.length > 0 ? true : false,
+    headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml"
   }
@@ -87,7 +78,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
         name,
         method,
         path,
-        JSON.parse(ruleData),
+        defaultEndpointRule,
         overrideToken ? token : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
@@ -103,12 +94,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
   useEffect(() => {
     form.setFieldsValue(formInitialValues)
   }, [formInitialValues.kind, formInitialValues.path])
-
-  useEffect(() => {
-    if (rule) {
-      setRuleData(JSON.stringify(rule, null, 2))
-    }
-  }, [rule])
 
   useEffect(() => {
     setRequestTemplateData(requestTemplate)
@@ -185,7 +170,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   name='path'
                   rules={[{ required: true, message: 'Please provide path!' }]}
                 >
-                  <Input addonBefore={url} placeholder='Example: /v1/payments' />
+                  <Input addonBefore={serviceURL} placeholder='Example: /v1/payments' />
                 </Form.Item>
               </ConditionalFormBlock>
               <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.EXTERNAL}>
@@ -197,24 +182,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   <Input placeholder='Example: https://example.com/foo' />
                 </Form.Item>
               </ConditionalFormBlock>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: true,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
-                  }}
-                />
-              </Form.Item>
             </ConditionalFormBlock>
             <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.PREPARED}>
               <Alert
@@ -284,24 +251,6 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                   }}
                 />
               </Form.Item>
-              <FormItemLabel name='Rule' />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={ruleData}
-                  options={{
-                    mode: { name: 'javascript', json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: false,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRuleData(value);
-                  }}
-                />
-              </Form.Item>
             </ConditionalFormBlock>
             <Collapse
               style={{ background: "white" }}
@@ -333,7 +282,9 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
                     >
                       <Input.Password placeholder="JWT Token" />
                     </Form.Item>
-                    <Button onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                    <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                      <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                    </Tooltip>
                   </Input.Group>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
@@ -494,7 +445,7 @@ const EndpointForm = ({ initialValues, handleSubmit }) => {
         <GenerateTokenForm
           handleCancel={() => setGenerateTokenModal(false)}
           handleSubmit={(token) => form.setFieldsValue({ token })}
-          secret={secret}
+          projectID={projectID}
           initialToken={form.getFieldValue("token")}
         />
       )}

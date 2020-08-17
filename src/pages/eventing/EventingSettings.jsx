@@ -1,75 +1,59 @@
 import React, { useEffect } from 'react';
 import { useParams, } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { get, set, increment, decrement } from "automate-redux";
+import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import { getProjectConfig, dbIcons, notify, setProjectConfig } from '../../utils';
-import client from '../../client';
+import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
+import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
+import { getDbConfigs } from '../../operations/database';
+import { projectModules, actionQueuedMessage } from '../../constants';
 
 const EventingSettings = () => {
-    const { projectID } = useParams();
-    const dispatch = useDispatch();
+  const { projectID } = useParams();
 
-    useEffect(() => {
-		ReactGA.pageview("/projects/eventing/settings");
-    }, [])
-    
-    // Global state
-    const projects = useSelector(state => state.projects);
-    
-    const eventing = getProjectConfig(
-        projects,
-        projectID,
-        "modules.eventing",
-        {}
-    );
+  useEffect(() => {
+    ReactGA.pageview("/projects/eventing/settings");
+  }, [])
 
-    const dbModule = getProjectConfig(projects, projectID, "modules.db", {});
+  // Global state
+  const loading = useSelector(state => state.pendingRequests > 0)
+  const eventingConfig = useSelector(state => getEventingConfig(state))
+  const dbConfigs = useSelector(state => getDbConfigs(state));
 
-    const dbList = Object.entries(dbModule).map(([alias, obj]) => {
-        if (!obj.type) obj.type = alias;
-        return {
-        alias: alias,
-        dbtype: obj.type,
-        svgIconSet: dbIcons(projects, projectID, alias)
-        };
-    });
+  // Derived state
+  const dbList = Object.keys(dbConfigs)
 
-    const handleEventingConfig = (dbAlias) => {
-        dispatch(increment("pendingRequests"));
-        client.eventing
-          .setEventingConfig(projectID, { enabled: true, dbAlias })
-          .then(() => {
-            setProjectConfig(projectID, "modules.eventing.dbAlias", dbAlias);
-            notify("success", "Success", "Changed eventing config successfully");
-          })
-          .catch(ex => notify("error", "Error", ex))
-          .finally(() => dispatch(decrement("pendingRequests")));
-    };
+  const handleEventingConfig = ({ enabled, dbAlias }) => {
+    incrementPendingRequests()
+    saveEventingConfig(projectID, enabled, dbAlias)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved eventing config successfully"))
+      .catch(ex => notify("error", "Error saving eventing config", ex))
+      .finally(() => decrementPendingRequests());
+  };
 
-    return (
-        <div>
-            <Topbar showProjectSelector />
-            <Sidenav selectedItem="eventing" />
-            <div className='page-content page-content--no-padding'>
-                <EventTabs activeKey="settings" projectID={projectID} />
-            <div className="event-tab-content">
-            <h2>Eventing Config</h2>
-            <div className="divider" />
-                <EventingConfigure
-                    dbType={eventing.dbAlias}
-                    dbList={dbList}
-                    handleSubmit={handleEventingConfig}
-                />
-            </div>
-            </div>
+  return (
+    <div>
+      <Topbar showProjectSelector />
+      <Sidenav selectedItem={projectModules.EVENTING} />
+      <div className='page-content page-content--no-padding'>
+        <EventTabs activeKey="settings" projectID={projectID} />
+        <div className="event-tab-content">
+          <h2>Eventing Config</h2>
+          <div className="divider" />
+          <EventingConfigure
+            initialValues={eventingConfig}
+            dbList={dbList}
+            loading={loading}
+            handleSubmit={handleEventingConfig}
+          />
         </div>
-    );
+      </div>
+    </div >
+  );
 }
 
 export default EventingSettings;

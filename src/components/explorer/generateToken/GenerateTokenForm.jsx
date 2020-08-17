@@ -10,7 +10,8 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import jwt from 'jsonwebtoken';
-import { notify } from "../../../utils";
+import { notify, generateToken } from "../../../utils";
+import { useSelector } from "react-redux";
 
 const GenerateTokenForm = (props) => {
   const [form] = Form.useForm();
@@ -18,13 +19,12 @@ const GenerateTokenForm = (props) => {
   const initialPayload = decodedClaims ? decodedClaims : {}
 
   const [data, setData] = useState(JSON.stringify(initialPayload, null, 2))
-  const generatedToken = jwt.sign(data, props.secret)
-
+  const generatedToken = useSelector(state => generateToken(state, props.projectID, data))
   const handleSubmit = e => {
     form.validateFields().then(values => {
       try {
         JSON.parse(data)
-        props.handleSubmit(jwt.sign(data, props.secret));
+        props.handleSubmit(generatedToken);
         props.handleCancel();
       } catch (ex) {
         notify("error", "Error", ex.toString())
@@ -36,6 +36,7 @@ const GenerateTokenForm = (props) => {
     <Modal
       title="Generate token"
       visible={true}
+      width={720}
       okText="Use this token"
       onCancel={props.handleCancel}
       onOk={handleSubmit}

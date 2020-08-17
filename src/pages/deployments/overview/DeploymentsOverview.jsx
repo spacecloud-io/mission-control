@@ -1,97 +1,59 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Tag } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
 import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
-import client from "../../../client";
 import source_code from "../../../assets/source_code.svg";
-import { getProjectConfig, setProjectConfig, notify } from "../../../utils";
-import { increment, decrement } from "automate-redux";
+import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
+import { decrement } from "automate-redux";
+import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
+import { loadSecrets, getSecrets } from "../../../operations/secrets";
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
+  const history = useHistory();
   const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
-  const deployments = getProjectConfig(
-    projects,
-    projectID,
-    "modules.deployments.services",
-    []
-  );
-  const totalSecrets = getProjectConfig(
-    projects,
-    projectID,
-    "modules.secrets",
-    []
-  );
+
+  useEffect(() => {
+    ReactGA.pageview("/projects/deployments/overview");
+  }, []);
+
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+
+      incrementPendingRequests()
+      loadServicesStatus(projectID)
+        .catch(ex => notify("error", "Error fetching status of services", ex))
+        .finally(() => decrementPendingRequests());
+    }
+  }, [projectID])
+
+  // Global state
+  const deployments = useSelector(state => getServices(state))
+  const deploymentStatus = useSelector(state => getServicesStatus(state));
+  const totalSecrets = useSelector(state => getSecrets(state))
+
+  // Component state
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const [deploymentClicked, setDeploymentClicked] = useState(null);
+
+  // Derived state
   const dockerSecrets = totalSecrets
     .filter(obj => obj.type === "docker")
     .map(obj => obj.id);
   const secrets = totalSecrets
     .filter(obj => obj.type !== "docker")
     .map(obj => obj.id);
-  const [modalVisibility, setModalVisibility] = useState(false);
-  const [deploymentClicked, setDeploymentClicked] = useState(null);
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/overview");
-  }, []);
-
-  const tableColumns = [
-    {
-      title: "Service ID",
-      dataIndex: "id",
-      key: "id"
-    },
-    {
-      title: "Version",
-      dataIndex: "version",
-      key: "version"
-    },
-    {
-      title: "Service Type",
-      dataIndex: "serviceType",
-      key: "serviceType",
-      render: (text, record) => {
-        switch (text) {
-          case "image":
-            return "Docker";
-          default:
-            return "Custom Code";
-        }
-      }
-    },
-    {
-      title: "Replicas",
-      dataIndex: "replicas",
-      key: "replicas"
-    },
-    {
-      title: "Private URL",
-      key: "url",
-      render: (_, record) => `${record.id}.${projectID}.svc.cluster.local`
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      className: "column-actions",
-      render: (_, { id, version }) => (
-        <span>
-          <a onClick={() => handleEditDeploymentClick(id, version)}>Edit</a>
-          <Popconfirm
-            title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
-            onConfirm={() => handleDelete(id, version)}
-          >
-            <a style={{ color: "red" }}>Remove</a>
-          </Popconfirm>
-        </span>
-      )
-    }
-  ];
 
   const data = deployments.map(obj => {
     const task = obj.tasks && obj.tasks.length ? obj.tasks[0] : {};
@@ -121,7 +83,11 @@ const DeploymentsOverview = () => {
         }))
         : [],
       whitelists: obj.whitelists,
-      upstreams: obj.upstreams
+      upstreams: obj.upstreams,
+      statsInclusionPrefixes: obj.statsInclusionPrefixes,
+      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
+      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
+      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
 
@@ -133,16 +99,16 @@ const DeploymentsOverview = () => {
     )
     : undefined;
 
+  // Handlers
   const handleEditDeploymentClick = (serviceId, version) => {
     setDeploymentClicked({ serviceId, version });
     setModalVisibility(true);
   };
 
-  const handleSubmit = (type, values) => {
+  const handleSubmit = (operation, values) => {
     return new Promise((resolve, reject) => {
       const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
       const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
-      dispatch(increment("pendingRequests"));
       const serviceId = values.id;
 
       let config = {
@@ -183,50 +149,28 @@ const DeploymentsOverview = () => {
           }
         ],
         whitelists: values.whitelists,
-        upstreams: values.upstreams
+        upstreams: values.upstreams,
+        statsInclusionPrefixes: values.statsInclusionPrefixes
       };
-      client.deployments
-        .setDeploymentConfig(projectID, serviceId, values.version, config)
-        .then(() => {
-          if (type === "add") {
-            const newDeployments = [...deployments, config];
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          } else {
-            const newDeployments = deployments.map(obj => {
-              if (obj.id === config.id && obj.version === config.version) return config;
-              return obj;
-            });
-            setProjectConfig(
-              projectID,
-              "modules.deployments.services",
-              newDeployments
-            );
-          }
-          resolve();
+      incrementPendingRequests()
+      saveService(projectID, config.id, config.version, config)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
+          resolve()
         })
-        .catch(ex => reject(ex))
-        .finally(() => dispatch(decrement("pendingRequests")));
+        .catch(ex => {
+          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
+          reject(ex)
+        })
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleDelete = (serviceId, version) => {
-    dispatch(increment("pendingRequests"));
-    client.deployments
-      .deleteDeploymentConfig(projectID, serviceId, version)
-      .then(() => {
-        const newDeployments = deployments.filter(obj => !(obj.id === serviceId && obj.version === version));
-        setProjectConfig(
-          projectID,
-          "modules.deployments.services",
-          newDeployments
-        );
-        notify("success", "Success", "Successfully deleted deployment config");
-      })
-      .catch(ex => notify("error", "Error deleting deployment", ex))
+    incrementPendingRequests()
+    deleteService(projectID, serviceId, version)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Successfully deleted service"))
+      .catch(ex => notify("error", "Error deleting service", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
   };
 
@@ -235,10 +179,100 @@ const DeploymentsOverview = () => {
     setDeploymentClicked(null);
   };
 
+  const expandedRowRender = (record) => {
+    const column = [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'Status',
+        render: (_, { status }) => {
+          const statusText = capitalizeFirstCharacter(status)
+          if (status === deploymentStatuses.RUNNING || status === deploymentStatuses.SUCCEEDED) return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
+          else if (status === deploymentStatuses.FAILED) return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
+          else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {statusText}</span>
+        }
+      },
+      {
+        title: 'Action',
+        key: 'Action',
+        render: (_, row) =>
+          <Button
+            type="link"
+            style={{ color: "#008dff" }}
+            onClick={() => {
+              const task = deployments.find(({ id, version }) => id === record.id && version === record.version).tasks[0].id
+              history.push(`/mission-control/projects/${projectID}/deployments/logs`, { id: record.id, version: record.version, replica: row.id, task: task });
+            }}
+          >
+            View logs
+          </Button>
+      }
+    ]
+
+    return (
+      <Table
+        columns={column}
+        dataSource={record.deploymentStatus}
+        pagination={false}
+        title={() => 'Replicas'}
+      />)
+  }
+  const tableColumns = [
+    {
+      title: "Service ID",
+      dataIndex: "id",
+      key: "id"
+    },
+    {
+      title: "Version",
+      dataIndex: "version",
+      key: "version"
+    },
+    {
+      title: "Private URL",
+      key: "url",
+      render: (_, record) => `${record.id}.${projectID}.svc.cluster.local`
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (row) => {
+        const percent = row.totalReplicas / row.desiredReplicas * 100;
+        if (percent >= 80) return <Tag icon={<CheckCircleOutlined />} color="success">Healthy</Tag>
+        else if (percent < 80 && percent > 0) return <Tag icon={<ExclamationCircleOutlined />} color="warning" >Unhealthy</Tag>
+        else return <Tag icon={<CloseCircleOutlined />} color="error">Dead</Tag>
+      }
+    },
+    {
+      title: "Health",
+      key: "health",
+      render: (row) => `${row.totalReplicas}/${row.desiredReplicas}`
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      className: "column-actions",
+      render: (_, { id, version }) => (
+        <span>
+          <a onClick={() => handleEditDeploymentClick(id, version)}>Edit</a>
+          <Popconfirm
+            title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
+            onConfirm={() => handleDelete(id, version)}
+          >
+            <a style={{ color: "red" }}>Remove</a>
+          </Popconfirm>
+        </span>
+      )
+    }
+  ];
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="deployments" />
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <div className="page-content page-content--no-padding">
         <DeploymentTabs activeKey="overview" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
@@ -255,8 +289,8 @@ const DeploymentsOverview = () => {
                     marginRight: 130
                   }}
                 >
-                  Deploy any docker containers to cloud easily in no time. Space
-                  Galaxy deploys your docker containers in a secure service mesh
+                  Deploy any docker containers in no time. Space
+                  Cloud deploys your docker containers in a secure service mesh
                   and provides you with a serverless experience by taking care
                   of auto scaling, self healing, etc.
                 </p>
@@ -271,7 +305,7 @@ const DeploymentsOverview = () => {
             ))}
           {data && data.length !== 0 && (
             <React.Fragment>
-              <div style={{ marginBottom: 47 }}>
+              <div>
                 <span style={{ fontSize: 18, fontWeight: "bold" }}>
                   Your Deployments
                 </span>
@@ -282,7 +316,14 @@ const DeploymentsOverview = () => {
                   Add
                 </Button>
               </div>
-              <Table bordered={true} columns={tableColumns} dataSource={data} rowKey={(record) => record.id + record.version} />
+              <Table
+                bordered={true}
+                columns={tableColumns}
+                dataSource={data}
+                rowKey={(record) => record.id + record.version}
+                expandedRowRender={expandedRowRender}
+                style={{ marginTop: 16 }}
+              />
             </React.Fragment>
           )}
         </div>

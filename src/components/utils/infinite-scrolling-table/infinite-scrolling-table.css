@@ -1,0 +1,5 @@
+.infinite-scrolling-table .ant-spin {
+  height: 100%;
+  background: none;
+  max-height: none !important;
+}

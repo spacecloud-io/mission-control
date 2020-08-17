@@ -1,33 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
-import SecurityRulesForm from '../../../components/security-rules-form/SecurityRulesForm';
 import { Button, Table, Popconfirm, Alert } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import '../database.css';
 import history from '../../../history';
-import client from '../../../client';
-import { increment, decrement, set } from 'automate-redux'
-import { notify, getProjectConfig } from '../../../utils';
-import store from '../../../store';
-import { defaultPreparedQueryRule } from '../../../constants';
-import { setPreparedQueries } from '../dbActions'
-
-
+import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
+import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
+import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-  const [ruleModal, setRuleModal] = useState(false)
-  const projects = useSelector(state => state.projects);
-  const preparedQueries = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries`, {});
+
+  // Global state
+  const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
+  let defaultRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
+
+  // Derived state
   const preparedQueriesData = Object.keys(preparedQueries).map(id => ({ name: id })).filter(obj => obj.name !== "default")
-  const dispatch = useDispatch();
-  const [clickedQuery, setClickedQuery] = useState("");
-  let defaultRule = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.default.rule`, {})
   if (Object.keys(defaultRule).length === 0) {
     defaultRule = defaultPreparedQueryRule
   }
@@ -36,38 +30,21 @@ const PreparedQueries = () => {
     ReactGA.pageview("/projects/database/prepared-queries");
   }, [])
 
-  const handleSecureClick = (queryName) => {
-    setClickedQuery(queryName)
-    setRuleModal(true)
-  }
+  // Handlers
+  const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)
 
-  const handleSecureSubmit = (rule) => {
-    return new Promise((resolve, reject) => {
-      const oldPreparedQuery = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.preparedQueries.${clickedQuery}`);
-      const newPreparedQuery = Object.assign({}, oldPreparedQuery, { rule: rule })
-      setPreparedQueries(projectID, selectedDB, newPreparedQuery.id, newPreparedQuery.args, newPreparedQuery.sql, newPreparedQuery.rule)
-        .then(() => resolve()).catch(ex => reject(ex))
-    })
-  }
-
-  const handleDeletePreparedQuery = (name) => {
-    dispatch(increment("pendingRequests"));
-    client.database.deletePreparedQueries(projectID, selectedDB, name)
-      .then(() => {
-        const preparedQueriesList = getProjectConfig(store.getState().projects, projectID, `modules.db.${selectedDB}.preparedQueries`)
-        const newPreparedQueries = delete preparedQueriesList[name]
-        store.dispatch(set(`extraConfig.${projectID}.db.${selectedDB}.preparedQueries`, newPreparedQueries))
-        notify("success", "Success", "Removed prepared query successfully");
+  const handleDeletePreparedQuery = (id) => {
+    incrementPendingRequests()
+    deletePreparedQuery(projectID, selectedDB, id)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : "Removed prepared query successfully")
       })
-      .catch(ex => {
-        notify("error", "Error removing prepared query", ex.toString());
-      })
-      .finally(() => store.dispatch(decrement("pendingRequests")));
+      .catch(ex => notify("error", "Error removing prepared query", ex))
+      .finally(() => decrementPendingRequests());
   }
 
-  // TODO: Add links here
   const alertDesc = <React.Fragment>
-    <p><a style={{ color: "#1890FF" }}>Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color: "#1890FF" }}>security rules</a>.</p>
+    <p><a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/">Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/#securing-prepared-queries">security rules</a>.</p>
   </React.Fragment>
 
   const preparedQueriesColumns = [
@@ -100,7 +77,7 @@ const PreparedQueries = () => {
         showDbSelector
       />
       <div>
-        <Sidenav selectedItem='database' />
+        <Sidenav selectedItem={projectModules.DATABASE} />
         <div className='page-content page-content--no-padding'>
           <DBTabs activeKey='preparedQueries' projectID={projectID} selectedDB={selectedDB} />
           <div className="db-tab-content">
@@ -109,8 +86,9 @@ const PreparedQueries = () => {
               description={alertDesc}
               type="info"
               showIcon
+              style={{ marginBottom: 16 }}
             />}
-            <h3 style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
+            <h3 style={{ display: "flex", justifyContent: "space-between" }}>
               Prepared queries
                 <Button type="primary" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
             </h3>
@@ -121,11 +99,6 @@ const PreparedQueries = () => {
           </div>
         </div>
       </div>
-      {ruleModal && <SecurityRulesForm
-        currentRule={clickedQuery ? preparedQueries[clickedQuery].rule : undefined}
-        defaultRule={defaultRule}
-        handleSubmit={handleSecureSubmit}
-        handleCancel={() => setRuleModal(false)} />}
     </React.Fragment>
   );
 }

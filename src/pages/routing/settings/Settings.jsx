@@ -1,60 +1,60 @@
 import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Divider, Row, Col } from "antd";
-import { increment, decrement } from "automate-redux";
-import client from "../../../client";
-import { setProjectConfig, notify, getProjectConfig } from "../../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
 import Headers from "../../../components/ingress-routing/Headers";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
+import { getIngressRoutesGlobalConfig, saveIngressGlobalRequestHeaders, saveIngressGlobalResponseHeaders, loadIngressRoutesGlobalConfig } from "../../../operations/ingressRoutes";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 
 function RoutingSettings() {
   const { projectID } = useParams();
-  const dispatch = useDispatch();
-  const projects = useSelector(state => state.projects);
+
+  // Global state
   const loading = useSelector(state => state.pendingRequests > 0)
+  const settings = useSelector(state => getIngressRoutesGlobalConfig(state))
+  const { headers = [], resHeaders = [] } = settings
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes/settings");
   }, [])
 
-  let settings = getProjectConfig(projects, projectID, "modules.ingressRoutesGlobal", {});
-  const { headers = [], resHeaders = [] } = settings
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadIngressRoutesGlobalConfig(projectID)
+        .catch(ex => notify("error", "Error fetching global settings of ingress routes", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
 
   const setRequestHeaders = (headers) => {
-    dispatch(increment("pendingRequests"))
-    const newSettings = Object.assign({}, settings, { headers: headers })
-    client.routing.setRoutingGlobalConfig(projectID, newSettings)
-      .then(() => {
-        notify("success", "Success", "Saved the headers config successfully")
-        setProjectConfig(projectID, "modules.ingressRoutesGlobal", newSettings)
-      })
+    incrementPendingRequests()
+    saveIngressGlobalRequestHeaders(projectID, headers)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
       .catch(ex => notify("error", "Error saving the headers config", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }
 
   const setResponseHeaders = (headers) => {
-    dispatch(increment("pendingRequests"))
-    const newSettings = Object.assign({}, settings, { resHeaders: headers })
-    client.routing.setRoutingGlobalConfig(projectID, newSettings)
-      .then(() => {
-        notify("success", "Success", "Saved the headers config successfully")
-        setProjectConfig(projectID, "modules.ingressRoutesGlobal", newSettings)
-      })
+    incrementPendingRequests()
+    saveIngressGlobalResponseHeaders(projectID, headers)
+      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
       .catch(ex => notify("error", "Error saving the headers config", ex))
-      .finally(() => dispatch(decrement("pendingRequests")))
+      .finally(() => decrementPendingRequests())
   }
 
 
   return (
     <div>
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="routing" />
+      <Sidenav selectedItem={projectModules.INGRESS_ROUTES} />
       <ProjectPageLayout>
         <IngressTabs projectID={projectID} activeKey="settings" />
         <Content>

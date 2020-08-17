@@ -11,8 +11,9 @@ import DiscordCard from '../../components/overview/discord/DiscordCard';
 import GithubCard from '../../components/overview/github/GithubCard';
 import UpgradeCard from '../../components/overview/upgrade/UpgradeCard';
 import { Row, Col } from 'antd';
-import history from "../../history"
-import { getClusterPlan } from '../../utils';
+import { isClusterUpgraded } from '../../operations/cluster';
+import { openBillingPortal } from '../../utils';
+import { projectModules } from '../../constants';
 
 function Overview() {
   const { projectID } = useParams()
@@ -20,22 +21,24 @@ function Overview() {
     ReactGA.pageview("/projects/overview");
   }, [])
 
+  // Global state
+  const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   const protocol = window.location.protocol
   const host = window.location.host
-  const selectedPlan = useSelector(state => getClusterPlan(state))
-  const handleClickUpgrade = () => history.push(`/mission-control/projects/${projectID}/billing`)
   return (
     <div className="overview">
       <Topbar showProjectSelector />
-      <Sidenav selectedItem="overview" />
+      <Sidenav selectedItem={projectModules.OVERVIEW} />
       <div className="page-content ">
         <Row>
-          <Col lg={{ span: 20 }}>
+          <Col lg={{ span: 20 }} sm={{ span: 24 }}>
             <h3>GraphQL Endpoints</h3>
-            <Col lg={{ span: 24 }} style={{ marginBottom: "3%" }}>
+
+            <EndpointCard host={host} protocol={protocol} projectId={projectID} />
+            {/* <Col lg={{ span: 24 }}>
               <EndpointCard host={host} protocol={protocol} projectId={projectID} />
-            </Col>
-            <h3>Community</h3>
+            </Col> */}
+            <h3 style={{ marginTop: 24 }}>Community</h3>
             <Row>
               <Col lg={{ span: 11, offset: 0 }}>
                 <DiscordCard />
@@ -44,9 +47,9 @@ function Overview() {
                 <GithubCard />
               </Col>
             </Row>
-            {selectedPlan.startsWith("space-cloud-open") && <Col lg={{ span: 24 }} style={{ marginTop: "3%" }}>
-              {/* <UpgradeCard handleClickUpgrade={handleClickUpgrade} /> */}
-            </Col>}
+            {!clusterUpgraded && <div style={{ marginTop: 24 }}>
+              <UpgradeCard handleClickUpgrade={openBillingPortal} />
+            </div>}
           </Col>
         </Row>
       </div>

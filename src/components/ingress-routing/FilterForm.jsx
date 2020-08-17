@@ -36,7 +36,7 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
       <Form layout="vertical" form={form} onFinish={handleSubmitClick} initialValues={initialValues}>
         <FormItemLabel name="Filter by services" />
         <Form.Item name="services">
-          <Select mode="multiple" placeholder="Select services">
+          <Select mode="tags" placeholder="Select services">
             {serviceNames.map(val => <Option key={val}>{val}</Option>)}
           </Select>
         </Form.Item>

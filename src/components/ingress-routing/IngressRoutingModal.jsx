@@ -32,8 +32,6 @@ const IngressRoutingModal = props => {
   const [form] = Form.useForm();
 
   const initialValues = props.initialValues;
-  const initialRule = (initialValues) ? initialValues.rule : defaultIngressRoutingRule;
-  const [ruleData, setRuleData] = useState(JSON.stringify(initialRule, null, 2));
   const [requestTemplateData, setRequestTemplateData] = useState(initialValues ? initialValues.requestTemplate : "");
   const [responseTemplateData, setResponseTemplateData] = useState(initialValues ? initialValues.responseTemplate : "");
   const children = [];
@@ -85,7 +83,7 @@ const IngressRoutingModal = props => {
           values.requestTemplate = requestTemplateData
           values.responseTemplate = responseTemplateData
         }
-        values.rule = ruleData ? JSON.parse(ruleData) : undefined
+        values.rule = defaultIngressRoutingRule
         values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
         const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
         if (weightSum !== 100) {
@@ -98,10 +96,7 @@ const IngressRoutingModal = props => {
         delete values["setHeaders"];
         delete values["setResHeaders"];
         delete values["applyTransformations"]
-        props.handleSubmit(values).then(() => {
-          notify("success", "Success", "Saved routing config successfully");
-          props.handleCancel();
-        });
+        props.handleSubmit(values).then(() => props.handleCancel());
       } catch (error) {
         notify("error", "Error", error)
       }
@@ -328,23 +323,6 @@ const IngressRoutingModal = props => {
               }}
             </Form.List>
           </React.Fragment>
-          <FormItemLabel name='Rule' />
-          <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-            <CodeMirror
-              value={ruleData}
-              options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2
-              }}
-              onBeforeChange={(editor, data, value) => {
-                setRuleData(value);
-              }}
-            />
-          </Form.Item>
           <Collapse
             style={{ background: "white" }}
             bordered={false}

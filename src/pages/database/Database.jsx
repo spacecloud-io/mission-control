@@ -1,43 +1,45 @@
 import React, { useState } from "react"
-import { useParams, Redirect,  } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
-import { getProjectConfig, notify } from "../../utils"
+import { useParams, Redirect, } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
 import mysql from '../../assets/mysql.svg'
 import postgresql from '../../assets/postgresql.svg'
 import mongodb from '../../assets/mongodb.svg'
+import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
-import { defaultDbConnectionStrings, defaultDBRules } from "../../constants"
-import { dbEnable } from "./dbActions"
-import { increment, decrement } from "automate-redux"
+import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
+import { enableDb, getDbConfig } from "../../operations/database"
 
 const Database = () => {
-
-  const dispatch = useDispatch()
 
   // Router params
   const { projectID, selectedDB } = useParams()
 
-  // Global state
-  const projects = useSelector(state => state.projects)
-
   // Component state
   const [modalVisible, setModalVisible] = useState(false)
 
-  // Dervied properties
-  const { enabled, type, conn } = getProjectConfig(projects, projectID, `modules.db.${selectedDB}`, {})
+  // Global state
+  const { enabled, type, conn } = useSelector(state => getDbConfig(state, selectedDB))
   const dbType = type ? type : selectedDB
 
   // Handlers
-  const handleEnable = (conn, defaultCollectionRule) => {
-    const dbName = getProjectConfig(projects, projectID, `modules.db.${selectedDB}.name`)
-    dispatch(increment("pendingRequests"))
-    dbEnable(projects, projectID, selectedDB, dbType, dbName, conn, defaultCollectionRule)
-    .then(() => notify("success", "Success", "Successfully enabled database"))
-    .catch(ex => notify("error", "Error enabling database", ex))
-    .finally(() => dispatch(decrement("pendingRequests")))
+  const handleEnable = (conn) => {
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      enableDb(projectID, selectedDB, conn)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : "Successfully enabled database")
+          resolve()
+        })
+        .catch(ex => {
+          notify("error", "Error enabling database", ex)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
   }
 
   if (enabled) {
@@ -49,21 +51,25 @@ const Database = () => {
   let dbName = ""
 
   switch (dbType) {
-    case "mysql":
+    case dbTypes.MYSQL:
       desc = "The world's most popular open source database."
       dbName = "MySQL"
       graphic = mysql
       break
-    case "postgres":
+    case dbTypes.POSTGRESQL:
       desc = "The world's most advanced open source database."
       dbName = "PostgreSQL"
       graphic = postgresql
       break
-    case "mongo":
+    case dbTypes.MONGO:
       desc = "A open-source cross-platform document- oriented database."
       dbName = "MongoDB"
       graphic = mongodb
       break
+    case dbTypes.SQLSERVER:
+      desc = "SQL Server is a relational database management system, developed and marketed by Microsoft."
+      dbName = "SQL Server"
+      graphic = sqlserver
   }
 
   const defaultConnString = conn ? conn : defaultDbConnectionStrings[dbType]
@@ -71,7 +77,7 @@ const Database = () => {
   return (
     <div>
       <Topbar showProjectSelector showDbSelector />
-      <Sidenav selectedItem="database" />
+      <Sidenav selectedItem={projectModules.DATABASE} />
       <div className="page-content ">
         <div className="panel" style={{ margin: 24 }}>
           <img src={graphic} style={{ width: 120 }} />
@@ -81,7 +87,7 @@ const Database = () => {
         </div>
       </div>
       {modalVisible && <EnableDBForm
-        initialValues={{ conn: defaultConnString, rules: defaultDBRules }}
+        initialValues={{ conn: defaultConnString }}
         handleSubmit={handleEnable}
         handleCancel={() => setModalVisible(false)} />}
     </div>
