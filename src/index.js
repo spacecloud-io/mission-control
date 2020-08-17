@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === "production") {
   ReactGA.initialize('UA-104521884-3');
 }
 
-if (process.env.NODE_ENV !== 'production' && !process.env.REACT_APP_DISABLE_MOCK) {
+if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_MOCK) {
   makeServer();
 }
 
