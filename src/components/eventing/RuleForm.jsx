@@ -24,7 +24,7 @@ function AlertMsgApplyTransformations() {
 const RuleForm = (props) => {
   const [form] = Form.useForm();
 
-  const { id, type, url, retries, timeout, options, outputFormat, template } = props.initialValues ? props.initialValues : {}
+  const { id, type, url, retries, timeout, options, outputFormat, requestTemplate } = props.initialValues ? props.initialValues : {}
   const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
   const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
@@ -38,9 +38,9 @@ const RuleForm = (props) => {
     url: url,
     retries: retries ? retries : 3,
     timeout: timeout ? timeout : 5000,
-    applyTransformations: template ? true : false,
+    applyTransformations: requestTemplate ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml",
-    template: template ? template : ""
+    requestTemplate: requestTemplate ? requestTemplate : ""
   }
 
   const handleSearch = value => setValue(value);
@@ -56,7 +56,7 @@ const RuleForm = (props) => {
       }
 
       delete values["applyTransformations"]
-      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options, values.template, values.outputFormat).then(() => {
+      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options, values.requestTemplate, values.outputFormat).then(() => {
         props.handleCancel();
         form.resetFields();
       })
@@ -203,7 +203,7 @@ const RuleForm = (props) => {
                 </Select>
               </Form.Item>
               <FormItemLabel name="Template" description="Template to generate the transformed webhook request body." />
-              <Form.Item name="template" rules={[{ required: true, message: "Please provide a template!" }]}>
+              <Form.Item name="requestTemplate" rules={[{ required: true, message: "Please provide a template!" }]}>
                 <AntCodeMirror style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }} options={{
                   mode: { name: 'go' },
                   lineNumbers: true,
