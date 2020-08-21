@@ -1,31 +1,46 @@
 import React, { useState } from "react"
 import { useSelector } from 'react-redux';
-import { Modal, Input, Radio, Select, Collapse, AutoComplete, InputNumber, Form } from 'antd';
+import { Modal, Input, Radio, Select, Checkbox, Collapse, AutoComplete, InputNumber, Form, Alert } from 'antd';
 import { getEventSourceFromType } from "../../utils";
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import RadioCards from "../radio-cards/RadioCards";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 import { getTrackedCollections } from "../../operations/database";
+import AntCodeMirror from "../ant-code-mirror/AntCodeMirror";
 
 const { Option } = AutoComplete;
+
+function AlertMsgApplyTransformations() {
+  return (
+    <div>
+      <b>Info</b> <br />
+      Describe the transformed webhook request body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+        <b>Go templates</b>
+      </a>. Space Cloud will execute the specified template to generate the new webhook request body.
+    </div>
+  );
+}
 
 const RuleForm = (props) => {
   const [form] = Form.useForm();
 
-  const { id, type, url, retries, timeout, options } = props.initialValues ? props.initialValues : {}
+  const { id, type, url, retries, timeout, options, outputFormat, template } = props.initialValues ? props.initialValues : {}
   const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
   const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
   const [value, setValue] = useState("");
 
   const formInitialValues = {
-    'id': id,
-    'source': getEventSourceFromType(type, "database"),
-    'type': type ? type : "DB_INSERT",
-    'options': options ? options : {},
-    'url': url,
-    'retries': retries ? retries : 3,
-    'timeout': timeout ? timeout : 5000
+    id: id,
+    source: getEventSourceFromType(type, "database"),
+    type: type ? type : "DB_INSERT",
+    options: options ? options : {},
+    url: url,
+    retries: retries ? retries : 3,
+    timeout: timeout ? timeout : 5000,
+    applyTransformations: template ? true : false,
+    outputFormat: outputFormat ? outputFormat : "yaml",
+    template: template ? template : ""
   }
 
   const handleSearch = value => setValue(value);
@@ -40,7 +55,8 @@ const RuleForm = (props) => {
         delete options["col"]
       }
 
-      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options).then(() => {
+      delete values["applyTransformations"]
+      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options, values.template, values.outputFormat).then(() => {
         props.handleCancel();
         form.resetFields();
       })
@@ -54,6 +70,7 @@ const RuleForm = (props) => {
       visible={true}
       onCancel={props.handleCancel}
       onOk={handleSubmit}
+      width={720}
     >
       <Form layout="vertical" form={form} initialValues={formInitialValues}>
         <FormItemLabel name="Trigger name" />
@@ -162,6 +179,41 @@ const RuleForm = (props) => {
             <Form.Item name="timeout">
               <InputNumber style={{ width: '100%' }} placeholder="Timeout in milliseconds" />
             </Form.Item>
+            <FormItemLabel name='Apply transformations' />
+            <Form.Item name='applyTransformations' valuePropName='checked'>
+              <Checkbox>
+                Transform the webhook request body using templates
+              </Checkbox>
+            </Form.Item>
+            <ConditionalFormBlock
+              dependency='applyTransformations'
+              condition={() => form.getFieldValue('applyTransformations') === true}
+            >
+              <Alert
+                message={<AlertMsgApplyTransformations />}
+                type='info'
+                showIcon
+                style={{ marginBottom: 21 }}
+              />
+              <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+              <Form.Item name="outputFormat">
+                <Select style={{ width: 96 }}>
+                  <Option value='yaml'>YAML</Option>
+                  <Option value='json'>JSON</Option>
+                </Select>
+              </Form.Item>
+              <FormItemLabel name="Template" description="Template to generate the transformed webhook request body." />
+              <Form.Item name="template" rules={[{ required: true, message: "Please provide a template!" }]}>
+                <AntCodeMirror style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }} options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2
+                }} />
+              </Form.Item>
+            </ConditionalFormBlock>
           </Collapse.Panel>
         </Collapse>
       </Form>

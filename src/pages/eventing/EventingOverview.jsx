@@ -57,11 +57,11 @@ const EventingOverview = () => {
 		setRuleModalVisibile(false)
 	}
 
-	const handleSetRule = (id, type, url, retries, timeout, options = {}) => {
+	const handleSetRule = (id, type, url, retries, timeout, options = {}, template, outputFormat) => {
 		const isRulePresent = rules[id] ? true : false
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
-			saveEventingTriggerRule(projectID, id, type, url, retries, timeout, options)
+			saveEventingTriggerRule(projectID, id, type, url, retries, timeout, options, template, outputFormat)
 				.then(({ queued }) => {
 					notify("success", "Success", queued ? actionQueuedMessage : `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()
