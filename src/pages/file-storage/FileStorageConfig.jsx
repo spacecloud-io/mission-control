@@ -4,10 +4,10 @@ import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
-import { LeftOutlined } from '@ant-design/icons';
+import { LeftOutlined, CaretRightOutlined } from '@ant-design/icons';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { useHistory } from "react-router-dom";
-import { Button, Card, Input, Radio, Form, Alert, AutoComplete, Col } from "antd"
+import { Button, Card, Input, Radio, Form, Alert, AutoComplete, Col, Collapse, Checkbox } from "antd"
 import RadioCards from "../../components/radio-cards/RadioCards"
 import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
@@ -22,7 +22,7 @@ const FileStorageConfig = () => {
   const { projectID } = useParams()
 
   // Global state
-  const { storeType, bucket, endpoint, conn, secret } = useSelector(state => getFileStoreConfig(state))
+  const { storeType, bucket, endpoint, conn, secret, disableSSL, forcePathStyle } = useSelector(state => getFileStoreConfig(state))
   const secrets = useSelector(state => getSecrets(state))
 
   const fileSecrets = secrets.filter(secret => secret.type === 'file')
@@ -53,7 +53,9 @@ const FileStorageConfig = () => {
     bucket: bucket,
     endpoint: endpoint,
     credentials: (storeType && !secret) ? "direct" : "secret",
-    secret: secret
+    secret: secret,
+    disableSSL,
+    forcePathStyle
   }
 
   // This is used to bind the form initial values on page reload. 
@@ -132,10 +134,6 @@ const FileStorageConfig = () => {
                   <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a region!' }]} shouldUpdate>
                     <Input placeholder="Example: us-east-1" />
                   </Form.Item>
-                  <FormItemLabel name="Endpoint" description="Optional" />
-                  <Form.Item name="endpoint">
-                    <Input placeholder="Example: https://nyc3.digitaloceanspaces.com" />
-                  </Form.Item>
                   <FormItemLabel name="Credentials File" description="Credentials file is used to authorize Space Cloud to your bucket" />
                   <Form.Item name="credentials">
                     <Radio.Group>
@@ -164,6 +162,32 @@ const FileStorageConfig = () => {
                       showIcon
                     />
                   </ConditionalFormBlock>
+                  <Collapse
+                    style={{ background: "white" }}
+                    bordered={false}
+                    expandIcon={({ isActive }) => (
+                      <CaretRightOutlined rotate={isActive ? 90 : 0} />
+                    )}
+                  >
+                    <Collapse.Panel header="Advanced settings" key="advanced">
+                      <FormItemLabel name="Endpoint" hint="(Optional)" />
+                      <Form.Item name="endpoint">
+                        <Input placeholder="Example: https://nyc3.digitaloceanspaces.com" />
+                      </Form.Item>
+                      <FormItemLabel name="SSL" hint="(Optional)" />
+                      <Form.Item name="disableSSL" valuePropName="checked">
+                        <Checkbox>
+                          Disable SSL
+                        </Checkbox>
+                      </Form.Item>
+                      <FormItemLabel name="Path style" hint="(Optional)" />
+                      <Form.Item name="forcePathStyle" valuePropName="checked">
+                        <Checkbox>
+                          Force path style
+                        </Checkbox>
+                      </Form.Item>
+                    </Collapse.Panel>
+                  </Collapse>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === "gcp-storage"}>
                   <FormItemLabel name="Bucket" />
@@ -199,10 +223,10 @@ const FileStorageConfig = () => {
                     />
                   </ConditionalFormBlock>
                 </ConditionalFormBlock>
-                <Form.Item>
+                <Form.Item style={{ marginTop: 24 }}>
                   <Button type="primary" htmlType="submit" className="submit" block>
                     Save
-                                </Button>
+                  </Button>
                 </Form.Item>
               </Form>
             </Card>

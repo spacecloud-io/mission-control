@@ -16,13 +16,15 @@ function AntCodeMirror(props) {
     props.onChange(value)
   }
   return (
-    <CodeMirror
-      value={value}
-      options={props.options}
-      onBeforeChange={(editor, data, value) => {
-        handleChangeValue(value);
-      }}
-    />
+    <div style={props.style ? props.style : undefined}I>
+      <CodeMirror
+        value={value}
+        options={props.options}
+        onBeforeChange={(editor, data, value) => {
+          handleChangeValue(value);
+        }}
+      />
+    </div>
   )
 }
 
