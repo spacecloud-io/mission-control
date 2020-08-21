@@ -55,6 +55,10 @@ const RuleForm = (props) => {
         delete options["col"]
       }
 
+      if (!values.applyTransformations) {
+        delete values["requestTemplate"]
+      }
+
       delete values["applyTransformations"]
       props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options, values.requestTemplate, values.outputFormat).then(() => {
         props.handleCancel();
