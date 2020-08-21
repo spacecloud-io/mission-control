@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, generateRSAKeyPair } from '../../../utils';
+import { generateJWTSecret, generateRSAKeyPair, generateRSAPublicKeyFromPrivateKey, generateRSAPrivateKey } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 
 
@@ -10,18 +10,16 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
-      const { secret, isPrimary, alg, publicKey, privateKey } = values;
+      const { secret, isPrimary, alg, privateKey } = values;
+      const publicKey = generateRSAPublicKeyFromPrivateKey(privateKey)
       handleSubmit(secret, isPrimary, alg, publicKey, privateKey).then(() => handleCancel())
     });
   };
 
   const onAlgorithmChange = async (alg) => {
     if (alg === "RS256") {
-      const { publicKey, privateKey } = await generateRSAKeyPair();
-      form.setFieldsValue({
-        publicKey,
-        privateKey
-      })
+      const privateKey = await generateRSAPrivateKey();
+      form.setFieldsValue({ privateKey })
     }
   }
 
@@ -54,10 +52,10 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256"}>
-          <FormItemLabel name="Public key" />
+          {/* <FormItemLabel name="Public key" />
           <Form.Item name="publicKey">
             <Input.TextArea rows={4} placeholder="Public key" />
-          </Form.Item>
+          </Form.Item> */}
           <FormItemLabel name="Private key" />
           <Form.Item name="privateKey">
             <Input.TextArea rows={4} placeholder="Private key" />

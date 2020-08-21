@@ -18,7 +18,8 @@ import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
-import { RSA } from 'hybrid-crypto-js';
+import keypair from "keypair";
+import forge from "node-forge"
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -150,15 +151,19 @@ export const generateId = (len = 32) => {
   });
 }
 
-export const generateRSAKeyPair = async () => {
-  const rsa = new RSA({
-    keySize: 2048,
-  });
-  const { publicKey, privateKey } = await rsa.generateKeyPairAsync();
-  return {
-    privateKey,
-    publicKey
-  }
+export const generateRSAPrivateKey = () => {
+  return keypair().private
+}
+
+export const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
+  var forgePrivateKey = forge.pki.privateKeyFromPem(privateKey);
+
+  // get a Forge public key from the Forge private key
+  var forgePublicKey = forge.pki.setRsaPublicKey(forgePrivateKey.n, forgePrivateKey.e);
+
+  // convert the Forge public key to a PEM-formatted public key
+  var publicKey = forge.pki.publicKeyToPem(forgePublicKey);
+  return publicKey
 }
 
 export const generateJWTSecret = generateId
