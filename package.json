@@ -1,6 +1,6 @@
 {
   "name": "mission-control",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.1.0",
@@ -19,12 +19,13 @@
     "graphql": "^14.5.4",
     "graphql-prettier": "^1.0.6",
     "graphql-tag": "^2.10.3",
-    "hybrid-crypto-js": "^0.2.3",
     "jsonwebtoken": "^8.5.1",
+    "keypair": "^1.0.1",
     "less": "^3.9.0",
     "less-loader": "^5.0.0",
     "lil-uri": "^0.2.2",
     "lorem-ipsum": "^2.0.3",
+    "node-forge": "^0.9.1",
     "prettier-package-json": "^2.1.3",
     "qs": "^6.9.4",
     "query-string": "^6.11.1",
@@ -47,7 +48,7 @@
   "homepage": "https://spaceuptech.com/mission-control",
   "scripts": {
     "start": "react-app-rewired start",
-    "start:no-mock": "REACT_APP_DISABLE_MOCK='true' react-app-rewired start",
+    "start:mock": "cross-env REACT_APP_ENABLE_MOCK='true' react-app-rewired start",
     "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
@@ -68,6 +69,7 @@
     ]
   },
   "devDependencies": {
+    "cross-env": "^7.0.2",
     "miragejs": "^0.1.37"
   }
 }

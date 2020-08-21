@@ -409,12 +409,7 @@ export const clusterConfig = {
 export const permissions = [
   {
     project: "*",
-    resource: "project",
-    verb: "*"
-  },
-  {
-    project: "*",
-    resource: "service",
+    resource: "*",
     verb: "*"
   }
 ]

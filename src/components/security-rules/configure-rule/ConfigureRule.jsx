@@ -242,7 +242,7 @@ const ConfigureRule = (props) => {
         params: true,
         headers: true
       }
-      autoCompleteOptions = { args: { auth: true, params: true, query, token : true} }
+      autoCompleteOptions = { args: { auth: true, params: true, query, token: true } }
   }
 
   const inheritedDataType = getTypeFromValue(value)
@@ -318,7 +318,7 @@ const ConfigureRule = (props) => {
             }
           </Form.Item>
           <FormItemLabel name='Evaluation type' />
-          <Form.Item name='eval'>
+          <Form.Item name='eval' rules={[{ required: true }]}>
             <Select placeholder="Evaluation">
               <Select.Option value='=='>Equals to</Select.Option>
               <Select.Option value='!='>Not equals to</Select.Option>
@@ -491,7 +491,7 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('rule') === "webhook"}
         >
           <FormItemLabel name="URL" />
-          <FormItem name="url">
+          <FormItem name="url" rules={[{ required: true }]}>
             <Input placeholder="URL" />
           </FormItem>
         </ConditionalFormBlock>
