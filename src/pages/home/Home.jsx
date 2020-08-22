@@ -2,7 +2,7 @@ import React from "react"
 import "./home.css"
 import SpaceUpLogo from "../../logo.png"
 
-export default () => {
+export default ({ loadingPage }) => {
   return (
     <div className="home">
       <div className="content">
@@ -10,7 +10,7 @@ export default () => {
         <br />
         <img src={SpaceUpLogo} alt="" />
         <br />
-        <span>Loading data...</span>
+        <span>Loading {loadingPage ? "page" : "data"}...</span>
       </div>
     </div>
   )
