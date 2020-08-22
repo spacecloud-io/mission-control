@@ -10,10 +10,11 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
-import { notify, parseJSONSafely, canGenerateToken } from "../../utils";
+import { notify, canGenerateToken } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
+import JSONView from "../utils/json-view/JSONView";
 
 const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken, projectId }) => {
   const [form] = Form.useForm()
@@ -22,7 +23,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
   const dispatch = useDispatch()
   const [generateTokenModalVisible, setGenerateTokenModalVisible] = useState(false)
   const [data, setData] = useState("{}")
-  const [eventResponse, setEventResponse] = useState("")
+  const [eventResponse, setEventResponse] = useState(null)
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
   const token = useSelector(state => get(state, "uiState.eventing.token", ""))
@@ -41,7 +42,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
       try {
         handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken())
           .then(res => {
-            setEventResponse(JSON.stringify(parseJSONSafely(res), null, 2))
+            setEventResponse(res)
             if (!triggeredEventOnce) setTriggeredEventOnce(true)
           })
       } catch (ex) {
@@ -130,7 +131,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
       {eventResponse && <React.Fragment>
         <br />
         <FormItemLabel name="Response" />
-        <pre>{eventResponse}</pre>
+        <JSONView data={eventResponse}/>
       </React.Fragment>}
     </React.Fragment>
   );
