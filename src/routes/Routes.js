@@ -5,18 +5,23 @@ import history from "../history";
 import { projectModules } from "../constants";
 import Home from "../pages/home/Home";
 
-import Login from "../pages/login/Login";
-import Welcome from "../pages/welcome/Welcome";
-import CreateProject from "../pages/create-project/CreateProject";
-// import ProjectPages from "./ProjectPages";
+const Login = lazyWithPreload(() => import("../pages/login/Login"));
+const Welcome = lazyWithPreload(() => import("../pages/welcome/Welcome"));
+const CreateProject = lazyWithPreload(() => import("../pages/create-project/CreateProject"));
 const ProjectPages = lazyWithPreload(() => import("./ProjectPages"));
 const RulesEditor = lazyWithPreload(() => import("../pages/security-rules/RulesEditor"));
+
+function SuspenseFallBack() {
+  return (
+    <Home loadingPage />
+  )
+}
 
 function Routes() {
 
   return (
     <Router history={history}>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<SuspenseFallBack />}>
         <Route exact path="/"
           component={() => <Redirect to={"/mission-control"} />} />
         <Route exact path="/mission-control" component={Home} />
