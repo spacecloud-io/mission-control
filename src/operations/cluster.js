@@ -81,7 +81,6 @@ export function refreshClusterTokenIfPresent() {
         resolve()
       })
       .catch((ex) => {
-        localStorage.removeItem("token")
         reject(ex)
       })
   })

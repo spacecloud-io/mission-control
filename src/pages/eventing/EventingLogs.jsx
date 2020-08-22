@@ -4,16 +4,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { set, increment, decrement } from "automate-redux";
 
 import { CheckOutlined, CloseOutlined, FilterOutlined, HourglassOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Button, Table, Row, Col, Alert } from "antd";
+import { Button, Table, Row, Col, Alert, Typography } from "antd";
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import FilterForm from "../../components/eventing/FilterForm";
 import InfiniteScrollingTable from "../../components/utils/infinite-scrolling-table/InfiniteScrollingTable";
+import JSONView from "../../components/utils/json-view/JSONView";
 
 
 import client from "../../client";
-import { notify, parseJSONSafely, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { getEventingDbAliasName, getEventingConfig } from '../../operations/eventing';
 import store from '../../store';
 
@@ -117,24 +118,24 @@ const EventingLogs = () => {
     return (
       <div>
         {record.request_payload && (
-          <>
-            <b>Request payload</b><br />
-            <pre>{JSON.stringify(parseJSONSafely(record.request_payload), null, 2)}</pre><br /><br />
-          </>
+          <React.Fragment>
+            <Typography.Paragraph strong>Request payload</Typography.Paragraph>
+            <JSONView data={record.request_payload} parse /><br /><br />
+          </React.Fragment>
         )}
-        <b>Status Code</b><br />
+        <Typography.Paragraph strong>Status code</Typography.Paragraph>
         {record.response_status_code}<br /><br />
         {record.response_body && (
-          <>
-            <b>Response</b><br />
-            <pre>{JSON.stringify(parseJSONSafely(record.response_body), null, 2)}</pre><br /><br />
-          </>
+          <React.Fragment>
+            <Typography.Paragraph strong>Response body</Typography.Paragraph>
+            <JSONView data={record.response_body} parse /><br /><br />
+          </React.Fragment>
         )}
         {record.error_msg && (
-          <>
-            <b>Error Message</b><br />
-            <pre>{JSON.stringify(parseJSONSafely(record.error_msg), null, 2)}</pre>
-          </>
+          <React.Fragment>
+            <Typography.Paragraph strong>Error message</Typography.Paragraph>
+            <JSONView data={record.error_msg} parse /><br /><br />
+          </React.Fragment>
         )}
       </div>
     )
