@@ -12,7 +12,7 @@ import { notify, incrementPendingRequests, decrementPendingRequests, openBilling
 import { Row, Col, Divider } from "antd";
 import { loadClusterSettings, removeClusterLicense, getEnv, isClusterUpgraded } from "../../../operations/cluster";
 import { projectModules } from "../../../constants";
-import ClusterEnvironments from "../../../components/settings/license/ClusterEnvironments";
+import ClusterEnvironment from "../../../components/settings/license/ClusterEnvironment";
 
 const LicenseSettings = () => {
   const history = useHistory();
@@ -52,7 +52,7 @@ const LicenseSettings = () => {
             <Col lg={{ span: 12 }}>
               <License clusterUpgraded={clusterUpgraded} handleApplyLicense={handleOpenApplyLicensePage} handleGetLicense={openBillingPortal} handleRemoveLicense={handleRemoveLicense} clusterName={clusterName} licenseKey={licenseKey} plan={plan} nextRenewal={nextRenewal} licenseMode={licenseMode} />
               <Divider />
-              <ClusterEnvironments licenseMode={licenseMode} sessionId={sessionId}/>
+              <ClusterEnvironment licenseMode={licenseMode} sessionId={sessionId}/>
               <Divider />
               <ClusterQuotas clusterUpgraded={clusterUpgraded} handleGetLicense={openBillingPortal} quotas={quotas} />
             </Col>

@@ -19,7 +19,7 @@ const ApplyLicenseForm = ({ clusterName, handleSubmit, handleSubmitOfflineLicens
         onFinish={licenseMode === 'offline' ? handleOfflineLicenseClick : handleSubmitClick}
         initialValues={{ clusterName }}
       >
-        {licenseMode === 'online' && <React.Fragment>
+        {licenseMode !== 'offline' && <React.Fragment>
           <FormItemLabel name="Provide cluster name" description="Cluster name is used for you to identify the cluster associated with a license key" />
           <Form.Item name="clusterName" rules={[{ required: true, message: "Please provide a cluster name!" }]}>
             <Input placeholder="Cluster name" />
@@ -33,9 +33,9 @@ const ApplyLicenseForm = ({ clusterName, handleSubmit, handleSubmitOfflineLicens
           </Form.Item>
         </React.Fragment> }
         {licenseMode === 'offline' && <React.Fragment>
-          <FormItemLabel name='License key'/>
+          <FormItemLabel name='License file'/>
           <Form.Item name='licenseKey' rules={[{ required: true, message: "Please provide a license key!" }]}>
-            <Input.TextArea rows={3} placeholder='License key' />
+            <Input.TextArea rows={3} placeholder='Paste your license file contents over here' />
           </Form.Item>  
         </React.Fragment>}
         <Form.Item>
