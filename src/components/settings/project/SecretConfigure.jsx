@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, generateRSAKeyPair, generateRSAPublicKeyFromPrivateKey, generateRSAPrivateKey } from '../../../utils';
+import { generateJWTSecret, generateRSAPublicKeyFromPrivateKey, generateRSAPrivateKey } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 
 
@@ -11,7 +11,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
       const { secret, isPrimary, alg, privateKey } = values;
-      const publicKey = generateRSAPublicKeyFromPrivateKey(privateKey)
+      const publicKey = privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : ""
       handleSubmit(secret, isPrimary, alg, publicKey, privateKey).then(() => handleCancel())
     });
   };
