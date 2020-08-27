@@ -7,14 +7,14 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { changeDbName, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
+import { getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 // actions
 import databaseActions from "../../../actions/database";
 
-const { removeDbConfig, reloadDbSchema, modifyDbSchema, disableDb } = databaseActions;
+const { removeDbConfig, reloadDbSchema, modifyDbSchema, disableDb, changeDbName } = databaseActions;
 
 const Settings = () => {
   // Router params
@@ -95,7 +95,7 @@ const Settings = () => {
     incrementPendingRequests()
     let msg = "database"
     if (type === dbTypes.POSTGRESQL || type === dbTypes.SQLSERVER) msg = "schema"
-    changeDbName(projectID, selectedDB, dbName)
+    dispatch(changeDbName(projectID, selectedDB, dbName))
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed ${msg} setting successfully`)
       })

@@ -1,4 +1,4 @@
-import { removeDbConfig, loadDbConfig, loadDBConnState, addDatabase, enableDb, disableDb } from './config';
+import { removeDbConfig, loadDbConfig, loadDBConnState, addDatabase, enableDb, disableDb, changeDbName } from './config';
 import { loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema } from './schema';
 import { loadDbRules } from './rules';
 import { loadDbPreparedQueries, savePreparedQueryConfig, deletePreparedQuery } from './preparedQuery';
@@ -22,5 +22,6 @@ export default {
   modifyDbSchema,
   addDatabase,
   enableDb,
-  disableDb
+  disableDb,
+  changeDbName
 }
