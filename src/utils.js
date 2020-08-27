@@ -10,7 +10,7 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects, getJWTSecret, loadProjectAPIToken, getSecretAlgorithm } from './operations/projects'
+import { loadProjects, getJWTSecret, loadProjectAPIToken } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
@@ -486,6 +486,12 @@ function usePagePermissions() {
   }
 
   return { allowed: true }
+}
+
+export function lazyWithPreload(factory) {
+  const Component = React.lazy(factory);
+  Component.preload = factory;
+  return Component;
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {
