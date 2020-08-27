@@ -1,5 +1,6 @@
-import { createStore } from "redux";
+import { createStore, applyMiddleware, compose } from "redux";
 import { generateReducers } from "automate-redux";
+import thunk from "redux-thunk";
 
 // Initial state of redux
 const initialState = {
@@ -7,7 +8,7 @@ const initialState = {
 	clusters: [],
 	dbSchemas: {},
 	dbRules: {},
-	dbConfig: {},
+	dbConfigs: {},
 	dbPreparedQueries: {},
 	dbCollections: {},
 	dbConnState: {},
@@ -50,4 +51,7 @@ const initialState = {
 };
 
 // Generate reducers with the initial state and pass it to the redux store
-export default createStore(generateReducers(initialState), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+export default createStore(generateReducers(initialState), composeEnhancers(applyMiddleware(thunk)));
+
+export const createReduxStore = (initialState) => createStore(generateReducers(initialState), applyMiddleware(thunk));

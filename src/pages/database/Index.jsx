@@ -1,33 +1,35 @@
 import { useEffect } from 'react'
 import { useParams } from "react-router-dom";
-import { loadDbSchemas, loadDbConfig, loadDbRules, loadDbPreparedQueries } from '../../operations/database';
+import { useDispatch } from "react-redux";
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import database from "../../actions/database";
 
 import './database.css'
 import '../../index.css'
 
 const Database = () => {
   const { projectID } = useParams()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (projectID) {
       incrementPendingRequests()
-      loadDbConfig(projectID)
+      dispatch(database.loadConfig(projectID))
         .catch(ex => notify("error", "Error fetching database config", ex))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
-      loadDbSchemas(projectID)
+      dispatch(database.loadSchemas(projectID))
         .catch(ex => notify("error", "Error fetching database schemas", ex))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
-      loadDbRules(projectID)
+      dispatch(database.loadRules(projectID))
         .catch(ex => notify("error", "Error fetching database rules", ex))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
-      loadDbPreparedQueries(projectID)
+      dispatch(database.loadPreparedQueries(projectID))
         .catch(ex => notify("error", "Error fetching prepared queries", ex))
         .finally(() => decrementPendingRequests())
     }

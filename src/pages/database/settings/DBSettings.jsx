@@ -1,21 +1,24 @@
 import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
 import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
+import { modifyDbSchema, reloadDbSchema, changeDbName, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
+// actions
+import database from "../../../actions/database";
 
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
 
+  const dispatch = useDispatch()
   const history = useHistory()
 
   const [form] = Form.useForm();
@@ -100,7 +103,7 @@ const Settings = () => {
 
   const handleRemoveDb = () => {
     incrementPendingRequests()
-    removeDbConfig(projectID, selectedDB)
+    dispatch(database.removeConfig(projectID, selectedDB))
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database`)

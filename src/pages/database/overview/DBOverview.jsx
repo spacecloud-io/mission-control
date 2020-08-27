@@ -15,8 +15,9 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
-import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { untrackCollection, deleteCollection, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
+import database from '../../../actions/database';
 
 
 const Overview = () => {
@@ -50,7 +51,7 @@ const Overview = () => {
   useEffect(() => {
     if (projectID && selectedDB) {
       incrementPendingRequests()
-      loadDBConnState(projectID, selectedDB)
+      dispatch(database.loadDBConnState(projectID, selectedDB))
         .catch(ex => notify("error", "Error fetching database connection state", ex))
         .finally(() => decrementPendingRequests())
     }
@@ -131,7 +132,7 @@ const Overview = () => {
 
   const handleReloadSchema = (colName) => {
     incrementPendingRequests()
-    inspectColSchema(projectID, selectedDB, colName)
+    dispatch(database.inspectColSchema(projectID, selectedDB, colName))
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded schema successfully"))
       .catch((ex) => notify("error", "Error reloading schema of table", ex))
       .finally(() => decrementPendingRequests())
@@ -139,7 +140,7 @@ const Overview = () => {
 
   const handleTrackCollections = (collections) => {
     incrementPendingRequests()
-    Promise.all(collections.map(colName => inspectColSchema(projectID, selectedDB, colName)))
+    Promise.all(collections.map(colName => dispatch(database.inspectColSchema(projectID, selectedDB, colName))))
       .then(([{ queued }]) => {
         if (!queued) {
           notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`)
@@ -154,7 +155,7 @@ const Overview = () => {
   const handleAddCollection = (editMode, colName, schema) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      saveColSchema(projectID, selectedDB, colName, schema)
+      dispatch(database.saveColSchema(projectID, selectedDB, colName, schema))
         .then(({ queued }) => {
           if (!queued) {
             notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
