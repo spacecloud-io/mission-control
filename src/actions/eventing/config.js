@@ -21,7 +21,7 @@ export const saveSecurityRule = (projectId, eventType, securityRule) => (dispatc
   })
 }
 
-export const saveConfig = (projectId, enabled, dbAliasName) => (dispatch, getState) => {
+export const saveEventingConfig = (projectId, enabled, dbAliasName) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
     const eventingConfig = { enabled, dbAlias: dbAliasName }
     scClient.postJSON(`/v1/config/projects/${projectId}/eventing/config/eventing-config`, eventingConfig)

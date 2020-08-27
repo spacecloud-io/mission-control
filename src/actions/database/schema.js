@@ -4,7 +4,7 @@ import { configResourceTypes, permissionVerbs } from "../../constants";
 import { get, set } from "automate-redux";
 import dotProp from "dot-prop-immutable";
 
-export const loadSchemas = (projectId, dbAliasName = "*", colName = "*") => (dispatch, getState) => {
+export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_SCHEMA], permissionVerbs.READ)
     if (!hasPermission) {
@@ -43,7 +43,7 @@ export const inspectColSchema = (projectId, dbAliasName, colName) => (dispatch, 
       }
       const queued = status === 202;
       if (!queued) {
-        loadSchemas(projectId, dbAliasName, colName)
+        loadDbSchemas(projectId, dbAliasName, colName)
           .then(() => resolve({ queued }))
           .catch(ex => reject(ex))
         return
@@ -72,6 +72,50 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => (dispa
         }
       }
       resolve({ queued }) 
+    })
+    .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const reloadDbSchema = (projectId, dbAliasName) =>  (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/schema/inspect`, {})
+    .then(({ status, data }) => {
+      if (status < 200 || status >= 300) {
+        reject(data.error)
+        return
+      }
+      const queued = status === 202
+      if (!queued) {
+        dispatch(loadDbSchemas(projectId, dbAliasName))
+          .then(() => resolve({ queued }))
+          .catch(ex => reject(ex))
+        return
+      }
+
+      resolve({ queued })
+    })
+    .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const modifyDbSchema = (projectId, dbAliasName) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+
+    const dbSchemas = get(getState(), `dbSchemas.${dbAliasName}`, {})
+    const collections = Object.entries(dbSchemas).reduce((prev, curr) => {
+      const [colName, schema] = curr
+      return Object.assign({}, prev, { [colName]: { schema } })
+    }, {})
+
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/schema/mutate`, { collections })
+    .then(({ status, data }) => {
+      if (status < 200 || status >= 300) {
+        reject(data.error)
+        return
+      }
+      const queued = status === 202
+      resolve({ queued })
     })
     .catch(ex => reject(ex.toString()))
   })

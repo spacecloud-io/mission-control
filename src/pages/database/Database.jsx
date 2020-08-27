@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { useParams, Redirect, } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -11,12 +11,16 @@ import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
-import { enableDb, getDbConfig } from "../../operations/database"
+import { getDbConfig } from "../../operations/database"
+import databaseActions from "../../actions/database";
+
+const { enableDb } = databaseActions;
 
 const Database = () => {
 
   // Router params
   const { projectID, selectedDB } = useParams()
+  const dispatch = useDispatch()
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false)
@@ -29,7 +33,7 @@ const Database = () => {
   const handleEnable = (conn) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      enableDb(projectID, selectedDB, conn)
+      dispatch(enableDb(projectID, selectedDB, conn))
         .then(({ queued }) => {
           notify("success", "Success", queued ? actionQueuedMessage : "Successfully enabled database")
           resolve()

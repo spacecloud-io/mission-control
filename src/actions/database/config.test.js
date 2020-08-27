@@ -1,6 +1,6 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
-import { removeConfig, loadConfig, loadDBConnState } from "./config";
+import { removeDbConfig, loadDbConfig, loadDBConnState } from "./config";
 import deepEqual from "deep-equal";
 
 let server;
@@ -68,7 +68,7 @@ describe("remove database config", () => {
     // mock store
     const store = createReduxStore(initialState);
 
-    return store.dispatch(removeConfig("MockProject1", "mydb"))
+    return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .then(({ queued }) => {
         expect(deepEqual(store.getState(), expectedState)).toBe(true);
         expect(dbConfigEndpoint.numberOfCalls).toEqual(1)
@@ -126,7 +126,7 @@ describe("remove database config", () => {
     // mock store
     const store = createReduxStore(initialState);
 
-    return store.dispatch(removeConfig("MockProject1", "mydb"))
+    return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .then(({ queued }) => {
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
         expect(dbConfigEndpoint.numberOfCalls).toEqual(1)
@@ -205,7 +205,7 @@ describe("remove database config", () => {
     // mock store
     const store = createReduxStore(initialState);
 
-    return store.dispatch(removeConfig("MockProject1", "mydb"))
+    return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .then(({ queued }) => {
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
         expect(dbConfigEndpoint.numberOfCalls).toEqual(1)
@@ -260,7 +260,7 @@ describe("remove database config", () => {
     // mock store
     const store = createReduxStore(initialState);
 
-    return store.dispatch(removeConfig("MockProject1", "mydb"))
+    return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .then(({ queued }) => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
         expect(dbConfigEndpoint.numberOfCalls).toEqual(1)
@@ -277,7 +277,7 @@ describe("remove database config", () => {
     // mock store
     const store = createReduxStore(initialState);
 
-    return store.dispatch(removeConfig("MockProject1", "mydb"))
+    return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .catch((ex) => {
         expect(ex).toBeTruthy()
         expect(deepEqual(store.getState(), initialState)).toBe(true)
@@ -297,7 +297,7 @@ describe("load database config", () => {
     }
     const store = createReduxStore(initialState);
 
-    return store.dispatch(loadConfig("MockProject1"))
+    return store.dispatch(loadDbConfig("MockProject1"))
       .then(() => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
@@ -360,7 +360,7 @@ describe("load database config", () => {
     const loadConfigEndpoint = server.get("/config/projects/:projectId/database/config", () => new Response(200, {}, {result: dbConfigs}))
     const store = createReduxStore(initialState);
 
-    return store.dispatch(loadConfig("MockProject1"))
+    return store.dispatch(loadDbConfig("MockProject1"))
       .then(() => {
         expect(loadConfigEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import ReactGA from 'react-ga';
 import { Link } from 'react-router-dom';
 import history from "../../history"
@@ -9,12 +9,15 @@ import CreateProjectForm from "../../components/create-project-form/CreateProjec
 
 import { Row, Col, Steps, Card } from 'antd';
 import './create-project.css'
-import { addDatabase } from "../../operations/database"
 import { addProject } from '../../operations/projects';
 import { actionQueuedMessage } from '../../constants';
+import databaseActions from "../../actions/database";
+
+const { addDatabase } = databaseActions;
 
 const CreateProject = () => {
   const [current, setCurrent] = useState(0);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     ReactGA.pageview("/create-project");
@@ -41,8 +44,8 @@ const CreateProject = () => {
 
   const handleAddDatabase = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
-    addDatabase(projectId, alias, dbType, dbName, connectionString)
-      .then(({ queued, enabledEventing}) => {
+    dispatch(addDatabase(projectId, alias, dbType, dbName, connectionString))
+      .then(({ queued, enabledEventing }) => {
         if (!queued) {
           openProject(projectId)
           notify("success", "Success", "Successfully added database")

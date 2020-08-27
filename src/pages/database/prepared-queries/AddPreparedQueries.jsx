@@ -5,7 +5,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
 import ReactGA from 'react-ga'
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -16,11 +16,15 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
 import { notify } from '../../../utils';
-import { savePreparedQueryConfig, getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
+import { getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
 import { projectModules, actionQueuedMessage } from '../../../constants';
+import databaseActions from "../../../actions/database";
+
+const { savePreparedQueryConfig } = databaseActions;
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()
+  const dispatch = useDispatch()
   const history = useHistory()
   const preparedQuery = useSelector(state => getDbPreparedQuery(state, selectedDB, preparedQueryId));
   const dbGraphQLRootFields = useSelector(state => getDbGraphQLRootFields(state, selectedDB))
@@ -43,7 +47,7 @@ const AddPreparedQueries = () => {
 
 
   const handleSubmit = formValues => {
-    savePreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery)
+    dispatch(savePreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery))
       .then(({ queued }) => {
         if (!queued) {
           history.goBack();

@@ -1,7 +1,7 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
 import deepEqual from "deep-equal";
-import { loadSchemas, saveColSchema } from './schema';
+import { loadDbSchemas, saveColSchema } from './schema';
 
 let server;
 
@@ -22,7 +22,7 @@ describe("load schemas", () => {
     }
     const store = createReduxStore(initialState)
 
-    return store.dispatch(loadSchemas("MockProject1"))
+    return store.dispatch(loadDbSchemas("MockProject1"))
       .then(() => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
@@ -64,7 +64,7 @@ describe("load schemas", () => {
     }
     const loadSchemasEndpoint = server.get("/config/projects/:projectId/database/collections/schema/mutate", () => new Response(200, {}, { result: dbSchemas }))
     const store = createReduxStore(initialState);
-    return store.dispatch(loadSchemas("MockProject1"))
+    return store.dispatch(loadDbSchemas("MockProject1"))
       .then(() => {
         expect(loadSchemasEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
@@ -85,7 +85,7 @@ describe("load schemas", () => {
     }
     const loadSchemasEndpoint = server.get("/config/projects/:projectId/database/collections/schema/mutate", () => new Response(500, {}, { error: "Failed with an error message" }))
     const store = createReduxStore(initialState);
-    return store.dispatch(loadSchemas("MockProject1"))
+    return store.dispatch(loadDbSchemas("MockProject1"))
       .catch((ex) => {
         expect(ex).toBeTruthy()
         expect(loadSchemasEndpoint.numberOfCalls).toEqual(1)

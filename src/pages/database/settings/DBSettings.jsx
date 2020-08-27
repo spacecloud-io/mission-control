@@ -7,12 +7,14 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, changeDbName, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
+import { changeDbName, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 // actions
-import database from "../../../actions/database";
+import databaseActions from "../../../actions/database";
+
+const { removeDbConfig, reloadDbSchema, modifyDbSchema, disableDb } = databaseActions;
 
 const Settings = () => {
   // Router params
@@ -54,7 +56,7 @@ const Settings = () => {
   // Handlers
   const handleDisable = () => {
     incrementPendingRequests()
-    disableDb(projectID, selectedDB)
+    dispatch(disableDb(projectID, selectedDB))
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
           notify("success", "Success", "Disabled database successfully")
@@ -75,7 +77,7 @@ const Settings = () => {
 
   const handleReloadDB = () => {
     incrementPendingRequests()
-    reloadDbSchema(projectID, selectedDB)
+    dispatch(reloadDbSchema(projectID, selectedDB))
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded database schema successfully"))
       .catch(ex => notify("error", "Error reloading database schema", ex))
       .finally(() => decrementPendingRequests())
@@ -83,7 +85,7 @@ const Settings = () => {
 
   const handleModifyDB = () => {
     incrementPendingRequests()
-    modifyDbSchema(projectID, selectedDB)
+    dispatch(modifyDbSchema(projectID, selectedDB))
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Modified database schema successfully"))
       .catch(ex => notify("error", "Error modifying database schema", ex))
       .finally(() => decrementPendingRequests())
@@ -103,7 +105,7 @@ const Settings = () => {
 
   const handleRemoveDb = () => {
     incrementPendingRequests()
-    dispatch(database.removeConfig(projectID, selectedDB))
+    dispatch(removeDbConfig(projectID, selectedDB))
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database`)

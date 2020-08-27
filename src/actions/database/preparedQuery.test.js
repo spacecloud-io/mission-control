@@ -1,7 +1,7 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
 import deepEqual from "deep-equal";
-import { loadPreparedQueries } from './preparedQuery';
+import { loadDbPreparedQueries } from './preparedQuery';
 
 let server;
 
@@ -21,7 +21,7 @@ describe("load prepared queries", () => {
       permissions: []
     }
     const store = createReduxStore(initialState);
-    return store.dispatch(loadPreparedQueries("MockProject1"))
+    return store.dispatch(loadDbPreparedQueries("MockProject1"))
       .then(() => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
@@ -103,7 +103,7 @@ describe("load prepared queries", () => {
     const preparedQueriesEndpoint = server.get("/config/projects/:projectId/database/prepared-queries", new Response(200, {}, {result: dbPreparedQueries}))
     const store = createReduxStore(initialState);
 
-    return store.dispatch(loadPreparedQueries('MockProject1'))
+    return store.dispatch(loadDbPreparedQueries('MockProject1'))
       .then(() => {
         expect(preparedQueriesEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
@@ -123,7 +123,7 @@ describe("load prepared queries", () => {
     }
     const preparedQueriesEndpoint = server.get("/config/projects/:projectId/database/prepared-queries", new Response(500, {}, {error: "Failed with an error message"}))
     const store = createReduxStore(initialState)
-    return store.dispatch(loadPreparedQueries('MockProject1'))
+    return store.dispatch(loadDbPreparedQueries('MockProject1'))
       .catch(ex => {
         expect(ex).toBeTruthy()
         expect(preparedQueriesEndpoint.numberOfCalls).toEqual(1)

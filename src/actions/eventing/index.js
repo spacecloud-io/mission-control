@@ -1,6 +1,6 @@
-import { saveConfig, saveSecurityRule } from './config';
+import { saveEventingConfig, saveSecurityRule } from './config';
 
 export default {
-  saveConfig,
+  saveEventingConfig,
   saveSecurityRule
 }

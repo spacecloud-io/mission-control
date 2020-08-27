@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import ReactGA from 'react-ga';
 import { Button, Table, Popconfirm, Alert } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -10,11 +10,15 @@ import '../database.css';
 import history from '../../../history';
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
+import { getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
+import databaseActions from '../../../actions/database';
+
+const { deletePreparedQuery } = databaseActions;
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
+  const dispatch = useDispatch()
 
   // Global state
   const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
@@ -35,7 +39,7 @@ const PreparedQueries = () => {
 
   const handleDeletePreparedQuery = (id) => {
     incrementPendingRequests()
-    deletePreparedQuery(projectID, selectedDB, id)
+    dispatch(deletePreparedQuery(projectID, selectedDB, id))
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : "Removed prepared query successfully")
       })

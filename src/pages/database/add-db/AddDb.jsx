@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
-import { addDatabase } from '../../../operations/database';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
@@ -10,9 +10,13 @@ import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
+import databaseActions from '../../../actions/database';
+
+const { addDatabase } = databaseActions;
 
 const AddDb = () => {
   const { projectID } = useParams()
+  const dispatch = useDispatch()
   const history = useHistory()
 
   useEffect(() => {
@@ -21,7 +25,7 @@ const AddDb = () => {
 
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
-    addDatabase(projectID, alias, dbType, dbName, connectionString)
+    dispatch(addDatabase(projectID, alias, dbType, dbName, connectionString))
       .then(({ queued, enabledEventing }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)

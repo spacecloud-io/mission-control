@@ -15,10 +15,11 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
-import { untrackCollection, deleteCollection, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-import database from '../../../actions/database';
+import databaseActions from '../../../actions/database';
 
+const { loadDBConnState, saveColRealtimeEnabled, deleteCollection, untrackCollection, inspectColSchema, saveColSchema, enableDb } = databaseActions;
 
 const Overview = () => {
   // Router params
@@ -51,7 +52,7 @@ const Overview = () => {
   useEffect(() => {
     if (projectID && selectedDB) {
       incrementPendingRequests()
-      dispatch(database.loadDBConnState(projectID, selectedDB))
+      dispatch(loadDBConnState(projectID, selectedDB))
         .catch(ex => notify("error", "Error fetching database connection state", ex))
         .finally(() => decrementPendingRequests())
     }
@@ -60,7 +61,7 @@ const Overview = () => {
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
     incrementPendingRequests()
-    saveColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled)
+    dispatch(saveColRealtimeEnabled(projectID, selectedDB, colName, isRealtimeEnabled))
       .then(({ queued }) => {
         if (!queued) {
           notify("success", "Success", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`)
@@ -98,7 +99,7 @@ const Overview = () => {
 
   const handleDelete = (colName) => {
     incrementPendingRequests()
-    deleteCollection(projectID, selectedDB, colName)
+    dispatch(deleteCollection(projectID, selectedDB, colName))
       .then(({ queued }) => {
         if (!queued) {
           notify("success", "Success", `Deleted ${colName} successfully`)
@@ -119,7 +120,7 @@ const Overview = () => {
   }
 
   const handleUntrackClick = (colName) => {
-    untrackCollection(projectID, selectedDB, colName)
+    dispatch(untrackCollection(projectID, selectedDB, colName))
       .then(({ queued }) => {
         if (!queued) {
           notify("success", "Success", `Sucessfully untracked ${colName} collection`)
@@ -132,7 +133,7 @@ const Overview = () => {
 
   const handleReloadSchema = (colName) => {
     incrementPendingRequests()
-    dispatch(database.inspectColSchema(projectID, selectedDB, colName))
+    dispatch(inspectColSchema(projectID, selectedDB, colName))
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded schema successfully"))
       .catch((ex) => notify("error", "Error reloading schema of table", ex))
       .finally(() => decrementPendingRequests())
@@ -140,7 +141,7 @@ const Overview = () => {
 
   const handleTrackCollections = (collections) => {
     incrementPendingRequests()
-    Promise.all(collections.map(colName => dispatch(database.inspectColSchema(projectID, selectedDB, colName))))
+    Promise.all(collections.map(colName => dispatch(inspectColSchema(projectID, selectedDB, colName))))
       .then(([{ queued }]) => {
         if (!queued) {
           notify("success", "Success", `Tracked ${collections.length > 1 ? "collections" : "collection"} successfully`)
@@ -155,7 +156,7 @@ const Overview = () => {
   const handleAddCollection = (editMode, colName, schema) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      dispatch(database.saveColSchema(projectID, selectedDB, colName, schema))
+      dispatch(saveColSchema(projectID, selectedDB, colName, schema))
         .then(({ queued }) => {
           if (!queued) {
             notify("success", "Success", `${editMode ? "Modified" : "Added"} ${colName} successfully`)
@@ -176,7 +177,7 @@ const Overview = () => {
   const handleEditConnString = (conn) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      enableDb(projectID, selectedDB, conn)
+      dispatch(enableDb(projectID, selectedDB, conn))
         .then(({ queued, connected }) => {
           if (!queued) {
             if (connected) {

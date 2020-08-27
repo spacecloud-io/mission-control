@@ -1,10 +1,11 @@
 import { scClient } from "../client";
 import { checkResourcePermissions } from "../../utils";
 import { configResourceTypes, permissionVerbs } from "../../constants";
-import { set } from "automate-redux";
+import { set, get, del } from "automate-redux";
 
-export const loadPreparedQueries = (projectId) => (dispatch, getState) => {
+export const loadDbPreparedQueries = (projectId) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
+
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db prepared queries")
@@ -12,6 +13,7 @@ export const loadPreparedQueries = (projectId) => (dispatch, getState) => {
       resolve()
       return
     }
+
     scClient.getJSON(`/v1/config/projects/${projectId}/database/prepared-queries`)
     .then(({ status, data }) => {
       if (status < 200 || status >= 300) {
@@ -36,6 +38,69 @@ export const loadPreparedQueries = (projectId) => (dispatch, getState) => {
       }, {})
       dispatch(set("dbPreparedQueries", dbPreparedQueries))
       resolve()
+    })
+    .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+
+    const preparedQueryConfig = get(getState(), `dbPreparedQueries.${dbAliasName}.${id}`, { id, sql: "", args: [], rule: {} })
+    const config = Object.assign({}, preparedQueryConfig, { sql, args })
+
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/prepared-queries/${id}`, config)
+    .then(({ status, data }) => {
+      if (status < 200 || status >= 300) {
+        reject(data.error)
+        return
+      }
+      const queued = status === 202
+      if (!queued) {
+        dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}`, config))
+      }
+      resolve({ queued })
+    })
+    .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+
+    const preparedQueryConfig = get(getState(), `dbPreparedQueries.${dbAliasName}.${id}`, { id, sql: "", args: [], rule: {} })
+    const config = Object.assign({}, preparedQueryConfig, { rule })
+
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/prepared-queries/${id}`, config)
+    .then(({ status, data }) => {
+      if (status < 200 || status >= 300) {
+        reject(data.error)
+        return
+      }
+      const queued = status === 202
+      if (!queued) {
+        dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
+      }
+      resolve({ queued })
+      
+    })
+    .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const deletePreparedQuery = (projectId, dbAliasName, id) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    scClient.delete(`/v1/config/projects/${projectId}/database/${dbAliasName}/prepared-queries/${id}`)
+    .then(({ status, data }) => {
+      if (status < 200 || status >= 300) {
+        reject(data.error)
+        return
+      }
+      const queued = status === 202
+      if (!queued) {
+        dispatch(del(`dbPreparedQueries.${dbAliasName}.${id}`))
+      }
+      resolve({ queued })
     })
     .catch(ex => reject(ex.toString()))
   })

@@ -1,10 +1,11 @@
 import { scClient } from "../client";
 import { checkResourcePermissions } from "../../utils";
 import { configResourceTypes, permissionVerbs } from "../../constants";
-import { set } from "automate-redux";
+import { set, get } from "automate-redux";
 
-export const loadRules = (projectId) => (dispatch, getState) => {
+export const loadDbRules = (projectId) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
+
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db rules")
@@ -12,6 +13,7 @@ export const loadRules = (projectId) => (dispatch, getState) => {
       resolve()
       return
     }
+    
     scClient.getJSON(`/v1/config/projects/${projectId}/database/collections/rules`)
     .then(({ status, data }) => {
       if (status < 200 || status >= 300) {
@@ -36,5 +38,52 @@ export const loadRules = (projectId) => (dispatch, getState) => {
       resolve()
     })
     .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRealtimeEnabled) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+
+    const collectionRules = { rules: securityRules, isRealtimeEnabled }
+
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/rules`, {
+      isRealtimeEnabled: typeof collectionRules.isRealtimeEnabled === "string" ? false : collectionRules.isRealtimeEnabled, ...collectionRules
+    })
+      .then(({ status, data }) => {
+        if (status < 200 || status >= 300) {
+          reject(data.error)
+          return
+        }
+        const queued = status === 202;
+        if (!queued) {
+          dispatch(set(`dbRules.${dbAliasName}.${colName}`, collectionRules))
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex.toString()))
+  })
+}
+
+export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRules) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+
+    const collectionRules = get(getState(), `dbRules.${dbAliasName}.${colName}`, { isRealtimeEnabled: false, rules: {} })
+    const newCollectionRules = Object.assign({}, collectionRules, { rules: securityRules })
+
+    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/rules`, {
+      isRealtimeEnabled: typeof newCollectionRules.isRealtimeEnabled === "string" ? false : newCollectionRules.isRealtimeEnabled, ...newCollectionRules
+    })
+      .then(({ status, data }) => {
+        if (status < 200 || status >= 300) {
+          reject(data.error)
+          return
+        }
+        const queued = status === 202
+        if (!queued) {
+          dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, securityRules))
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex.toString()))
   })
 }

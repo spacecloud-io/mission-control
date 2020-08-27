@@ -1,15 +1,26 @@
-import { removeConfig, loadConfig, loadDBConnState } from './config';
-import { loadSchemas, inspectColSchema, saveColSchema } from './schema';
-import { loadRules } from './rules';
-import { loadPreparedQueries } from './preparedQuery';
+import { removeDbConfig, loadDbConfig, loadDBConnState, addDatabase, enableDb, disableDb } from './config';
+import { loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema } from './schema';
+import { loadDbRules } from './rules';
+import { loadDbPreparedQueries, savePreparedQueryConfig, deletePreparedQuery } from './preparedQuery';
+import { saveColRealtimeEnabled, untrackCollection, deleteCollection } from './collections';
 
 export default {
-  removeConfig,
-  loadConfig,
-  loadSchemas,
-  loadRules,
-  loadPreparedQueries,
+  removeDbConfig,
+  loadDbConfig,
+  loadDbSchemas,
+  loadDbRules,
+  loadDbPreparedQueries,
   loadDBConnState,
   inspectColSchema,
-  saveColSchema
+  saveColSchema,
+  saveColRealtimeEnabled,
+  untrackCollection,
+  deleteCollection,
+  savePreparedQueryConfig,
+  deletePreparedQuery,
+  reloadDbSchema,
+  modifyDbSchema,
+  addDatabase,
+  enableDb,
+  disableDb
 }

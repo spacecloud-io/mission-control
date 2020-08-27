@@ -4,7 +4,9 @@ import { useDispatch } from 'react-redux';
 
 import { loadEventingConfig, loadEventingTriggers } from '../../operations/eventing';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import database from "../../actions/database"
+import databaseActions from "../../actions/database"
+
+const { loadDbConfig, loadDbSchemas, loadDbRules } = databaseActions;
 
 const EventingIndex = () => {
   const { projectID } = useParams()
@@ -13,17 +15,17 @@ const EventingIndex = () => {
   useEffect(() => {
     if (projectID) {
       incrementPendingRequests()
-      dispatch(database.loadConfig(projectID))
+      dispatch(loadDbConfig(projectID))
         .catch(ex => notify("error", "Error fetching database config", ex))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
-      dispatch(database.loadSchemas(projectID))
+      dispatch(loadDbSchemas(projectID))
         .catch(ex => notify("error", "Error fetching database schemas", ex))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
-      dispatch(database.loadRules(projectID))
+      dispatch(loadDbRules(projectID))
         .catch(ex => notify("error", "Error fetching database rules", ex))
         .finally(() => decrementPendingRequests())
 

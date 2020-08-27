@@ -1,7 +1,7 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
 import deepEqual from "deep-equal";
-import { loadRules } from './rules';
+import { loadDbRules } from './rules';
 
 let server;
 
@@ -22,7 +22,7 @@ describe('load rules', () => {
     }
     const store = createReduxStore(initialState)
 
-    return store.dispatch(loadRules("MockProject1"))
+    return store.dispatch(loadDbRules("MockProject1"))
       .then(() => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
@@ -97,7 +97,7 @@ describe('load rules', () => {
     const loadRulesEndpoint = server.get("/config/projects/:projectId/database/collections/rules", () => new Response(200, {}, {result: dbRules}))
     const store = createReduxStore(initialState);
     
-    return store.dispatch(loadRules('MockProject1'))
+    return store.dispatch(loadDbRules('MockProject1'))
       .then(() => {
         expect(loadRulesEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
@@ -117,7 +117,7 @@ describe('load rules', () => {
     }
     const loadRulesEndpoint = server.get("/config/projects/:projectId/database/collections/rules", () => new Response(500, {}, {error: "Failed with an error message"}))
     const store = createReduxStore(initialState);
-    return store.dispatch(loadRules("MockProject1"))
+    return store.dispatch(loadDbRules("MockProject1"))
       .catch((ex) => {
         expect(ex).toBeTruthy()
         expect(loadRulesEndpoint.numberOfCalls).toEqual(1)
