@@ -38,23 +38,19 @@ export function isJson(str) {
   return true;
 }
 
-export function copyObjectToClipboard(obj) {
-  return navigator.clipboard.writeText(JSON.stringify(obj))
+export function saveObjectToLocalStorage(key, obj) {
+  const value = JSON.stringify(obj)
+  localStorage.setItem(key, value)
 }
 
-export function getCopiedObjectFromClipboard() {
-  return new Promise((resolve, reject) => {
-    navigator.clipboard.readText()
-      .then(data => {
-        const isValueJson = isJson(data)
-        if (!isValueJson) {
-          reject("Copied object is not a valid JSON")
-          return
-        }
-        resolve(JSON.parse(data))
-      })
-      .catch(ex => reject(ex))
-  })
+export function getObjectFromLocalStorage(key) {
+  try {
+    const value = localStorage.getItem(key)
+    const obj = JSON.parse(value)
+    return Promise.resolve(obj)
+  } catch (error) {
+    return Promise.reject(String(error))
+  }
 }
 
 export function upsertArray(array, predicate, getItem) {
