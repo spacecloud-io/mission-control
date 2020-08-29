@@ -6,8 +6,10 @@ import Sidenav from '../../../components/sidenav/Sidenav'
 import Topbar from '../../../components/topbar/Topbar'
 import DatabaseEmptyState from '../../../components/database-card/DatabaseEmptyState'
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
-import { getDbConfigs } from "../../../operations/database";
 import { projectModules } from "../../../constants";
+import databaseActions from "../../../actions/database";
+
+const { getDbConfigs } = databaseActions;
 
 function EmptyState() {
 

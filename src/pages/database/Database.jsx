@@ -11,10 +11,9 @@ import sqlserver from "../../assets/sqlserverIcon.svg"
 import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
-import { getDbConfig } from "../../operations/database"
 import databaseActions from "../../actions/database";
 
-const { enableDb } = databaseActions;
+const { enableDb, getDbConfig } = databaseActions;
 
 const Database = () => {
 

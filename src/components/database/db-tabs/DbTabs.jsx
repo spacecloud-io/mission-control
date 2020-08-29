@@ -3,9 +3,11 @@ import { Tabs } from 'antd';
 import { Redirect } from 'react-router-dom';
 import "./db-tabs.css"
 import { useSelector } from 'react-redux';
-import { isPreparedQueriesSupported } from '../../../operations/database';
 import { projectModules } from '../../../constants';
+import databaseActions from "../../../actions/database";
 const { TabPane } = Tabs;
+
+const { isPreparedQueriesSupported } = databaseActions;
 
 export default ({ activeKey, projectID, selectedDB }) => {
   const showPreparedQueriesTab = useSelector(state => isPreparedQueriesSupported(state, selectedDB))

@@ -17,8 +17,10 @@ import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Icon, Popconfirm } from "antd";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
-import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
 import { getAPIToken } from '../../../operations/projects';
+import databaseActions from '../../../actions/database';
+
+const { getCollectionSchema, getDbType, getTrackedCollections } = databaseActions;
 
 const pageSize = 25;
 let editRowData = {};

@@ -6,7 +6,9 @@ import { useHistory } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { dbIcons } from '../../utils';
-import { getDbConfigs } from '../../operations/database';
+import databaseActions from '../../actions/database';
+
+const { getDbConfigs } = databaseActions;
 
 function DbSelector(props) {
   const { projectID, selectedDB } = useParams();

@@ -1,9 +1,9 @@
 // config
 import { removeDbConfig, loadDbConfig, loadDBConnState, addDatabase, enableDb, disableDb, changeDbName, getDbConfigs, getDbConfig, getDbName, getDbType, getDbConnState, getDbConnectionString } from './config';
 // prepared-query
-import { loadDbPreparedQueries, savePreparedQueryConfig, deletePreparedQuery, getDbPreparedQueries, getDbPreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbDefaultCollectionSecurityRule, getPreparedQuerySecurityRule, isPreparedQueriesSupported, isPreparedQueriesSupportedForDbType, setPreparedQueryRule } from './preparedQuery';
+import { loadDbPreparedQueries, savePreparedQuerySecurityRule, savePreparedQueryConfig, deletePreparedQuery, getDbPreparedQueries, getDbPreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbDefaultCollectionSecurityRule, getPreparedQuerySecurityRule, isPreparedQueriesSupported, isPreparedQueriesSupportedForDbType, setPreparedQueryRule } from './preparedQuery';
 // collections
-import { saveColRealtimeEnabled, untrackCollection, deleteCollection, getCollections, loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema, getCollectionSchema, getDbSchema, getDbSchemas, loadDbRules, getDbRules, getCollectionRules, getCollectionSecurityRule, getTrackedCollectionsInfo, getTrackedCollections, getDbGraphQLRootFields, getUntrackedCollections, setColSecurityRule, setDbCollections } from './collections';
+import { saveColRealtimeEnabled, untrackCollection, deleteCollection, getCollections, loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema, getCollectionSchema, getDbSchema, getDbSchemas, loadDbRules, saveColSecurityRules, getDbRules, getCollectionRules, getCollectionSecurityRule, getTrackedCollectionsInfo, getTrackedCollections, getDbGraphQLRootFields, getUntrackedCollections, setColSecurityRule, setDbCollections } from './collections';
 
 export default {
   removeDbConfig,
@@ -51,5 +51,7 @@ export default {
   setColSecurityRule,
   setDbCollections,
   isPreparedQueriesSupported,
-  isPreparedQueriesSupportedForDbType
+  isPreparedQueriesSupportedForDbType,
+  saveColSecurityRules,
+  savePreparedQuerySecurityRule
 }

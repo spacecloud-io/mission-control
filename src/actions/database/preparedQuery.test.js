@@ -123,7 +123,7 @@ describe("load prepared queries", () => {
     const preparedQueriesEndpoint = server.get("/config/projects/:projectId/database/prepared-queries", () => new Response(500, {}, {error: "This is an error message"}))
     const store = createReduxStore(initialState);
     return store.dispatch(loadDbPreparedQueries('MockProject1'))
-      .then(res => expect(res).not.toBeTruthy())
+      .then(() => fail("This test has resolved the promise. It should reject"))
       .catch((ex) => {
         expect(ex).toBeTruthy()
         expect(preparedQueriesEndpoint.numberOfCalls).toEqual(1)

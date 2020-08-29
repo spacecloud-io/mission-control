@@ -13,9 +13,10 @@ import eventingSvg from "../../assets/eventing.svg"
 import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules, getEventingConfig } from '../../operations/eventing';
-import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
+import databaseActions from '../../actions/database';
 
+const { getDbConfigs } = databaseActions;
 
 const EventingOverview = () => {
 	// Router params

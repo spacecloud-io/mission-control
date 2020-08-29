@@ -13,8 +13,10 @@ import QueryBlock from "../../../components/db-query/QueryBlock";
 import { generateSchemaASTs, generateSampleQueryDBInsert, generateSampleQueryDBRead, generateSampleQueryDBUpdate, generateSampleQueryDBDelete } from '../../../graphql';
 
 import bookReadingSvg from "../../../assets/bookReading.svg"
-import { getCollectionSchema, getTrackedCollections, getDbSchemas } from "../../../operations/database";
 import { projectModules } from "../../../constants";
+import databaseActions from "../../../actions/database";
+
+const { getCollectionSchema, getTrackedCollections, getDbSchemas } = databaseActions;
 
 const VariablesPanel = () => {
   return <div style={{

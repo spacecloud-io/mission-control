@@ -16,11 +16,10 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import '../database.css';
 import { notify } from '../../../utils';
-import { getDbGraphQLRootFields, getDbPreparedQuery } from "../../../operations/database"
 import { projectModules, actionQueuedMessage } from '../../../constants';
 import databaseActions from "../../../actions/database";
 
-const { savePreparedQueryConfig } = databaseActions;
+const { savePreparedQueryConfig, getDbGraphQLRootFields, getDbPreparedQuery } = databaseActions;
 
 const AddPreparedQueries = () => {
   const { projectID, selectedDB, preparedQueryId } = useParams()

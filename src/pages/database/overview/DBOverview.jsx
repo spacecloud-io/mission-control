@@ -15,11 +15,10 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
-import { getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import databaseActions from '../../../actions/database';
 
-const { loadDBConnState, saveColRealtimeEnabled, deleteCollection, untrackCollection, inspectColSchema, saveColSchema, enableDb } = databaseActions;
+const { loadDBConnState, saveColRealtimeEnabled, deleteCollection, untrackCollection, inspectColSchema, saveColSchema, enableDb, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } = databaseActions;
 
 const Overview = () => {
   // Router params

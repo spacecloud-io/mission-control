@@ -9,8 +9,10 @@ import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventingConfigure from '../../components/eventing/EventingConfigure';
 import './event.css';
 import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
-import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
+import databaseActions from '../../actions/database';
+
+const { getDbConfigs } = databaseActions;
 
 const EventingSettings = () => {
   const { projectID } = useParams();

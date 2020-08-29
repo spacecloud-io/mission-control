@@ -5,8 +5,10 @@ import { getEventSourceFromType } from "../../utils";
 import FormItemLabel from "../form-item-label/FormItemLabel"
 import RadioCards from "../radio-cards/RadioCards";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
-import { getTrackedCollections } from "../../operations/database";
 import AntCodeMirror from "../ant-code-mirror/AntCodeMirror";
+import databaseActions from "../../actions/database";
+
+const { getTrackedCollections } = databaseActions;
 
 const { Option } = AutoComplete;
 

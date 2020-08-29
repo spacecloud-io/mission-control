@@ -21,8 +21,10 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
-import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
+import databaseActions from "../../../actions/database";
+
+const { getCollectionSchema, getDbConfigs, getTrackedCollections } = databaseActions;
 
 const getInputValueFromActualValue = (value, dataType) => {
   if (value === null || value === undefined) {

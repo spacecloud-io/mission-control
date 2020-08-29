@@ -10,10 +10,9 @@ import '../database.css';
 import history from '../../../history';
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-import { getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 import databaseActions from '../../../actions/database';
 
-const { deletePreparedQuery } = databaseActions;
+const { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } = databaseActions;
 
 const PreparedQueries = () => {
   // Router params

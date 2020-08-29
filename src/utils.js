@@ -11,7 +11,6 @@ import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
 import { loadProjects, getJWTSecret, loadProjectAPIToken } from './operations/projects'
-import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
 import { setEventingSecurityRule } from './operations/eventing'
@@ -20,6 +19,7 @@ import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLogged
 import { useSelector } from 'react-redux'
 import keypair from "keypair";
 import forge from "node-forge"
+import databaseActions from "./actions/database";
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -28,6 +28,8 @@ const sqlserverSvg = require(`./assets/sqlserverIconSmall.svg`)
 const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+const { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } = databaseActions;
 
 export function isJson(str) {
   try {
@@ -357,10 +359,10 @@ const registerSecurityRulesBroadCastListener = () => {
     if (!queued) {
       switch (ruleType) {
         case securityRuleGroups.DB_COLLECTIONS:
-          setColSecurityRule(group, id, rule)
+          setColSecurityRule(store.dispatch, group, id, rule)
           break;
         case securityRuleGroups.DB_PREPARED_QUERIES:
-          setPreparedQueryRule(group, id, rule)
+          setPreparedQueryRule(store.dispatch, group, id, rule)
           break;
         case securityRuleGroups.EVENTING:
           setEventingSecurityRule(id, rule)
