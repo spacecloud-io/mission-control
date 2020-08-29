@@ -269,26 +269,30 @@ describe("remove database config", () => {
       });
   })
 
-  it("should fail with 500 status code and promise should throw exception", () => {
-    // initial states
-    const initialState = {};
-    // mock endpoints
-    const dbConfigEndpoint = server.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => new Response(500, {}, { error: "Error message" }))
-    // mock store
+  it("should reject with 500 status code", () => {
+    const initialState = {
+      permissions: [
+        {
+          project: "MockProject1",
+          resource: "eventing-config",
+          verb: "modify"
+        }
+      ]
+    }
+    const dbConfigEndpoint = server.delete("/config/projects/:projectId/database/:dbName/config/database-config", () => new Response(500, {}, {error: "This is an error message"}))
     const store = createReduxStore(initialState);
-
     return store.dispatch(removeDbConfig("MockProject1", "mydb"))
       .catch((ex) => {
         expect(ex).toBeTruthy()
-        expect(deepEqual(store.getState(), initialState)).toBe(true)
         expect(dbConfigEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
-
   })
 
 })
 
 describe("load database config", () => {
+
   it("should not have permissions", () => {
     // initial states
     const initialState = {
@@ -302,6 +306,7 @@ describe("load database config", () => {
         expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
   })
+
   it("should have permissions and redux state must change", () => {
     // initial states
     const initialState = {
@@ -366,6 +371,27 @@ describe("load database config", () => {
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
       })
   })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-config',
+          verb: 'read'
+        }
+      ]
+    }
+    const loadConfigEndpoint = server.get("/config/projects/:projectId/database/config", () => new Response(500, {}, {error: "This is an error message"}))
+    const store = createReduxStore(initialState);
+    return store.dispatch(loadDbConfig("MockProject1"))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(loadConfigEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+
 })
 
 describe("database connection state", () => {
@@ -414,6 +440,18 @@ describe("database connection state", () => {
         expect(dbConnStateEndpoint.numberOfCalls).toEqual(1)
         expect(connected).toBe(false)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
+      })
+  })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {}
+    const dbConnStateEndpoint = server.get("/external/projects/:projectId/database/:dbName/connection-state", () => new Response(500, {}, {error: "This is an error message"}))
+    const store = createReduxStore(initialState);
+    return store.dispatch(loadDBConnState('MockProject1', 'mydb'))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(dbConnStateEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
       })
   })
 })

@@ -110,9 +110,8 @@ describe("load prepared queries", () => {
       })
   })
 
-  it("should fail with 500 status code and promise must throw exception", () => {
+  it("should reject with 500 status code", () => {
     const initialState = {
-      dbPreparedQueries: {},
       permissions:  [
         {
           project: 'MockProject1',
@@ -121,10 +120,11 @@ describe("load prepared queries", () => {
         }
       ]
     }
-    const preparedQueriesEndpoint = server.get("/config/projects/:projectId/database/prepared-queries", new Response(500, {}, {error: "Failed with an error message"}))
-    const store = createReduxStore(initialState)
+    const preparedQueriesEndpoint = server.get("/config/projects/:projectId/database/prepared-queries", () => new Response(500, {}, {error: "This is an error message"}))
+    const store = createReduxStore(initialState);
     return store.dispatch(loadDbPreparedQueries('MockProject1'))
-      .catch(ex => {
+      .then(res => expect(res).not.toBeTruthy())
+      .catch((ex) => {
         expect(ex).toBeTruthy()
         expect(preparedQueriesEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), initialState)).toBe(true)

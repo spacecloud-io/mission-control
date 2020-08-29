@@ -7,14 +7,13 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 // actions
 import databaseActions from "../../../actions/database";
 
-const { removeDbConfig, reloadDbSchema, modifyDbSchema, disableDb, changeDbName } = databaseActions;
+const { removeDbConfig, reloadDbSchema, modifyDbSchema, disableDb, changeDbName, getDbName, getDbType, isPreparedQueriesSupported } = databaseActions;
 
 const Settings = () => {
   // Router params

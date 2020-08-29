@@ -1,21 +1,20 @@
 import { scClient } from "../client";
 import { checkResourcePermissions } from "../../utils";
-import { configResourceTypes, permissionVerbs, defaultDBRules, defaultPreparedQueryRule, dbTypes } from "../../constants";
+import { configResourceTypes, permissionVerbs, defaultDBRules, defaultPreparedQueryRule } from "../../constants";
 import { del, get, set } from "automate-redux";
 import eventing from "../eventing";
-import { loadCollections } from "./collections";
-import { saveColRule } from "./rules";
+import { modifyDbSchema, saveColRule, loadCollections } from "./collections";
 import { savePreparedQuerySecurityRule } from "./preparedQuery";
-import { modifyDbSchema } from './schema';
+import { isPreparedQueriesSupportedForDbType } from './preparedQuery';
 
-const { saveEventingConfig } = eventing;
+const { saveEventingConfig, getEventingDbAliasName } = eventing;
 
 export const loadDbConfig = (projectId) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_CONFIG], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db config")
-      dispatch(set("dbConfigs", {}))
+      setDbConfigs(dispatch, {})
       resolve()
       return
     }
@@ -31,7 +30,7 @@ export const loadDbConfig = (projectId) => (dispatch, getState) => {
           const [dbAliasName, config] = Object.entries(curr)[0]
           return Object.assign({}, prev, { [dbAliasName]: config })
         }, {})
-        dispatch(set("dbConfigs", dbConfigs))
+        setDbConfigs(dispatch, dbConfigs)
         resolve()
 
       })
@@ -48,7 +47,7 @@ export const loadDBConnState = (projectId, dbAliasName) => (dispatch, getState) 
           return
         }
         const connected = data.result
-        dispatch(set(`dbConnState.${dbAliasName}`, connected))
+        setDbConnState(dispatch, dbAliasName, connected)
         if (connected) {
           dispatch(loadCollections(projectId, dbAliasName))
             .then(() => resolve(connected))
@@ -90,7 +89,7 @@ const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => (d
 export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
 
-    const dbConfigs = get(getState(), "dbConfigs", {})
+    const dbConfigs = getDbConfigs(getState())
     const isFirstDatabase = Object.keys(dbConfigs).length === 0
     dispatch(saveDbConfig(projectId, dbAliasName, true, conn, dbType, dbName))
       .then(({ queued }) => {
@@ -162,7 +161,7 @@ export const removeDbConfig = (projectId, dbAliasName) => (dispatch, getState) =
         // Disable eventing if the removed db is eventing db
         const hasPermissionToConfigureEventing = checkResourcePermissions(getState(), projectId, [configResourceTypes.EVENTING_CONFIG], permissionVerbs.MODIFY)
         if (hasPermissionToConfigureEventing) {
-          const eventingDB = get(getState(), "eventingConfig.dbAlias", "")
+          const eventingDB = getEventingDbAliasName(getState())
           if (dbAliasName === eventingDB) {
             dispatch(saveEventingConfig(projectId, false, ""))
               .then(({ queued }) => resolve({ queued, disabledEventing: true }))
@@ -196,9 +195,14 @@ export const changeDbName = (projectId, dbAliasName, dbName) => (dispatch, getSt
   })
 }
 
-export const isPreparedQueriesSupportedForDbType = (dbType) => {
-  return [dbTypes.POSTGRESQL, dbTypes.MYSQL, dbTypes.SQLSERVER].some(value => value === dbType)
-}
-
-// Getters & Setters
+// Getters
+export const getDbConfigs = (state) => get(state, "dbConfigs", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfigs.${dbAliasName}`, {})
+export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
+export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
+export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
+export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")
+
+// Setters
+const setDbConfigs = (dispatch, dbConfigs) => dispatch(set("dbConfigs", dbConfigs))
+const setDbConnState = (dispatch, dbAliasName, connected) => dispatch(set(`dbConnState.${dbAliasName}`, connected))

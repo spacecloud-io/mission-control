@@ -1,7 +1,7 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
 import deepEqual from "deep-equal";
-import { loadDbSchemas, saveColSchema } from './schema';
+import { loadCollections, loadDbSchemas, saveColSchema, loadDbRules } from "./collections";
 
 let server;
 
@@ -119,13 +119,12 @@ describe("save schema", () => {
       }
     }
 
-    const expectedRequestBody = {
-      schema: "type posts {\\n      id: ID! @primary\\n      title: String!\\n    }"
-    }
+    const expectedRequestBody = { schema:
+      'type posts {\n      id: ID! @primary\n      title: String!\n    }' }
 
     const saveColSchemaEndpoint = server.post("/config/projects/:projectId/database/:dbName/collections/:colName/schema/mutate", (_, request) => {
       const requestBody = JSON.parse(request.requestBody)
-      /* expect(deepEqual(requestBody, expectedRequestBody)).toBe(true) */
+      expect(deepEqual(requestBody, expectedRequestBody)).toBe(true)
       return new Response(200)
     })
     const store = createReduxStore(initialState);
@@ -164,3 +163,147 @@ describe("save schema", () => {
       })
   })
 })
+
+describe('load rules', () => {
+  it("should not have permissions", () => {
+    const initialState = {
+      dbRules: {},
+      permissions: []
+    }
+    const store = createReduxStore(initialState)
+
+    return store.dispatch(loadDbRules("MockProject1"))
+      .then(() => {
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+
+  it("should have permissions and dbRules must be set", () => {
+    const initialState = {
+      dbRules: {},
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-rule',
+          verb: 'read'
+        }
+      ]
+    }
+    const dbRules = [
+      {
+        "mydb-users": {
+          isRealtimeEnabled: true,
+          rules: {
+            "create": {
+              "rule": "and",
+              "clauses": [
+                {
+                  "rule": "force"
+                }
+              ]
+            },
+            "read": {
+              "rule": "deny"
+            },
+            "update": {
+              "rule": "deny"
+            }
+          }
+        }
+      }
+    ]
+    const expectedState = {
+      dbRules: {
+        mydb: {
+          users: {
+            isRealtimeEnabled: true,
+            rules: {
+              create: {
+                rule: 'and',
+                clauses: [
+                  {
+                    rule: 'force'
+                  }
+                ]
+              },
+              read: {
+                rule: 'deny'
+              },
+              update: {
+                rule: 'deny'
+              }
+            }
+          }
+        }
+      },
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-rule',
+          verb: 'read'
+        }
+      ]
+    }
+    const loadRulesEndpoint = server.get("/config/projects/:projectId/database/collections/rules", () => new Response(200, {}, {result: dbRules}))
+    const store = createReduxStore(initialState);
+    
+    return store.dispatch(loadDbRules('MockProject1'))
+      .then(() => {
+        expect(loadRulesEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+      })
+  })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-rule',
+          verb: 'read'
+        }
+      ]
+    }
+    const loadRulesEndpoint = server.get("/config/projects/:projectId/database/collections/rules", () => new Response(500, {}, {error: "This is an error message"}))
+    const store = createReduxStore(initialState);
+    return store.dispatch(loadDbRules('MockProject1'))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(loadRulesEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+})
+
+describe('load collections', () => {
+  it("should resolve", () => {
+    const initialState = {
+      dbCollections: {}
+    }
+    const expectedState = {
+      dbCollections: {
+        mydb: ["posts"]
+      }
+    }
+    const loadCollectionsEndpoint = server.get("/external/projects/:projectId/database/:dbName/list-collections", () => new Response(200, {}, { result: ["posts"] }))
+    const store = createReduxStore(initialState);
+    return store.dispatch(loadCollections('MockProject1', 'mydb'))
+      .then(() => {
+        expect(loadCollectionsEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+      })
+  })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {}
+    const loadCollectionsEndpoint = server.get("/external/projects/:projectId/database/:dbName/list-collections", () => new Response(500, {}, {error: "This is an error message"}))
+    const store = createReduxStore(initialState);
+    return store.dispatch(loadCollections('MockProject1', 'mydb'))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(loadCollectionsEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+})
+

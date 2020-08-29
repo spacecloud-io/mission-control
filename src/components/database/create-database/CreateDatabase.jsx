@@ -19,7 +19,8 @@ import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import gqlPrettier from 'graphql-prettier';
-import { getDbConfigs } from '../../../operations/database';
+import databaseActions from '../../../actions/database';
+const { getDbConfigs } = databaseActions;
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();

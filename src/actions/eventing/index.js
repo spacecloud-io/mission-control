@@ -1,6 +1,7 @@
-import { saveEventingConfig, saveSecurityRule } from './config';
+import { saveEventingConfig, saveSecurityRule, getEventingDbAliasName } from './config';
 
 export default {
   saveEventingConfig,
-  saveSecurityRule
+  saveSecurityRule,
+  getEventingDbAliasName
 }

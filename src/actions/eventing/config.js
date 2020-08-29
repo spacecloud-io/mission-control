@@ -50,3 +50,5 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => (dispatch
       .catch(ex => reject(ex.toString()))
   })
 }
+
+export const getEventingDbAliasName = (state) => get(state, "eventingConfig.dbAlias", "")
