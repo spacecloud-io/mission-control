@@ -36,7 +36,7 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => (d
 
 export const inspectColSchema = (projectId, dbAliasName, colName) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
-    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/schema/track`)
+    scClient.getJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/schema/track`)
       .then(({ status, data }) => {
         if (status < 200 || status >= 300) {
           reject(data.error)
@@ -44,7 +44,7 @@ export const inspectColSchema = (projectId, dbAliasName, colName) => (dispatch, 
         }
         const queued = status === 202;
         if (!queued) {
-          loadDbSchemas(projectId, dbAliasName, colName)
+          dispatch(loadDbSchemas(projectId, dbAliasName, colName))
             .then(() => resolve({ queued }))
             .catch(ex => reject(ex))
           return

@@ -27,7 +27,7 @@ describe("load prepared queries", () => {
       })
   })
 
-  it("should have permissions and dbPreparedQueries must be set", () => {
+  it("should have permissions", () => {
     const initialState = {
       dbPreparedQueries: {},
       permissions: [
