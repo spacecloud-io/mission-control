@@ -1,19 +1,22 @@
-import { loadDbConfig, loadDbSchemas, loadDbRules, loadDbPreparedQueries, getCollectionSecurityRule, getPreparedQuerySecurityRule, saveColSecurityRules, savePreparedQuerySecurityRule } from "./database"
 import { securityRuleGroups } from "../constants"
 import { loadEventingSecurityRules, getEventingSecurityRule, saveEventingSecurityRule } from "./eventing"
 import { loadFileStoreRules, getFileStoreSecurityRule, saveFileStoreSecurityRule } from "./fileStore"
 import { loadRemoteServices, getRemoteEndpointSecurityRule, saveRemoteServiceEndpointRule } from "./remoteServices"
 import { loadIngressRoutes, getIngressRouteSecurityRule, getIngressRouteURL, saveIngressRouteRule } from "./ingressRoutes"
+import store from "../store";
+import databaseActions from "../actions/database";
+
+const  { loadDbConfig, loadDbSchemas, loadDbRules, loadDbPreparedQueries, getCollectionSecurityRule, getPreparedQuerySecurityRule, saveColSecurityRules, savePreparedQuerySecurityRule } = databaseActions;
 
 export const loadSecurityRules = (projectId, ruleType) => {
-  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId)]
+  const promises = [store.dispatch(loadDbConfig(projectId)), store.dispatch(loadDbSchemas(projectId))]
 
   switch (ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:
-      promises.push(loadDbRules(projectId))
+      promises.push(store.dispatch(loadDbRules(projectId)))
       break;
     case securityRuleGroups.DB_PREPARED_QUERIES:
-      promises.push(loadDbPreparedQueries(projectId))
+      promises.push(store.dispatch(loadDbPreparedQueries(projectId)))
       break;
     case securityRuleGroups.EVENTING:
       promises.push(loadEventingSecurityRules(projectId))
@@ -58,10 +61,10 @@ export const saveSecurityRule = (projectId, ruleType, id, group, rule) => {
     let req = {}
     switch (ruleType) {
       case securityRuleGroups.DB_COLLECTIONS:
-        req = saveColSecurityRules(projectId, group, id, rule)
+        req = store.dispatch(saveColSecurityRules(projectId, group, id, rule))
         break
       case securityRuleGroups.DB_PREPARED_QUERIES:
-        req = savePreparedQuerySecurityRule(projectId, group, id, rule)
+        req = store.dispatch(savePreparedQuerySecurityRule(projectId, group, id, rule))
         break
       case securityRuleGroups.FILESTORE:
         req = saveFileStoreSecurityRule(projectId, id, rule)

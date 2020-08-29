@@ -3,7 +3,7 @@ import { removeDbConfig, loadDbConfig, loadDBConnState, addDatabase, enableDb, d
 // prepared-query
 import { loadDbPreparedQueries, savePreparedQuerySecurityRule, savePreparedQueryConfig, deletePreparedQuery, getDbPreparedQueries, getDbPreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbDefaultCollectionSecurityRule, getPreparedQuerySecurityRule, isPreparedQueriesSupported, isPreparedQueriesSupportedForDbType, setPreparedQueryRule } from './preparedQuery';
 // collections
-import { saveColRealtimeEnabled, untrackCollection, deleteCollection, getCollections, loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema, getCollectionSchema, getDbSchema, getDbSchemas, loadDbRules, saveColSecurityRules, getDbRules, getCollectionRules, getCollectionSecurityRule, getTrackedCollectionsInfo, getTrackedCollections, getDbGraphQLRootFields, getUntrackedCollections, setColSecurityRule, setDbCollections } from './collections';
+import { saveColRealtimeEnabled, untrackCollection, deleteCollection, getCollections, loadDbSchemas, inspectColSchema, saveColSchema, reloadDbSchema, modifyDbSchema, getCollectionSchema, getDbSchema, getDbSchemas, loadDbRules, saveColSecurityRules, getDbRules, getCollectionRules, getCollectionSecurityRule, getTrackedCollectionsInfo, getTrackedCollections, getDbGraphQLRootFields, getUntrackedCollections, setColSecurityRule } from './collections';
 
 export default {
   removeDbConfig,
@@ -49,7 +49,6 @@ export default {
   getUntrackedCollections,
   setPreparedQueryRule,
   setColSecurityRule,
-  setDbCollections,
   isPreparedQueriesSupported,
   isPreparedQueriesSupportedForDbType,
   saveColSecurityRules,

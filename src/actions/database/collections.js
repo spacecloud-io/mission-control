@@ -343,7 +343,7 @@ export const getUntrackedCollections = (state, dbAliasName) => {
 
 // Setters
 export const setColSecurityRule = (dispatch, dbAliasName, colName, rule) => dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))
-export const setDbCollections = (dispatch, dbAliasName, collections) => dispatch(set(`dbCollections.${dbAliasName}`, collections))
+const setDbCollections = (dispatch, dbAliasName, collections) => dispatch(set(`dbCollections.${dbAliasName}`, collections))
 const setDbSchemas = (dispatch, dbSchemas) => dispatch(set("dbSchemas", dbSchemas))
 const setDbSchema = (dispatch, dbAliasName, colName, schema) => dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
 const setDbRules = (dispatch, dbRules) => dispatch(set("dbRules", dbRules))
