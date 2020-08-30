@@ -8,7 +8,7 @@ import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/pro
 import Topbar from '../../../components/topbar/Topbar';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import ApplyLicenseForm from "../../../components/settings/apply-license/ApplyLicenseForm";
-import { getEnv, applyClusterLicense } from '../../../operations/cluster';
+import { getEnv, applyClusterLicense, applyOfflineClusterLicense } from '../../../operations/cluster';
 import { projectModules } from '../../../constants';
 
 const ApplyLicense = () => {
@@ -19,7 +19,7 @@ const ApplyLicense = () => {
   }, []);
 
   // Global state
-  const { clusterName } = useSelector(state => getEnv(state))
+  const { clusterName, licenseMode } = useSelector(state => getEnv(state))
 
   const handleApplyLicense = (clusterName, licenseKey, licenseValue) => {
     incrementPendingRequests()
@@ -32,6 +32,16 @@ const ApplyLicense = () => {
       .finally(() => decrementPendingRequests())
   }
 
+  const handleApplyOfflineLicense = (licenseKey) => {
+    incrementPendingRequests()
+    applyOfflineClusterLicense(licenseKey).then(() => {
+      notify("success", "Success", "Applied license key to cluster successfully")
+      history.goBack()
+    })
+    .catch((ex) => notify("error", "Error applying license key to cluster", ex))
+    .finally(() => decrementPendingRequests())
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -41,7 +51,11 @@ const ApplyLicense = () => {
         <Content>
           <Row>
             <Col lg={{ span: 12, offset: 6 }}>
-              <ApplyLicenseForm clusterName={clusterName} handleSubmit={handleApplyLicense} />
+              <ApplyLicenseForm 
+                clusterName={clusterName} 
+                handleSubmit={handleApplyLicense} 
+                handleSubmitOfflineLicense={handleApplyOfflineLicense}
+                licenseMode={licenseMode}/>
             </Col>
           </Row>
         </Content>
