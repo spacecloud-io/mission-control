@@ -60,7 +60,7 @@ export const loadDBConnState = (projectId, dbAliasName) => (dispatch, getState) 
   })
 }
 
-const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => (dispatch, getState) => {
+export const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => (dispatch, getState) => {
   return new Promise((resolve, reject) => {
 
     const dbConfig = { enabled, type, conn, name: dbName }

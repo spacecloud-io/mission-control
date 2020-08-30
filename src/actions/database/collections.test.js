@@ -1,7 +1,7 @@
 import { createReduxStore } from "../../store";
 import { Server, Response } from "miragejs";
 import deepEqual from "deep-equal";
-import { loadCollections, loadDbSchemas, saveColSchema, inspectColSchema, loadDbRules, modifyDbSchema, saveColRule, saveColRealtimeEnabled, untrackCollection, deleteCollection } from "./collections";
+import { loadCollections, loadDbSchemas, saveColSchema, loadDbRules, modifyDbSchema, reloadDbSchema, saveColRule, saveColSecurityRules, inspectColSchema, saveColRealtimeEnabled, untrackCollection, deleteCollection } from "./collections";
 
 let server;
 
@@ -91,6 +91,123 @@ describe("load schemas", () => {
         expect(ex).toBeTruthy()
         expect(loadSchemasEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+})
+
+describe("inspect schema", () => {
+  it("should not queued", () => {
+    const initialState = {
+      dbSchemas: {},
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-schema',
+          verb: 'read'
+        }
+      ]
+    }
+    const dbSchemas = [
+      {
+        "mydb-users": {
+          schema: `type users {
+            name: String!
+          }`
+        },
+      }
+    ]
+    const expectedState = {
+      dbSchemas:
+      {
+        mydb:
+          { users: 'type users {\n            name: String!\n          }' }
+      },
+      permissions:
+        [{ project: 'MockProject1', resource: 'db-schema', verb: 'read' }]
+    }
+
+    const inspectSchemaEndpoint = server.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => new Response(200))
+    const loadSchemasEndpoint = server.get("/config/projects/:projectId/database/collections/schema/mutate", () => new Response(200, {}, { result: dbSchemas }))
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(inspectColSchema('MockProject1', 'mydb', 'users'))
+      .then(({ queued }) => {
+        expect(inspectSchemaEndpoint.numberOfCalls).toEqual(1)
+        expect(loadSchemasEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
+      })
+  })
+
+  it("should queued", () => {
+    const initialState = {}
+
+    const inspectSchemaEndpoint = server.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => new Response(202))
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(inspectColSchema('MockProject1', 'mydb', 'users'))
+      .then(({ queued }) => {
+        expect(inspectSchemaEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+        expect(queued).toBe(true)
+      })
+  })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {}
+    const inspectSchemaEndpoint = server.get("/config/projects/:projectId/database/:dbName/collections/:colName/schema/track", () => new Response(500, {}, { error: "This is an error message" }))
+    const store = createReduxStore(initialState);
+    return store.dispatch(inspectColSchema('MockProject1', 'mydb', 'users'))
+      .then(() => fail("This test has resolved the promise. It should reject"))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(inspectSchemaEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+})
+
+describe("reload schema", () => {
+  it("should not queued", () => {
+    const initialState = {
+      dbSchemas: {},
+      permissions: [
+        {
+          project: 'MockProject1',
+          resource: 'db-schema',
+          verb: 'read'
+        }
+      ]
+    }
+    const dbSchemas = [
+      {
+        "mydb-users": {
+          schema: `type users {
+            name: String!
+          }`
+        },
+      }
+    ]
+    const expectedState = {
+      dbSchemas:
+      {
+        mydb:
+          { users: 'type users {\n            name: String!\n          }' }
+      },
+      permissions:
+        [{ project: 'MockProject1', resource: 'db-schema', verb: 'read' }]
+    }
+
+    const reloadSchemaEndpoint = server.post("/config/projects/:projectId/database/:dbName/schema/inspect", () => new Response(200))
+    const loadSchemasEndpoint = server.get("/config/projects/:projectId/database/collections/schema/mutate", () => new Response(200, {}, { result: dbSchemas }))
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(reloadDbSchema('MockProject1', 'mydb'))
+      .then(({ queued }) => {
+        expect(reloadSchemaEndpoint.numberOfCalls).toEqual(1)
+        expect(loadSchemasEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
       })
   })
 })
@@ -620,7 +737,211 @@ describe('save rules', () => {
   })
 })
 
+describe("save col security rules", () => {
+  it("should not queued", () => {
+    const initialState = {
+      dbRules: {
+        mydb: {
+          users: {
+            isRealtimeEnabled: true,
+            rules: {
+              create: {
+                rule: 'deny'
+              },
+              read: {
+                rule: 'deny'
+              },
+              update: {
+                rule: 'deny'
+              }
+            }
+          }
+        }
+      }
+    }
+    const securityRules = {
+      create: {
+        rule: 'allow'
+      },
+      read: {
+        rule: 'deny'
+      },
+      update: {
+        rule: 'authenticated'
+      },
+      'delete': {
+        rule: 'allow'
+      }
+    }
+    const expectedState = {
+      dbRules: {
+        mydb: {
+          users: {
+            isRealtimeEnabled: true,
+            rules: {
+              create: {
+                rule: 'allow'
+              },
+              read: {
+                rule: 'deny'
+              },
+              update: {
+                rule: 'authenticated'
+              },
+              'delete': {
+                rule: 'allow'
+              }
+            }
+          }
+        }
+      }
+    }
+    const expectedRequestBody = {
+      isRealtimeEnabled: true,
+      rules:
+      {
+        create: { rule: 'allow' },
+        read: { rule: 'deny' },
+        update: { rule: 'authenticated' },
+        delete: { rule: 'allow' }
+      }
+    }
 
+    const saveColRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", (_, request) => {
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(200)
+    })
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(saveColSecurityRules('MockProject1', 'mydb', 'users', securityRules))
+      .then(({ queued }) => {
+        expect(saveColRuleEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
+      })
+
+  })
+  it("should queued", () => {
+    const initialState = {
+      dbRules: {
+        mydb: {
+          users: {
+            isRealtimeEnabled: true,
+            rules: {
+              create: {
+                rule: 'deny'
+              },
+              read: {
+                rule: 'deny'
+              },
+              update: {
+                rule: 'deny'
+              }
+            }
+          }
+        }
+      }
+    }
+    const securityRules = {
+      create: {
+        rule: 'allow'
+      },
+      read: {
+        rule: 'deny'
+      },
+      update: {
+        rule: 'authenticated'
+      },
+      'delete': {
+        rule: 'allow'
+      }
+    }
+    const expectedRequestBody = {
+      isRealtimeEnabled: true,
+      rules:
+      {
+        create: { rule: 'allow' },
+        read: { rule: 'deny' },
+        update: { rule: 'authenticated' },
+        delete: { rule: 'allow' }
+      }
+    }
+
+    const saveColRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", (_, request) => {
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(202)
+    })
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(saveColSecurityRules('MockProject1', 'mydb', 'users', securityRules))
+      .then(({ queued }) => {
+        expect(saveColRuleEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+        expect(queued).toBe(true)
+      })
+  })
+
+  it("should reject with 500 status code", () => {
+    const initialState = {
+      dbRules: {
+        mydb: {
+          users: {
+            isRealtimeEnabled: true,
+            rules: {
+              create: {
+                rule: 'deny'
+              },
+              read: {
+                rule: 'deny'
+              },
+              update: {
+                rule: 'deny'
+              }
+            }
+          }
+        }
+      }
+    }
+    const securityRules = {
+      create: {
+        rule: 'allow'
+      },
+      read: {
+        rule: 'deny'
+      },
+      update: {
+        rule: 'authenticated'
+      },
+      'delete': {
+        rule: 'allow'
+      }
+    }
+    const expectedRequestBody = {
+      isRealtimeEnabled: true,
+      rules:
+      {
+        create: { rule: 'allow' },
+        read: { rule: 'deny' },
+        update: { rule: 'authenticated' },
+        delete: { rule: 'allow' }
+      }
+    }
+
+    const saveColRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", (_, request) => {
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(500, {}, { error: "This is an error message" })
+    })
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(saveColSecurityRules('MockProject1', 'mydb', 'users', securityRules))
+      .then(() => fail("This test has resolved the promise. It should reject"))
+      .catch((ex) => {
+        expect(ex).toBeTruthy()
+        expect(saveColRuleEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), initialState)).toBe(true)
+      })
+  })
+})
 
 describe('load collections', () => {
   it("should resolve", () => {
