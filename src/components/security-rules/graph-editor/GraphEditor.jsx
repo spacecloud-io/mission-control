@@ -116,6 +116,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
         }
 
         saveObjectToLocalStorage(LOCAL_STORAGE_RULE_KEY, selectedRuleObj)
+        setRule(dotProp.delete(rule, strippedKey))
         break
 
       case "alt+r":
