@@ -151,7 +151,7 @@ const Settings = () => {
             {preparedQueriesSupported &&
               <React.Fragment>
                 <Divider style={{ margin: "16px 0px" }} />
-                <FormItemLabel name="Default rules for prepared queries" description="Not configured yet. Used when a prepared query doesn’t have a rule specified." />
+                <FormItemLabel name="Default rules for prepared queries" description="Used when a prepared query doesn’t have a rule specified." />
                 <Button onClick={handleConfigureDefaultPreparedQueriesRule}>Configure</Button>
               </React.Fragment>
             }

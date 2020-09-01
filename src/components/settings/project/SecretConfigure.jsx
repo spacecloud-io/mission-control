@@ -28,7 +28,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
       const { secret, isPrimary, alg, privateKey } = values;
-      const publicKey = generateRSAPublicKeyFromPrivateKey(privateKey)
+      const publicKey = privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : ""
       handleSubmit(secret, isPrimary, alg, publicKey, privateKey).then(() => handleCancel())
     });
   };

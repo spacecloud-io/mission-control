@@ -97,6 +97,17 @@ export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
   })
 }
 
+export function applyOfflineClusterLicense(licenseKey) {
+  return new Promise((resolve, reject) => {
+    client.cluster.setOfflineClusterLicense(licenseKey)
+      .then(() => {
+        loadClusterEnv()
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export function removeClusterLicense() {
   return new Promise((resolve, reject) => {
     client.cluster.removeClusterLicense()
