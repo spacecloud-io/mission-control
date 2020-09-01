@@ -2,8 +2,25 @@ import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, generateRSAPublicKeyFromPrivateKey, generateRSAPrivateKey } from '../../../utils';
+import { generateJWTSecret } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
+import keypair from "keypair";
+import forge from "node-forge"
+
+const generateRSAPrivateKey = () => {
+  return keypair().private
+}
+
+const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
+  var forgePrivateKey = forge.pki.privateKeyFromPem(privateKey);
+
+  // get a Forge public key from the Forge private key
+  var forgePublicKey = forge.pki.setRsaPublicKey(forgePrivateKey.n, forgePrivateKey.e);
+
+  // convert the Forge public key to a PEM-formatted public key
+  var publicKey = forge.pki.publicKeyToPem(forgePublicKey);
+  return publicKey
+}
 
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
