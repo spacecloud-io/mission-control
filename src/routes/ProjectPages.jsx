@@ -1,73 +1,61 @@
 import React from "react";
-import { Router, Route, Redirect, Switch } from "react-router-dom";
-import { PrivateRoute, DatabasePageRoute } from "./utils";
-import history from "./history";
+import { PrivateRoute, DatabasePageRoute } from "../utils";
+import { Route, Redirect, Switch } from "react-router-dom";
+import { projectModules } from "../constants";
 
-import NoPermissions from "./pages/no-permissions/NoPermissions";
-import Home from "./pages/home/Home";
-import Login from "./pages/login/Login";
-import Welcome from "./pages/welcome/Welcome";
-import CreateProject from "./pages/create-project/CreateProject";
-import DatabaseIndexPage from "./pages/database/Index";
-import DatabaseEmptyStatePage from "./pages/database/empty-state/EmptyState";
-import Overview from "./pages/overview/Overview";
-import DatabasePage from "./pages/database/Database";
-import DBOverview from "./pages/database/overview/DBOverview";
-import DBBrowse from "./pages/database/browse/DBBrowse";
-import DBSettings from "./pages/database/settings/DBSettings";
-import DBQueries from "./pages/database/queries/DBQueries";
-import AddDb from "./pages/database/add-db/AddDb";
-import PreparedQueries from './pages/database/prepared-queries/PreparedQueries';
-import AddPreparedQueries from './pages/database/prepared-queries/AddPreparedQueries';
-import FileStorageIndex from "./pages/file-storage/FileStorageIndex";
-import FileStorage from "./pages/file-storage/FileStorage";
-import FileStorageConfig from "./pages/file-storage/FileStorageConfig";
-import EventingIndex from "./pages/eventing/Index";
-import EventingOverview from "./pages/eventing/EventingOverview";
-import EventingRules from "./pages/eventing/EventingRules";
-import EventingSchema from "./pages/eventing/EventingSchema";
-import EventingLogs from "./pages/eventing/EventingLogs";
-import EventingSettings from "./pages/eventing/EventingSettings";
-import QueueEvent from "./pages/eventing/queue-event/QueueEvent";
-import RemoteServicesIndex from "./pages/remote-services/RemoteServicesIndex";
-import RemoteServices from "./pages/remote-services/Index";
-import Endpoints from "./pages/remote-services/Endpoints";
-import ConfigureEndpoint from "./pages/remote-services/ConfigureEndpoint";
-import UserManagement from "./pages/user-management/UserManagement";
-import DeploymentsIndex from "./pages/deployments/Index";
-import DeploymentsOverview from "./pages/deployments/overview/DeploymentsOverview";
-import DeploymentsRoutes from "./pages/deployments/routes/DeploymentsRoutes";
-import DeploymentsLogs from "./pages/deployments/deployment-logs/DeploymentLogs";
-import Graphql from "./pages/explorer/graphql/Graphql";
-import SpaceApi from "./pages/explorer/spaceApi/SpaceApi";
-import ProjectSettings from "./pages/settings/project/ProjectSettings";
-import ClusterSettings from "./pages/settings/cluster/ClusterSettings";
-import LicenseSettings from "./pages/settings/license/LicenseSettings";
-import ApplyLicense from "./pages/settings/apply-license/ApplyLicense";
-import RoutingOverview from './pages/routing/overview/Overview';
-import RoutingSettings from './pages/routing/settings/Settings';
-import SecretsIndex from "./pages/secrets/Index";
-import Secrets from './pages/secrets/Secrets';
-import SecretDetails from './pages/secrets/SecretDetails';
-import IntegrationsIndex from './pages/integrations/Index';
-import ExploreIntegrations from './pages/integrations/ExploreIntegrations';
-import InstalledIntegrations from './pages/integrations/InstalledIntegrations';
-import InstallIntegration from './pages/integrations/InstallIntegration';
-import IntegrationDetails from './pages/integrations/IntegrationDetails';
-import IntegrationPermissions from './pages/integrations/IntegrationPermissions';
-import RulesEditor from './pages/security-rules/RulesEditor';
-import { projectModules } from "./constants";
+import NoPermissions from "../pages/no-permissions/NoPermissions";
+import DatabaseIndexPage from "../pages/database/Index";
+import DatabaseEmptyStatePage from "../pages/database/empty-state/EmptyState";
+import Overview from "../pages/overview/Overview";
+import DatabasePage from "../pages/database/Database";
+import DBOverview from "../pages/database/overview/DBOverview";
+import DBBrowse from "../pages/database/browse/DBBrowse";
+import DBSettings from "../pages/database/settings/DBSettings";
+import DBQueries from "../pages/database/queries/DBQueries";
+import AddDb from "../pages/database/add-db/AddDb";
+import PreparedQueries from '../pages/database/prepared-queries/PreparedQueries';
+import AddPreparedQueries from '../pages/database/prepared-queries/AddPreparedQueries';
+import FileStorageIndex from "../pages/file-storage/FileStorageIndex";
+import FileStorage from "../pages/file-storage/FileStorage";
+import FileStorageConfig from "../pages/file-storage/FileStorageConfig";
+import EventingIndex from "../pages/eventing/Index";
+import EventingOverview from "../pages/eventing/EventingOverview";
+import EventingRules from "../pages/eventing/EventingRules";
+import EventingSchema from "../pages/eventing/EventingSchema";
+import EventingLogs from "../pages/eventing/EventingLogs";
+import EventingSettings from "../pages/eventing/EventingSettings";
+import QueueEvent from "../pages/eventing/queue-event/QueueEvent";
+import RemoteServicesIndex from "../pages/remote-services/RemoteServicesIndex";
+import RemoteServices from "../pages/remote-services/Index";
+import Endpoints from "../pages/remote-services/Endpoints";
+import ConfigureEndpoint from "../pages/remote-services/ConfigureEndpoint";
+import UserManagement from "../pages/user-management/UserManagement";
+import DeploymentsIndex from "../pages/deployments/Index";
+import DeploymentsOverview from "../pages/deployments/overview/DeploymentsOverview";
+import DeploymentsRoutes from "../pages/deployments/routes/DeploymentsRoutes";
+import DeploymentsLogs from "../pages/deployments/deployment-logs/DeploymentLogs";
+import Graphql from "../pages/explorer/graphql/Graphql";
+import SpaceApi from "../pages/explorer/spaceApi/SpaceApi";
+import ProjectSettings from "../pages/settings/project/ProjectSettings";
+import ClusterSettings from "../pages/settings/cluster/ClusterSettings";
+import LicenseSettings from "../pages/settings/license/LicenseSettings";
+import ApplyLicense from "../pages/settings/apply-license/ApplyLicense";
+import RoutingOverview from '../pages/routing/overview/Overview';
+import RoutingSettings from '../pages/routing/settings/Settings';
+import SecretsIndex from "../pages/secrets/Index";
+import Secrets from '../pages/secrets/Secrets';
+import SecretDetails from '../pages/secrets/SecretDetails';
+import IntegrationsIndex from '../pages/integrations/Index';
+import ExploreIntegrations from '../pages/integrations/ExploreIntegrations';
+import InstalledIntegrations from '../pages/integrations/InstalledIntegrations';
+import InstallIntegration from '../pages/integrations/InstallIntegration';
+import IntegrationDetails from '../pages/integrations/IntegrationDetails';
+import IntegrationPermissions from '../pages/integrations/IntegrationPermissions';
 
-function Routes() {
 
+function ProjectPages() {
   return (
-    <Router history={history}>
-      <Route exact path="/"
-        component={() => <Redirect to={"/mission-control"} />} />
-      <Route exact path="/mission-control" component={Home} />
-      <Route exact path="/mission-control/login" component={Login} />
-      <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
-      <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
+    <React.Fragment>
       <PrivateRoute exact path="/mission-control/projects/:projectID"
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
       <PrivateRoute exact path="/mission-control/projects/:projectID/overview" component={Overview} />
@@ -122,7 +110,6 @@ function Routes() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/overview`} component={DeploymentsOverview} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECURITY_RULES}`} component={RulesEditor} />
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={Secrets} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`} component={SecretDetails} />
@@ -134,8 +121,8 @@ function Routes() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/details/:integrationId`} component={IntegrationDetails} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/install/:integrationId`} component={InstallIntegration} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/permissions/:integrationId`} component={IntegrationPermissions} />
-    </Router>
-  );
-};
+    </React.Fragment>
+  )
+}
 
-export default Routes
+export default ProjectPages
