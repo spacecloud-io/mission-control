@@ -14,7 +14,7 @@ export const loadDbConfig = (projectId) => (dispatch, getState) => {
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_CONFIG], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db config")
-      setDbConfigs(dispatch, {})
+      dispatch(setDbConfigs({}))
       resolve()
       return
     }
@@ -30,7 +30,7 @@ export const loadDbConfig = (projectId) => (dispatch, getState) => {
           const [dbAliasName, config] = Object.entries(curr)[0]
           return Object.assign({}, prev, { [dbAliasName]: config })
         }, {})
-        setDbConfigs(dispatch, dbConfigs)
+        dispatch(setDbConfigs(dbConfigs))
         resolve()
 
       })
@@ -38,7 +38,7 @@ export const loadDbConfig = (projectId) => (dispatch, getState) => {
   })
 }
 
-export const loadDBConnState = (projectId, dbAliasName) => (dispatch, getState) => {
+export const loadDBConnState = (projectId, dbAliasName) => (dispatch) => {
   return new Promise((resolve, reject) => {
     scClient.getJSON(`/v1/external/projects/${projectId}/database/${dbAliasName}/connection-state`)
       .then(({ status, data }) => {
@@ -47,7 +47,7 @@ export const loadDBConnState = (projectId, dbAliasName) => (dispatch, getState) 
           return
         }
         const connected = data.result
-        setDbConnState(dispatch, dbAliasName, connected)
+        dispatch(setDbConnState(dbAliasName, connected))
         if (connected) {
           dispatch(loadCollections(projectId, dbAliasName))
             .then(() => resolve(connected))
@@ -60,7 +60,7 @@ export const loadDBConnState = (projectId, dbAliasName) => (dispatch, getState) 
   })
 }
 
-export const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => (dispatch, getState) => {
+export const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName) => (dispatch) => {
   return new Promise((resolve, reject) => {
 
     const dbConfig = { enabled, type, conn, name: dbName }
@@ -73,9 +73,9 @@ export const saveDbConfig = (projectId, dbAliasName, enabled, conn, type, dbName
         }
         const queued = status === 202
         if (!queued) {
-          dispatch(set(`dbConfigs.${dbAliasName}`, dbConfig))
+          dispatch(setDbConfig(dbAliasName, dbConfig))
           dispatch(loadDBConnState(projectId, dbAliasName))
-            .then(connected => resolve({ connected }))
+            .then(connected => resolve({ connected, queued }))
             .catch(ex => reject(ex))
         } else {
           resolve({ queued: true })
@@ -96,7 +96,7 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => (di
         // Set default security rules for collections and prepared queries in the background
         const hasPermissionToSaveRule = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.MODIFY)
         if (hasPermissionToSaveRule) {
-          dispatch(saveColRule(projectId, dbAliasName, "default", defaultDBRules, false))
+          dispatch(saveColRule(projectId, dbAliasName, "default", { isRealtimeEnabled: false, rules: { ...defaultDBRules } }))
             .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
         }
 
@@ -204,5 +204,6 @@ export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${
 export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")
 
 // Setters
-const setDbConfigs = (dispatch, dbConfigs) => dispatch(set("dbConfigs", dbConfigs))
-const setDbConnState = (dispatch, dbAliasName, connected) => dispatch(set(`dbConnState.${dbAliasName}`, connected))
+const setDbConfigs = (dbConfigs) => set("dbConfigs", dbConfigs)
+const setDbConfig = (dbAliasName, dbConfig) => set(`dbConfigs.${dbAliasName}`, dbConfig)
+const setDbConnState = (dbAliasName, connected) => set(`dbConnState.${dbAliasName}`, connected)

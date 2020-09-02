@@ -16,7 +16,7 @@ afterEach(() => {
 
 describe("load database config", () => {
 
-  it("should not have permissions", () => {
+  it("should handle unauthorized request", () => {
     // initial states
     const initialState = {
       dbConfigs: {},
@@ -30,7 +30,7 @@ describe("load database config", () => {
       })
   })
 
-  it("should have permissions and redux state must change", () => {
+  it("should handle authorized request and redux state must change", () => {
     // initial states
     const initialState = {
       dbConfigs: {},
@@ -95,7 +95,7 @@ describe("load database config", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {
       permissions: [
         {
@@ -166,7 +166,7 @@ describe("database connection state", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {}
     const dbConnStateEndpoint = server.get("/external/projects/:projectId/database/:dbName/connection-state", () => new Response(500, {}, { error: "This is an error message" }))
     const store = createReduxStore(initialState);
@@ -180,7 +180,7 @@ describe("database connection state", () => {
 })
 
 describe("save db config", () => {
-  it("should not queued", () => {
+  it("should handle usual flow", () => {
     const initialState = {}
     const expectedState = {
       dbConfigs: {
@@ -220,7 +220,7 @@ describe("save db config", () => {
       })
   })
 
-  it("should queued", () => {
+  it("should handle status 202", () => {
     const initialState = {}
     const expectedRequestBody = {
       enabled: true,
@@ -244,7 +244,7 @@ describe("save db config", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {}
     const expectedRequestBody = {
       enabled: true,
@@ -301,11 +301,13 @@ describe("add database", () => {
     const store = createReduxStore(initialState);
 
     return store.dispatch(addDatabase('MockProject1', 'mydb', 'mongo', 'mockproject1', 'mongodb://localhost:27017'))
-      .then(() => {
+      .then(({ queued, enabledEventing }) => {
         expect(saveDbConfigEndpoint.numberOfCalls).toEqual(1)
         expect(loadDbConnStateEndpoint.numberOfCalls).toEqual(1)
         expect(loadCollectionsEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
+        expect(enabledEventing).toBe(false)
       })
   })
 
@@ -403,7 +405,7 @@ describe("add database", () => {
     const store = createReduxStore(initialState);
 
     return store.dispatch(addDatabase('MockProject1', 'mydb', 'mysql', 'mockproject1', 'root:my-secret-pw@tcp(localhost:3306)/'))
-      .then(() => {
+      .then(({ queued, enabledEventing }) => {
         expect(saveDbConfigEndpoint.numberOfCalls).toEqual(1)
         expect(loadDbConnStateEndpoint.numberOfCalls).toEqual(1)
         expect(loadCollectionsEndpoint.numberOfCalls).toEqual(1)
@@ -412,6 +414,103 @@ describe("add database", () => {
         expect(saveEventingConfigEndpoint.numberOfCalls).toEqual(1)
         expect(saveEventingRuleEndpoint.numberOfCalls).toEqual(1)
         expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
+        expect(enabledEventing).toBe(true)
+      })
+  })
+
+  it("has eventing already enabled", () => {
+    const initialState = {
+      dbConfigs: {
+        mongodb: {
+          enabled: true,
+          type: 'mongo',
+          conn: 'mongodb://localhost:27017/',
+          name: 'development'
+        }
+      },
+      eventingConfig: { enabled: true, dbAlias: 'mongodb' },
+      permissions: [
+        {
+          project: "*",
+          resource: "*",
+          verb: "*"
+        }
+      ]
+    }
+    const expectedState = {
+      dbConfigs:
+      {
+        mongodb: {
+          enabled: true,
+          type: 'mongo',
+          conn: 'mongodb://localhost:27017/',
+          name: 'development'
+        },
+        mydb:
+        {
+          enabled: true,
+          type: 'mysql',
+          conn: 'root:my-secret-pw@tcp(localhost:3306)/',
+          name: 'mockproject1'
+        }
+      },
+      dbConnState: { mydb: true },
+      dbCollections: { mydb: [] },
+      eventingConfig: { enabled: true, dbAlias: 'mongodb' },
+      permissions: [
+        {
+          project: "*",
+          resource: "*",
+          verb: "*"
+        }
+      ]
+    }
+
+    const saveDbConfigEndpoint = server.post("/config/projects/:projectId/database/:db/config/database-config", (_, request) => {
+      const expectedRequestBody = {
+        enabled: true,
+        type: 'mysql',
+        conn: 'root:my-secret-pw@tcp(localhost:3306)/',
+        name: 'mockproject1'
+      }
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(200)
+    })
+    const loadDbConnStateEndpoint = server.get("/external/projects/:projectId/database/:dbName/connection-state", () => new Response(200, {}, { result: true }))
+    const loadCollectionsEndpoint = server.get("/external/projects/:projectId/database/:dbName/list-collections", () => new Response(200))
+    const saveCollectionRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/collections/:colName/rules", (_, request) => {
+      const expectedRequestBody = {
+        isRealtimeEnabled: false,
+        rules:
+        {
+          create: { rule: 'allow' },
+          read: { rule: 'allow' },
+          update: { rule: 'allow' },
+          delete: { rule: 'allow' }
+        }
+      }
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(200)
+    })
+    const savePreparedQueryRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", (_, request) => {
+      const expectedRequestBody = { id: 'default', sql: '', args: [], rule: { rule: 'allow' } }
+      expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
+      return new Response(200)
+    })
+
+    const store = createReduxStore(initialState);
+
+    return store.dispatch(addDatabase('MockProject1', 'mydb', 'mysql', 'mockproject1', 'root:my-secret-pw@tcp(localhost:3306)/'))
+      .then(({ queued, enabledEventing }) => {
+        expect(saveDbConfigEndpoint.numberOfCalls).toEqual(1)
+        expect(loadDbConnStateEndpoint.numberOfCalls).toEqual(1)
+        expect(loadCollectionsEndpoint.numberOfCalls).toEqual(1)
+        expect(saveCollectionRuleEndpoint.numberOfCalls).toEqual(1)
+        expect(savePreparedQueryRuleEndpoint.numberOfCalls).toEqual(1)
+        expect(deepEqual(store.getState(), expectedState)).toBe(true)
+        expect(queued).toBe(false)
+        expect(enabledEventing).toBe(false)
       })
   })
 })
@@ -584,10 +683,16 @@ describe("change db name", () => {
     const loadDbConnStateEndpoint = server.get("/external/projects/:projectId/database/:dbName/connection-state", () => new Response(200, {}, { result: true }))
     const loadCollectionsEndpoint = server.get("/external/projects/:projectId/database/:dbName/list-collections", () => new Response(200))
     const modifyDbSchemaEndpoint = server.post("/config/projects/:projectId/database/:dbName/schema/mutate", (_, request) => {
-      const expectedRequestBody = { collections:
-        { users:
-           { schema:
-              'type users {\n        id: ID! @primary\n        name: String!\n        age: Integer\n        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)\n      }' } } }
+      const expectedRequestBody = {
+        collections:
+        {
+          users:
+          {
+            schema:
+              'type users {\n        id: ID! @primary\n        name: String!\n        age: Integer\n        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)\n      }'
+          }
+        }
+      }
       expect(deepEqual(JSON.parse(request.requestBody), expectedRequestBody)).toBe(true)
       return new Response(200)
     })
@@ -656,7 +761,7 @@ describe("change db name", () => {
 describe("remove database config", () => {
 
   const expectedHeaders = { 'content-type': 'application/json' }
-  it("should not queued and dbAlias is not eventingDB", () => {
+  it("should handle usual flow and dbAlias is not eventingDB", () => {
     // initial states
     const initialState = {
       dbConfigs: {
@@ -715,7 +820,7 @@ describe("remove database config", () => {
       })
   })
 
-  it("should not have permissions and saveEventingConfig thunk must not be called", () => {
+  it("should handle unauthorized request and saveEventingConfig thunk must not be called", () => {
     // initial states
     const initialState = {
       dbConfigs: {
@@ -774,7 +879,7 @@ describe("remove database config", () => {
 
   })
 
-  it("should have permissions and saveEventingConfig thunk must be called", () => {
+  it("should handle authorized request and saveEventingConfig thunk must be called", () => {
     // initial states
     const initialState = {
       dbConfigs: {
@@ -854,7 +959,7 @@ describe("remove database config", () => {
 
   })
 
-  it("should queued and redux state must not change", () => {
+  it("should handle status 202 and redux state must not change", () => {
     // initial states
     const initialState = {
       dbConfigs: {
@@ -908,7 +1013,7 @@ describe("remove database config", () => {
       });
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {
       permissions: [
         {

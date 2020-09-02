@@ -208,6 +208,9 @@ const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
     return productionURL
   }
+  if (process.env.NODE_ENV === "test") {
+    return mockURL
+  }
   if (process.env.REACT_APP_ENABLE_MOCK === "true") {
     return mockURL
   }

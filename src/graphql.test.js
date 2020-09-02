@@ -1,6 +1,6 @@
 import { generateSchemaAST, generateSchemaASTs, generateGraphQLQueryFromGraphQLAST, generateRandomFieldValues, generateSampleQueryDBDelete, generateSampleQueryDBInsert, generateSampleQueryDBRead, generateSampleQueryDBUpdate } from "./graphql";
 
-describe.skip("generateSchemaAST method", () => {
+describe("generateSchemaAST method", () => {
   it("generates correct schema AST from a GraphQL schema string", () => {
     const schemaString = `
     type mytype {
@@ -308,7 +308,7 @@ describe.skip("generateSchemaAST method", () => {
   })
 });
 
-describe.skip("generateGraphQLQueryFromGraphQLAST method", () => {
+describe("generateGraphQLQueryFromGraphQLAST method", () => {
   it("generates the correct graphql query string", () => {
     const ast1 = {
       queryType: "query",
@@ -345,7 +345,7 @@ describe.skip("generateGraphQLQueryFromGraphQLAST method", () => {
   })
 })
 
-describe.skip("generateRandomFieldValues method", () => {
+describe("generateRandomFieldValues method", () => {
   it("generates the values for nested fields", () => {
     const fields = [
       {
@@ -446,7 +446,7 @@ describe.skip("generateRandomFieldValues method", () => {
   })
 })
 
-describe.skip("generateSampleQueryDBDelete method", () => {
+describe("generateSampleQueryDBDelete method", () => {
   it("generates proper delete query without filters", () => {
     const dbSchemas = {
       db1: {
@@ -510,7 +510,7 @@ describe.skip("generateSampleQueryDBDelete method", () => {
   })
 })
 
-describe.skip("generateSampleQueryDBInsert method", () => {
+describe("generateSampleQueryDBInsert method", () => {
   it("generates proper insert query for table with linked inserts", () => {
     const dbSchemas = {
       db1: {
@@ -717,7 +717,7 @@ describe.skip("generateSampleQueryDBInsert method", () => {
   })
 })
 
-describe.skip("generateSampleQueryDBRead method", () => {
+describe("generateSampleQueryDBRead method", () => {
   it("generates proper read query for 1 to many relation", () => {
     const dbSchemas = {
       db1: {
@@ -932,7 +932,7 @@ describe.skip("generateSampleQueryDBRead method", () => {
   })
 })
 
-describe.skip("generateSampleQueryDBUpdate method", () => {
+describe("generateSampleQueryDBUpdate method", () => {
   it("generates proper upsert query", () => {
     const dbSchemas = {
       db1: {

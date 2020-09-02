@@ -359,10 +359,10 @@ const registerSecurityRulesBroadCastListener = () => {
     if (!queued) {
       switch (ruleType) {
         case securityRuleGroups.DB_COLLECTIONS:
-          setColSecurityRule(store.dispatch, group, id, rule)
+          store.dispatch(setColSecurityRule(group, id, rule))
           break;
         case securityRuleGroups.DB_PREPARED_QUERIES:
-          setPreparedQueryRule(store.dispatch, group, id, rule)
+          store.dispatch(setPreparedQueryRule(group, id, rule))
           break;
         case securityRuleGroups.EVENTING:
           setEventingSecurityRule(id, rule)

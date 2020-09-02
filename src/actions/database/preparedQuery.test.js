@@ -15,7 +15,8 @@ afterEach(() => {
 })
 
 describe("load prepared queries", () => {
-  it('should not have permissions', () => {
+  it('should handle unauthorized request', () => {
+    console.log(process.env.NODE_ENV)
     const initialState = {
       dbPreparedQueries: {},
       permissions: []
@@ -27,7 +28,7 @@ describe("load prepared queries", () => {
       })
   })
 
-  it("should have permissions", () => {
+  it("should handle authorized request", () => {
     const initialState = {
       dbPreparedQueries: {},
       permissions: [
@@ -110,7 +111,7 @@ describe("load prepared queries", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {
       permissions: [
         {
@@ -133,7 +134,7 @@ describe("load prepared queries", () => {
 })
 
 describe("save prepared query config", () => {
-  it("should not queued", () => {
+  it("should handle usual flow", () => {
     const initialState = {
       dbPreparedQueries: {
         mydb: {
@@ -187,7 +188,7 @@ describe("save prepared query config", () => {
       })
   })
 
-  it("should queued", () => {
+  it("should handle status 202", () => {
 
     const initialState = {};
     const expectedRequestBody = {
@@ -211,7 +212,7 @@ describe("save prepared query config", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {}
     const savePreparedQueryConfigEndpoint = server.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => new Response(500, {}, { error: "This is an error message" }))
     const store = createReduxStore(initialState);
@@ -226,7 +227,7 @@ describe("save prepared query config", () => {
 })
 
 describe("save prepared query rule", () => {
-  it("should not queued", () => {
+  it("should handle usual flow", () => {
     const initialState = {
       dbPreparedQueries: {
         mydb: {
@@ -290,7 +291,7 @@ describe("save prepared query rule", () => {
       })
   })
 
-  it("should queued", () => {
+  it("should handle status 202", () => {
 
     const initialState = {
       dbPreparedQueries: {
@@ -334,7 +335,7 @@ describe("save prepared query rule", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {}
     const savePreparedQueryRuleEndpoint = server.post("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => new Response(500, {}, { error: "This is an error message" }))
     const store = createReduxStore(initialState);
@@ -349,7 +350,7 @@ describe("save prepared query rule", () => {
 })
 
 describe("delete prepared query", () => {
-  it("should not queued", () => {
+  it("should handle usual flow", () => {
     const initialState = {
       dbPreparedQueries: {
         mydb: {
@@ -394,7 +395,7 @@ describe("delete prepared query", () => {
       })
   })
 
-  it("should queued", () => {
+  it("should handle status 202", () => {
 
     const initialState = {
       dbPreparedQueries: {
@@ -427,7 +428,7 @@ describe("delete prepared query", () => {
       })
   })
 
-  it("should reject with 500 status code", () => {
+  it("should handle server error", () => {
     const initialState = {}
     const deletePreparedQueryEndpoint = server.delete("/config/projects/:projectId/database/:dbName/prepared-queries/:id", () => new Response(500, {}, { error: "This is an error message" }))
     const store = createReduxStore(initialState);

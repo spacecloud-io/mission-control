@@ -10,7 +10,7 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => (d
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_SCHEMA], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db schema")
-      setDbSchemas(dispatch, {})
+      dispatch(setDbSchemas({}))
       resolve()
       return
     }
@@ -27,14 +27,14 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => (d
           const [dbAliasName, colName] = key.split("-")
           dbSchemas = dotProp.set(dbSchemas, `${dbAliasName}.${colName}`, value.schema)
         })
-        setDbSchemas(dispatch, dbSchemas)
+        dispatch(setDbSchemas(dbSchemas))
         resolve()
       })
       .catch(ex => reject(ex.toString()))
   })
 }
 
-export const inspectColSchema = (projectId, dbAliasName, colName) => (dispatch, getState) => {
+export const inspectColSchema = (projectId, dbAliasName, colName) => (dispatch) => {
   return new Promise((resolve, reject) => {
     scClient.getJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/schema/track`)
       .then(({ status, data }) => {
@@ -65,11 +65,11 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => (dispa
         }
         const queued = status === 202
         if (!queued) {
-          setDbSchema(dispatch, dbAliasName, colName, schema)
+          dispatch(setDbSchema(dbAliasName, colName, schema))
           const dbCollections = getCollections(getState(), dbAliasName)
           if (!dbCollections.some(col => col === colName)) {
             const newDbCollections = [...dbCollections, colName]
-            setDbCollections(dispatch, dbAliasName, newDbCollections)
+            dispatch(setDbCollections(dbAliasName, newDbCollections))
           }
         }
         resolve({ queued })
@@ -78,7 +78,7 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => (dispa
   })
 }
 
-export const reloadDbSchema = (projectId, dbAliasName) => (dispatch, getState) => {
+export const reloadDbSchema = (projectId, dbAliasName) => (dispatch) => {
   return new Promise((resolve, reject) => {
     scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/schema/inspect`, {})
       .then(({ status, data }) => {
@@ -100,7 +100,7 @@ export const reloadDbSchema = (projectId, dbAliasName) => (dispatch, getState) =
   })
 }
 
-export const modifyDbSchema = (projectId, dbAliasName) => (dispatch, getState) => {
+export const modifyDbSchema = (projectId, dbAliasName) => (_, getState) => {
   return new Promise((resolve, reject) => {
 
     const dbSchemas = getDbSchema(getState(), dbAliasName)
@@ -128,7 +128,7 @@ export const loadDbRules = (projectId) => (dispatch, getState) => {
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db rules")
-      setDbRules(dispatch, {})
+      dispatch(setDbRules({}))
       resolve()
       return
     }
@@ -153,17 +153,15 @@ export const loadDbRules = (projectId) => (dispatch, getState) => {
 
         return Object.assign({}, prev, { [dbAliasName]: { [colName]: value } })
       }, {})
-      setDbRules(dispatch, dbRules)
+      dispatch(setDbRules(dbRules))
       resolve()
     })
     .catch(ex => reject(ex.toString()))
   })
 }
 
-export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRealtimeEnabled) => (dispatch, getState) => {
+export const saveColRule = (projectId, dbAliasName, colName, collectionRules) => (dispatch) => {
   return new Promise((resolve, reject) => {
-
-    const collectionRules = { rules: securityRules, isRealtimeEnabled }
 
     scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/rules`, {
       isRealtimeEnabled: typeof collectionRules.isRealtimeEnabled === "string" ? false : collectionRules.isRealtimeEnabled, ...collectionRules
@@ -175,7 +173,7 @@ export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRe
         }
         const queued = status === 202;
         if (!queued) {
-          dispatch(set(`dbRules.${dbAliasName}.${colName}`, collectionRules))
+          dispatch(setColRules(dbAliasName, colName, collectionRules))
         }
         resolve({ queued })
       })
@@ -189,25 +187,13 @@ export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRu
     const collectionRules = getCollectionRules(getState(), dbAliasName, colName)
     const newCollectionRules = Object.assign({}, collectionRules, { rules: securityRules })
 
-    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/rules`, {
-      isRealtimeEnabled: typeof newCollectionRules.isRealtimeEnabled === "string" ? false : newCollectionRules.isRealtimeEnabled, ...newCollectionRules
-    })
-      .then(({ status, data }) => {
-        if (status < 200 || status >= 300) {
-          reject(data.error)
-          return
-        }
-        const queued = status === 202
-        if (!queued) {
-          setColSecurityRule(dispatch, dbAliasName, colName, securityRules)
-        }
-        resolve({ queued })
-      })
-      .catch(ex => reject(ex.toString()))
+    dispatch(saveColRule(projectId, dbAliasName, colName, newCollectionRules))
+      .then(({ queued }) => resolve({ queued }))
+      .catch(ex => reject(ex))
   })
 }
 
-export const loadCollections = (projectId, dbAliasName) => (dispatch, getState) => {
+export const loadCollections = (projectId, dbAliasName) => (dispatch) => {
   return new Promise((resolve, reject) => {
 
     scClient.getJSON(`/v1/external/projects/${projectId}/database/${dbAliasName}/list-collections`)
@@ -217,7 +203,7 @@ export const loadCollections = (projectId, dbAliasName) => (dispatch, getState) 
         return
       }
       const result = data.result ? data.result : []
-      setDbCollections(dispatch, dbAliasName, result)
+      dispatch(setDbCollections(dbAliasName, result))
       resolve()
     })
     .catch(ex => reject(ex.toString()))
@@ -230,25 +216,13 @@ export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealti
     const collectionRules = getCollectionRules(getState(), dbAliasName, colName)
     const newCollectionRules = Object.assign({}, collectionRules, { isRealtimeEnabled })
 
-    scClient.postJSON(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/rules`, {
-      isRealtimeEnabled: typeof newCollectionRules.isRealtimeEnabled === "string" ? false : newCollectionRules.isRealtimeEnabled, ...newCollectionRules
-    })
-      .then(({ status, data }) => {
-        if (status < 200 || status >= 300) {
-          reject(data.error)
-          return
-        }
-        const queued = status === 202
-        if (!queued) {
-          dispatch(set(`dbRules.${dbAliasName}.${colName}.isRealtimeEnabled`, isRealtimeEnabled))
-        }
-        resolve({ queued })
-      })
-      .catch(ex => reject(ex.toString()))
+    dispatch(saveColRule(projectId, dbAliasName, colName, newCollectionRules))
+      .then(({ queued }) => resolve({ queued }))
+      .catch(ex => reject(ex))
   })
 }
 
-export const untrackCollection = (projectId, dbAliasName, colName) => (dispatch, getState) => {
+export const untrackCollection = (projectId, dbAliasName, colName) => (dispatch) => {
   return new Promise((resolve, reject) => {
 
     scClient.delete(`/v1/config/projects/${projectId}/database/${dbAliasName}/collections/${colName}/schema/untrack`)
@@ -282,9 +256,9 @@ export const deleteCollection = (projectId, dbAliasName, colName) => (dispatch, 
         const collectionsList = get(getState(), `dbCollections.${dbAliasName}`, [])
         const newCollectionsList = collectionsList.filter(col => col !== colName)
 
-        dispatch(del(`dbSchemas.${dbAliasName}.${colName}`))
-        dispatch(del(`dbRules.${dbAliasName}.${colName}`))
-        dispatch(set(`dbCollections.${dbAliasName}`, newCollectionsList))
+        dispatch(delColSchemas(dbAliasName, colName))
+        dispatch(delColRules(dbAliasName, colName))
+        dispatch(setDbCollections(dbAliasName, newCollectionsList))
       }
       resolve({ queued })
     })
@@ -342,9 +316,12 @@ export const getUntrackedCollections = (state, dbAliasName) => {
 }
 
 // Setters
-export const setColSecurityRule = (dispatch, dbAliasName, colName, rule) => dispatch(set(`dbRules.${dbAliasName}.${colName}.rules`, rule))
-const setDbCollections = (dispatch, dbAliasName, collections) => dispatch(set(`dbCollections.${dbAliasName}`, collections))
-const setDbSchemas = (dispatch, dbSchemas) => dispatch(set("dbSchemas", dbSchemas))
-const setDbSchema = (dispatch, dbAliasName, colName, schema) => dispatch(set(`dbSchemas.${dbAliasName}.${colName}`, schema))
-const setDbRules = (dispatch, dbRules) => dispatch(set("dbRules", dbRules))
+export const setColSecurityRule = (dbAliasName, colName, rule) => set(`dbRules.${dbAliasName}.${colName}.rules`, rule)
+const setDbCollections = (dbAliasName, collections) => set(`dbCollections.${dbAliasName}`, collections)
+const setDbSchemas = (dbSchemas) => set("dbSchemas", dbSchemas)
+const setDbSchema = (dbAliasName, colName, schema) => set(`dbSchemas.${dbAliasName}.${colName}`, schema)
+const setDbRules = (dbRules) => set("dbRules", dbRules)
+const setColRules = (dbAliasName, colName, colRules) => set(`dbRules.${dbAliasName}.${colName}`, colRules)
+const delColSchemas = (dbAliasName, colName) => del(`dbSchemas.${dbAliasName}.${colName}`)
+const delColRules = (dbAliasName, colName) => del(`dbRules.${dbAliasName}.${colName}`)
 

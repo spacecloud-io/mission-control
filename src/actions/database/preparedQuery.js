@@ -10,7 +10,7 @@ export const loadDbPreparedQueries = (projectId) => (dispatch, getState) => {
     const hasPermission = checkResourcePermissions(getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.READ)
     if (!hasPermission) {
       console.warn("No permission to fetch db prepared queries")
-      setDbPreparedQueries(dispatch, {})
+      dispatch(setDbPreparedQueries({}))
       resolve()
       return
     }
@@ -37,7 +37,7 @@ export const loadDbPreparedQueries = (projectId) => (dispatch, getState) => {
 
           return Object.assign({}, prev, { [db]: { [id]: newPreparedQueryConfig } })
         }, {})
-        setDbPreparedQueries(dispatch, dbPreparedQueries)
+        dispatch(setDbPreparedQueries(dbPreparedQueries))
         resolve()
       })
       .catch(ex => reject(ex.toString()))
@@ -58,7 +58,7 @@ export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) =
         }
         const queued = status === 202
         if (!queued) {
-          dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}`, config))
+          dispatch(setPreparedQueryConfig(dbAliasName, id, config))
         }
         resolve({ queued })
       })
@@ -80,7 +80,7 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
         }
         const queued = status === 202
         if (!queued) {
-          setPreparedQueryRule(dispatch, dbAliasName, id, rule)
+          dispatch(setPreparedQueryRule(dbAliasName, id, rule))
         }
         resolve({ queued })
 
@@ -89,7 +89,7 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
   })
 }
 
-export const deletePreparedQuery = (projectId, dbAliasName, id) => (dispatch, getState) => {
+export const deletePreparedQuery = (projectId, dbAliasName, id) => (dispatch) => {
   return new Promise((resolve, reject) => {
     scClient.delete(`/v1/config/projects/${projectId}/database/${dbAliasName}/prepared-queries/${id}`)
       .then(({ status, data }) => {
@@ -123,5 +123,6 @@ export const isPreparedQueriesSupportedForDbType = (dbType) => {
 }
 
 // Setters
-export const setPreparedQueryRule = (dispatch, dbAliasName, id, rule) => dispatch(set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule))
-const setDbPreparedQueries = (dispatch, dbPreparedQueries) => dispatch(set("dbPreparedQueries", dbPreparedQueries))
+export const setPreparedQueryRule = (dbAliasName, id, rule) => set(`dbPreparedQueries.${dbAliasName}.${id}.rule`, rule)
+const setPreparedQueryConfig = (dbAliasName, id, config) => set(`dbPreparedQueries.${dbAliasName}.${id}`, config)
+const setDbPreparedQueries = (dbPreparedQueries) => set("dbPreparedQueries", dbPreparedQueries)
