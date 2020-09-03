@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { notify, canGenerateToken } from '../../../utils';
-import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip } from 'antd';
+import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip, InputNumber } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import GenerateTokenForm from '../../explorer/generateToken/GenerateTokenForm';
@@ -267,7 +267,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
               >
                 <FormItemLabel name="Timeout" description="default: 60" />
                 <Form.Item name="timeout">
-                  <InputNumber style={{ width: "100%" }} placeholder="Timeout in seconds" />
+                  <InputNumber placeholder="Timeout in seconds" />
                 </Form.Item>
                 <FormItemLabel name='Override token' />
                 <Form.Item name='overrideToken' valuePropName='checked'>
