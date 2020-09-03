@@ -149,7 +149,7 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, db } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, db } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -256,6 +256,7 @@ const ConfigureRule = (props) => {
     field,
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
+    store,
     db: db,
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
@@ -488,11 +489,14 @@ const ConfigureRule = (props) => {
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
-          condition={() => form.getFieldValue('rule') === "webhook"}
-        >
+          condition={() => form.getFieldValue('rule') === "webhook"} >
           <FormItemLabel name="URL" />
           <FormItem name="url" rules={[{ required: true }]}>
             <Input placeholder="URL" />
+          </FormItem>
+          <FormItemLabel name="STORE" />
+          <FormItem name="store" rules={[{ required: false }]}>
+              <Input placeholder="The variable in which the webhook response is stored. For example: args.res" />
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
@@ -539,6 +543,10 @@ const ConfigureRule = (props) => {
               tabSize: 2
             }} />
           </Form.Item>
+          <FormItemLabel name="STORE" />
+          <FormItem name="store" rules={[{ required: false }]}>
+              <Input placeholder="The variable in which the query response is stored. For example: args.res" />
+          </FormItem>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>
