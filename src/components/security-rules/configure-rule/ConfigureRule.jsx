@@ -191,7 +191,7 @@ const ConfigureRule = (props) => {
       if (!props.selectedRule.clauses) values.clauses = [];
       else values.clauses = props.selectedRule.clauses
     }
-    if (values.rule === "query" || values.rule === "force" || values.rule === "remove") {
+    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove") {
       values.clause = props.selectedRule.clause
     }
     props.onSubmit(values);
@@ -494,9 +494,9 @@ const ConfigureRule = (props) => {
           <FormItem name="url" rules={[{ required: true }]}>
             <Input placeholder="URL" />
           </FormItem>
-          <FormItemLabel name="STORE" />
+          <FormItemLabel name="Store" />
           <FormItem name="store" rules={[{ required: false }]}>
-              <Input placeholder="The variable in which the webhook response is stored. For example: args.res" />
+              <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
         </ConditionalFormBlock>
         <ConditionalFormBlock
@@ -543,9 +543,9 @@ const ConfigureRule = (props) => {
               tabSize: 2
             }} />
           </Form.Item>
-          <FormItemLabel name="STORE" />
+          <FormItemLabel name="Store" />
           <FormItem name="store" rules={[{ required: false }]}>
-              <Input placeholder="The variable in which the query response is stored. For example: args.res" />
+              <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
