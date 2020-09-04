@@ -191,7 +191,7 @@ const ConfigureRule = (props) => {
       if (!props.selectedRule.clauses) values.clauses = [];
       else values.clauses = props.selectedRule.clauses
     }
-    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove") {
+    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
       values.clause = props.selectedRule.clause
     }
     props.onSubmit(values);
