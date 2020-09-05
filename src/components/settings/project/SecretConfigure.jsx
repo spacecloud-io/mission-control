@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography, Spin } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { generateJWTSecret } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -25,6 +25,9 @@ const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();
+
+  const [isPrivateKeyLoading, setPrivateKeyLoading] = useState(false);
+
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
       const { secret, isPrimary, alg, privateKey } = values;
@@ -33,10 +36,14 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
     });
   };
 
-  const onAlgorithmChange = async (alg) => {
+  const onAlgorithmChange = (alg) => {
     if (alg === "RS256") {
-      const privateKey = await generateRSAPrivateKey();
-      form.setFieldsValue({ privateKey })
+      setPrivateKeyLoading(true);
+      setTimeout(async () => {
+        const privateKey = await generateRSAPrivateKey();
+        form.setFieldsValue({ privateKey })
+        setPrivateKeyLoading(false);
+      }, 500)
     }
   }
 
@@ -75,7 +82,11 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           </Form.Item> */}
           <FormItemLabel name="Private key" />
           <Form.Item name="privateKey">
-            <Input.TextArea rows={4} placeholder="Private key" />
+            {
+              isPrivateKeyLoading ?
+              <span><Spin /> Generating Private Key......</span> :
+              <Input.TextArea rows={4} placeholder="Private key" />
+            }
           </Form.Item>
         </ConditionalFormBlock>
         <FormItemLabel name="Primary secret" />
