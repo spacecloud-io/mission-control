@@ -3,7 +3,7 @@ import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons, openBillingPortal } from '../../utils'
 import { CaretDownOutlined, MenuOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Button, Menu, Popover, Row, Col } from 'antd';
+import { Button, Menu, Popover, Row, Col, Tooltip } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -16,7 +16,8 @@ import twitterIcon from "../../assets/twitterIcon.svg"
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import crownSvg from "../../assets/crown.svg";
-import { isClusterUpgraded, getLoginURL } from '../../operations/cluster';
+import { isClusterUpgraded, isProdMode } from '../../operations/cluster';
+import { redirectToLogin } from '../../utils';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -52,8 +53,8 @@ const Topbar = (props) => {
   );
 
   const onLogoutIconClick = () => {
-    localStorage.clear();
-    window.location.href = window.location.origin + getLoginURL(state);
+    localStorage.removeItem('token');
+    redirectToLogin();
   }
   return (
     <div>
@@ -103,9 +104,13 @@ const Topbar = (props) => {
                 </div>
               </Button>
             </Menu.Item>}
-            <Menu.Item>
-              <PoweroffOutlined  style={{fontSize: 30, position: 'relative', top: 8}} onClick={onLogoutIconClick}/>
-            </Menu.Item>
+            {isProdMode(state) && (
+              <Menu.Item>
+                <Tooltip title="logout">
+                  <PoweroffOutlined style={{ fontSize: 24, verticalAlign: 'middle', color: 'rgba(0, 0, 0, 0.54)' }} onClick={onLogoutIconClick}/>
+                </Tooltip>
+              </Menu.Item>
+            )}
           </Menu>
         </div>
       </div>

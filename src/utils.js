@@ -360,7 +360,7 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   let loginURL = getLoginURL(store.getState())
 
   if (!loginURL.startsWith("http")) {

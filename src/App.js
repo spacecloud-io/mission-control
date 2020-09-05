@@ -10,6 +10,12 @@ function App() {
   const loading = pendingRequests > 0 ? true : false
   const setupComplete = useSelector(state => isSetupComplete(state))
 
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'token' && !localStorage.getItem('token')) {
+      window.location.reload();
+    }
+  })
+
   if (!setupComplete) {
     return <Home />
   }
