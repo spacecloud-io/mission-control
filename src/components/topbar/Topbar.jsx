@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons, openBillingPortal } from '../../utils'
-import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, MenuOutlined, PoweroffOutlined } from '@ant-design/icons';
 import { Button, Menu, Popover, Row, Col } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
@@ -16,13 +16,14 @@ import twitterIcon from "../../assets/twitterIcon.svg"
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import crownSvg from "../../assets/crown.svg";
-import { isClusterUpgraded } from '../../operations/cluster';
+import { isClusterUpgraded, getLoginURL } from '../../operations/cluster';
 
 const Topbar = (props) => {
   const history = useHistory()
   const { projectID, selectedDB } = useParams()
   const [modalVisible, setModalVisible] = useState(false)
   const [visible, setVisible] = useState(false)
+  const state = useSelector(state => state)
   const projects = useSelector(state => state.projects)
   const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   const selectedProject = projects.find(project => project.id === projectID)
@@ -50,6 +51,10 @@ const Topbar = (props) => {
     </div>
   );
 
+  const onLogoutIconClick = () => {
+    localStorage.clear();
+    window.location.href = window.location.origin + getLoginURL(state);
+  }
   return (
     <div>
       <div className="topbar">
@@ -98,6 +103,9 @@ const Topbar = (props) => {
                 </div>
               </Button>
             </Menu.Item>}
+            <Menu.Item>
+              <PoweroffOutlined  style={{fontSize: 30, position: 'relative', top: 8}} onClick={onLogoutIconClick}/>
+            </Menu.Item>
           </Menu>
         </div>
       </div>
