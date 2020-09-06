@@ -58,6 +58,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           <Select onChange={onAlgorithmChange}>
             <Select.Option value="HS256">HS256</Select.Option>
             <Select.Option value="RS256">RS256</Select.Option>
+            <Select.Option value="RS256-JWT">RS256-JWT</Select.Option>
           </Select>
         </Form.Item>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "HS256"}>
@@ -78,10 +79,18 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
             <Input.TextArea rows={4} placeholder="Private key" />
           </Form.Item>
         </ConditionalFormBlock>
-        <FormItemLabel name="Primary secret" />
-        <Form.Item name="isPrimary" valuePropName="checked">
-          <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
-        </Form.Item>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") !== "RS256-JWT"}>
+          <FormItemLabel name="Primary secret" />
+          <Form.Item name="isPrimary" valuePropName="checked">
+            <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
+          </Form.Item>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256-JWT"}>
+          <FormItemLabel name="JWT URL"/>
+          <Form.Item name="url" rules={[{ required: true, message: 'Please provide an URL' }]}>
+            <Input placeholder="JWT URL" />
+          </Form.Item>
+        </ConditionalFormBlock>
       </Form>
     </Modal>
   )
@@ -140,6 +149,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
         <QuestionCircleOutlined />
       </Tooltip></span>,
       render: (_, record, index) => {
+        if (record.alg === "RS256-JWT") return <span>N/A</span>
         return <Radio
           checked={record.isPrimary}
           onChange={!record.isPrimary ? () => handleChangePrimarySecret(index) : undefined} />
