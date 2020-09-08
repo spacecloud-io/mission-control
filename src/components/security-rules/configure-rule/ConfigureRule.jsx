@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { notify, isJson } from '../../../utils';
 import { generateSchemaAST } from '../../../graphql';
 import { useParams } from 'react-router-dom';
@@ -23,6 +23,19 @@ import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
+
+const { Option } = Select;
+
+function AlertMsgApplyTransformations() {
+  return (
+    <div>
+      <b>Info</b> <br />
+      Describe the transformed request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+        <b>Go templates</b>
+      </a>. Space Cloud will execute the specified template to generate the new request/response.
+    </div>
+  );
+}
 
 const getInputValueFromActualValue = (value, dataType) => {
   if (value === null || value === undefined) {
@@ -149,7 +162,7 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, db } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, headers = [], requestTemplate, responseTemplate, db } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -257,6 +270,12 @@ const ConfigureRule = (props) => {
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
     store,
+    setHeaders: headers && headers.length > 0 ? true : false,
+    headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
+    applyTransformations: (requestTemplate || responseTemplate) ? true : false,
+    outputFormat: outputFormat ? outputFormat : "yaml",
+    requestTemplate: requestTemplate ? requestTemplate : "",
+    responseTemplate: responseTemplate ? responseTemplate : "",
     db: db,
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
@@ -498,6 +517,142 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
               <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
+          <FormItemLabel name='Modify request headers' />
+          <Form.Item name='setHeaders' valuePropName='checked'>
+            <Checkbox>
+              Modify the value of headers in the request
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='setHeaders'
+            condition={() => form.getFieldValue('setHeaders') === true}
+          >
+            <FormItemLabel name='Specify request header modifications' />
+            <Form.List name="headers">
+              {(fields, { add, remove }) => {
+                return (
+                  <div>
+                    {fields.map((field, index) => (
+                      <React.Fragment>
+                        <Row key={field}>
+                          <Col span={22}>
+                            <Form.Item
+                              name={[field.name, "op"]}
+                              key={[field.name, "op"]}
+                              validateTrigger={["onChange", "onBlur"]}
+                              rules={[{ required: true, message: "Please input header operation" }]}
+                              style={{ marginRight: 16 }}
+                            >
+                              <Select placeholder="Select header operation">
+                                <Option value='set'>Set</Option>
+                                <Option value='add'>Add</Option>
+                                <Option value='del'>Delete</Option>
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                          <Col span={2}>
+                            <Button
+                              onClick={() => remove(field.name)}
+                              style={{ marginRight: "2%", float: "left" }}>
+                              <DeleteOutlined />
+                            </Button>
+                          </Col>
+                          <Col span={22}>
+                            <Form.Item name={[field.name, "key"]}
+                              key={[field.name, "key"]}
+                              validateTrigger={["onChange", "onBlur"]}
+                              rules={[{ required: true, message: "Please input header key" }]}
+                              style={{ marginRight: 16 }}
+                            >
+                              <Input placeholder="Header key" />
+                            </Form.Item>
+                          </Col>
+                          <ConditionalFormBlock dependency="headers" condition={() => form.getFieldValue(["headers", field.name, "op"]) !== "del"}>
+                            <Col span={22}>
+                              <Form.Item
+                                validateTrigger={["onChange", "onBlur"]}
+                                rules={[{ required: true, message: "Please input header value" }]}
+                                name={[field.name, "value"]}
+                                key={[field.name, "value"]}
+                                style={{ marginRight: 16 }}
+                              >
+                                <Input placeholder="Header value" />
+                              </Form.Item>
+                            </Col>
+                          </ConditionalFormBlock>
+                        </Row>
+                      </React.Fragment>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        onClick={() => {
+                          const fieldKeys = [
+                            ...fields.map(obj => ["headers", obj.name, "key"]),
+                            ...fields.map(obj => ["headers", obj.name, "value"]),
+                          ]
+                          form.validateFields(fieldKeys)
+                            .then(() => add())
+                            .catch(ex => console.log("Exception", ex))
+                        }}
+                        style={{ marginRight: "2%", float: "left" }}
+                      >
+                        <PlusOutlined /> Add modification</Button>
+                    </Form.Item>
+                  </div>
+                );
+              }}
+            </Form.List>
+          </ConditionalFormBlock>
+          <FormItemLabel name='Apply transformations' />
+          <Form.Item name='applyTransformations' valuePropName='checked'>
+            <Checkbox>
+              Transform the request and/or response using templates
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='applyTransformations'
+            condition={() => form.getFieldValue('applyTransformations') === true}
+          >
+            <Alert
+              message={<AlertMsgApplyTransformations />}
+              type='info'
+              showIcon
+              style={{ marginBottom: 21 }}
+            />
+            <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+            <Form.Item name="outputFormat">
+              <Select style={{ width: 96 }}>
+                <Option value='yaml'>YAML</Option>
+                <Option value='json'>JSON</Option>
+              </Select>
+            </Form.Item>
+            <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
+            <Form.Item name='requestTemplate' style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+              <AntCodeMirror options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2,
+                  autofocus: true,
+                }}
+              />
+            </Form.Item>
+            <FormItemLabel name="Response template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
+            <Form.Item name='responseTemplate' style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+              <AntCodeMirror options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2,
+                  autofocus: false,
+                }}
+              />
+            </Form.Item>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency='rule'
