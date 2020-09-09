@@ -39,6 +39,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const onAlgorithmChange = (alg) => {
     if (alg === "RS256") {
       setPrivateKeyLoading(true);
+      // We had to use this timeout to prevent the UI from freezing
       setTimeout(async () => {
         const privateKey = await generateRSAPrivateKey();
         form.setFieldsValue({ privateKey })
@@ -76,10 +77,6 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256"}>
-          {/* <FormItemLabel name="Public key" />
-          <Form.Item name="publicKey">
-            <Input.TextArea rows={4} placeholder="Public key" />
-          </Form.Item> */}
           <FormItemLabel name="Private key" />
           <Form.Item name="privateKey">
             {
