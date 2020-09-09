@@ -106,7 +106,7 @@ const Topbar = (props) => {
             </Menu.Item>}
             {isProdMode(state) && (
               <Menu.Item>
-                <Tooltip title="logout">
+                <Tooltip title="Logout">
                   <PoweroffOutlined style={{ fontSize: 24, verticalAlign: 'middle', color: 'rgba(0, 0, 0, 0.54)' }} onClick={onLogoutIconClick}/>
                 </Tooltip>
               </Menu.Item>
