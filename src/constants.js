@@ -1,3 +1,9 @@
+export const fileStoreProviders = {
+  LOCAL: "local",
+  AMAZON_S3: "amazon-s3",
+  GCP_STORAGE: "gcp-storage"
+}
+
 export const endpointTypes = {
   INTERNAL: "internal",
   EXTERNAL: "external",
