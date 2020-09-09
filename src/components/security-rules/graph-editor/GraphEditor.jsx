@@ -152,7 +152,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
               }
               return
             }
-            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove") {
+            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove" || selectedRuleObj.rule === "encrypt" || selectedRuleObj.rule === "decrypt" || selectedRuleObj.rule === "hash") {
               if (strippedKey === "root") {
                 setRule(dotProp.set(rule, "clause", copiedRule))
               } else {
