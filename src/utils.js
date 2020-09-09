@@ -328,6 +328,15 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+// Listens for cross tab logout events
+const registerAuthStateListener = () => {
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'token' && !isLoggedIn(store.getState())) {
+      redirectToLogin()
+    }
+  })
+}
+
 const registerSecurityRulesBroadCastListener = () => {
   const bc = new BroadcastChannel('security-rules');
   bc.onmessage = ({ data }) => {
@@ -360,7 +369,7 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   let loginURL = getLoginURL(store.getState())
 
   if (!loginURL.startsWith("http")) {
@@ -426,6 +435,9 @@ export function performSetup() {
 
     // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
     registerSecurityRulesBroadCastListener()
+
+    // Register cross tab logout listener
+    registerAuthStateListener()
   })
 }
 
