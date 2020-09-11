@@ -556,7 +556,7 @@ const ConfigureRule = (props) => {
           <FormItemLabel name='Apply transformations' />
           <Form.Item name='applyTransformations' valuePropName='checked'>
             <Checkbox>
-              Transform the request and/or response using templates
+              Transform the webhook request body using templates
           </Checkbox>
           </Form.Item>
           <ConditionalFormBlock
@@ -576,7 +576,7 @@ const ConfigureRule = (props) => {
                 <Option value='json'>JSON</Option>
               </Select>
             </Form.Item>
-            <FormItemLabel name="Request template" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
+            <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
             <Form.Item name='requestTemplate' rules={[{ required: true }]}>
               <AntCodeMirror options={{
                 mode: { name: 'javascript', json: true },
