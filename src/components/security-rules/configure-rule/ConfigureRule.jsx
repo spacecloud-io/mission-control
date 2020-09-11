@@ -17,12 +17,24 @@ import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBl
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { notify, isJson } from '../../../utils';
 import { generateSchemaAST } from '../../../graphql';
-import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
+
+const { Option } = Select;
+
+function AlertMsgApplyTransformations() {
+  return (
+    <div>
+      <b>Info</b> <br />
+      Describe the transformed request body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+        <b>Go templates</b>
+      </a>. Space Cloud will execute the specified template to generate the new request.
+    </div>
+  );
+}
 
 const getInputValueFromActualValue = (value, dataType) => {
   if (value === null || value === undefined) {
@@ -50,7 +62,7 @@ const getTypeFromValue = (value) => {
 
 const createValueAndTypeValidator = (type, arrayAllowed) => {
   return (_, value, cb) => {
-    if (!type) {
+    if (!type || value == undefined) {
       cb()
       return
     }
@@ -74,13 +86,15 @@ const createValueAndTypeValidator = (type, arrayAllowed) => {
 
     const values = value.split(",").map(v => v.trim())
     const areValuesValid = values.every(v => {
-      switch (type) {
-        case "number":
-          return !isNaN(v)
-        case "bool":
-          return v === "true" || v === "false"
-        case "variable":
-          return v.includes(".")
+      if (v) {
+        switch (type) {
+          case "number":
+            return !isNaN(v)
+          case "bool":
+            return v === "true" || v === "false"
+          case "variable":
+            return v.includes(".")
+        }
       }
     })
     if (!areValuesValid) {
@@ -139,17 +153,11 @@ const ConfigureRule = (props) => {
   // form
   const [form] = Form.useForm();
 
-  // Router params
-  const { projectID } = useParams();
-
-  // Global state
-  const projects = useSelector((state) => state.projects);
-
   // Component state
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, db } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -183,6 +191,14 @@ const ConfigureRule = (props) => {
           return;
         }
         break;
+      case "webhook":
+        if (values.setClaims) {
+          values.claims = JSON.parse(values.claims)
+        }
+
+        delete values["setClaims"]
+        delete values["applyTransformations"]
+        break;
     }
 
     delete values.errorMsg;
@@ -194,6 +210,7 @@ const ConfigureRule = (props) => {
     if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
       values.clause = props.selectedRule.clause
     }
+
     props.onSubmit(values);
     props.closeDrawer();
   };
@@ -257,6 +274,11 @@ const ConfigureRule = (props) => {
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
     store,
+    setClaims: claims ? true : false,
+    claims: claims ? JSON.stringify(claims, null, 2) : "",
+    applyTransformations: requestTemplate ? true : false,
+    outputFormat: outputFormat ? outputFormat : "yaml",
+    requestTemplate: requestTemplate ? requestTemplate : "",
     db: db,
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
@@ -375,10 +397,9 @@ const ConfigureRule = (props) => {
                         <Form.Item
                           name={[field.name]}
                           key={[field.name]}
-                          validateTrigger="onBlur"
                           rules={[
-                            { required: true, message: 'Please enter field!' },
-                            { validator: createValueAndTypeValidator("variable", false) }
+                            { required: true },
+                            { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
                           ]}
                         >
                           <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
@@ -421,7 +442,7 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('rule') === 'force'}
         >
           <FormItemLabel name="Field" />
-          <FormItem name="field" validateTrigger="onBlur" rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false) }]}>
+          <FormItem name="field" rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }]}>
             <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
           </FormItem>
           <FormItemLabel name="Datatype" />
@@ -464,14 +485,15 @@ const ConfigureRule = (props) => {
                   const type = form.getFieldValue("type")
                   return (
                     <Form.Item name='value' rules={[{ required: true }, {
+                      validateTrigger: "onBlur",
                       validator: (_, value, cb) => {
-                        if (!isJson(value)) {
+                        if (value && !isJson(value)) {
                           cb("Please provide a valid JSON object!")
                           return
                         }
                         cb()
                       }
-                    }]} validateTrigger="onBlur">
+                    }]}>
                       <AntCodeMirror options={{
                         mode: { name: 'javascript', json: true },
                         lineNumbers: true,
@@ -494,10 +516,80 @@ const ConfigureRule = (props) => {
           <FormItem name="url" rules={[{ required: true }]}>
             <Input placeholder="URL" />
           </FormItem>
-          <FormItemLabel name="Store" />
+          <FormItemLabel name="Store" hint="(Optional)" />
           <FormItem name="store" rules={[{ required: false }]}>
-              <Input placeholder="The variable to store the webhook response. For example: args.res" />
+            <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
+          <FormItemLabel name='Override claims' />
+          <Form.Item name='setClaims' valuePropName='checked'>
+            <Checkbox>
+              Override the value of the JWT claims in the request
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='setClaims'
+            condition={() => form.getFieldValue('setClaims') === true}
+          >
+            <FormItemLabel name='Specify claims' />
+            <Form.Item name="claims" rules={[{ required: true }, {
+              validator: (_, value, cb) => {
+                if (value && !isJson(value)) {
+                  cb("Please provide a valid JSON object!")
+                  return
+                }
+                cb()
+              },
+              validateTrigger: "onBlur"
+            }]} >
+              <AntCodeMirror options={{
+                mode: { name: 'javascript', json: true },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2,
+                autofocus: true,
+              }}
+              />
+            </Form.Item>
+          </ConditionalFormBlock>
+          <FormItemLabel name='Apply transformations' />
+          <Form.Item name='applyTransformations' valuePropName='checked'>
+            <Checkbox>
+              Transform the webhook request body using templates
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='applyTransformations'
+            condition={() => form.getFieldValue('applyTransformations') === true}
+          >
+            <Alert
+              message={<AlertMsgApplyTransformations />}
+              type='info'
+              showIcon
+              style={{ marginBottom: 21 }}
+            />
+            <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+            <Form.Item name="outputFormat">
+              <Select style={{ width: 96 }}>
+                <Option value='yaml'>YAML</Option>
+                <Option value='json'>JSON</Option>
+              </Select>
+            </Form.Item>
+            <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
+            <Form.Item name='requestTemplate' rules={[{ required: true }]}>
+              <AntCodeMirror options={{
+                mode: { name: 'javascript', json: true },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2,
+                autofocus: true,
+              }}
+              />
+            </Form.Item>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency='rule'
@@ -506,7 +598,7 @@ const ConfigureRule = (props) => {
           <FormItemLabel name='Database' />
           <Form.Item
             name='db'
-            rules={[{ required: true, message: 'Please select a database!' }]}
+            rules={[{ required: true }]}
           >
             <AutoComplete
               placeholder='Select a database'
@@ -533,7 +625,16 @@ const ConfigureRule = (props) => {
             </AutoComplete>
           </Form.Item>
           <FormItemLabel name='Find query' style={{ border: '1px solid #D9D9D9' }} />
-          <Form.Item name="find" rules={[{ required: true }]}>
+          <Form.Item name="find" rules={[{ required: true }, {
+            validateTrigger: "onBlur",
+            validator: (_, value, cb) => {
+              if (value && !isJson(value)) {
+                cb("Please provide a valid JSON object!")
+                return
+              }
+              cb()
+            }
+          }]}>
             <AntCodeMirror options={{
               mode: { name: 'javascript', json: true },
               lineNumbers: true,
@@ -543,9 +644,9 @@ const ConfigureRule = (props) => {
               tabSize: 2
             }} />
           </Form.Item>
-          <FormItemLabel name="Store" />
+          <FormItemLabel name="Store" hint="(Optional)" />
           <FormItem name="store" rules={[{ required: false }]}>
-              <Input placeholder="The variable to store the query response. For example: args.res" />
+            <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
@@ -559,7 +660,7 @@ const ConfigureRule = (props) => {
           condition={() => form.getFieldValue('errorMsg') === true}
         >
           <FormItemLabel name='Error message' />
-          <Form.Item name='error'>
+          <Form.Item name='error' rules={[{ required: true }]}>
             <Input placeholder="Error message" />
           </Form.Item>
         </ConditionalFormBlock>
