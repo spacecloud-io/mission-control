@@ -47,7 +47,7 @@ const AddSecret = props => {
       onOk={handleSubmit}
       width="800px"
     >
-      <Form form={form} onFinish={handleSubmit} initialValues={{ type: "env" }}>
+      <Form form={form} onFinish={handleSubmit} initialValues={{ type: "env", env: [{name: "", value: ""}], file: [{name: "", value: ""}] }}>
         <FormItemLabel name="Secret type" />
         <Form.Item name="type" rules={[{ required: true, message: "Please select a type!" }]}>
           <RadioCards>
