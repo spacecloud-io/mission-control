@@ -6,11 +6,10 @@ import { Button, Table, Popconfirm, Tag } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
-import AddDeploymentForm from "../../../components/deployments/add-deployment/AddDeploymentForm";
 import source_code from "../../../assets/source_code.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
-import { deleteService, saveService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
+import { deleteService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
 import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
@@ -105,78 +104,12 @@ const DeploymentsOverview = () => {
     setModalVisibility(true);
   };
 
-  const handleSubmit = (operation, values) => {
-    return new Promise((resolve, reject) => {
-      const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
-      const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
-      const serviceId = values.id;
-
-      let config = {
-        id: serviceId,
-        version: values.version,
-        projectId: projectID,
-        scale: {
-          replicas: 0,
-          minReplicas: values.min,
-          maxReplicas: values.max,
-          concurrency: values.concurrency,
-          mode: values.autoscalingMode
-        },
-        tasks: [
-          {
-            id: values.id,
-            ports: values.ports.map(obj =>
-              Object.assign(obj, { name: obj.protocol })
-            ),
-            resources: {
-              cpu: values.cpu * 1000,
-              memory: values.memory,
-              gpu: values.gpu,
-            },
-            docker: {
-              image: values.dockerImage,
-              secret: values.dockerSecret,
-              imagePullPolicy: values.imagePullPolicy,
-              cmd: dockerCommands
-            },
-            secrets: values.secrets,
-            env: values.env
-              ? values.env.reduce((prev, curr) => {
-                return Object.assign({}, prev, { [curr.key]: curr.value });
-              }, {})
-              : {},
-            runtime: values.serviceType
-          }
-        ],
-        whitelists: values.whitelists,
-        upstreams: values.upstreams,
-        statsInclusionPrefixes: values.statsInclusionPrefixes
-      };
-      incrementPendingRequests()
-      saveService(projectID, config.id, config.version, config)
-        .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
-          resolve()
-        })
-        .catch(ex => {
-          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
-          reject(ex)
-        })
-        .finally(() => decrementPendingRequests());
-    });
-  };
-
   const handleDelete = (serviceId, version) => {
     incrementPendingRequests()
     deleteService(projectID, serviceId, version)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Successfully deleted service"))
       .catch(ex => notify("error", "Error deleting service", ex))
       .finally(() => dispatch(decrement("pendingRequests")));
-  };
-
-  const handleCancel = () => {
-    setModalVisibility(false);
-    setDeploymentClicked(null);
   };
 
   const expandedRowRender = (record) => {
@@ -311,7 +244,7 @@ const DeploymentsOverview = () => {
                 </span>
                 <Button
                   style={{ float: "right" }}
-                  onClick={() => setModalVisibility(true)}
+                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/add")}
                 >
                   Add
                 </Button>
@@ -328,19 +261,6 @@ const DeploymentsOverview = () => {
           )}
         </div>
       </div>
-      {modalVisibility && (
-        <AddDeploymentForm
-          visible={modalVisibility}
-          initialValues={deploymentClickedInfo}
-          projectId={projectID}
-          dockerSecrets={dockerSecrets}
-          secrets={secrets}
-          handleCancel={handleCancel}
-          handleSubmit={values =>
-            handleSubmit(deploymentClickedInfo ? "update" : "add", values)
-          }
-        />
-      )}
     </React.Fragment>
   );
 };
