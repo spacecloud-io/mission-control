@@ -24,21 +24,23 @@ const AddTaskForm = props => {
 
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
-    registryType: initialValues ? initialValues.registryType : "public",
-    dockerImage: initialValues ? initialValues.dockerImage : "",
-    dockerSecret: initialValues ? initialValues.dockerSecret : "",
-    imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists",
-    cpu: initialValues ? initialValues.cpu : 0.1,
-    memory: initialValues ? initialValues.memory : 100,
-    addGPUs: initialValues && initialValues.gpuType ? true : false,
-    gpuType: initialValues ? initialValues.gpuType : "nvdia",
-    gpuCount: initialValues ? initialValues.gpuCount : 1,
-    concurrency: initialValues ? initialValues.concurrency : 50,
-    min: initialValues ? initialValues.min : 1,
-    max: initialValues ? initialValues.max : 100,
+    dockerImage: initialValues ? initialValues.docker.image : "",
+    registryType: (initialValues && initialValues.docker.secret) ? "private" : "public",
+    dockerSecret: initialValues ? initialValues.docker.secret : "",
+    ports: initialValues ? initialValues.ports : [],
+    imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
+    cpu: initialValues ? initialValues.resources.cpu : 0.1,
+    memory: initialValues ? initialValues.resources.memory : 100,
+    addGPUs: initialValues && initialValues.resources.gpu.type ? true : false,
+    gpuType: initialValues ? initialValues.resources.gpu.type : "nvdia",
+    gpuCount: initialValues ? initialValues.resources.gpu.value : 1,
     secrets: initialValues ? initialValues.secrets : [],
-    ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
-    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : []
+    env: (initialValues && Object.keys(initialValues.env).length > 0)
+        ? Object.entries(initialValues.env).map(([key, value]) => ({
+          key: key,
+          value: value
+        }))
+        : [],
   }
 
   const handleSubmitClick = e => {
@@ -55,7 +57,7 @@ const AddTaskForm = props => {
       values.concurrency = Number(values.concurrency);
       values.gpu = gpu
       values.serviceType = "image";
-      props.handleSubmit(values)
+      props.handleSubmit(values, initialValues ? "edit" : "add")
       props.handleCancel()
     });
   };

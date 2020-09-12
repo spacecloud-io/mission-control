@@ -23,12 +23,17 @@ const { Panel } = Collapse;
 const AddTaskForm = props => {
   const { initialValues } = props;
   const [form] = Form.useForm();
-
-  const formInitialValues = {}
+  const formInitialValues = {
+    type: initialValues ? initialValues.type : undefined,
+    weight: initialValues ? initialValues.weight : 0,
+    operator: initialValues ? initialValues.operator : undefined,
+    topologyKey: initialValues ? initialValues.topologyKey : undefined,
+    matchExpression: initialValues ? initialValues.matchExpression : undefined
+  }
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      props.handleSubmit(values)
+      props.handleSubmit(values, initialValues ? "edit" : "add")
       props.handleCancel()
     });
   };
@@ -89,7 +94,7 @@ const AddTaskForm = props => {
               </Select>
             </Form.Item>
             <FormItemLabel name="Topology key" />
-            <Form.Item name="TopologyKey" rules={[{ required: true, message: "Please enter topology key!" }]}>
+            <Form.Item name="topologyKey" rules={[{ required: true, message: "Please enter topology key!" }]}>
               <Input placeholder="Topology key" style={{ width: '50%' }} />
             </Form.Item>
             <FormItemLabel name="Match expression" />

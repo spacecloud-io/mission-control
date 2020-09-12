@@ -289,6 +289,10 @@ export const services = [
       "concurrency": 50,
       "mode": "per-second"
     },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
     "tasks": [
       {
         "id": "service1",
@@ -328,6 +332,23 @@ export const services = [
         "runtime": "image"
       }
     ],
+    "affinity": [
+      {
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpression": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
     "whitelists": [
       {
         "projectId": "todoapp",
@@ -348,7 +369,7 @@ export const services = [
         "service": "s4"
       }
     ],
-    statsInclusionPrefixes: "http.inbound,cluster_manager"
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
   }
 ]
 

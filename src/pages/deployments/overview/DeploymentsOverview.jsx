@@ -40,20 +40,8 @@ const DeploymentsOverview = () => {
   // Global state
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
-  const totalSecrets = useSelector(state => getSecrets(state))
-
-  // Component state
-  const [modalVisibility, setModalVisibility] = useState(false);
-  const [deploymentClicked, setDeploymentClicked] = useState(null);
 
   // Derived state
-  const dockerSecrets = totalSecrets
-    .filter(obj => obj.type === "docker")
-    .map(obj => obj.id);
-  const secrets = totalSecrets
-    .filter(obj => obj.type !== "docker")
-    .map(obj => obj.id);
-
   const data = deployments.map(obj => {
     const task = obj.tasks && obj.tasks.length ? obj.tasks[0] : {};
     return {
@@ -90,18 +78,14 @@ const DeploymentsOverview = () => {
     };
   });
 
-  const deploymentClickedInfo = deploymentClicked
-    ? data.find(
-      obj =>
-        obj.id === deploymentClicked.serviceId &&
-        obj.version === deploymentClicked.version
-    )
-    : undefined;
-
   // Handlers
   const handleEditDeploymentClick = (serviceId, version) => {
-    setDeploymentClicked({ serviceId, version });
-    setModalVisibility(true);
+    const deploymentClickedInfo = deployments.find(
+      obj =>
+        obj.id === serviceId &&
+        obj.version === version
+    );
+    history.push("/mission-control/projects/mockproject1/deployments/edit", { deploymentClickedInfo })
   };
 
   const handleDelete = (serviceId, version) => {
@@ -230,7 +214,7 @@ const DeploymentsOverview = () => {
                 <Button
                   type="primary"
                   style={{ marginTop: 16 }}
-                  onClick={() => setModalVisibility(true)}
+                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/add")}
                 >
                   Deploy your first container
                 </Button>

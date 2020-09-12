@@ -110,6 +110,7 @@ function ProjectPages() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`} component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.DEPLOYMENTS}/overview`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/overview`} component={DeploymentsOverview} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/add`} component={AddDeployment} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/edit`} component={AddDeployment} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />

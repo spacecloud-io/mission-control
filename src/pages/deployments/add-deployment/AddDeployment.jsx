@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useParams, useHistory } from "react-router";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
 import AddTaskForm from "../../../components/deployments/add-task/AddTaskForm";
 import AddAffinityForm from "../../../components/deployments/add-affinity/AddAffinityForm";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav";
-import { projectModules, deploymentStatuses } from "../../../constants";
+import { projectModules, actionQueuedMessage } from "../../../constants";
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
 import { getSecrets } from "../../../operations/secrets";
-import { getServices, getServicesStatus } from "../../../operations/deployments";
+import { getServices, saveService } from "../../../operations/deployments";
+import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 
 import {
   Form,
@@ -29,12 +30,18 @@ const { Panel } = Collapse;
 
 const AddDeployment = props => {
   const { projectID } = useParams();
-  const { initialValues } = props;
+  const history = useHistory();
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (props.location.state) {
+      setTasks(tasks.concat(props.location.state.deploymentClickedInfo.tasks))
+      setAffinities(affinities.concat(props.location.state.deploymentClickedInfo.affinity))
+    }
+  }, [])
 
   // Global State
   const deployments = useSelector(state => getServices(state))
-  const deploymentStatus = useSelector(state => getServicesStatus(state));
   const totalSecrets = useSelector(state => getSecrets(state))
 
   // Component state
@@ -42,83 +49,37 @@ const AddDeployment = props => {
   const [affinities, setAffinities] = useState([]);
   const [addTaskModalVisibility, setAddTaskModalVisibility] = useState(false);
   const [addAffinityModalVisibility, setAddAffinityModalVisibility] = useState(false);
+  const [selectedTaskInfo, setSelectedTaskInfo] = useState(null);
+  const [selectedAffinityInfo, setSelectedAffinityInfo] = useState(null);
   const [deploymentClicked, setDeploymentClicked] = useState(null);
 
+  // Derived state
+  const operation = window.location.pathname.split("/").pop();
+
+  const initialValues = operation === "edit" ? props.location.state.deploymentClickedInfo : undefined;
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
     version: initialValues ? initialValues.version : "",
-    registryType: initialValues ? initialValues.registryType : "public",
-    dockerImage: initialValues ? initialValues.dockerImage : "",
-    dockerSecret: initialValues ? initialValues.dockerSecret : "",
-    imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists",
-    cpu: initialValues ? initialValues.cpu : 0.1,
-    memory: initialValues ? initialValues.memory : 100,
-    addGPUs: initialValues && initialValues.gpuType ? true : false,
-    gpuType: initialValues ? initialValues.gpuType : "nvdia",
-    gpuCount: initialValues ? initialValues.gpuCount : 1,
-    concurrency: initialValues ? initialValues.concurrency : 50,
-    min: initialValues ? initialValues.min : 1,
-    max: initialValues ? initialValues.max : 100,
-    secrets: initialValues ? initialValues.secrets : [],
-    autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
-    ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
-    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
-    whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
-    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }],
-    statsInclusionPrefixes: initialValues && initialValues.statsInclusionPrefixes ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager"
+    mode: initialValues ? initialValues.scale.mode : "parallel",
+    concurrency: initialValues ? initialValues.scale.concurrency : 50,
+    min: initialValues ? initialValues.scale.minReplicas : 1,
+    max: initialValues ? initialValues.scale.maxReplicas : 100,
+    whitelists: (initialValues && initialValues.whitelists && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: projectID, service: "*" }],
+    upstreams: (initialValues && initialValues.upstreams && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: projectID, service: "*" }],
+    statsInclusionPrefixes: (initialValues && initialValues.statsInclusionPrefixes) ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager",
+    labels: (initialValues && Object.keys(initialValues.labels).length > 0) ? Object.entries(initialValues.labels).map(([key, value]) => ({
+      key: key,
+      value: value
+    })) : undefined
   }
 
-  // Derived state
   const dockerSecrets = totalSecrets
     .filter(obj => obj.type === "docker")
     .map(obj => obj.id);
+
   const secrets = totalSecrets
     .filter(obj => obj.type !== "docker")
     .map(obj => obj.id);
-
-  const data = deployments.map(obj => {
-    const task = obj.tasks && obj.tasks.length ? obj.tasks[0] : {};
-    return {
-      id: obj.id,
-      version: obj.version,
-      serviceType: task.runtime,
-      dockerImage: task.docker.image,
-      dockerSecret: task.docker.secret,
-      imagePullPolicy: task.docker.imagePullPolicy,
-      secrets: task.secrets ? task.secrets : [],
-      registryType: task.docker.secret ? "private" : "public",
-      ports: task.ports,
-      cpu: task.resources.cpu / 1000,
-      memory: task.resources.memory,
-      gpuType: task.resources.gpu ? task.resources.gpu.type : "",
-      gpuCount: task.resources.gpu ? task.resources.gpu.value : 0,
-      min: obj.scale.minReplicas,
-      max: obj.scale.maxReplicas,
-      replicas: obj.scale.replicas,
-      autoscalingMode: obj.scale.mode,
-      concurrency: obj.scale.concurrency,
-      env: task.env
-        ? Object.entries(task.env).map(([key, value]) => ({
-          key: key,
-          value: value
-        }))
-        : [],
-      whitelists: obj.whitelists,
-      upstreams: obj.upstreams,
-      statsInclusionPrefixes: obj.statsInclusionPrefixes,
-      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
-      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
-      deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
-    };
-  });
-
-  const deploymentClickedInfo = deploymentClicked
-    ? data.find(
-      obj =>
-        obj.id === deploymentClicked.serviceId &&
-        obj.version === deploymentClicked.version
-    )
-    : undefined;
 
   const tasksTableData = tasks.map(val => (
     {
@@ -127,7 +88,7 @@ const AddDeployment = props => {
     }
   ))
 
-  const handleTaskSubmit = (operation, values) => {
+  const handleTaskSubmit = (values, operation) => {
     const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
     const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
 
@@ -155,32 +116,83 @@ const AddDeployment = props => {
         : {},
       runtime: values.serviceType
     };
-    setTasks(tasks.concat(newTask))
-    /*       incrementPendingRequests()
-          saveService(projectID, config.id, config.version, config)
-            .then(({ queued }) => {
-              notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
-              resolve()
-            })
-            .catch(ex => {
-              notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
-              reject(ex)
-            })
-            .finally(() => decrementPendingRequests()); */
+    if (operation === "add") {
+      setTasks(tasks.concat(newTask))
+    }
+    else {
+      const newTasksArray = tasks.map(val => {
+        if (val.id === values.id) {
+          return newTask
+        }
+        return val
+      })
+      setTasks(newTasksArray)
+    }
   };
 
-  const handleAffinitySubmit = (values) => {
-    console.log(values)
-    setAffinities(affinities.concat(values));
+  const handleAffinitySubmit = (values, operation) => {
+    if (operation === "add") {
+      setAffinities(affinities.concat(values));
+    }
+    else {
+      // MARK
+    }
   }
 
   const handleCancel = () => {
     setAddTaskModalVisibility(false);
     setDeploymentClicked(null);
-  };
+  }
+
+  const onAddTaskClick = () => {
+    setSelectedTaskInfo(null)
+    setAddTaskModalVisibility(true)
+  }
+
+  const onAddAffinityClick = () => {
+    setSelectedAffinityInfo(null)
+    setAddAffinityModalVisibility(true)
+  }
 
   const removeTask = (id) => {
     setTasks(tasks.filter(val => val.id !== id))
+  }
+
+  const onDeployService = (operation) => {
+    form.validateFields().then(values => {
+      let config = {
+        id: values.id,
+        version: values.version,
+        projectId: projectID,
+        scale: {
+          replicas: 0,
+          minReplicas: values.min,
+          maxReplicas: values.max,
+          concurrency: values.concurrency,
+          mode: values.mode
+        },
+        tasks: [...tasks],
+        whitelists: values.whitelists,
+        upstreams: values.upstreams,
+        statsInclusionPrefixes: values.statsInclusionPrefixes,
+        labels: values.labels
+          ? values.labels.reduce((prev, curr) => {
+            return Object.assign({}, prev, { [curr.key]: curr.value });
+          }, {})
+          : {},
+        affinity: [...affinities]
+      };
+      incrementPendingRequests()
+      saveService(projectID, config.id, config.version, config)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
+          history.goBack()
+        })
+        .catch(ex => {
+          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
+        })
+        .finally(() => decrementPendingRequests());
+    })
   }
 
   const tasksColumn = [
@@ -200,7 +212,12 @@ const AddDeployment = props => {
       render: (_, record) => {
         return (
           <span>
-            <a>Edit</a>
+            <a onClick={() => {
+              setSelectedTaskInfo(tasks.find(val => val.id === record.id));
+              setAddTaskModalVisibility(true);
+            }}>
+              Edit
+            </a>
             <Popconfirm
               title="Are you sure delete this?"
               onConfirm={() => removeTask(record.id)}
@@ -232,7 +249,12 @@ const AddDeployment = props => {
       render: (_, record) => {
         return (
           <span>
-            <a>Edit</a>
+            <a onClick={() => {
+              setSelectedAffinityInfo(affinities.find(val => val.type === record.type && val.operator === record.operator))
+              setAddAffinityModalVisibility(true)
+            }}>
+              Edit
+            </a>
             <Popconfirm
               title="Are you sure delete this?"
               onConfirm={() => console.log(record.id)}
@@ -253,9 +275,9 @@ const AddDeployment = props => {
       <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <ProjectPageLayout>
         <InnerTopBar title="Deploy service" />
-        <Content>
+        <Content style={{ display: "flex", justifyContent: "center" }}>
           <Card>
-            <Form layout="vertical" style={{ maxWidth: 720 }} form={form} initialValues={formInitialValues}>
+            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues}>
               <React.Fragment>
                 <FormItemLabel name="Service ID" />
                 <Form.Item name="id" rules={[
@@ -301,7 +323,7 @@ const AddDeployment = props => {
                     disabled={initialValues ? true : false}
                   />
                 </Form.Item>
-                <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={() => setAddTaskModalVisibility(true)}>Add task</Button>} />
+                <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
                 <Table dataSource={tasksTableData} columns={tasksColumn} />
                 <Collapse bordered={false} style={{ background: 'white' }}>
                   <Panel header="Advanced" key="1">
@@ -311,7 +333,7 @@ const AddDeployment = props => {
                       description="Auto scale your container instances between min and max replicas based on the following config"
                     />
                     <Input.Group compact>
-                      <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
+                      <Form.Item name="mode" style={{ marginBottom: 0 }}>
                         <Select placeholder="Select auto scaling mode">
                           <Option value="per-second">Requests per second</Option>
                           <Option value="parallel">Parallel requests</Option>
@@ -543,34 +565,33 @@ const AddDeployment = props => {
                         );
                       }}
                     </Form.List>
-                    <FormItemLabel name="Affinities" extra={<Button style={{ float: "right" }} onClick={() => setAddAffinityModalVisibility(true)}>Add affinity</Button>} />
+                    <FormItemLabel name="Affinities" extra={<Button style={{ float: "right" }} onClick={onAddAffinityClick}>Add affinity</Button>} />
                     <Table dataSource={affinities} columns={affinitiesColumn} />
                   </Panel>
                 </Collapse>
+                <Button type="primary" block htmlType="submit" onClick={() => onDeployService(operation)}>Save</Button>
               </React.Fragment>
             </Form>
-            <Button type="primary" block >Save</Button>
           </Card>
         </Content>
       </ProjectPageLayout>
       {addTaskModalVisibility && (
         <AddTaskForm
           visible={addTaskModalVisibility}
-          /* initialValues={deploymentClickedInfo} */
+          initialValues={selectedTaskInfo}
           projectId={projectID}
           dockerSecrets={dockerSecrets}
           secrets={secrets}
           handleCancel={handleCancel}
-          handleSubmit={values =>
-            handleTaskSubmit(/* deploymentClickedInfo */ false ? "update" : "add", values)
-          }
+          handleSubmit={handleTaskSubmit}
         />
       )}
       {addAffinityModalVisibility && (
         <AddAffinityForm
           visible={addAffinityModalVisibility}
+          initialValues={selectedAffinityInfo}
           handleCancel={() => setAddAffinityModalVisibility(false)}
-          handleSubmit={values => handleAffinitySubmit(values)}
+          handleSubmit={handleAffinitySubmit}
         />
       )}
     </React.Fragment>
