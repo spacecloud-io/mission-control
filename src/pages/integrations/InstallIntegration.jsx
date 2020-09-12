@@ -34,6 +34,7 @@ const InstallIntegration = () => {
   const handleStartIntegration = () => {
     setInstallationComplete(false)
     setInstallationSucceed(false)
+    setUiReady(false)
     installIntegration(integrationId)
       .then(({ queued }) => {
         checkIntegrationStatus(healthCheckUrl)
