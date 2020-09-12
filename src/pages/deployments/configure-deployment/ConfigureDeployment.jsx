@@ -28,7 +28,7 @@ import {
 const { Option } = Select;
 const { Panel } = Collapse;
 
-const AddDeployment = props => {
+const ConfigureDeployment = props => {
   const { projectID } = useParams();
   const history = useHistory();
   const [form] = Form.useForm();
@@ -51,10 +51,9 @@ const AddDeployment = props => {
   const [addAffinityModalVisibility, setAddAffinityModalVisibility] = useState(false);
   const [selectedTaskInfo, setSelectedTaskInfo] = useState(null);
   const [selectedAffinityInfo, setSelectedAffinityInfo] = useState(null);
-  const [deploymentClicked, setDeploymentClicked] = useState(null);
 
   // Derived state
-  const operation = window.location.pathname.split("/").pop();
+  const operation = props.location.state && props.location.state.deploymentClickedInfo ? "edit" : "add";
 
   const initialValues = operation === "edit" ? props.location.state.deploymentClickedInfo : undefined;
   const formInitialValues = {
@@ -88,8 +87,27 @@ const AddDeployment = props => {
     }
   ))
 
+  // Handlers
+  const onAddTaskClick = () => {
+    setSelectedTaskInfo(null)
+    setAddTaskModalVisibility(true)
+  }
+
+  const onAddAffinityClick = () => {
+    setSelectedAffinityInfo(null)
+    setAddAffinityModalVisibility(true)
+  }
+
+  const removeTask = (id) => {
+    setTasks(tasks.filter(val => val.id !== id))
+  }
+
+  const removeAffinity = (id) => {
+    setAffinities(affinities.filter(val => val.id !== id))
+  }
+
   const handleTaskSubmit = (values, operation) => {
-    const c = deploymentClicked ? deployments.find(obj => obj.id === deploymentClicked.serviceId && obj.version === deploymentClicked.version) : undefined
+    const c = selectedTaskInfo && deployments.find(obj => obj.id === selectedTaskInfo.id && obj.version === selectedTaskInfo.version)
     const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
 
     let newTask = {
@@ -135,30 +153,21 @@ const AddDeployment = props => {
       setAffinities(affinities.concat(values));
     }
     else {
-      // MARK
+      const newAffinitiesArray = affinities.map(val => {
+        if (val.id === values.id) {
+          return values
+        }
+        return val
+      })
+      setAffinities(newAffinitiesArray)
     }
   }
 
-  const handleCancel = () => {
-    setAddTaskModalVisibility(false);
-    setDeploymentClicked(null);
-  }
-
-  const onAddTaskClick = () => {
-    setSelectedTaskInfo(null)
-    setAddTaskModalVisibility(true)
-  }
-
-  const onAddAffinityClick = () => {
-    setSelectedAffinityInfo(null)
-    setAddAffinityModalVisibility(true)
-  }
-
-  const removeTask = (id) => {
-    setTasks(tasks.filter(val => val.id !== id))
-  }
-
   const onDeployService = (operation) => {
+    if (tasks.length === 0) {
+      notify("error", "Error", "There should be atleast one task")
+      return;
+    }
     form.validateFields().then(values => {
       let config = {
         id: values.id,
@@ -195,6 +204,7 @@ const AddDeployment = props => {
     })
   }
 
+  // Columns
   const tasksColumn = [
     {
       title: 'Task ID',
@@ -257,7 +267,7 @@ const AddDeployment = props => {
             </a>
             <Popconfirm
               title="Are you sure delete this?"
-              onConfirm={() => console.log(record.id)}
+              onConfirm={() => removeAffinity(record.id)}
               okText="Yes"
               cancelText="No"
             >
@@ -324,7 +334,7 @@ const AddDeployment = props => {
                   />
                 </Form.Item>
                 <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
-                <Table dataSource={tasksTableData} columns={tasksColumn} />
+                <Table dataSource={tasksTableData} columns={tasksColumn} pagination={false} />
                 <Collapse bordered={false} style={{ background: 'white' }}>
                   <Panel header="Advanced" key="1">
                     <br />
@@ -566,7 +576,7 @@ const AddDeployment = props => {
                       }}
                     </Form.List>
                     <FormItemLabel name="Affinities" extra={<Button style={{ float: "right" }} onClick={onAddAffinityClick}>Add affinity</Button>} />
-                    <Table dataSource={affinities} columns={affinitiesColumn} />
+                    <Table dataSource={affinities} columns={affinitiesColumn} pagination={false} />
                   </Panel>
                 </Collapse>
                 <Button type="primary" block htmlType="submit" onClick={() => onDeployService(operation)}>Save</Button>
@@ -582,7 +592,7 @@ const AddDeployment = props => {
           projectId={projectID}
           dockerSecrets={dockerSecrets}
           secrets={secrets}
-          handleCancel={handleCancel}
+          handleCancel={() => setAddTaskModalVisibility(false)}
           handleSubmit={handleTaskSubmit}
         />
       )}
@@ -598,4 +608,4 @@ const AddDeployment = props => {
   );
 };
 
-export default AddDeployment;
+export default ConfigureDeployment;

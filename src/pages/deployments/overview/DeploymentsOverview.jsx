@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
@@ -85,7 +85,7 @@ const DeploymentsOverview = () => {
         obj.id === serviceId &&
         obj.version === version
     );
-    history.push("/mission-control/projects/mockproject1/deployments/edit", { deploymentClickedInfo })
+    history.push("/mission-control/projects/mockproject1/deployments/configure", { deploymentClickedInfo })
   };
 
   const handleDelete = (serviceId, version) => {
@@ -214,7 +214,7 @@ const DeploymentsOverview = () => {
                 <Button
                   type="primary"
                   style={{ marginTop: 16 }}
-                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/add")}
+                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/configure")}
                 >
                   Deploy your first container
                 </Button>
@@ -228,7 +228,7 @@ const DeploymentsOverview = () => {
                 </span>
                 <Button
                   style={{ float: "right" }}
-                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/add")}
+                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/configure")}
                 >
                   Add
                 </Button>

@@ -1,24 +1,18 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { Form, AutoComplete } from 'antd'
-import { MinusCircleOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
+import { Form } from 'antd'
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import {
   Modal,
-  Radio,
   Input,
   Row,
   Col,
   Select,
   Button,
-  Collapse,
   InputNumber,
-  Checkbox,
   Slider,
-  Space
 } from "antd";
-const { Option } = Select;
-const { Panel } = Collapse;
+import { v4 as uuidv4 } from 'uuid';
 
 const AddTaskForm = props => {
   const { initialValues } = props;
@@ -28,12 +22,14 @@ const AddTaskForm = props => {
     weight: initialValues ? initialValues.weight : 0,
     operator: initialValues ? initialValues.operator : undefined,
     topologyKey: initialValues ? initialValues.topologyKey : undefined,
-    matchExpression: initialValues ? initialValues.matchExpression : undefined
+    matchExpression: initialValues ? initialValues.matchExpression : [{key: "", operator: undefined, values: undefined}]
   }
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
-      props.handleSubmit(values, initialValues ? "edit" : "add")
+      const operation = initialValues ? "edit" : "add";
+      values.id = operation === "edit" ? initialValues.id : uuidv4();
+      props.handleSubmit(values, operation)
       props.handleCancel()
     });
   };
@@ -43,7 +39,7 @@ const AddTaskForm = props => {
     visible: props.visible,
     width: 720,
     okText: initialValues ? "Save" : "Add",
-    title: initialValues ? "Update Task" : "Add task",
+    title: initialValues ? "Update Affinity" : "Add Affinity",
     onOk: handleSubmitClick,
     onCancel: props.handleCancel
   };
@@ -147,12 +143,14 @@ const AddTaskForm = props => {
                           </Form.Item>
                         </Col>
                         <Col span={3}>
-                          <DeleteOutlined
-                            onClick={() => {
-                              remove(field.name);
-                            }}
-                            style={{ marginTop: 47 }}
-                          />
+                          {fields.length > 1 && (
+                            <DeleteOutlined
+                              onClick={() => {
+                                remove(field.name);
+                              }}
+                              style={{ marginTop: 47 }}
+                            />
+                          )}
                         </Col>
                       </Row>
                     ))}

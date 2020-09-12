@@ -334,6 +334,7 @@ export const services = [
     ],
     "affinity": [
       {
+        "id": "123",
         "type": "node",
         "weight": 50,
         "operator": "preferred",
