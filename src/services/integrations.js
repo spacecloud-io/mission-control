@@ -53,6 +53,19 @@ class Integrations {
     })
   }
 
+  fetchIntegrationStatus(healthCheckUrl) {
+    return new Promise((resolve, reject) => {
+      this.spaceCloudClient.getJSON(healthCheckUrl)
+        .then(({ status }) => {
+          if (status <= 200 && status <= 300) {
+            resolve()
+            return
+          }
+        })
+        .catch(ex => reject(ex))
+    })
+  }
+
   removeIntegration(integrationId) {
     return new Promise((resolve, reject) => {
       this.spaceCloudClient.delete(`/v1/config/integrations/${integrationId}`)

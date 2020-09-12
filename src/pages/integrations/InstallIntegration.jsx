@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import ProjectPageLayout, { Content, InnerTopBar } from '../../components/project-page-layout/ProjectPageLayout';
-import { Row, Col, Steps, Card, Alert, Button, Result } from 'antd';
+import { Row, Col, Steps, Card, Alert, Button, Result, Spin } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import PermissionsSection from '../../components/integrations/permissions/PermissionsSection';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
+import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration, checkIntegrationStatus } from '../../operations/integrations';
 import { formatIntegrationImageUrl, incrementPendingRequests, notify, decrementPendingRequests } from '../../utils';
 import { projectModules, actionQueuedMessage } from '../../constants';
 const { Step } = Steps;
@@ -17,26 +17,43 @@ const InstallIntegration = () => {
   const { projectID, integrationId } = useParams()
 
   // Global state
-  const { name, appUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
+  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
   const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
   const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
 
   // Component state
   const [current, setCurrent] = useState(0);
+  const [installationComplete, setInstallationComplete] = useState(false)
+  const [installationSucceed, setInstallationSucceed] = useState(false)
+  const [uiReady, setUiReady] = useState(false)
 
   // Dervied state
   const integrationImgurl = formatIntegrationImageUrl(integrationId)
 
   // Handlers
   const handleStartIntegration = () => {
-    incrementPendingRequests()
+    setInstallationComplete(false)
+    setInstallationSucceed(false)
     installIntegration(integrationId)
       .then(({ queued }) => {
+        checkIntegrationStatus(healthCheckUrl)
+        setInstallationComplete(true)
+        .then(() =>{
+          setInstallationSucceed(true)
+          setUiReady(true)
+          notify("success", "Success", "configured integration UI")
+        })
+        .catch(ex => {
+          setInstallationSucceed(false) 
+          setUiReady(false)
+          notify("error", "Error in configuring integration UI", ex)
+        })
         notify("success", "Success", queued ? actionQueuedMessage : "Installed integration successfully")
-        setCurrent(current + 1)
       })
-      .catch(ex => notify("error", "Error installing integration", ex))
-      .finally(() => decrementPendingRequests())
+      .catch(ex =>{
+        setInstallationSucceed(false) 
+        notify("error", "Error installing integration", ex)
+      })
   }
 
   const handleOpenConsole = () => {
@@ -73,7 +90,7 @@ const InstallIntegration = () => {
               <Alert type='info' showIcon
                 message='The integration will have its own UI to configure and use it. The UI will be available once you start the integration.'
                 description=' ' />
-              <Button type='primary' style={{ marginTop: 32 }} block size="large" onClick={handleStartIntegration}>Start integration</Button>
+              <Button type='primary' style={{ marginTop: 32 }} block size="large" onClick={() => {setCurrent(current + 1); handleStartIntegration()}}>Start integration</Button>
             </Card>
           </Col>
         </Row>
@@ -82,15 +99,17 @@ const InstallIntegration = () => {
       content:
         <Row>
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }}>
-            <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-              <Result
-                status='success'
-                title="Success"
-                subTitle="Integration installed sucessfully"
+            <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', textAlign: 'center' }}>
+              {!uiReady && <Spin size='large' tip='Installing integration...' style={{ padding:'48px 32px' }}/>}
+              {uiReady && <Result
+                status={installationSucceed ? 'success' : 'error'}
+                title={installationSucceed ? 'Success' : 'Error'}
+                subTitle={installationSucceed ? 'Integration installed successfully' : 'Error in installing integration'}
                 extra={[
-                  <Button key="console" type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>,
+                  installationSucceed ? <Button key="console" type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>
+                  :<Button key="error" type='danger' size="large" onClick={handleStartIntegration}>Retry</Button>,
                   <Button key="back" size="large" onClick={handleBackToIntegrations}>Back to integrations page</Button>
-                ]} />
+                ]} />}
             </Card>
           </Col>
         </Row>

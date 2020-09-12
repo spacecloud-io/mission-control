@@ -163,7 +163,7 @@ body {
   color: #fff;
 }
 
-.ant-spin {
+.page-loading {
   position: fixed;
   display: flex;
   top: 0;

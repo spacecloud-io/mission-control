@@ -46,6 +46,20 @@ export function installIntegration(integrationId) {
       .catch(ex => reject(ex))
   })
 }
+
+export function checkIntegrationStatus(healthCheckUrl) {
+  return new Promise((resolve, reject) => {
+    if (!healthCheckUrl.startsWith("http")) {
+      healthCheckUrl = window.location.origin + healthCheckUrl
+    }
+    client.integrations.fetchIntegrationStatus(healthCheckUrl)
+      .then(() => {
+        // Introduce delay since the integration takes time to start 
+        setTimeout(() => resolve(), 10000)
+      })
+      .catch(ex => reject(ex))
+  })
+}
 export function deleteIntegration(integrationId) {
   return new Promise((resolve, reject) => {
     client.integrations.removeIntegration(integrationId)
