@@ -209,6 +209,7 @@ const ConfigureRule = (props) => {
     }
     if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
       values.clause = props.selectedRule.clause
+      delete values["loadVar"]
     }
 
     props.onSubmit(values);
@@ -387,49 +388,65 @@ const ConfigureRule = (props) => {
           }
         >
           <FormItemLabel name='Fields' />
-          <Form.List name='fields'>
-            {(fields, { add, remove }) => {
-              return (
-                <>
-                  {fields.map((field, index) => (
-                    <Row key={field.key}>
-                      <Col span={14}>
-                        <Form.Item
-                          name={[field.name]}
-                          key={[field.name]}
-                          rules={[
-                            { required: true },
-                            { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
-                          ]}
-                        >
-                          <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={2}>
-                        <CloseOutlined
-                          style={{ margin: '0 8px' }}
-                          onClick={() => {
-                            remove(field.name);
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item>
-                    <Button
-                      type='dashed'
-                      onClick={() => {
-                        add();
-                      }}
-                      style={{ width: '40%' }}
-                    >
-                      <PlusOutlined /> Add field
+          <Form.Item name="loadVar" valuePropName="checked">
+            <Checkbox>
+              Load fields from a variable
+            </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock dependency='loadVar' condition={() => form.getFieldValue('loadVar')}>
+            <Row>
+              <Col span={14}>
+                <Form.Item name="fields">
+                  <Input placeholder="Variable to load fields from" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </ConditionalFormBlock>
+          <ConditionalFormBlock dependency='loadVar' condition={() => !form.getFieldValue('loadVar')}>
+            <Form.List name='fields'>
+              {(fields, { add, remove }) => {
+                return (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key}>
+                        <Col span={14}>
+                          <Form.Item
+                            name={[field.name]}
+                            key={[field.name]}
+                            rules={[
+                              { required: true },
+                              { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
+                            ]}
+                          >
+                            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2}>
+                          <CloseOutlined
+                            style={{ margin: '0 8px' }}
+                            onClick={() => {
+                              remove(field.name);
+                            }}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type='dashed'
+                        onClick={() => {
+                          add();
+                        }}
+                        style={{ width: '40%' }}
+                      >
+                        <PlusOutlined /> Add field
                     </Button>
-                  </Form.Item>
-                </>
-              );
-            }}
-          </Form.List>
+                    </Form.Item>
+                  </>
+                );
+              }}
+            </Form.List>
+          </ConditionalFormBlock>
           <Alert
             description={<div>You can use variables inside fields</div>}
             type='info'
