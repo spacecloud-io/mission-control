@@ -47,7 +47,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
@@ -79,7 +79,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
         name,
         method,
         path,
-        defaultEndpointRule,
+        rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
         overrideToken ? token : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
@@ -267,7 +267,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
               >
                 <FormItemLabel name="Timeout" description="default: 60" />
                 <Form.Item name="timeout">
-                  <InputNumber placeholder="Timeout in seconds" />
+                  <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />
                 </Form.Item>
                 <FormItemLabel name='Override token' />
                 <Form.Item name='overrideToken' valuePropName='checked'>
