@@ -69,7 +69,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     outputFormat: outputFormat ? outputFormat : "yaml",
     timeout: timeout
   }
-  
+
   const handleFinish = (values) => {
     values = Object.assign({}, formInitialValues, values)
     const { kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders, timeout } = values
@@ -267,7 +267,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
               >
                 <FormItemLabel name="Timeout" description="default: 60" />
                 <Form.Item name="timeout">
-                  <InputNumber placeholder="Timeout in seconds" />
+                  <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />
                 </Form.Item>
                 <FormItemLabel name='Override token' />
                 <Form.Item name='overrideToken' valuePropName='checked'>
