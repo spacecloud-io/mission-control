@@ -17,6 +17,8 @@ const InstallIntegration = () => {
   const { projectID, integrationId } = useParams()
 
   // Global state
+  const isUploadedIntegration = useSelector(state => state.isUploadedIntegration)
+  const uploadedIntegration = useSelector(state => state.uploadedIntegration);
   const { name, appUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
   const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
   const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
@@ -54,7 +56,12 @@ const InstallIntegration = () => {
         <Row>
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
             <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-              <PermissionsSection name={name} imgUrl={integrationImgurl} apiPermissions={apiPermissions} configPermissions={configPermissions} scrollHeight={240} />
+              <PermissionsSection 
+                name={isUploadedIntegration ? uploadedIntegration.name : name} 
+                imgUrl={integrationImgurl} 
+                apiPermissions={isUploadedIntegration ? uploadedIntegration.apiPermissions : apiPermissions} 
+                configPermissions={isUploadedIntegration ? uploadedIntegration.configPermissions : configPermissions} 
+                scrollHeight={240} />
               <Button type='primary' block size="large" style={{ marginTop: 32 }} onClick={() => setCurrent(current + 1)}>Grant permissions</Button>
             </Card>
           </Col>
