@@ -454,7 +454,7 @@ export const supportedInterations = [
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
     appUrl: "/integrations/team-management",
-    healthCheckUrl:"/integrations/team-management",
+    healthCheckUrl:"/v1/integrations/health-check",
     configPermissions: [
       {
         resources: ["*"],
