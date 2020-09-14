@@ -147,6 +147,10 @@ const parseArray = (value, type) => {
   return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
 }
 
+const isTypeOfFieldsString = (fields) => {
+  return typeof fields === "string"
+}
+
 const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
 
 const ConfigureRule = (props) => {
@@ -209,7 +213,10 @@ const ConfigureRule = (props) => {
     }
     if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
       values.clause = props.selectedRule.clause
+      values.fields = values.loadVar ? values.singleInputFields : values.multipleInputFields
       delete values["loadVar"]
+      delete values["singleInputFields"]
+      delete values["multipleInputFields"]
     }
 
     props.onSubmit(values);
@@ -270,6 +277,9 @@ const ConfigureRule = (props) => {
     f1: getInputValueFromActualValue(f1, type),
     eval: props.selectedRule.eval,
     f2: getInputValueFromActualValue(f2, type),
+    loadVar: isTypeOfFieldsString(fields),
+    singleInputFields: isTypeOfFieldsString(fields) ? fields : "",
+    multipleInputFields: isTypeOfFieldsString(fields) ? undefined : fields,
     fields,
     field,
     value: getInputValueFromActualValue(value, inheritedDataType),
@@ -396,14 +406,14 @@ const ConfigureRule = (props) => {
           <ConditionalFormBlock dependency='loadVar' condition={() => form.getFieldValue('loadVar')}>
             <Row>
               <Col span={14}>
-                <Form.Item name="fields">
+                <Form.Item name="singleInputFields">
                   <Input placeholder="Variable to load fields from" />
                 </Form.Item>
               </Col>
             </Row>
           </ConditionalFormBlock>
           <ConditionalFormBlock dependency='loadVar' condition={() => !form.getFieldValue('loadVar')}>
-            <Form.List name='fields'>
+            <Form.List name='multipleInputFields'>
               {(fields, { add, remove }) => {
                 return (
                   <>
