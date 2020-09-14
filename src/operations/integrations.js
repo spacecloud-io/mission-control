@@ -40,12 +40,12 @@ export function installIntegration(integrationId) {
           const newInstalledIntegrations = Object.assign({}, installedIntegrations, { [integrationConfig.id]: true })
           setInstalledIntegrations(newInstalledIntegrations)
         }
-        // Introduce delay since the integration takes time to start 
-        setTimeout(() => resolve({ queued }), 10000)
+        resolve({ queued })
       })
       .catch(ex => reject(ex))
   })
 }
+
 export function deleteIntegration(integrationId) {
   return new Promise((resolve, reject) => {
     client.integrations.removeIntegration(integrationId)

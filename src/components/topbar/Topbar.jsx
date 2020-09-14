@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons, openBillingPortal } from '../../utils'
-import { CaretDownOutlined, MenuOutlined } from '@ant-design/icons';
-import { Button, Menu, Popover, Row, Col } from 'antd';
+import { CaretDownOutlined, MenuOutlined, PoweroffOutlined } from '@ant-design/icons';
+import { Button, Menu, Popover, Row, Col, Tooltip } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
 import SelectProject from '../../components/select-project/SelectProject'
 import './topbar.css'
@@ -16,13 +16,15 @@ import twitterIcon from "../../assets/twitterIcon.svg"
 import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import crownSvg from "../../assets/crown.svg";
-import { isClusterUpgraded } from '../../operations/cluster';
+import { isClusterUpgraded, isProdMode } from '../../operations/cluster';
+import { redirectToLogin } from '../../utils';
 
 const Topbar = (props) => {
   const history = useHistory()
   const { projectID, selectedDB } = useParams()
   const [modalVisible, setModalVisible] = useState(false)
   const [visible, setVisible] = useState(false)
+  const state = useSelector(state => state)
   const projects = useSelector(state => state.projects)
   const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   const selectedProject = projects.find(project => project.id === projectID)
@@ -50,6 +52,10 @@ const Topbar = (props) => {
     </div>
   );
 
+  const onLogoutIconClick = () => {
+    localStorage.removeItem('token');
+    redirectToLogin();
+  }
   return (
     <div>
       <div className="topbar">
@@ -98,6 +104,13 @@ const Topbar = (props) => {
                 </div>
               </Button>
             </Menu.Item>}
+            {isProdMode(state) && (
+              <Menu.Item>
+                <Tooltip title="Logout">
+                  <PoweroffOutlined style={{ fontSize: 24, verticalAlign: 'middle', color: 'rgba(0, 0, 0, 0.54)' }} onClick={onLogoutIconClick}/>
+                </Tooltip>
+              </Menu.Item>
+            )}
           </Menu>
         </div>
       </div>

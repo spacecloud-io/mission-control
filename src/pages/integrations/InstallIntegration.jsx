@@ -2,41 +2,96 @@ import React, { useState } from 'react';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
 import ProjectPageLayout, { Content, InnerTopBar } from '../../components/project-page-layout/ProjectPageLayout';
-import { Row, Col, Steps, Card, Alert, Button, Result } from 'antd';
+import { Row, Col, Steps, Card, Alert, Button, Result, Spin } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import PermissionsSection from '../../components/integrations/permissions/PermissionsSection';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
-import { formatIntegrationImageUrl, incrementPendingRequests, notify, decrementPendingRequests } from '../../utils';
+import { formatIntegrationImageUrl, notify } from '../../utils';
 import { projectModules, actionQueuedMessage } from '../../constants';
+import client from "../../client";
 const { Step } = Steps;
+
+let healthCheckInterval = null 
 
 const InstallIntegration = () => {
   const history = useHistory()
   const { projectID, integrationId } = useParams()
 
   // Global state
-  const { name, appUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
+  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
   const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
   const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
 
   // Component state
   const [current, setCurrent] = useState(0);
+  const [installationCompleted, setInstallationCompleted] = useState(false)
+  const [installationSucceeded, setInstallationSucceeded] = useState(false)
+  const [installationQueued, setInstallationQueued] = useState(false)
+  const [healthCheckCompleted, setHealthCheckCompleted] = useState(false)
+  const [healthCheckPassed, setHealthCheckPassed] = useState(false)
 
   // Dervied state
   const integrationImgurl = formatIntegrationImageUrl(integrationId)
 
   // Handlers
+  const resetAllStatuses = () => {
+    setInstallationCompleted(false)
+    setInstallationQueued(false)
+    setInstallationSucceeded(false)
+    setHealthCheckCompleted(false)
+    setHealthCheckPassed(false)
+  }
+
   const handleStartIntegration = () => {
-    incrementPendingRequests()
+    resetAllStatuses()
     installIntegration(integrationId)
       .then(({ queued }) => {
-        notify("success", "Success", queued ? actionQueuedMessage : "Installed integration successfully")
-        setCurrent(current + 1)
+        setInstallationCompleted(true)
+        if (queued) {
+          notify("success", "Success", actionQueuedMessage)
+          setInstallationQueued(true)
+          setInstallationSucceeded(false)
+        } else {
+          setInstallationSucceeded(true)
+          // If health check url is not provided, then simulate health check passed in 5 seconds
+          if (!healthCheckUrl) {
+            setTimeout(() => {
+              setHealthCheckCompleted(true)
+              setHealthCheckPassed(true)
+            }, 5000)
+            return
+          }
+          healthCheckInterval = setInterval(() => {
+            client.integrations.fetchIntegrationStatus(healthCheckUrl)
+              .then(({ ack, retry, error }) => {
+                if (retry) {
+                  return
+                }
+                setHealthCheckCompleted(true)
+                setHealthCheckPassed(ack)
+                clearInterval(healthCheckInterval)
+                if (!ack) {
+                  notify("error", "Error getting integration console ready", error)
+                  return
+                }
+                notify("success", "Success", "Integration installed successfully")
+              })
+              .catch(ex => {
+                setHealthCheckCompleted(true)
+                setHealthCheckPassed(false)
+                clearInterval(healthCheckInterval)
+                notify("error", "Error getting integration console ready", ex)
+              })
+          }, 2000)
+        }
       })
-      .catch(ex => notify("error", "Error installing integration", ex))
-      .finally(() => decrementPendingRequests())
+      .catch(ex => {
+        setInstallationCompleted(true)
+        setInstallationSucceeded(false)
+        notify("error", "Error installing integration", ex)
+      })
   }
 
   const handleOpenConsole = () => {
@@ -45,6 +100,24 @@ const InstallIntegration = () => {
 
   const handleBackToIntegrations = () => {
     history.push(`/mission-control/projects/${projectID}/integrations`)
+  }
+
+  const BackToIntegrationsPageButton = () => {
+    return (
+      <Button key="back" size="large" onClick={handleBackToIntegrations}>Back to integrations page</Button>
+    )
+  }
+
+  const RetryInstallationButton = () => {
+    return (
+      <Button key="error" type='danger' size="large" onClick={handleStartIntegration}>Retry</Button>
+    )
+  }
+
+  const OpenConsoleButton = () => {
+    return (
+      <Button key="console" type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>
+    )
   }
 
   const steps = [
@@ -73,7 +146,7 @@ const InstallIntegration = () => {
               <Alert type='info' showIcon
                 message='The integration will have its own UI to configure and use it. The UI will be available once you start the integration.'
                 description=' ' />
-              <Button type='primary' style={{ marginTop: 32 }} block size="large" onClick={handleStartIntegration}>Start integration</Button>
+              <Button type='primary' style={{ marginTop: 32 }} block size="large" onClick={() => { setCurrent(current + 1); handleStartIntegration() }}>Start integration</Button>
             </Card>
           </Col>
         </Row>
@@ -82,15 +155,32 @@ const InstallIntegration = () => {
       content:
         <Row>
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }}>
-            <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-              <Result
-                status='success'
+            <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', textAlign: 'center' }}>
+              {!installationCompleted && <Spin size='large' tip='Installing integration...' style={{ padding: '48px 32px' }} />}
+              {(installationCompleted && installationSucceeded && !healthCheckCompleted) && <Spin
+                size='large'
+                tip='Getting UI ready...'
+                style={{ padding: '48px 32px' }} />}
+              {(installationCompleted && installationQueued) && <Result
+                status="success"
                 title="Success"
-                subTitle="Integration installed sucessfully"
-                extra={[
-                  <Button key="console" type='primary' size="large" onClick={handleOpenConsole}>Open console</Button>,
-                  <Button key="back" size="large" onClick={handleBackToIntegrations}>Back to integrations page</Button>
-                ]} />
+                subTitle="Installation queued successfully"
+                extra={[<BackToIntegrationsPageButton />]} />}
+              {(installationCompleted && !installationQueued && !installationSucceeded) && <Result
+                status="error"
+                title="Error"
+                subTitle="Error in installing integration"
+                extra={[<RetryInstallationButton />, <BackToIntegrationsPageButton />]} />}
+              {(installationCompleted && installationSucceeded && healthCheckCompleted && !healthCheckPassed) && <Result
+                status="error"
+                title="Error"
+                subTitle="Error in getting installation console ready"
+                extra={[<RetryInstallationButton />, <BackToIntegrationsPageButton />]} />}
+              {(installationCompleted && installationSucceeded && healthCheckCompleted && healthCheckPassed) && <Result
+                status="success"
+                title="Success"
+                subTitle="Integration installed successfully"
+                extra={[<OpenConsoleButton />, <BackToIntegrationsPageButton />]} />}
             </Card>
           </Col>
         </Row>

@@ -40,7 +40,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
 
   // Derived state
   const graph = generateGraph(ruleType, ruleName, rule)
-  const doubleClickedRuleObj = getDoubleClickedRuleObject(rule, doubleClickedNodeId) // Used in the configure rule form as initial values
+  const doubleClickedRuleObj = doubleClickedNodeId ? getDoubleClickedRuleObject(rule, doubleClickedNodeId) : {} // Used in the configure rule form as initial values
 
   // mouse events handlers
   const events = {
@@ -69,7 +69,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
-      if (nodeId.startsWith("root")) {
+      if (nodeId && nodeId.startsWith("root")) {
         message.error("Operation not allowed. Only rule blocks (blue ones) can be double clicked to configure them")
         return
       }
@@ -152,7 +152,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
               }
               return
             }
-            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove") {
+            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove" || selectedRuleObj.rule === "encrypt" || selectedRuleObj.rule === "decrypt" || selectedRuleObj.rule === "hash") {
               if (strippedKey === "root") {
                 setRule(dotProp.set(rule, "clause", copiedRule))
               } else {

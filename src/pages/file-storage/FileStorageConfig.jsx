@@ -13,7 +13,7 @@ import FormItemLabel from "../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../components/conditional-form-block/ConditionalFormBlock";
 import { saveFileStoreConfig, getFileStoreConfig } from '../../operations/fileStore';
 import { getSecrets, loadSecrets } from '../../operations/secrets';
-import { projectModules, actionQueuedMessage } from '../../constants';
+import { projectModules, actionQueuedMessage, fileStoreProviders } from '../../constants';
 
 const FileStorageConfig = () => {
   const [form] = Form.useForm();
@@ -47,10 +47,13 @@ const FileStorageConfig = () => {
     }
   }, [projectID])
 
+  const initialStoreType = storeType ? storeType : fileStoreProviders.LOCAL
   const formInitialValues = {
-    storeType: storeType ? storeType : "local",
-    conn: conn,
-    bucket: bucket,
+    storeType: initialStoreType,
+    localConn: initialStoreType === fileStoreProviders.LOCAL ? conn : undefined,
+    s3Conn: initialStoreType === fileStoreProviders.AMAZON_S3 ? conn : undefined,
+    s3Bucket: initialStoreType === fileStoreProviders.AMAZON_S3 ? bucket : undefined,
+    gcpBucket: initialStoreType === fileStoreProviders.GCP_STORAGE ? bucket : undefined,
     endpoint: endpoint,
     credentials: (storeType && !secret) ? "direct" : "secret",
     secret: secret,
@@ -70,9 +73,41 @@ const FileStorageConfig = () => {
   // Handlers
   const handleFinish = (values) => {
     delete values["credentials"]
-    incrementPendingRequests()
-    const newConfig = { enabled: true, ...values }
+    let newConfig = {};
+    switch (values.storeType) {
+      case fileStoreProviders.LOCAL:
+        newConfig = {
+          enabled: true,
+          conn: values.localConn,
+          ...values
+        }
+        delete newConfig["localConn"]
+        break;
 
+      case fileStoreProviders.AMAZON_S3:
+        newConfig = {
+          enabled: true,
+          conn: values.s3Conn,
+          bucket: values.s3Bucket,
+          ...values
+        }
+        delete newConfig["s3Conn"]
+        delete newConfig["s3Bucket"]
+        break;
+
+      case fileStoreProviders.GCP_STORAGE:
+        newConfig = {
+          enabled: true,
+          bucket: values.gcpBucket,
+          ...values
+        }
+        delete newConfig["gcpBucket"]
+        break;
+
+      default:
+        break;
+    }
+    incrementPendingRequests()
     saveFileStoreConfig(projectID, newConfig)
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : "Configured file storage successfully")
@@ -114,24 +149,24 @@ const FileStorageConfig = () => {
                 <FormItemLabel name="Choose storage backend" />
                 <Form.Item name="storeType" rules={[{ required: true, message: 'Please select a storage backend!' }]}>
                   <RadioCards>
-                    <Radio.Button value="local">Local File Store</Radio.Button>
-                    <Radio.Button value="amazon-s3">Amazon S3</Radio.Button>
-                    <Radio.Button value="gcp-storage">Google Cloud Storage</Radio.Button>
+                    <Radio.Button value={fileStoreProviders.LOCAL}>Local File Store</Radio.Button>
+                    <Radio.Button value={fileStoreProviders.AMAZON_S3}>Amazon S3</Radio.Button>
+                    <Radio.Button value={fileStoreProviders.GCP_STORAGE}>Google Cloud Storage</Radio.Button>
                   </RadioCards>
                 </Form.Item>
-                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === "local"}>
+                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === fileStoreProviders.LOCAL}>
                   <FormItemLabel name="Directory path" />
-                  <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a directory path!' }]}>
+                  <Form.Item name="localConn" rules={[{ required: true, message: 'Please provide a directory path!' }]}>
                     <Input placeholder="Example: /home/user/my-folder" />
                   </Form.Item>
                 </ConditionalFormBlock>
-                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === "amazon-s3"}>
+                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === fileStoreProviders.AMAZON_S3}>
                   <FormItemLabel name="Bucket" />
-                  <Form.Item name="bucket" rules={[{ required: true, message: 'Please provide a bucket!' }]}>
+                  <Form.Item name="s3Bucket" rules={[{ required: true, message: 'Please provide a bucket!' }]}>
                     <Input placeholder="Example: my-bucket" />
                   </Form.Item>
                   <FormItemLabel name="Region" />
-                  <Form.Item name="conn" rules={[{ required: true, message: 'Please provide a region!' }]} shouldUpdate>
+                  <Form.Item name="s3Conn" rules={[{ required: true, message: 'Please provide a region!' }]} shouldUpdate>
                     <Input placeholder="Example: us-east-1" />
                   </Form.Item>
                   <FormItemLabel name="Credentials File" description="Credentials file is used to authorize Space Cloud to your bucket" />
@@ -157,7 +192,7 @@ const FileStorageConfig = () => {
                     <Alert
                       style={{ marginBottom: "3%" }}
                       message="Prerequisite"
-                      description={<div> Make sure that you have stored S3 credentials file at <b> /root/.aws/credentals </b> of Space Cloud Gateway before saving this configuration. Space Cloud will drectly load the credentals from there.</div>}
+                      description={<div> Make sure that you have stored S3 credentials file at <b> /root/.aws/credentials </b> of Space Cloud Gateway before saving this configuration. Space Cloud will drectly load the credentials from there.</div>}
                       type="info"
                       showIcon
                     />
@@ -189,9 +224,9 @@ const FileStorageConfig = () => {
                     </Collapse.Panel>
                   </Collapse>
                 </ConditionalFormBlock>
-                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === "gcp-storage"}>
+                <ConditionalFormBlock dependency="storeType" condition={() => form.getFieldValue("storeType") === fileStoreProviders.GCP_STORAGE}>
                   <FormItemLabel name="Bucket" />
-                  <Form.Item name="bucket" rules={[{ required: true, message: 'Please provide a bucket!' }]}>
+                  <Form.Item name="gcpBucket" rules={[{ required: true, message: 'Please provide a bucket!' }]}>
                     <Input placeholder="Example: my-bucket" />
                   </Form.Item>
                   <FormItemLabel name="Credentials File" description="Credentials file is used to authorize Space Cloud to your bucket" />

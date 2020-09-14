@@ -323,14 +323,12 @@ const AddDeploymentForm = props => {
                                 </Form.Item>
                               </Col>
                               <Col span={5}>
-                                {fields.length > 1 ? (
-                                  <DeleteOutlined
-                                    style={{ lineHeight: "32px" }}
-                                    onClick={() => {
-                                      remove(field.name);
-                                    }}
-                                  />
-                                ) : null}
+                                <DeleteOutlined
+                                  style={{ lineHeight: "32px" }}
+                                  onClick={() => {
+                                    remove(field.name);
+                                  }}
+                                />
                               </Col>
                             </Row>
                           </React.Fragment>
