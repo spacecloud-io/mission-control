@@ -48,10 +48,10 @@ const ProjectSettings = () => {
   const dockerRegistry = selectedProject.dockerRegistry
 
   // Handlers
-  const handleAddSecret = (secret, isPrimary, alg, publicKey, privateKey) => {
+  const handleAddSecret = (secret, isPrimary, alg, publicKey, privateKey, url) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      addSecret(projectID, secret, isPrimary, alg, publicKey, privateKey)
+      addSecret(projectID, secret, isPrimary, alg, publicKey, privateKey, url)
         .then(({ queued }) => {
           notify("success", "Success", queued ? actionQueuedMessage : "Added new secret successfully")
           resolve()

@@ -27,9 +27,9 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
-      const { secret, isPrimary, alg, privateKey } = values;
+      const { secret, isPrimary, alg, privateKey, url } = values;
       const publicKey = privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : ""
-      handleSubmit(secret, isPrimary, alg, publicKey, privateKey).then(() => handleCancel())
+      handleSubmit(secret, isPrimary, alg, publicKey, privateKey, url).then(() => handleCancel())
     });
   };
 
@@ -121,6 +121,12 @@ const ViewSecretModal = ({ secretData, handleCancel }) => {
           <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.privateKey} /></div>
         </React.Fragment>
       )}
+      {secretData.alg === "RS256-JWT" && (
+        <React.Fragment>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.url }} strong>URL</Typography.Paragraph>
+          <Input value={secretData.url} />
+        </React.Fragment>
+      )}
     </Modal>
   )
 }
@@ -134,8 +140,8 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
   const [viewSecretModalVisible, setViewSecretModalVisible] = useState(false);
   const [secretData, setSecretData] = useState({});
 
-  const handleViewClick = (alg, secret, publicKey, privateKey) => {
-    setSecretData({ alg, secret, publicKey, privateKey });
+  const handleViewClick = (alg, secret, publicKey, privateKey, url) => {
+    setSecretData({ alg, secret, publicKey, privateKey, url });
     setViewSecretModalVisible(true);
   }
 
@@ -161,7 +167,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
       render: (_, record, index) => {
         return (
           <span>
-            <a onClick={() => handleViewClick(record.alg, record.secret, record.publicKey, record.privateKey)}>View</a>
+            <a onClick={() => handleViewClick(record.alg, record.secret, record.publicKey, record.privateKey, record.url)}>View</a>
             <Popconfirm
               title={record.isPrimary ? "You are deleting primary secret. Any remaining secret will be randomly chosen as primary key." : "Tokens signed with this secret will stop getting verified"}
               onConfirm={() => handleRemoveSecret(index)}
