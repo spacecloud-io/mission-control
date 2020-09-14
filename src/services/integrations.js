@@ -53,6 +53,24 @@ class Integrations {
     })
   }
 
+  fetchIntegrationStatus(healthCheckUrl) {
+    return new Promise((resolve, reject) => {
+      this.spaceCloudClient.getJSON(healthCheckUrl)
+        .then(({ status, data }) => {
+          if (status >= 200 && status < 300) {
+            resolve({ ack: true, retry: false })
+            return
+          }
+          if (status >= 400 && status < 500) {
+            resolve({ ack: false, retry: true })
+            return
+          }
+          resolve({ ack: false, retry: false, error: data.error })
+        })
+        .catch(ex => reject(ex))
+    })
+  }
+
   removeIntegration(integrationId) {
     return new Promise((resolve, reject) => {
       this.spaceCloudClient.delete(`/v1/config/integrations/${integrationId}`)

@@ -60,10 +60,18 @@ export function createRESTClient(origin, options) {
 }
 
 
+const getFetcher = () => {
+  if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_ENABLE_MOCK === "true") {
+    return (...args) => fetch(...args)
+  }
+  return undefined
+}
+
 export function createGraphQLClient(uri, getToken) {
   // Create an http link for GraphQL client:
   const httpLink = new HttpLink({
-    uri: uri
+    uri: uri,
+    fetch: getFetcher()
   });
 
   const httpAuthLink = setContext((_, { headers }) => {
