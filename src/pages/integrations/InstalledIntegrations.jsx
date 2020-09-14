@@ -8,7 +8,7 @@ import emptyStateSvg from '../../assets/routing.svg';
 import IntegrationsList from "../../components/integrations/integrations-list/IntegrationsList";
 import { Row, Col, Button } from "antd";
 import { useSelector } from 'react-redux';
-import { getIntegrations } from '../../operations/integrations';
+import { getInstalledIntegrations } from '../../operations/integrations';
 import { projectModules } from '../../constants';
 
 const InstalledIntegrations = () => {
@@ -16,7 +16,7 @@ const InstalledIntegrations = () => {
   const { projectID } = useParams();
   const history = useHistory();
 
-  const installedIntegrations = useSelector(state => getIntegrations(state)).filter(obj => obj.installed)
+  const installedIntegrations = useSelector(state => getInstalledIntegrations(state)).map(obj => Object.assign({}, obj, { installed: true }))
 
   const emptyState =
     <React.Fragment>
