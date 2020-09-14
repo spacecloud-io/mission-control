@@ -19,12 +19,12 @@ const InstallIntegration = () => {
   const history = useHistory()
   const { projectID, integrationId } = useParams()
   const { state } = useLocation()
-  const uploadedIntegration = state && state.uploadedIntegration
+  const useUploadedIntegration = state && state.useUploadedIntegration ? true : false
 
   // Global state
-  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
-  const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
-  const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
+  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId, useUploadedIntegration))
+  const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId, useUploadedIntegration))
+  const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId, useUploadedIntegration))
 
   // Component state
   const [current, setCurrent] = useState(0);
@@ -48,7 +48,7 @@ const InstallIntegration = () => {
 
   const handleStartIntegration = () => {
     resetAllStatuses()
-    installIntegration(integrationId)
+    installIntegration(integrationId, useUploadedIntegration)
       .then(({ queued }) => {
         setInstallationCompleted(true)
         if (queued) {
@@ -130,10 +130,10 @@ const InstallIntegration = () => {
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
             <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
               <PermissionsSection
-                name={isUploadedIntegration ? uploadedIntegration.name : name}
+                name={name}
                 imgUrl={integrationImgurl}
-                apiPermissions={isUploadedIntegration ? uploadedIntegration.apiPermissions : apiPermissions}
-                configPermissions={isUploadedIntegration ? uploadedIntegration.configPermissions : configPermissions}
+                apiPermissions={apiPermissions}
+                configPermissions={configPermissions}
                 scrollHeight={240} />
               <Button type='primary' block size="large" style={{ marginTop: 32 }} onClick={() => setCurrent(current + 1)}>Grant permissions</Button>
             </Card>
