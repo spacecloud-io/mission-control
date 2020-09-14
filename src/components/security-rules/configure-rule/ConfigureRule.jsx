@@ -95,6 +95,8 @@ const createValueAndTypeValidator = (type, arrayAllowed) => {
           case "variable":
             return v.includes(".")
         }
+      } else {
+        return true
       }
     })
     if (!areValuesValid) {
@@ -279,7 +281,7 @@ const ConfigureRule = (props) => {
     f2: getInputValueFromActualValue(f2, type),
     loadVar: isTypeOfFieldsString(fields),
     singleInputFields: isTypeOfFieldsString(fields) ? fields : "",
-    multipleInputFields: isTypeOfFieldsString(fields) ? undefined : fields,
+    multipleInputFields: isTypeOfFieldsString(fields) ? undefined : (fields && fields.length ? fields : [""]),
     fields,
     field,
     value: getInputValueFromActualValue(value, inheritedDataType),
