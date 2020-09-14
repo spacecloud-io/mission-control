@@ -26,7 +26,7 @@ const ExploreIntegrations = () => {
         <Content>
           <Row>
             <Col lg={{ span: 20 }} sm={{ span: 14 }}>
-              <IntegrationsList integrations={integrations} />
+              <IntegrationsList integrations={integrations} showUploadCard/>
             </Col>
           </Row>
         </Content>

@@ -5,7 +5,7 @@ import ProjectPageLayout, { Content, InnerTopBar } from '../../components/projec
 import { Row, Col, Steps, Card, Alert, Button, Result, Spin } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import PermissionsSection from '../../components/integrations/permissions/PermissionsSection';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getIntegrationDetails, getIntegrationConfigPermissions, getIntegrationAPIPermissions, installIntegration } from '../../operations/integrations';
 import { formatIntegrationImageUrl, notify } from '../../utils';
@@ -13,16 +13,18 @@ import { projectModules, actionQueuedMessage } from '../../constants';
 import client from "../../client";
 const { Step } = Steps;
 
-let healthCheckInterval = null 
+let healthCheckInterval = null
 
 const InstallIntegration = () => {
   const history = useHistory()
   const { projectID, integrationId } = useParams()
+  const { state } = useLocation()
+  const useUploadedIntegration = state && state.useUploadedIntegration ? true : false
 
   // Global state
-  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId))
-  const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId))
-  const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId))
+  const { name, appUrl, healthCheckUrl } = useSelector(state => getIntegrationDetails(state, integrationId, useUploadedIntegration))
+  const configPermissions = useSelector(state => getIntegrationConfigPermissions(state, integrationId, useUploadedIntegration))
+  const apiPermissions = useSelector(state => getIntegrationAPIPermissions(state, integrationId, useUploadedIntegration))
 
   // Component state
   const [current, setCurrent] = useState(0);
@@ -46,7 +48,7 @@ const InstallIntegration = () => {
 
   const handleStartIntegration = () => {
     resetAllStatuses()
-    installIntegration(integrationId)
+    installIntegration(integrationId, useUploadedIntegration)
       .then(({ queued }) => {
         setInstallationCompleted(true)
         if (queued) {
@@ -127,7 +129,12 @@ const InstallIntegration = () => {
         <Row>
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }} >
             <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px' }}>
-              <PermissionsSection name={name} imgUrl={integrationImgurl} apiPermissions={apiPermissions} configPermissions={configPermissions} scrollHeight={240} />
+              <PermissionsSection
+                name={name}
+                imgUrl={integrationImgurl}
+                apiPermissions={apiPermissions}
+                configPermissions={configPermissions}
+                scrollHeight={240} />
               <Button type='primary' block size="large" style={{ marginTop: 32 }} onClick={() => setCurrent(current + 1)}>Grant permissions</Button>
             </Card>
           </Col>

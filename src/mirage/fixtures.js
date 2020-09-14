@@ -444,7 +444,21 @@ export const serviceRoutes = [
 ]
 
 export const installedIntegrations = [
-  { id: "teammanagement" }
+  {
+    id: "teammanagement",
+    name: "Team Management",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    appUrl: "/integrations/team-management",
+    healthCheckUrl: "/v1/integrations/health-check",
+    configPermissions: [
+      {
+        resources: ["*"],
+        verbs: ["hijack"]
+      }
+    ],
+    apiPermissions: []
+  }
 ]
 
 export const supportedInterations = [
@@ -454,7 +468,7 @@ export const supportedInterations = [
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
     appUrl: "/integrations/team-management",
-    healthCheckUrl:"/v1/integrations/health-check",
+    healthCheckUrl: "/v1/integrations/health-check",
     configPermissions: [
       {
         resources: ["*"],
