@@ -21,6 +21,8 @@ function graphQLAPIHandler(request, schema) {
   switch (field) {
     case "event_logs":
       return { data: { event_logs: schema.db.eventLogs } }
+    case "integrations":
+      return { data: { integrations: fixtures.supportedInterations.map(obj => ({ config: obj })) } }
     default:
       return { data: {} }
   }
@@ -138,6 +140,8 @@ export function makeServer({ environment = "development" } = {}) {
       // API endpoints 
       this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
       this.post("/api/:projectId/eventing/queue", () => respondOk())
+
+      this.get("/integrations/health-check", () => respondOk())
     }
   });
 
