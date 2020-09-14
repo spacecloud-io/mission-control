@@ -7,10 +7,9 @@ let data = [];
 const ObjectAutoComplete = (props) => {
   const {options} = props; 
   const [value, setValue] = useState(props.value ? props.value : "");
-
   useEffect(() => {
     data = Object.keys(options);
-  }, [])
+  }, [props])
 
   const changeOptions = path => {
     data = dotProp.get(options, path) ? Object.keys(dotProp.get(options, path)) : Object.keys(options);
