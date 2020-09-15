@@ -164,6 +164,7 @@ const ConfigureDeployment = props => {
 
   const onDeployService = (operation) => {
     form.validateFields().then(values => {
+      values = Object.assign({}, formInitialValues, values)
       if (tasks.length === 0) {
         notify("error", "Error", "There should be atleast one task")
         return;
