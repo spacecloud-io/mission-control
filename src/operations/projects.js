@@ -1,7 +1,7 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { generateProjectConfig } from "../utils";
+import { generateId, generateProjectConfig } from "../utils";
 
 export const loadProjects = () => {
   return new Promise((resolve, reject) => {
@@ -78,10 +78,12 @@ export const saveDockerRegistry = (projectId, dockerRegistry) => saveProjectSett
 
 export const saveAesKey = (projectId, aesKey) => saveProjectSetting(projectId, "aesKey", aesKey)
 
-export const addSecret = (projectId, secret, isPrimary, alg, publicKey, privateKey) => {
+export const addSecret = (projectId, values) => {
+  const { isPrimary, alg } = values;
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const newSecret = { secret, isPrimary, alg, publicKey, privateKey }
+  const kid = alg !== "JWK-URL" ? generateId() : undefined;
+  const newSecret = { ...values, kid }
   const newSecrets = [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
