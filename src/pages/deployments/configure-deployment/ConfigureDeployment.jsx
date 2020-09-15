@@ -42,6 +42,7 @@ const ConfigureDeployment = props => {
 
   // Global State
   const totalSecrets = useSelector(state => getSecrets(state))
+  const projects = useSelector(state => state.projects.map(obj => obj.id))
 
   // Component state
   const [tasks, setTasks] = useState([]);
@@ -161,43 +162,46 @@ const ConfigureDeployment = props => {
     }
   }
 
-  const onDeployService = (values, operation) => {
-    if (tasks.length === 0) {
-      notify("error", "Error", "There should be atleast one task")
-      return;
-    }
-    let config = {
-      id: values.id,
-      version: values.version,
-      projectId: projectID,
-      scale: {
-        replicas: 0,
-        minReplicas: values.min,
-        maxReplicas: values.max,
-        concurrency: values.concurrency,
-        mode: values.mode
-      },
-      tasks: tasks,
-      whitelists: values.whitelists,
-      upstreams: values.upstreams,
-      statsInclusionPrefixes: values.statsInclusionPrefixes,
-      labels: values.labels
-        ? values.labels.reduce((prev, curr) => {
-          return Object.assign({}, prev, { [curr.key]: curr.value });
-        }, {})
-        : {},
-      affinity: affinities
-    };
-    incrementPendingRequests()
-    saveService(projectID, config.id, config.version, config)
-      .then(({ queued }) => {
-        notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
-        history.goBack()
-      })
-      .catch(ex => {
-        notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
-      })
-      .finally(() => decrementPendingRequests());
+  const onDeployService = (operation) => {
+    form.validateFields().then(values => {
+      if (tasks.length === 0) {
+        notify("error", "Error", "There should be atleast one task")
+        return;
+      }
+
+      let config = {
+        id: values.id,
+        version: values.version,
+        projectId: projectID,
+        scale: {
+          replicas: 0,
+          minReplicas: values.min,
+          maxReplicas: values.max,
+          concurrency: values.concurrency,
+          mode: values.mode
+        },
+        tasks: tasks,
+        whitelists: values.whitelists,
+        upstreams: values.upstreams,
+        statsInclusionPrefixes: values.statsInclusionPrefixes,
+        labels: values.labels
+          ? values.labels.reduce((prev, curr) => {
+            return Object.assign({}, prev, { [curr.key]: curr.value });
+          }, {})
+          : {},
+        affinity: affinities
+      };
+      incrementPendingRequests()
+      saveService(projectID, config.id, config.version, config)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
+          history.goBack()
+        })
+        .catch(ex => {
+          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
+        })
+        .finally(() => decrementPendingRequests());
+    })
   }
 
   // Columns
@@ -281,7 +285,7 @@ const ConfigureDeployment = props => {
         <InnerTopBar title="Deploy service" />
         <Content style={{ display: "flex", justifyContent: "center" }}>
           <Card>
-            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues} onFinish={(values) => onDeployService(values, operation)}>
+            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues}>
               <React.Fragment>
                 <FormItemLabel name="Service ID" />
                 <Form.Item name="id" rules={[
@@ -573,7 +577,7 @@ const ConfigureDeployment = props => {
                     <Table dataSource={affinities} columns={affinitiesColumn} pagination={false} />
                   </Panel>
                 </Collapse>
-                <Button type="primary" block htmlType="submit" style={{ marginTop: 24 }}>Save</Button>
+                <Button type="primary" block htmlType="submit" style={{ marginTop: 24 }} onClick={() => onDeployService(operation)}>Save</Button>
               </React.Fragment>
             </Form>
           </Card>
@@ -594,6 +598,7 @@ const ConfigureDeployment = props => {
         <AddAffinityForm
           visible={addAffinityModalVisibility}
           initialValues={selectedAffinityInfo}
+          projects={projects}
           handleCancel={() => setAddAffinityModalVisibility(false)}
           handleSubmit={handleAffinitySubmit}
         />

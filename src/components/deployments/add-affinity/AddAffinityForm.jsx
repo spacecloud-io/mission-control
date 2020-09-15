@@ -13,6 +13,9 @@ import {
   Slider,
 } from "antd";
 import { v4 as uuidv4 } from 'uuid';
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock"
+
+const { Option } = Select;
 
 const AddAffinityForm = props => {
   const { initialValues } = props;
@@ -22,6 +25,7 @@ const AddAffinityForm = props => {
     weight: initialValues ? initialValues.weight : 0,
     operator: initialValues ? initialValues.operator : undefined,
     topologyKey: initialValues ? initialValues.topologyKey : undefined,
+    projects: initialValues ? initialValues.projects: undefined,
     matchExpression: initialValues ? initialValues.matchExpression : [{ key: "", operator: undefined, values: undefined }]
   }
 
@@ -88,19 +92,24 @@ const AddAffinityForm = props => {
                 <Select.Option value="required">Required</Select.Option>
               </Select>
             </Form.Item>
-            <Form.Item noStyle shouldUpdate={(prev, curr) => prev["type"] !== curr["type"]}>
-              {() => {
-                const affinityType = form.getFieldValue("type")
-                return (
-                  <React.Fragment>
-                    <FormItemLabel name="Topology key" hint={affinityType === "node" ? "(Optional)" : undefined} />
-                    <Form.Item name="topologyKey" rules={[{ required: affinityType === "node" ? false : true, message: "Please enter topology key!" }]}>
-                      <Input placeholder="Topology key" style={{ width: '50%' }} />
-                    </Form.Item>
-                  </React.Fragment>
-                )
-              }}
-            </Form.Item>
+            <ConditionalFormBlock dependency="type" condition={() => form.getFieldValue("type") === "service"}>
+              <FormItemLabel name="Topology key" />
+              <Form.Item name="topologyKey" rules={[{ required: true, message: "Please enter topology key!" }]}>
+                <Input placeholder="Topology key" style={{ width: '50%' }} />
+              </Form.Item>
+              <FormItemLabel name="Target service projects" />
+              <Form.Item
+                name="projects"
+                rules={[{ required: true, message: "Please enter value!" }]}
+              >
+                <Select
+                  mode="tags"
+                  placeholder="Projects"
+                >
+                  {props.projects.map(val => <Option key={val}>{val}</Option>)}
+                </Select>
+              </Form.Item>
+            </ConditionalFormBlock>
             <FormItemLabel name="Match expression" />
             <Form.List name="matchExpression">
               {(fields, { add, remove }) => {
