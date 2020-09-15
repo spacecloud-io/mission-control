@@ -1,9 +1,8 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { Form, AutoComplete } from 'antd'
-import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
-
 import {
   Modal,
   Radio,
@@ -19,41 +18,35 @@ import {
 const { Option } = Select;
 const { Panel } = Collapse;
 
-const AddDeploymentForm = props => {
-  const { initialValues, projectId, dockerSecrets, secrets } = props;
+const AddTaskForm = props => {
+  const { initialValues, dockerSecrets, secrets } = props;
   const [form] = Form.useForm();
 
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
-    version: initialValues ? initialValues.version : "",
-    registryType: initialValues ? initialValues.registryType : "public",
-    dockerImage: initialValues ? initialValues.dockerImage : "",
-    dockerSecret: initialValues ? initialValues.dockerSecret : "",
-    imagePullPolicy: initialValues ? initialValues.imagePullPolicy : "pull-if-not-exists",
-    cpu: initialValues ? initialValues.cpu : 0.1,
-    memory: initialValues ? initialValues.memory : 100,
-    addGPUs: initialValues && initialValues.gpuType ? true : false,
-    gpuType: initialValues ? initialValues.gpuType : "nvdia",
-    gpuCount: initialValues ? initialValues.gpuCount : 1,
-    concurrency: initialValues ? initialValues.concurrency : 50,
-    min: initialValues ? initialValues.min : 1,
-    max: initialValues ? initialValues.max : 100,
+    dockerImage: initialValues ? initialValues.docker.image : "",
+    registryType: (initialValues && initialValues.docker.secret) ? "private" : "public",
+    dockerSecret: initialValues ? initialValues.docker.secret : "",
+    ports: initialValues ? initialValues.ports : [],
+    imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
+    cpu: initialValues ? initialValues.resources.cpu : 0.1,
+    memory: initialValues ? initialValues.resources.memory : 100,
+    addGPUs: initialValues && initialValues.resources.gpu && initialValues.resources.gpu.type ? true : false,
+    gpuType: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.type : "nvdia",
+    gpuCount: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.value : 1,
     secrets: initialValues ? initialValues.secrets : [],
-    autoscalingMode: initialValues ? initialValues.autoscalingMode : "parallel",
-    ports: (initialValues && initialValues.ports.length > 0) ? initialValues.ports : [{ protocol: "http", port: "" }],
-    env: (initialValues && initialValues.env.length > 0) ? initialValues.env : [],
-    whitelists: (initialValues && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: props.projectId, service: "*" }],
-    upstreams: (initialValues && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: props.projectId, service: "*" }],
-    statsInclusionPrefixes: initialValues && initialValues.statsInclusionPrefixes ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager"
+    env: (initialValues && Object.keys(initialValues.env).length > 0)
+      ? Object.entries(initialValues.env).map(([key, value]) => ({
+        key: key,
+        value: value
+      }))
+      : [],
   }
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
       const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
-      delete values["addGPUs"];
-      delete values["gpuType"];
-      delete values["gpuCount"];
       values.cpu = Number(values.cpu);
       values.memory = Number(values.memory);
       values.min = Number(values.min);
@@ -61,9 +54,13 @@ const AddDeploymentForm = props => {
       values.concurrency = Number(values.concurrency);
       values.gpu = gpu
       values.serviceType = "image";
-      props
-        .handleSubmit(values)
-        .then(() => props.handleCancel())
+      values.dockerSecret = values.registryType === "private" ? values.dockerSecret : undefined
+      delete values["addGPUs"];
+      delete values["gpuType"];
+      delete values["gpuCount"];
+      delete values["registryType"];
+      props.handleSubmit(values, initialValues ? "edit" : "add")
+      props.handleCancel()
     });
   };
 
@@ -71,8 +68,8 @@ const AddDeploymentForm = props => {
     className: "edit-item-modal",
     visible: props.visible,
     width: 720,
-    okText: initialValues ? "Save" : "Deploy",
-    title: initialValues ? "Update deloyment config" : "Deploy Service",
+    okText: initialValues ? "Save" : "Add",
+    title: initialValues ? "Update Task" : "Add task",
     onOk: handleSubmitClick,
     onCancel: props.handleCancel
   };
@@ -81,12 +78,12 @@ const AddDeploymentForm = props => {
       <Modal {...modalProps}>
         <Form layout="vertical" form={form} initialValues={formInitialValues}>
           <React.Fragment>
-            <FormItemLabel name="Service ID" />
+            <FormItemLabel name="Task ID" />
             <Form.Item name="id" rules={[
               {
                 validator: (_, value, cb) => {
                   if (!value) {
-                    cb("Please provide a service id!")
+                    cb("Please provide a task id!")
                     return
                   }
                   if (!(/^[0-9a-zA-Z]+$/.test(value))) {
@@ -98,29 +95,7 @@ const AddDeploymentForm = props => {
               }
             ]}>
               <Input
-                placeholder="Unique name for your service"
-                style={{ width: 288 }}
-                disabled={initialValues ? true : false}
-              />
-            </Form.Item>
-            <FormItemLabel name="Version" />
-            <Form.Item name="version" rules={[
-              {
-                validator: (_, value, cb) => {
-                  if (!value) {
-                    cb("Please provide a version!")
-                    return
-                  }
-                  if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
-                    cb("Version can only contain alphanumeric characters, dots and underscores!")
-                    return
-                  }
-                  cb()
-                }
-              }
-            ]}>
-              <Input
-                placeholder="Version of your service (example: v1)"
+                placeholder="Task ID"
                 style={{ width: 288 }}
                 disabled={initialValues ? true : false}
               />
@@ -263,34 +238,6 @@ const AddDeploymentForm = props => {
                     </Form.Item>
                   </Input.Group>
                 </ConditionalFormBlock>
-                <FormItemLabel
-                  name="Auto scaling"
-                  description="Auto scale your container instances between min and max replicas based on the following config"
-                />
-                <Input.Group compact>
-                  <Form.Item name="autoscalingMode" style={{ marginBottom: 0 }}>
-                    <Select placeholder="Select auto scaling mode">
-                      <Option value="per-second">Requests per second</Option>
-                      <Option value="parallel">Parallel requests</Option>
-                    </Select>
-                  </Form.Item>
-                  <Form.Item name="concurrency">
-                    <Input style={{ width: 400 }} min={1} />
-                  </Form.Item>
-                </Input.Group>
-                <FormItemLabel name="Replicas" />
-                <Input.Group compact>
-                  <Form.Item name="min">
-                    <Input addonBefore="Min" style={{ width: 160 }} min={0} />
-                  </Form.Item>
-                  <Form.Item name="max">
-                    <Input
-                      addonBefore="Max"
-                      style={{ width: 160, marginLeft: 32 }}
-                      min={1}
-                    />
-                  </Form.Item>
-                </Input.Group>
                 <FormItemLabel name="Environment variables" />
                 <Form.List name="env" style={{ display: "inline-block" }}>
                   {(fields, { add, remove }) => {
@@ -361,154 +308,6 @@ const AddDeploymentForm = props => {
                     ))}
                   </Select>
                 </Form.Item>
-                <FormItemLabel
-                  name="Whitelists"
-                  description="Only those services that are whitelisted can access you"
-                />
-                {/* Whitelists */}
-                <Form.List name="whitelists" style={{ display: "inline-block" }}>
-                  {(fields, { add, remove }) => {
-                    return (
-                      <div>
-                        {fields.map((field, index) => (
-                          <React.Fragment>
-                            <Row
-                              key={fields}
-                              className={index === fields.length - 1 ? "bottom-spacing" : ""}
-                            >
-                              <Col span={10}>
-                                <Form.Item
-                                  key={[field.name, "projectId"]}
-                                  name={[field.name, "projectId"]}
-                                  style={{ display: "inline-block" }}
-                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
-                                  <Input
-                                    style={{ width: 230 }}
-                                    placeholder="Project ID ( * to select all )"
-                                  />
-                                </Form.Item>
-                                <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
-                              </Col>
-                              <Col span={9}>
-                                <Form.Item
-                                  validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
-                                  key={[field.name, "service"]}
-                                  name={[field.name, "service"]}
-                                  style={{ marginRight: 30 }}
-                                >
-                                  <Input
-                                    style={{ width: 230 }}
-                                    placeholder="Service Name ( * to select all )"
-                                  />
-                                </Form.Item>
-                              </Col>
-                              <Col span={3}>
-                                {fields.length > 1 ? (
-                                  <DeleteOutlined
-                                    style={{ lineHeight: "32px" }}
-                                    onClick={() => {
-                                      remove(field.name);
-                                    }}
-                                  />
-                                ) : null}
-                              </Col>
-                            </Row>
-                          </React.Fragment>
-                        ))}
-                        <Form.Item>
-                          <Button
-                            onClick={() => {
-                              form.validateFields([...fields.map(obj => ["whitelists", obj.name, "projectId"]), ...fields.map(obj => ["whitelists", obj.name, "service"])])
-                                .then(() => add({ projectId }))
-                                .catch(ex => console.log("Exception", ex))
-                            }}
-                            style={{ marginTop: -10 }}
-                          >
-                            <PlusOutlined /> Add another upstream service
-                          </Button>
-                        </Form.Item>
-                      </div>
-                    );
-                  }}
-                </Form.List>
-                <FormItemLabel
-                  name="Upstreams"
-                  description="The upstream servces that you want to access"
-                />
-                <Form.List name="upstreams" style={{ display: "inline-block" }}>
-                  {(fields, { add, remove }) => {
-                    return (
-                      <div>
-                        {fields.map((field, index) => (
-                          <React.Fragment>
-                            <Row
-                              key={fields}
-                              className={index === fields.length - 1 ? "bottom-spacing" : ""}
-                            >
-                              <Col span={10}>
-                                <Form.Item
-                                  name={[field.name, "projectId"]}
-                                  key={[field.name, "projectId"]}
-                                  style={{ display: "inline-block" }}
-                                  rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
-                                  <Input
-                                    style={{ width: 230 }}
-                                    placeholder="Project ID ( * to select all )"
-                                  />
-                                </Form.Item>
-                                <RightOutlined style={{ fontSize: 12, marginLeft: 16, marginTop: 8 }} />
-                              </Col>
-                              <Col span={9}>
-                                <Form.Item
-                                  validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please enter the name of the service!" }]}
-                                  key={[field.name, "service"]}
-                                  name={[field.name, "service"]}
-                                  style={{ marginRight: 30 }}
-                                >
-                                  <Input
-                                    style={{ width: 230 }}
-                                    placeholder="Service Name ( * to select all )"
-                                  />
-                                </Form.Item>
-                              </Col>
-                              <Col span={3}>
-                                {fields.length > 1 ? (
-                                  <DeleteOutlined
-                                    style={{ lineHeight: "32px" }}
-                                    onClick={() => {
-                                      remove(field.name);
-                                    }}
-                                  />
-                                ) : null}
-                              </Col>
-                            </Row>
-                          </React.Fragment>
-                        ))}
-                        <Form.Item>
-                          <Button
-                            onClick={() => {
-                              form.validateFields([...fields.map(obj => ["upstreams", obj.name, "projectId"]), ...fields.map(obj => ["upstreams", obj.name, "service"])])
-                                .then(() => add({ projectId }))
-                                .catch(ex => console.log("Exception", ex))
-                            }}
-                            style={{ marginTop: -10 }}
-                          >
-                            <PlusOutlined /> Add another upstream service
-                          </Button>
-                        </Form.Item>
-                      </div>
-                    );
-                  }}
-                </Form.List>
-                <FormItemLabel
-                  name="Envoy stats"
-                  description="The statistics that the envoy proxy should generate"
-                />
-                <Form.Item name="statsInclusionPrefixes">
-                  <Input placeholder="CSV of envoy statistics" />
-                </Form.Item>
               </Panel>
             </Collapse>
           </React.Fragment>
@@ -518,4 +317,4 @@ const AddDeploymentForm = props => {
   );
 };
 
-export default AddDeploymentForm;
+export default AddTaskForm;

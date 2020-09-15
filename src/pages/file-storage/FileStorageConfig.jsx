@@ -72,6 +72,7 @@ const FileStorageConfig = () => {
 
   // Handlers
   const handleFinish = (values) => {
+    values = Object.assign({}, formInitialValues, values)
     delete values["credentials"]
     let newConfig = {};
     switch (values.storeType) {
