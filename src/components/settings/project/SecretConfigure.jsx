@@ -87,7 +87,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           <Form.Item name="privateKey">
             {
               isPrivateKeyLoading ?
-              <span><Spin /> Generating Private Key......</span> :
+              <span><Spin className='page-loading' spinning={true} size="large" /> Generating Private Key......</span> :
               <Input.TextArea rows={4} placeholder="Private key" />
             }
           </Form.Item>
@@ -97,9 +97,9 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "JWK-URL"}>
-          <FormItemLabel name="JWT URL"/>
+          <FormItemLabel name="JWK URL"/>
           <Form.Item name="jwkUrl" rules={[{ required: true, message: 'Please provide an URL' }]}>
-            <Input placeholder="JWT URL" />
+            <Input placeholder="JWK URL" />
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256-PUBLIC"}>

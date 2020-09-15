@@ -1,8 +1,7 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { generateProjectConfig } from "../utils";
-import { v4 as uuidv4 } from 'uuid';
+import { generateId, generateProjectConfig } from "../utils";
 
 export const loadProjects = () => {
   return new Promise((resolve, reject) => {
@@ -83,7 +82,7 @@ export const addSecret = (projectId, values) => {
   const { isPrimary, alg } = values;
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const kid = alg !== "JWK-URL" ? uuidv4() : undefined;
+  const kid = alg !== "JWK-URL" ? generateId() : undefined;
   const newSecret = { ...values, kid }
   const newSecrets = [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
