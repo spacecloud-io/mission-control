@@ -10,8 +10,8 @@ import Sidenav from "../../../components/sidenav/Sidenav";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
 import { getSecrets } from "../../../operations/secrets";
-import { getServices, saveService } from "../../../operations/deployments";
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { saveService } from "../../../operations/deployments";
+import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 
 import {
   Form,
@@ -41,7 +41,6 @@ const ConfigureDeployment = props => {
   }, [])
 
   // Global State
-  const deployments = useSelector(state => getServices(state))
   const totalSecrets = useSelector(state => getSecrets(state))
 
   // Component state
@@ -107,8 +106,7 @@ const ConfigureDeployment = props => {
   }
 
   const handleTaskSubmit = (values, operation) => {
-    const c = selectedTaskInfo && deployments.find(obj => obj.id === selectedTaskInfo.id && obj.version === selectedTaskInfo.version)
-    const dockerCommands = (c && c.tasks && c.tasks.length) ? c.tasks[0].docker.cmd : []
+    const dockerCommands = selectedTaskInfo ? selectedTaskInfo.docker.cmd : []
 
     let newTask = {
       id: values.id,
@@ -163,45 +161,43 @@ const ConfigureDeployment = props => {
     }
   }
 
-  const onDeployService = (operation) => {
+  const onDeployService = (values, operation) => {
     if (tasks.length === 0) {
       notify("error", "Error", "There should be atleast one task")
       return;
     }
-    form.validateFields().then(values => {
-      let config = {
-        id: values.id,
-        version: values.version,
-        projectId: projectID,
-        scale: {
-          replicas: 0,
-          minReplicas: values.min,
-          maxReplicas: values.max,
-          concurrency: values.concurrency,
-          mode: values.mode
-        },
-        tasks: [...tasks],
-        whitelists: values.whitelists,
-        upstreams: values.upstreams,
-        statsInclusionPrefixes: values.statsInclusionPrefixes,
-        labels: values.labels
-          ? values.labels.reduce((prev, curr) => {
-            return Object.assign({}, prev, { [curr.key]: curr.value });
-          }, {})
-          : {},
-        affinity: [...affinities]
-      };
-      incrementPendingRequests()
-      saveService(projectID, config.id, config.version, config)
-        .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
-          history.goBack()
-        })
-        .catch(ex => {
-          notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
-        })
-        .finally(() => decrementPendingRequests());
-    })
+    let config = {
+      id: values.id,
+      version: values.version,
+      projectId: projectID,
+      scale: {
+        replicas: 0,
+        minReplicas: values.min,
+        maxReplicas: values.max,
+        concurrency: values.concurrency,
+        mode: values.mode
+      },
+      tasks: tasks,
+      whitelists: values.whitelists,
+      upstreams: values.upstreams,
+      statsInclusionPrefixes: values.statsInclusionPrefixes,
+      labels: values.labels
+        ? values.labels.reduce((prev, curr) => {
+          return Object.assign({}, prev, { [curr.key]: curr.value });
+        }, {})
+        : {},
+      affinity: affinities
+    };
+    incrementPendingRequests()
+    saveService(projectID, config.id, config.version, config)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `${operation === "add" ? "Deployed" : "Updated"} service successfully`)
+        history.goBack()
+      })
+      .catch(ex => {
+        notify("error", `Error ${operation === "add" ? "deploying" : "updating"} service`, ex)
+      })
+      .finally(() => decrementPendingRequests());
   }
 
   // Columns
@@ -245,13 +241,11 @@ const ConfigureDeployment = props => {
   const affinitiesColumn = [
     {
       title: 'Type',
-      dataIndex: 'type',
-      key: 'type'
+      render: (_, record) => capitalizeFirstCharacter(record.type)
     },
     {
       title: 'Operator',
-      dataIndex: 'operator',
-      key: 'operator'
+      render: (_, record) => capitalizeFirstCharacter(record.operator)
     },
     {
       title: 'Actions',
@@ -287,7 +281,7 @@ const ConfigureDeployment = props => {
         <InnerTopBar title="Deploy service" />
         <Content style={{ display: "flex", justifyContent: "center" }}>
           <Card>
-            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues}>
+            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues} onFinish={(values) => onDeployService(values, operation)}>
               <React.Fragment>
                 <FormItemLabel name="Service ID" />
                 <Form.Item name="id" rules={[
@@ -335,7 +329,7 @@ const ConfigureDeployment = props => {
                 </Form.Item>
                 <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
                 <Table dataSource={tasksTableData} columns={tasksColumn} pagination={false} />
-                <Collapse bordered={false} style={{ background: 'white' }}>
+                <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
                   <Panel header="Advanced" key="1">
                     <br />
                     <FormItemLabel
@@ -579,7 +573,7 @@ const ConfigureDeployment = props => {
                     <Table dataSource={affinities} columns={affinitiesColumn} pagination={false} />
                   </Panel>
                 </Collapse>
-                <Button type="primary" block htmlType="submit" onClick={() => onDeployService(operation)}>Save</Button>
+                <Button type="primary" block htmlType="submit" style={{ marginTop: 24 }}>Save</Button>
               </React.Fragment>
             </Form>
           </Card>

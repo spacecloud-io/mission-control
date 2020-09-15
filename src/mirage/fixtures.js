@@ -295,7 +295,7 @@ export const services = [
     },
     "tasks": [
       {
-        "id": "service1",
+        "id": "task1",
         "ports": [
           {
             "protocol": "http",

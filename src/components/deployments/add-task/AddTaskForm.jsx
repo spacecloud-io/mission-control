@@ -31,25 +31,22 @@ const AddTaskForm = props => {
     imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
     cpu: initialValues ? initialValues.resources.cpu : 0.1,
     memory: initialValues ? initialValues.resources.memory : 100,
-    addGPUs: initialValues && initialValues.resources.gpu.type ? true : false,
-    gpuType: initialValues ? initialValues.resources.gpu.type : "nvdia",
-    gpuCount: initialValues ? initialValues.resources.gpu.value : 1,
+    addGPUs: initialValues && initialValues.resources.gpu && initialValues.resources.gpu.type ? true : false,
+    gpuType: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.type : "nvdia",
+    gpuCount: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.value : 1,
     secrets: initialValues ? initialValues.secrets : [],
     env: (initialValues && Object.keys(initialValues.env).length > 0)
-        ? Object.entries(initialValues.env).map(([key, value]) => ({
-          key: key,
-          value: value
-        }))
-        : [],
+      ? Object.entries(initialValues.env).map(([key, value]) => ({
+        key: key,
+        value: value
+      }))
+      : [],
   }
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
       const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
-      delete values["addGPUs"];
-      delete values["gpuType"];
-      delete values["gpuCount"];
       values.cpu = Number(values.cpu);
       values.memory = Number(values.memory);
       values.min = Number(values.min);
@@ -57,6 +54,11 @@ const AddTaskForm = props => {
       values.concurrency = Number(values.concurrency);
       values.gpu = gpu
       values.serviceType = "image";
+      values.dockerSecret = values.registryType === "private" ? values.dockerSecret : undefined
+      delete values["addGPUs"];
+      delete values["gpuType"];
+      delete values["gpuCount"];
+      delete values["registryType"];
       props.handleSubmit(values, initialValues ? "edit" : "add")
       props.handleCancel()
     });

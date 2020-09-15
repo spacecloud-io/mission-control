@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { v4 as uuidv4 } from 'uuid';
 
-const AddTaskForm = props => {
+const AddAffinityForm = props => {
   const { initialValues } = props;
   const [form] = Form.useForm();
   const formInitialValues = {
@@ -22,7 +22,7 @@ const AddTaskForm = props => {
     weight: initialValues ? initialValues.weight : 0,
     operator: initialValues ? initialValues.operator : undefined,
     topologyKey: initialValues ? initialValues.topologyKey : undefined,
-    matchExpression: initialValues ? initialValues.matchExpression : [{key: "", operator: undefined, values: undefined}]
+    matchExpression: initialValues ? initialValues.matchExpression : [{ key: "", operator: undefined, values: undefined }]
   }
 
   const handleSubmitClick = e => {
@@ -35,9 +35,8 @@ const AddTaskForm = props => {
   };
 
   const modalProps = {
-    className: "edit-item-modal",
     visible: props.visible,
-    width: 720,
+    width: 900,
     okText: initialValues ? "Save" : "Add",
     title: initialValues ? "Update Affinity" : "Add Affinity",
     onOk: handleSubmitClick,
@@ -74,8 +73,8 @@ const AddTaskForm = props => {
             <FormItemLabel name="Type" />
             <Form.Item name="type" rules={[{ required: true, message: "Please select type!" }]}>
               <Select placeholder="Type" style={{ width: '50%' }}>
-                <Select.Option value="node">node</Select.Option>
-                <Select.Option value="service">service</Select.Option>
+                <Select.Option value="node">Node</Select.Option>
+                <Select.Option value="service">Service</Select.Option>
               </Select>
             </Form.Item>
             <FormItemLabel name="Weight" />
@@ -85,13 +84,22 @@ const AddTaskForm = props => {
             <FormItemLabel name="Operator" />
             <Form.Item name="operator" rules={[{ required: true, message: "Please select operator!" }]}>
               <Select placeholder="Operator" style={{ width: '50%' }}>
-                <Select.Option value="preferred">preferred</Select.Option>
-                <Select.Option value="required">required</Select.Option>
+                <Select.Option value="preferred">Preferred</Select.Option>
+                <Select.Option value="required">Required</Select.Option>
               </Select>
             </Form.Item>
-            <FormItemLabel name="Topology key" />
-            <Form.Item name="topologyKey" rules={[{ required: true, message: "Please enter topology key!" }]}>
-              <Input placeholder="Topology key" style={{ width: '50%' }} />
+            <Form.Item noStyle shouldUpdate={(prev, curr) => prev["type"] !== curr["type"]}>
+              {() => {
+                const affinityType = form.getFieldValue("type")
+                return (
+                  <React.Fragment>
+                    <FormItemLabel name="Topology key" hint={affinityType === "node" ? "(Optional)" : undefined} />
+                    <Form.Item name="topologyKey" rules={[{ required: affinityType === "node" ? false : true, message: "Please enter topology key!" }]}>
+                      <Input placeholder="Topology key" style={{ width: '50%' }} />
+                    </Form.Item>
+                  </React.Fragment>
+                )
+              }}
             </Form.Item>
             <FormItemLabel name="Match expression" />
             <Form.List name="matchExpression">
@@ -100,7 +108,7 @@ const AddTaskForm = props => {
                   <div>
                     {fields.map(field => (
                       <Row key={field} gutter={5}>
-                        <Col span={7}>
+                        <Col span={6}>
                           <FormItemLabel name="Key" />
                           <Form.Item
                             {...field}
@@ -111,7 +119,7 @@ const AddTaskForm = props => {
                             <Input placeholder="Key" />
                           </Form.Item>
                         </Col>
-                        <Col span={7}>
+                        <Col span={6}>
                           <FormItemLabel name="Operator" />
                           <Form.Item
                             {...field}
@@ -127,7 +135,7 @@ const AddTaskForm = props => {
                             </Select>
                           </Form.Item>
                         </Col>
-                        <Col span={7}>
+                        <Col span={9}>
                           <FormItemLabel name="Values" />
                           <Form.Item
                             {...field}
@@ -177,4 +185,4 @@ const AddTaskForm = props => {
   );
 };
 
-export default AddTaskForm;
+export default AddAffinityForm;
