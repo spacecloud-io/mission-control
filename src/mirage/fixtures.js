@@ -340,7 +340,7 @@ export const services = [
         "operator": "preferred",
         "topologyKey": "kubernets.io/hostname",
         "projects": ["project1"],
-        "matchExpression": [
+        "matchExpressions": [
           {
             "key": "diskType",
             "attribute": "label",

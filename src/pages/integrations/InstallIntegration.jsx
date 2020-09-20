@@ -163,10 +163,10 @@ const InstallIntegration = () => {
         <Row>
           <Col lg={{ span: 16, offset: 4 }} sm={{ span: 24 }}>
             <Card style={{ boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: '10px', textAlign: 'center' }}>
-              {!installationCompleted && <Spin size='large' tip='Installing integration...' style={{ padding: '48px 32px' }} />}
+              {!installationCompleted && <Spin size='large' tip='Applying config...' style={{ padding: '48px 32px' }} />}
               {(installationCompleted && installationSucceeded && !healthCheckCompleted) && <Spin
                 size='large'
-                tip='Getting UI ready...'
+                tip='Installing integration...'
                 style={{ padding: '48px 32px' }} />}
               {(installationCompleted && installationQueued) && <Result
                 status="success"

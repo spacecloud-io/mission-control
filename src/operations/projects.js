@@ -82,7 +82,7 @@ export const addSecret = (projectId, values) => {
   const { isPrimary, alg } = values;
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const kid = alg !== "JWK-URL" ? generateId() : undefined;
+  const kid = alg !== "JWK_URL" ? generateId() : undefined;
   const newSecret = { ...values, kid }
   const newSecrets = [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)

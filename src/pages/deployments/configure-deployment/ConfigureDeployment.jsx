@@ -11,7 +11,7 @@ import { projectModules, actionQueuedMessage } from "../../../constants";
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
 import { getSecrets } from "../../../operations/secrets";
 import { saveService } from "../../../operations/deployments";
-import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter, generateId } from "../../../utils";
 
 import {
   Form,
@@ -35,8 +35,9 @@ const ConfigureDeployment = props => {
 
   useEffect(() => {
     if (props.location.state) {
-      setTasks(tasks.concat(props.location.state.deploymentClickedInfo.tasks))
-      setAffinities(affinities.concat(props.location.state.deploymentClickedInfo.affinity))
+      setTasks(props.location.state.deploymentClickedInfo.tasks)
+      const affinities = props.location.state.deploymentClickedInfo.affinity
+      setAffinities(affinities ? affinities : [])
     }
   }, [])
 
@@ -111,8 +112,8 @@ const ConfigureDeployment = props => {
 
     let newTask = {
       id: values.id,
-      ports: values.ports.map(obj =>
-        Object.assign(obj, { name: obj.protocol })
+      ports: values.ports.map((obj, index) =>
+        Object.assign(obj, { name: `${obj.protocol}-${index}-${generateId(5)}` })
       ),
       resources: {
         cpu: values.cpu * 1000,
@@ -149,7 +150,7 @@ const ConfigureDeployment = props => {
 
   const handleAffinitySubmit = (values, operation) => {
     if (operation === "add") {
-      setAffinities(affinities.concat(values));
+      setAffinities([...affinities, values]);
     }
     else {
       const newAffinitiesArray = affinities.map(val => {
@@ -176,9 +177,9 @@ const ConfigureDeployment = props => {
         projectId: projectID,
         scale: {
           replicas: 0,
-          minReplicas: values.min,
-          maxReplicas: values.max,
-          concurrency: values.concurrency,
+          minReplicas: Number(values.min),
+          maxReplicas: Number(values.max),
+          concurrency: Number(values.concurrency),
           mode: values.mode
         },
         tasks: tasks,
@@ -259,7 +260,7 @@ const ConfigureDeployment = props => {
         return (
           <span>
             <a onClick={() => {
-              setSelectedAffinityInfo(affinities.find(val => val.type === record.type && val.operator === record.operator))
+              setSelectedAffinityInfo(affinities.find(val => val.id === record.id))
               setAddAffinityModalVisibility(true)
             }}>
               Edit
@@ -284,304 +285,292 @@ const ConfigureDeployment = props => {
       <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <ProjectPageLayout>
         <InnerTopBar title="Deploy service" />
-        <Content style={{ display: "flex", justifyContent: "center" }}>
-          <Card>
-            <Form layout="vertical" style={{ width: 720 }} form={form} initialValues={formInitialValues}>
-              <React.Fragment>
-                <FormItemLabel name="Service ID" />
-                <Form.Item name="id" rules={[
-                  {
-                    validator: (_, value, cb) => {
-                      if (!value) {
-                        cb("Please provide a service id!")
-                        return
+        <Content>
+          <Row>
+            <Col lg={{ span: 18, offset: 3 }} xl={{ span: 16, offset: 4 }}>
+              <Card>
+                <Form layout="vertical" form={form} initialValues={formInitialValues}>
+                  <React.Fragment>
+                    <FormItemLabel name="Service ID" />
+                    <Form.Item name="id" rules={[
+                      {
+                        validator: (_, value, cb) => {
+                          if (!value) {
+                            cb("Please provide a service id!")
+                            return
+                          }
+                          if (!(/^[0-9a-zA-Z]+$/.test(value))) {
+                            cb("Service ID can only contain alphanumeric characters!")
+                            return
+                          }
+                          cb()
+                        }
                       }
-                      if (!(/^[0-9a-zA-Z]+$/.test(value))) {
-                        cb("Service ID can only contain alphanumeric characters!")
-                        return
-                      }
-                      cb()
-                    }
-                  }
-                ]}>
-                  <Input
-                    placeholder="Unique name for your service"
-                    style={{ width: 288 }}
-                    disabled={initialValues ? true : false}
-                  />
-                </Form.Item>
-                <FormItemLabel name="Version" />
-                <Form.Item name="version" rules={[
-                  {
-                    validator: (_, value, cb) => {
-                      if (!value) {
-                        cb("Please provide a version!")
-                        return
-                      }
-                      if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
-                        cb("Version can only contain alphanumeric characters, dots and underscores!")
-                        return
-                      }
-                      cb()
-                    }
-                  }
-                ]}>
-                  <Input
-                    placeholder="Version of your service (example: v1)"
-                    style={{ width: 288 }}
-                    disabled={initialValues ? true : false}
-                  />
-                </Form.Item>
-                <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
-                <Table dataSource={tasksTableData} columns={tasksColumn} pagination={false} />
-                <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
-                  <Panel header="Advanced" key="1">
-                    <br />
-                    <FormItemLabel
-                      name="Auto scaling"
-                      description="Auto scale your container instances between min and max replicas based on the following config"
-                    />
-                    <Input.Group compact>
-                      <Form.Item name="mode" style={{ marginBottom: 0 }}>
-                        <Select placeholder="Select auto scaling mode">
-                          <Option value="per-second">Requests per second</Option>
-                          <Option value="parallel">Parallel requests</Option>
-                        </Select>
-                      </Form.Item>
-                      <Form.Item name="concurrency">
-                        <Input style={{ width: 400 }} min={1} />
-                      </Form.Item>
-                    </Input.Group>
-                    <FormItemLabel name="Replicas" />
-                    <Input.Group compact>
-                      <Form.Item name="min">
-                        <Input addonBefore="Min" style={{ width: 160 }} min={0} />
-                      </Form.Item>
-                      <Form.Item name="max">
-                        <Input
-                          addonBefore="Max"
-                          style={{ width: 160, marginLeft: 32 }}
-                          min={1}
-                        />
-                      </Form.Item>
-                    </Input.Group>
-                    <FormItemLabel
-                      name="Whitelists"
-                      description="Only those services that are whitelisted can access you"
-                    />
-                    {/* Whitelists */}
-                    <Form.List name="whitelists" style={{ display: "inline-block" }}>
-                      {(fields, { add, remove }) => {
-                        return (
-                          <div>
-                            {fields.map((field, index) => (
-                              <React.Fragment>
-                                <Row
-                                  key={fields}
-                                  className={index === fields.length - 1 ? "bottom-spacing" : ""}
-                                >
-                                  <Col span={9}>
-                                    <Form.Item
-                                      key={[field.name, "projectId"]}
-                                      name={[field.name, "projectId"]}
-                                      style={{ display: "inline-block" }}
-                                      rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
-                                      <Input
-                                        style={{ width: 230 }}
-                                        placeholder="Project ID ( * to select all )"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={2}>
-                                    <RightOutlined style={{ fontSize: 12 }} />
-                                  </Col>
-                                  <Col span={9}>
-                                    <Form.Item
-                                      validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please enter the name of the service!" }]}
-                                      key={[field.name, "service"]}
-                                      name={[field.name, "service"]}
-                                      style={{ marginRight: 30 }}
-                                    >
-                                      <Input
-                                        style={{ width: 230 }}
-                                        placeholder="Service Name ( * to select all )"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={3}>
-                                    {fields.length > 1 ? (
-                                      <DeleteOutlined
-                                        style={{ lineHeight: "32px" }}
-                                        onClick={() => {
-                                          remove(field.name);
-                                        }}
-                                      />
-                                    ) : null}
-                                  </Col>
-                                </Row>
-                              </React.Fragment>
-                            ))}
-                            <Form.Item>
-                              <Button
-                                onClick={() => {
-                                  form.validateFields([...fields.map(obj => ["whitelists", obj.name, "projectId"]), ...fields.map(obj => ["whitelists", obj.name, "service"])])
-                                    .then(() => add({ projectID }))
-                                    .catch(ex => console.log("Exception", ex))
-                                }}
-                                style={{ marginTop: -10 }}
-                              >
-                                <PlusOutlined /> Add another upstream service
-                          </Button>
-                            </Form.Item>
-                          </div>
-                        );
-                      }}
-                    </Form.List>
-                    <FormItemLabel
-                      name="Upstreams"
-                      description="The upstream servces that you want to access"
-                    />
-                    <Form.List name="upstreams" style={{ display: "inline-block" }}>
-                      {(fields, { add, remove }) => {
-                        return (
-                          <div>
-                            {fields.map((field, index) => (
-                              <React.Fragment>
-                                <Row
-                                  key={fields}
-                                  className={index === fields.length - 1 ? "bottom-spacing" : ""}
-                                >
-                                  <Col span={9}>
-                                    <Form.Item
-                                      name={[field.name, "projectId"]}
-                                      key={[field.name, "projectId"]}
-                                      style={{ display: "inline-block" }}
-                                      rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
-                                      <Input
-                                        style={{ width: 230 }}
-                                        placeholder="Project ID ( * to select all )"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={2}>
-                                    <RightOutlined style={{ fontSize: 12 }} />
-                                  </Col>
-                                  <Col span={9}>
-                                    <Form.Item
-                                      validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please enter the name of the service!" }]}
-                                      key={[field.name, "service"]}
-                                      name={[field.name, "service"]}
-                                      style={{ marginRight: 30 }}
-                                    >
-                                      <Input
-                                        style={{ width: 230 }}
-                                        placeholder="Service Name ( * to select all )"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={3}>
-                                    {fields.length > 1 ? (
-                                      <DeleteOutlined
-                                        style={{ lineHeight: "32px" }}
-                                        onClick={() => {
-                                          remove(field.name);
-                                        }}
-                                      />
-                                    ) : null}
-                                  </Col>
-                                </Row>
-                              </React.Fragment>
-                            ))}
-                            <Form.Item>
-                              <Button
-                                onClick={() => {
-                                  form.validateFields([...fields.map(obj => ["upstreams", obj.name, "projectId"]), ...fields.map(obj => ["upstreams", obj.name, "service"])])
-                                    .then(() => add({ projectID }))
-                                    .catch(ex => console.log("Exception", ex))
-                                }}
-                                style={{ marginTop: -10 }}
-                              >
-                                <PlusOutlined /> Add another upstream service
-                          </Button>
-                            </Form.Item>
-                          </div>
-                        );
-                      }}
-                    </Form.List>
-                    <FormItemLabel
-                      name="Envoy stats"
-                      description="The statistics that the envoy proxy should generate"
-                    />
-                    <Form.Item name="statsInclusionPrefixes">
-                      <Input placeholder="CSV of envoy statistics" />
+                    ]}>
+                      <Input
+                        placeholder="Unique name for your service"
+                        style={{ width: 288 }}
+                        disabled={initialValues ? true : false}
+                      />
                     </Form.Item>
-                    <FormItemLabel name="Labels" />
-                    <Form.List name="labels" style={{ display: "inline-block" }}>
-                      {(fields, { add, remove }) => {
-                        return (
-                          <div>
-                            {fields.map((field) => (
-                              <React.Fragment>
-                                <Row key={field}>
-                                  <Col span={10}>
-                                    <Form.Item
-                                      key={[field.name, "key"]}
-                                      name={[field.name, "key"]}
-                                      style={{ display: "inline-block" }}
-                                      rules={[{ required: true, message: "Please enter key!" }]}>
-                                      <Input placeholder="Key" style={{ width: 280 }} />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={10}>
-                                    <Form.Item
-                                      validateTrigger={["onChange", "onBlur"]}
-                                      rules={[{ required: true, message: "Please enter value!" }]}
-                                      name={[field.name, "value"]}
-                                      key={[field.name, "value"]}
+                    <FormItemLabel name="Version" />
+                    <Form.Item name="version" rules={[
+                      {
+                        validator: (_, value, cb) => {
+                          if (!value) {
+                            cb("Please provide a version!")
+                            return
+                          }
+                          if (!(/^[0-9a-zA-Z_.]+$/.test(value))) {
+                            cb("Version can only contain alphanumeric characters, dots and underscores!")
+                            return
+                          }
+                          cb()
+                        }
+                      }
+                    ]}>
+                      <Input
+                        placeholder="Version of your service (example: v1)"
+                        style={{ width: 288 }}
+                        disabled={initialValues ? true : false}
+                      />
+                    </Form.Item>
+                    <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
+                    <Table dataSource={tasksTableData} columns={tasksColumn} pagination={false} />
+                    <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
+                      <Panel header="Advanced" key="1">
+                        <br />
+                        <FormItemLabel
+                          name="Auto scaling"
+                          description="Auto scale your container instances between min and max replicas based on the following config"
+                        />
+                        <Input.Group compact>
+                          <Form.Item name="mode" style={{ marginBottom: 0 }}>
+                            <Select placeholder="Select auto scaling mode">
+                              <Option value="per-second">Requests per second</Option>
+                              <Option value="parallel">Parallel requests</Option>
+                            </Select>
+                          </Form.Item>
+                          <Form.Item name="concurrency">
+                            <Input  min={1} />
+                          </Form.Item>
+                        </Input.Group>
+                        <FormItemLabel name="Replicas" />
+                        <Input.Group compact>
+                          <Form.Item name="min">
+                            <Input addonBefore="Min" style={{ width: 160 }} min={0} />
+                          </Form.Item>
+                          <Form.Item name="max">
+                            <Input
+                              addonBefore="Max"
+                              style={{ width: 160, marginLeft: 32 }}
+                              min={1}
+                            />
+                          </Form.Item>
+                        </Input.Group>
+                        <FormItemLabel
+                          name="Whitelists"
+                          description="Only those services that are whitelisted can access you"
+                        />
+                        {/* Whitelists */}
+                        <Form.List name="whitelists" style={{ display: "inline-block" }}>
+                          {(fields, { add, remove }) => {
+                            return (
+                              <div>
+                                {fields.map((field, index) => (
+                                  <React.Fragment>
+                                    <Row
+                                      gutter={16}
+                                      key={fields}
+                                      className={index === fields.length - 1 ? "bottom-spacing" : ""}
                                     >
-                                      <Input
-                                        style={{ width: 280, marginRight: 30 }}
-                                        placeholder="Value"
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={4}>
-                                    <DeleteOutlined
-                                      style={{ lineHeight: "32px" }}
-                                      onClick={() => {
-                                        remove(field.name);
-                                      }}
-                                    />
-                                  </Col>
-                                </Row>
-                              </React.Fragment>
-                            ))}
-                            <Form.Item>
-                              <Button
-                                onClick={() => {
-                                  form.validateFields([...fields.map(obj => ["labels", obj.name, "key"]), ...fields.map(obj => ["labels", obj.name, "value"])])
-                                    .then(() => add())
-                                    .catch(ex => console.log("Exception", ex))
-                                }}
-                                style={{ marginTop: -10 }}
-                              >
-                                <PlusOutlined /> Add an environment variable
+                                      <Col span={9}>
+                                        <Form.Item
+                                          key={[field.name, "projectId"]}
+                                          name={[field.name, "projectId"]}
+                                          rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
+                                          <Input placeholder="Project ID ( * to select all )" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={2} style={{ textAlign: "center" }}>
+                                        <RightOutlined style={{ fontSize: 12 }} />
+                                      </Col>
+                                      <Col span={9}>
+                                        <Form.Item
+                                          validateTrigger={["onChange", "onBlur"]}
+                                          rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                          key={[field.name, "service"]}
+                                          name={[field.name, "service"]}
+                                          style={{ marginRight: 30 }}
+                                        >
+                                          <Input placeholder="Service Name ( * to select all )" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={3}>
+                                        {fields.length > 1 ? (
+                                          <DeleteOutlined
+                                            style={{ lineHeight: "32px" }}
+                                            onClick={() => {
+                                              remove(field.name);
+                                            }}
+                                          />
+                                        ) : null}
+                                      </Col>
+                                    </Row>
+                                  </React.Fragment>
+                                ))}
+                                <Form.Item>
+                                  <Button
+                                    onClick={() => {
+                                      form.validateFields([...fields.map(obj => ["whitelists", obj.name, "projectId"]), ...fields.map(obj => ["whitelists", obj.name, "service"])])
+                                        .then(() => add({ projectID }))
+                                        .catch(ex => console.log("Exception", ex))
+                                    }}
+                                    style={{ marginTop: -10 }}
+                                  >
+                                    <PlusOutlined /> Add another upstream service
+                          </Button>
+                                </Form.Item>
+                              </div>
+                            );
+                          }}
+                        </Form.List>
+                        <FormItemLabel
+                          name="Upstreams"
+                          description="The upstream servces that you want to access"
+                        />
+                        <Form.List name="upstreams" style={{ display: "inline-block" }}>
+                          {(fields, { add, remove }) => {
+                            return (
+                              <div>
+                                {fields.map((field, index) => (
+                                  <React.Fragment>
+                                    <Row
+                                      gutter={16}
+                                      key={fields}
+                                      className={index === fields.length - 1 ? "bottom-spacing" : ""}
+                                    >
+                                      <Col span={9}>
+                                        <Form.Item
+                                          name={[field.name, "projectId"]}
+                                          key={[field.name, "projectId"]}
+                                          rules={[{ required: true, message: "Please enter the project id of the service!" }]}>
+                                          <Input placeholder="Project ID ( * to select all )" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={2} style={{ textAlign: "center" }}>
+                                        <RightOutlined style={{ fontSize: 12 }} />
+                                      </Col>
+                                      <Col span={9}>
+                                        <Form.Item
+                                          validateTrigger={["onChange", "onBlur"]}
+                                          rules={[{ required: true, message: "Please enter the name of the service!" }]}
+                                          key={[field.name, "service"]}
+                                          name={[field.name, "service"]}
+                                          style={{ marginRight: 30 }}
+                                        >
+                                          <Input placeholder="Service Name ( * to select all )" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={3}>
+                                        {fields.length > 1 ? (
+                                          <DeleteOutlined
+                                            style={{ lineHeight: "32px" }}
+                                            onClick={() => {
+                                              remove(field.name);
+                                            }}
+                                          />
+                                        ) : null}
+                                      </Col>
+                                    </Row>
+                                  </React.Fragment>
+                                ))}
+                                <Form.Item>
+                                  <Button
+                                    onClick={() => {
+                                      form.validateFields([...fields.map(obj => ["upstreams", obj.name, "projectId"]), ...fields.map(obj => ["upstreams", obj.name, "service"])])
+                                        .then(() => add({ projectID }))
+                                        .catch(ex => console.log("Exception", ex))
+                                    }}
+                                    style={{ marginTop: -10 }}
+                                  >
+                                    <PlusOutlined /> Add another upstream service
+                          </Button>
+                                </Form.Item>
+                              </div>
+                            );
+                          }}
+                        </Form.List>
+                        <FormItemLabel
+                          name="Envoy stats"
+                          description="The statistics that the envoy proxy should generate"
+                        />
+                        <Form.Item name="statsInclusionPrefixes">
+                          <Input placeholder="CSV of envoy statistics" />
+                        </Form.Item>
+                        <FormItemLabel name="Labels" />
+                        <Form.List name="labels" style={{ display: "inline-block" }}>
+                          {(fields, { add, remove }) => {
+                            return (
+                              <div>
+                                {fields.map((field) => (
+                                  <React.Fragment>
+                                    <Row key={field} gutter={16}>
+                                      <Col span={10}>
+                                        <Form.Item
+                                          key={[field.name, "key"]}
+                                          name={[field.name, "key"]}
+                                          rules={[{ required: true, message: "Please enter key!" }]}>
+                                          <Input placeholder="Key" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={10}>
+                                        <Form.Item
+                                          validateTrigger={["onChange", "onBlur"]}
+                                          rules={[{ required: true, message: "Please enter value!" }]}
+                                          name={[field.name, "value"]}
+                                          key={[field.name, "value"]}
+                                        >
+                                          <Input placeholder="Value" />
+                                        </Form.Item>
+                                      </Col>
+                                      <Col span={4}>
+                                        <DeleteOutlined
+                                          style={{ lineHeight: "32px" }}
+                                          onClick={() => {
+                                            remove(field.name);
+                                          }}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </React.Fragment>
+                                ))}
+                                <Form.Item>
+                                  <Button
+                                    onClick={() => {
+                                      form.validateFields([...fields.map(obj => ["labels", obj.name, "key"]), ...fields.map(obj => ["labels", obj.name, "value"])])
+                                        .then(() => add())
+                                        .catch(ex => console.log("Exception", ex))
+                                    }}
+                                    style={{ marginTop: -10 }}
+                                  >
+                                    <PlusOutlined /> Add a label
                                   </Button>
-                            </Form.Item>
-                          </div>
-                        );
-                      }}
-                    </Form.List>
-                    <FormItemLabel name="Affinities" extra={<Button style={{ float: "right" }} onClick={onAddAffinityClick}>Add affinity</Button>} />
-                    <Table dataSource={affinities} columns={affinitiesColumn} pagination={false} />
-                  </Panel>
-                </Collapse>
-                <Button type="primary" block htmlType="submit" style={{ marginTop: 24 }} onClick={() => onDeployService(operation)}>Save</Button>
-              </React.Fragment>
-            </Form>
-          </Card>
+                                </Form.Item>
+                              </div>
+                            );
+                          }}
+                        </Form.List>
+                        <FormItemLabel name="Affinities" extra={<Button style={{ float: "right" }} onClick={onAddAffinityClick}>Add affinity</Button>} />
+                        <Table dataSource={affinities ? affinities : []} columns={affinitiesColumn} pagination={false} />
+                      </Panel>
+                    </Collapse>
+                    <Button type="primary" block htmlType="submit" style={{ marginTop: 24 }} onClick={() => onDeployService(operation)}>Save</Button>
+                  </React.Fragment>
+                </Form>
+              </Card>
+            </Col>
+          </Row>
         </Content>
       </ProjectPageLayout>
       {addTaskModalVisibility && (
@@ -600,6 +589,7 @@ const ConfigureDeployment = props => {
           visible={addAffinityModalVisibility}
           initialValues={selectedAffinityInfo}
           projects={projects}
+          projectId={projectID}
           handleCancel={() => setAddAffinityModalVisibility(false)}
           handleSubmit={handleAffinitySubmit}
         />

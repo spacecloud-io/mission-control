@@ -66,8 +66,8 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           <Select onChange={onAlgorithmChange}>
             <Select.Option value="HS256">HS256</Select.Option>
             <Select.Option value="RS256">RS256</Select.Option>
-            <Select.Option value="JWK-URL">JWK-URL</Select.Option>
-            <Select.Option value="RS256-PUBLIC">RS256-PUBLIC</Select.Option>
+            <Select.Option value="JWK_URL">JWK URL</Select.Option>
+            <Select.Option value="RS256_PUBLIC">RS256 PUBLIC</Select.Option>
           </Select>
         </Form.Item>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "HS256"}>
@@ -96,13 +96,13 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
             <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
           </Form.Item>
         </ConditionalFormBlock>
-        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "JWK-URL"}>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "JWK_URL"}>
           <FormItemLabel name="JWK URL"/>
           <Form.Item name="jwkUrl" rules={[{ required: true, message: 'Please provide an URL' }]}>
             <Input placeholder="JWK URL" />
           </Form.Item>
         </ConditionalFormBlock>
-        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256-PUBLIC"}>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256_PUBLIC"}>
           <FormItemLabel name="Public key" />
           <Form.Item name="publicKey">
             <Input.TextArea rows={4} placeholder="Public key" />
@@ -138,13 +138,13 @@ const ViewSecretModal = ({ secretData, handleCancel }) => {
           <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.privateKey} /></div>
         </React.Fragment>
       )}
-      {secretData.alg === "JWK-URL" && (
+      {secretData.alg === "JWK_URL" && (
         <React.Fragment>
           <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.jwkUrl }} strong>URL</Typography.Paragraph>
           <Input value={secretData.jwkUrl} />
         </React.Fragment>
       )}
-      {secretData.alg === "RS256-PUBLIC" && (
+      {secretData.alg === "RS256_PUBLIC" && (
         <React.Fragment>
           <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.publicKey }} strong>Public key</Typography.Paragraph>
           <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.publicKey} /></div>
@@ -178,7 +178,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
         <QuestionCircleOutlined />
       </Tooltip></span>,
       render: (_, record, index) => {
-        if (record.alg === "JWK-URL" || record.alg === "RS256-PUBLIC") return <span>N/A</span>
+        if (record.alg === "JWK_URL" || record.alg === "RS256_PUBLIC") return <span>N/A</span>
         return <Radio
           checked={record.isPrimary}
           onChange={!record.isPrimary ? () => handleChangePrimarySecret(index) : undefined} />

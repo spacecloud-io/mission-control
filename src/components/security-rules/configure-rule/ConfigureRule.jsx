@@ -201,6 +201,9 @@ const ConfigureRule = (props) => {
         if (values.setClaims) {
           values.claims = JSON.parse(values.claims)
         }
+        if (values["applyTransformations"]) {
+          values.template = "go"
+        }
 
         delete values["setClaims"]
         delete values["applyTransformations"]

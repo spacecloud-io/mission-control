@@ -10,7 +10,6 @@ import source_code from "../../../assets/source_code.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
 import { deleteService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
-import { loadSecrets, getSecrets } from "../../../operations/secrets";
 import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
 
@@ -25,11 +24,6 @@ const DeploymentsOverview = () => {
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
-      loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
-        .finally(() => decrementPendingRequests())
-
       incrementPendingRequests()
       loadServicesStatus(projectID)
         .catch(ex => notify("error", "Error fetching status of services", ex))
@@ -85,7 +79,7 @@ const DeploymentsOverview = () => {
         obj.id === serviceId &&
         obj.version === version
     );
-    history.push("/mission-control/projects/mockproject1/deployments/configure", { deploymentClickedInfo })
+    history.push(`/mission-control/projects/${projectID}/deployments/configure`, { deploymentClickedInfo })
   };
 
   const handleDelete = (serviceId, version) => {
@@ -214,7 +208,7 @@ const DeploymentsOverview = () => {
                 <Button
                   type="primary"
                   style={{ marginTop: 16 }}
-                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/configure")}
+                  onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)}
                 >
                   Deploy your first container
                 </Button>
@@ -228,7 +222,7 @@ const DeploymentsOverview = () => {
                 </span>
                 <Button
                   style={{ float: "right" }}
-                  onClick={() => history.push("/mission-control/projects/mockproject1/deployments/configure")}
+                  onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)}
                 >
                   Add
                 </Button>

@@ -265,7 +265,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                 header='Advanced'
                 key='1'
               >
-                <FormItemLabel name="Timeout" description="default: 60" />
+                <FormItemLabel name="Timeout" description="Applicable for REST endpoints only" hint="(default: 60)" />
                 <Form.Item name="timeout">
                   <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />
                 </Form.Item>

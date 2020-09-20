@@ -1,6 +1,6 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { Form } from 'antd'
+import { Form, Affix } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import {
   Modal,
@@ -11,9 +11,10 @@ import {
   Button,
   InputNumber,
   Slider,
+  Tooltip
 } from "antd";
-import { v4 as uuidv4 } from 'uuid';
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock"
+import { generateId } from "../../../utils";
 
 const { Option } = Select;
 
@@ -21,18 +22,22 @@ const AddAffinityForm = props => {
   const { initialValues } = props;
   const [form] = Form.useForm();
   const formInitialValues = {
-    type: initialValues ? initialValues.type : undefined,
+    type: initialValues ? initialValues.type : "service",
     weight: initialValues ? initialValues.weight : 0,
-    operator: initialValues ? initialValues.operator : undefined,
-    topologyKey: initialValues ? initialValues.topologyKey : undefined,
-    projects: initialValues ? initialValues.projects: undefined,
-    matchExpression: initialValues ? initialValues.matchExpression : [{ key: "", operator: undefined, values: undefined }]
+    operator: initialValues ? initialValues.operator : "preferred",
+    topologyKey: initialValues ? initialValues.topologyKey : "kubernetes.io/hostname",
+    projects: initialValues ? initialValues.projects : [props.projectId],
+    matchExpressions: initialValues ? initialValues.matchExpressions : [{ key: "", operator: "In", values: undefined }]
   }
 
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
       const operation = initialValues ? "edit" : "add";
-      values.id = operation === "edit" ? initialValues.id : uuidv4();
+      values.id = operation === "edit" ? initialValues.id : generateId();
+      values.matchExpressions = values.matchExpressions.map(obj => Object.assign({}, obj, {
+        attribute: "label",
+        values: obj.operator === "Exists" || obj.operator === "DoesNotExist" ? [] : obj.values
+      }))
       props.handleSubmit(values, operation)
       props.handleCancel()
     });
@@ -53,6 +58,10 @@ const AddAffinityForm = props => {
         <Slider
           min={-100}
           max={100}
+          marks={{
+            [-100]: { label: "Anti affinity", style: { transform: "translateX(0%)" } },
+            100: { label: "Affinity", style: { transform: "translateX(-100%)" } },
+          }}
           onChange={(val) => onChange(val)}
           value={value}
         />
@@ -110,8 +119,8 @@ const AddAffinityForm = props => {
                 </Select>
               </Form.Item>
             </ConditionalFormBlock>
-            <FormItemLabel name="Match expression" />
-            <Form.List name="matchExpression">
+            <FormItemLabel name="Match expressions" />
+            <Form.List name="matchExpressions">
               {(fields, { add, remove }) => {
                 return (
                   <div>
@@ -130,35 +139,63 @@ const AddAffinityForm = props => {
                         </Col>
                         <Col span={6}>
                           <FormItemLabel name="Operator" />
-                          <Form.Item
-                            {...field}
-                            name={[field.name, 'operator']}
-                            fieldKey={[field.fieldKey, 'operator']}
-                            rules={[{ required: true, message: "Please enter value!" }]}
-                          >
-                            <Select placeholder="Operator">
-                              <Select.Option value="In">In</Select.Option>
-                              <Select.Option value="NotIn">NotIn</Select.Option>
-                              <Select.Option value="Exists">Exists</Select.Option>
-                              <Select.Option value="DoesNotExist">DoesNotExist</Select.Option>
-                            </Select>
+                          <Form.Item noStyle shouldUpdate={true}>
+                            {
+                              () => {
+                                const affinityType = form.getFieldValue("type")
+                                return (
+                                  <Form.Item
+                                    {...field}
+                                    name={[field.name, 'operator']}
+                                    fieldKey={[field.fieldKey, 'operator']}
+                                    rules={[{ required: true, message: "Please enter value!" }]}
+                                  >
+                                    <Select placeholder="Operator">
+                                      <Select.Option value="In">In</Select.Option>
+                                      <Select.Option value="NotIn">NotIn</Select.Option>
+                                      {affinityType === "node" && (
+                                        <React.Fragment>
+                                          <Select.Option value="Gt">Gt</Select.Option>
+                                          <Select.Option value="Lt">Lt</Select.Option>
+                                        </React.Fragment>
+                                      )}
+                                      <Select.Option value="Exists">Exists</Select.Option>
+                                      <Select.Option value="DoesNotExist">DoesNotExist</Select.Option>
+                                    </Select>
+                                  </Form.Item>
+                                )
+                              }
+                            }
                           </Form.Item>
                         </Col>
-                        <Col span={9}>
-                          <FormItemLabel name="Values" />
-                          <Form.Item
-                            {...field}
-                            name={[field.name, 'values']}
-                            fieldKey={[field.fieldKey, 'values']}
-                            rules={[{ required: true, message: "Please enter value!" }]}
-                          >
-                            <Select
-                              mode="tags"
-                              placeholder="Tags"
-                            >
-                            </Select>
-                          </Form.Item>
-                        </Col>
+                        <Form.Item noStyle shouldUpdate={true}>
+                          {
+                            () => {
+                              const operator = form.getFieldValue(["matchExpressions", field.name, "operator"])
+                              const showValues = operator !== "Exists" && operator !== "DoesNotExist"
+                              return (
+                                <Col span={9}>
+                                  <FormItemLabel name="Values" />
+                                  <Tooltip title={showValues ? "" : "Values are not applicable for this operator"}>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'values']}
+                                      fieldKey={[field.fieldKey, 'values']}
+                                      rules={[{ required: showValues, message: "Please enter value!" }]}
+                                    >
+                                      <Select
+                                        mode="tags"
+                                        placeholder="Values"
+                                        disabled={!showValues}
+                                      >
+                                      </Select>
+                                    </Form.Item>
+                                  </Tooltip>
+                                </Col>
+                              )
+                            }
+                          }
+                        </Form.Item>
                         <Col span={3}>
                           {fields.length > 1 && (
                             <DeleteOutlined
@@ -175,7 +212,7 @@ const AddAffinityForm = props => {
                     <Form.Item>
                       <Button
                         onClick={() => {
-                          form.validateFields([...fields.map(obj => ["matchExpression", obj.name, "key"]), ...fields.map(obj => ["matchExpression", obj.name, "operator"]), ...fields.map(obj => ["matchExpression", obj.name, "value"])])
+                          form.validateFields([...fields.map(obj => ["matchExpressions", obj.name, "key"]), ...fields.map(obj => ["matchExpressions", obj.name, "operator"]), ...fields.map(obj => ["matchExpressions", obj.name, "value"])])
                             .then(() => add())
                             .catch(ex => console.log("Exception", ex))
                         }}

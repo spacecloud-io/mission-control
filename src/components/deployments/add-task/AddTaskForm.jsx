@@ -29,12 +29,12 @@ const AddTaskForm = props => {
     dockerSecret: initialValues ? initialValues.docker.secret : "",
     ports: initialValues ? initialValues.ports : [],
     imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
-    cpu: initialValues ? initialValues.resources.cpu : 0.1,
+    cpu: initialValues ? initialValues.resources.cpu / 1000 : 0.1,
     memory: initialValues ? initialValues.resources.memory : 100,
     addGPUs: initialValues && initialValues.resources.gpu && initialValues.resources.gpu.type ? true : false,
     gpuType: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.type : "nvdia",
     gpuCount: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.value : 1,
-    secrets: initialValues ? initialValues.secrets : [],
+    secrets: (initialValues && initialValues.secrets && initialValues.secrets.length > 0) ? initialValues.secrets : [],
     env: (initialValues && Object.keys(initialValues.env).length > 0)
       ? Object.entries(initialValues.env).map(([key, value]) => ({
         key: key,
