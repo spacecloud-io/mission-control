@@ -18,8 +18,6 @@ import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
-import keypair from "keypair";
-import forge from "node-forge"
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -145,21 +143,6 @@ export const generateId = (len = 32) => {
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
-}
-
-export const generateRSAPrivateKey = () => {
-  return keypair().private
-}
-
-export const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
-  var forgePrivateKey = forge.pki.privateKeyFromPem(privateKey);
-
-  // get a Forge public key from the Forge private key
-  var forgePublicKey = forge.pki.setRsaPublicKey(forgePrivateKey.n, forgePrivateKey.e);
-
-  // convert the Forge public key to a PEM-formatted public key
-  var publicKey = forge.pki.publicKeyToPem(forgePublicKey);
-  return publicKey
 }
 
 export const generateJWTSecret = generateId
@@ -345,6 +328,15 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+// Listens for cross tab logout events
+const registerAuthStateListener = () => {
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'token' && !isLoggedIn(store.getState())) {
+      redirectToLogin()
+    }
+  })
+}
+
 const registerSecurityRulesBroadCastListener = () => {
   const bc = new BroadcastChannel('security-rules');
   bc.onmessage = ({ data }) => {
@@ -377,7 +369,7 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   let loginURL = getLoginURL(store.getState())
 
   if (!loginURL.startsWith("http")) {
@@ -443,6 +435,9 @@ export function performSetup() {
 
     // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
     registerSecurityRulesBroadCastListener()
+
+    // Register cross tab logout listener
+    registerAuthStateListener()
   })
 }
 

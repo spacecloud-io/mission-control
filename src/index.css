@@ -31,11 +31,12 @@ body {
 }
 
 .ant-alert-info {
-  border: 1px solid #91d5ff;
-  background-color: #e6f7ff;
+  border: 1px solid #91d5ff !important;
+  background-color: #e6f7ff !important;
 }
+
 .ant-alert-info .ant-alert-icon {
-  color: #1890ff;
+  color: #1890ff !important;
 }
 
 .hint {
@@ -162,7 +163,7 @@ body {
   color: #fff;
 }
 
-.ant-spin {
+.page-loading {
   position: fixed;
   display: flex;
   top: 0;

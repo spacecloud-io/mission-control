@@ -2,7 +2,7 @@ import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
 import { upsertArray, checkResourcePermissions } from "../utils";
-import { configResourceTypes, permissionVerbs } from "../constants";
+import { configResourceTypes, permissionVerbs, defaultFileRule } from "../constants";
 
 export const loadFileStoreConnState = (projectId) => {
   return new Promise((resolve, reject) => {
@@ -60,6 +60,12 @@ export const saveFileStoreConfig = (projectId, config) => {
         if (!queued) {
           setFileStoreConfig(config)
           setFileStoreConnState(config.enabled)
+          if (getFileStoreRules(store.getState()).length === 0) {
+            saveFileStoreRule(projectId, "DefaultRule", { prefix: "/", rule: defaultFileRule })
+              .then(({ queued }) => resolve({ queued }))
+              .catch(ex => reject(ex))
+            return;
+          }
         }
         resolve({ queued })
       })

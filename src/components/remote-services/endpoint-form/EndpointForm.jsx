@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { notify, canGenerateToken } from '../../../utils';
-import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip } from 'antd';
+import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip, InputNumber } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import GenerateTokenForm from '../../explorer/generateToken/GenerateTokenForm';
@@ -47,7 +47,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
@@ -66,25 +66,27 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     setHeaders: headers && headers.length > 0 ? true : false,
     headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
-    outputFormat: outputFormat ? outputFormat : "yaml"
+    outputFormat: outputFormat ? outputFormat : "yaml",
+    timeout: timeout
   }
 
   const handleFinish = (values) => {
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders } = values
+    const { kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders, timeout } = values
     try {
       handleSubmit(
         kind,
         name,
         method,
         path,
-        defaultEndpointRule,
+        rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
         overrideToken ? token : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
         (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
         kind === endpointTypes.PREPARED ? graphTemplateData : "",
-        setHeaders ? headers : undefined
+        setHeaders ? headers : undefined,
+        timeout
       )
     } catch (error) {
       notify("error", "Error", error)
@@ -263,6 +265,10 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                 header='Advanced'
                 key='1'
               >
+                <FormItemLabel name="Timeout" description="Applicable for REST endpoints only" hint="(default: 60)" />
+                <Form.Item name="timeout">
+                  <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />
+                </Form.Item>
                 <FormItemLabel name='Override token' />
                 <Form.Item name='overrideToken' valuePropName='checked'>
                   <Checkbox checked={token ? true : false}>
@@ -345,11 +351,13 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                                     </Col>
                                   </ConditionalFormBlock>
                                   <Col span={3}>
-                                    <Button
-                                      onClick={() => remove(field.name)}
-                                      style={{ marginRight: "2%", float: "left" }}>
-                                      <DeleteOutlined />
-                                    </Button>
+                                    {fields.length > 1 &&
+                                      <Button
+                                        onClick={() => remove(field.name)}
+                                        style={{ marginRight: "2%", float: "left" }}>
+                                        <DeleteOutlined />
+                                      </Button>
+                                    }
                                   </Col>
                                 </Row>
                               </React.Fragment>
