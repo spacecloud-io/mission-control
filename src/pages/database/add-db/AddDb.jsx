@@ -10,14 +10,30 @@ import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
+import { loadSecrets, getSecrets } from "../../../operations/secrets";
+import { useSelector } from 'react-redux';
 
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
+  const totalSecrets = useSelector(state => getSecrets(state))
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/add-db");
   }, [])
+
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.data);
 
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
@@ -65,7 +81,7 @@ const AddDb = () => {
           <div>
             <Row>
               <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                <CreateDatabase projectId={projectID} handleSubmit={addDb} />
+                <CreateDatabase projectId={projectID} handleSubmit={addDb} envSecret={envSecrets}/>
               </Col>
             </Row>
           </div>

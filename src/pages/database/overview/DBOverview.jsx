@@ -17,7 +17,7 @@ import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRe
 import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-
+import { loadSecrets, getSecrets } from '../../../operations/secrets';
 
 const Overview = () => {
   // Router params
@@ -31,6 +31,7 @@ const Overview = () => {
   const unTrackedCollections = useSelector(state => getUntrackedCollections(state, selectedDB))
   const unTrackedCollectionsInfo = unTrackedCollections.map(colName => ({ name: colName }))
   const trackedCollections = useSelector(state => getTrackedCollectionsInfo(state, selectedDB))
+  const totalSecrets = useSelector(state => getSecrets(state))
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
@@ -48,6 +49,13 @@ const Overview = () => {
   }, [])
 
   useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+
     if (projectID && selectedDB) {
       incrementPendingRequests()
       loadDBConnState(projectID, selectedDB)
@@ -55,6 +63,10 @@ const Overview = () => {
         .finally(() => decrementPendingRequests())
     }
   }, [projectID, selectedDB])
+  
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.data);
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
@@ -337,9 +349,10 @@ const Overview = () => {
               handleSubmit={(colName, schema) => handleAddCollection(addColFormInEditMode, colName, schema)}
             />}
             {editConnModalVisible && <EditConnectionForm
-              initialValues={{ conn: connString }}
+              initialValues={{ conn: connString, db: selectedDBType }}
               handleCancel={() => setEditConnModalVisible(false)}
-              handleSubmit={handleEditConnString} />}
+              handleSubmit={handleEditConnString}
+              envSecret={envSecrets} />}
           </div>
         </div>
       </div>

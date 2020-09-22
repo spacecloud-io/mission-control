@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, Redirect, } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
@@ -12,6 +12,7 @@ import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
 import { enableDb, getDbConfig } from "../../operations/database"
+import { loadSecrets, getSecrets } from '../../operations/secrets';
 
 const Database = () => {
 
@@ -24,6 +25,20 @@ const Database = () => {
   // Global state
   const { enabled, type, conn } = useSelector(state => getDbConfig(state, selectedDB))
   const dbType = type ? type : selectedDB
+  const totalSecrets = useSelector(state => getSecrets(state))
+
+  useEffect(() => {
+    if (projectID) {
+      incrementPendingRequests()
+      loadSecrets(projectID)
+        .catch(ex => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests())
+    }
+  }, [projectID])
+
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.data);
 
   // Handlers
   const handleEnable = (conn) => {
@@ -87,7 +102,8 @@ const Database = () => {
         </div>
       </div>
       {modalVisible && <EnableDBForm
-        initialValues={{ conn: defaultConnString }}
+        initialValues={{ conn: defaultConnString, db: dbType }}
+        envSecret={envSecrets} 
         handleSubmit={handleEnable}
         handleCancel={() => setModalVisible(false)} />}
     </div>
