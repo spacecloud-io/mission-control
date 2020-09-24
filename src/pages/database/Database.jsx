@@ -12,7 +12,7 @@ import { Button } from "antd"
 import EnableDBForm from "../../components/database/enable-db-form/EnableDBForm"
 import { defaultDbConnectionStrings, dbTypes, projectModules, actionQueuedMessage } from "../../constants"
 import { enableDb, getDbConfig } from "../../operations/database"
-import { loadSecrets, getSecrets } from '../../operations/secrets';
+import { getSecrets } from '../../operations/secrets';
 
 const Database = () => {
 
@@ -27,18 +27,9 @@ const Database = () => {
   const dbType = type ? type : selectedDB
   const totalSecrets = useSelector(state => getSecrets(state))
 
-  useEffect(() => {
-    if (projectID) {
-      incrementPendingRequests()
-      loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
-        .finally(() => decrementPendingRequests())
-    }
-  }, [projectID])
-
   const envSecrets = totalSecrets
     .filter(obj => obj.type === "env")
-    .map(obj => obj.data);
+    .map(obj => obj.id);
 
   // Handlers
   const handleEnable = (conn) => {
@@ -103,7 +94,7 @@ const Database = () => {
       </div>
       {modalVisible && <EnableDBForm
         initialValues={{ conn: defaultConnString, db: dbType }}
-        envSecret={envSecrets} 
+        envSecrets={envSecrets} 
         handleSubmit={handleEnable}
         handleCancel={() => setModalVisible(false)} />}
     </div>

@@ -17,7 +17,7 @@ import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRe
 import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-import { loadSecrets, getSecrets } from '../../../operations/secrets';
+import { getSecrets } from '../../../operations/secrets';
 
 const Overview = () => {
   // Router params
@@ -49,13 +49,6 @@ const Overview = () => {
   }, [])
 
   useEffect(() => {
-    if (projectID) {
-      incrementPendingRequests()
-      loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
-        .finally(() => decrementPendingRequests())
-    }
-
     if (projectID && selectedDB) {
       incrementPendingRequests()
       loadDBConnState(projectID, selectedDB)
@@ -66,7 +59,7 @@ const Overview = () => {
   
   const envSecrets = totalSecrets
     .filter(obj => obj.type === "env")
-    .map(obj => obj.data);
+    .map(obj => obj.id);
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
@@ -352,7 +345,7 @@ const Overview = () => {
               initialValues={{ conn: connString, db: selectedDBType }}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString}
-              envSecret={envSecrets} />}
+              envSecrets={envSecrets} />}
           </div>
         </div>
       </div>

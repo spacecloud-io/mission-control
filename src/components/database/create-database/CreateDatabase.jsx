@@ -24,7 +24,7 @@ import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBl
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
-  const envSecret = props.envSecret;
+  const envSecrets = props.envSecrets;
   const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO], loadFromSecret: false }
   const dbconfig = useSelector(state => getDbConfigs(state))
 
@@ -102,12 +102,8 @@ const CreateDatabase = (props) => {
           dependency='loadFromSecret'
           condition={() => form.getFieldValue('loadFromSecret') === true}
         >
-          <Form.Item name="secret" rules={[{ required: true, message: 'Please input a connection string' }]}>
-            <AutoComplete placeholder="secret">
-              {envSecret.map(secret => Object.keys(secret).map(key => {
-                return <AutoComplete.Option key={key}>{key}</AutoComplete.Option>
-              }))}
-            </AutoComplete>
+          <Form.Item name="secret" rules={[{ required: true, message: 'Please input a secret name' }]}>
+            <AutoComplete placeholder="secret name" options={envSecrets.map(secret => ({ value: secret }))} />
           </Form.Item>
         </ConditionalFormBlock>
         <Form.Item noStyle shouldUpdate={(prev, curr) => prev.dbType != curr.dbType} dependencies={["dbType"]}>

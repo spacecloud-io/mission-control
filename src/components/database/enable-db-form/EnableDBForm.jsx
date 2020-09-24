@@ -4,13 +4,13 @@ import FormItemLabel from "../../form-item-label/FormItemLabel";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { defaultDbConnectionStrings } from "../../../constants";
 
-const EnableDBForm = ({ handleSubmit, handleCancel, initialValues, envSecret }) => {
+const EnableDBForm = ({ handleSubmit, handleCancel, initialValues, envSecrets }) => {
   const [form] = Form.useForm();
 
   const formInitialValues = {
-    loadFromSecret: initialValues.conn.includes('secrets.') ? true : false,
-    conn: initialValues.conn.includes('secrets.') ? defaultDbConnectionStrings[initialValues.db] : initialValues.conn,
-    secret: initialValues.conn.includes('secrets.') ? initialValues.conn.split('.')[1] : ''
+    loadFromSecret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? true : false,
+    conn: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? defaultDbConnectionStrings[initialValues.db] : initialValues.conn,
+    secret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? initialValues.conn.split('.')[1] : ''
   }
 
   const handleSubmitClick = e => {
@@ -58,12 +58,8 @@ const EnableDBForm = ({ handleSubmit, handleCancel, initialValues, envSecret }) 
           dependency='loadFromSecret'
           condition={() => form.getFieldValue('loadFromSecret') === true}
         >
-          <Form.Item name="secret" rules={[{ required: true, message: 'Please input a connection string' }]}>
-            <AutoComplete placeholder="secret">
-              {envSecret.map(secret => Object.keys(secret).map(key => {
-                return <AutoComplete.Option key={key}>{key}</AutoComplete.Option>
-              }))}
-            </AutoComplete>
+          <Form.Item name="secret" rules={[{ required: true, message: 'Please input a secret name' }]}>
+            <AutoComplete placeholder="secret name" options={envSecrets.map(secret => ({ value: secret }))} />
           </Form.Item>
         </ConditionalFormBlock>
       </Form>
