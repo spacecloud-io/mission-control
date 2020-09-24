@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
 import { Link } from 'react-router-dom';
 import history from "../../history"
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests, openProject } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
 import CreateProjectForm from "../../components/create-project-form/CreateProjectForm";
 
@@ -42,17 +42,23 @@ const CreateProject = () => {
   const handleAddDatabase = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
     addDatabase(projectId, alias, dbType, dbName, connectionString)
-      .then(({ queued }) => {
+      .then(({ queued, enabledEventing}) => {
         if (!queued) {
-          history.push(`/mission-control/projects/${projectId}`)
+          openProject(projectId)
           notify("success", "Success", "Successfully added database")
-          notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+          if (enabledEventing) {
+            notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
+          }
         } else {
           notify("success", "Success", actionQueuedMessage)
         }
       })
       .catch(ex => notify("error", "Error adding database", ex))
       .finally(() => decrementPendingRequests())
+  }
+
+  const handleSkipAddDatabase = () => {
+    openProject(projectId)
   }
 
   const steps = [{
@@ -75,7 +81,7 @@ const CreateProject = () => {
       <Row>
         <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
           <CreateDatabase projectId={projectId} handleSubmit={handleAddDatabase} ignoreDbAliasCheck />
-          <center style={{ marginTop: 16 }}><Link to={`/mission-control/projects/${projectId}/overview`} style={{ color: "rgba(255, 255, 255, 0.6)" }} >Skip for now</Link></center>
+          <center style={{ marginTop: 16 }}><a style={{ color: "rgba(255, 255, 255, 0.6)" }} onClick={handleSkipAddDatabase}>Skip for now</a></center>
         </Col>
       </Row>
     </React.Fragment>

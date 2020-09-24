@@ -391,11 +391,12 @@ const IngressRoutingModal = props => {
                                 </Col>
                               </ConditionalFormBlock>
                               <Col span={3}>
-                                <Button
-                                  onClick={() => remove(field.name)}
-                                  style={{ marginRight: "2%", float: "left" }}>
-                                  <DeleteOutlined />
-                                </Button>
+                                {fields.length > 1 &&
+                                  <Button
+                                    onClick={() => remove(field.name)}
+                                    style={{ marginRight: "2%", float: "left" }}>
+                                    <DeleteOutlined />
+                                  </Button>}
                               </Col>
                             </Row>
                           </React.Fragment>
@@ -478,11 +479,12 @@ const IngressRoutingModal = props => {
                                 </Col>
                               </ConditionalFormBlock>
                               <Col span={3}>
-                                <Button
-                                  onClick={() => remove(field.name)}
-                                  style={{ marginRight: "2%", float: "left" }}>
-                                  <DeleteOutlined />
-                                </Button>
+                                {fields.length > 1 &&
+                                  <Button
+                                    onClick={() => remove(field.name)}
+                                    style={{ marginRight: "2%", float: "left" }}>
+                                    <DeleteOutlined />
+                                  </Button>}
                               </Col>
                             </Row>
                           </React.Fragment>

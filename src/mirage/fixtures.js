@@ -289,9 +289,13 @@ export const services = [
       "concurrency": 50,
       "mode": "per-second"
     },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
     "tasks": [
       {
-        "id": "service1",
+        "id": "task1",
         "ports": [
           {
             "protocol": "http",
@@ -328,6 +332,24 @@ export const services = [
         "runtime": "image"
       }
     ],
+    "affinity": [
+      {
+        "id": "123",
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpressions": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
     "whitelists": [
       {
         "projectId": "todoapp",
@@ -348,7 +370,7 @@ export const services = [
         "service": "s4"
       }
     ],
-    statsInclusionPrefixes: "http.inbound,cluster_manager"
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
   }
 ]
 
@@ -409,12 +431,7 @@ export const clusterConfig = {
 export const permissions = [
   {
     project: "*",
-    resource: "project",
-    verb: "*"
-  },
-  {
-    project: "*",
-    resource: "service",
+    resource: "*",
     verb: "*"
   }
 ]
@@ -449,7 +466,21 @@ export const serviceRoutes = [
 ]
 
 export const installedIntegrations = [
-  { id: "teammanagement" }
+  {
+    id: "teammanagement",
+    name: "Team Management",
+    description: "Enterprise grade team management module for granular login permissions and much more",
+    details: "## Introduction\n This is a great integration",
+    appUrl: "/integrations/team-management",
+    healthCheckUrl: "/v1/integrations/health-check",
+    configPermissions: [
+      {
+        resources: ["*"],
+        verbs: ["hijack"]
+      }
+    ],
+    apiPermissions: []
+  }
 ]
 
 export const supportedInterations = [
@@ -459,6 +490,7 @@ export const supportedInterations = [
     description: "Enterprise grade team management module for granular login permissions and much more",
     details: "## Introduction\n This is a great integration",
     appUrl: "/integrations/team-management",
+    healthCheckUrl: "/v1/integrations/health-check",
     configPermissions: [
       {
         resources: ["*"],

@@ -4,8 +4,10 @@ import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ConfigureRule from '../configure-rule/ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
-import { copyObjectToClipboard, getCopiedObjectFromClipboard } from "../../../utils";
+import { saveObjectToLocalStorage, getObjectFromLocalStorage } from "../../../utils";
 import generateGraph from "./generateGraph";
+
+const LOCAL_STORAGE_RULE_KEY = "securityRuleBuilder:copiedRule"
 
 const getStrippedKey = (ruleKey) => ruleKey.replace("rule:", "").replace("root:", "").replace("root.", "")
 
@@ -38,7 +40,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
 
   // Derived state
   const graph = generateGraph(ruleType, ruleName, rule)
-  const doubleClickedRuleObj = getDoubleClickedRuleObject(rule, doubleClickedNodeId) // Used in the configure rule form as initial values
+  const doubleClickedRuleObj = doubleClickedNodeId ? getDoubleClickedRuleObject(rule, doubleClickedNodeId) : {} // Used in the configure rule form as initial values
 
   // mouse events handlers
   const events = {
@@ -67,7 +69,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
-      if (nodeId.startsWith("root")) {
+      if (nodeId && nodeId.startsWith("root")) {
         message.error("Operation not allowed. Only rule blocks (blue ones) can be double clicked to configure them")
         return
       }
@@ -95,7 +97,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
 
         delete selectedRuleObj["clause"]
         delete selectedRuleObj["clauses"]
-        copyObjectToClipboard(selectedRuleObj).then(() => message.success("Copied rule to clipboard"))
+        saveObjectToLocalStorage(LOCAL_STORAGE_RULE_KEY, selectedRuleObj)
         break;
 
       case "ctrl+alt+c":
@@ -104,7 +106,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           return
         }
 
-        copyObjectToClipboard(selectedRuleObj).then(() => message.success("Copied rule to clipboard"))
+        saveObjectToLocalStorage(LOCAL_STORAGE_RULE_KEY, selectedRuleObj)
         break;
 
       case "ctrl+x":
@@ -113,10 +115,8 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           return
         }
 
-        copyObjectToClipboard(selectedRuleObj).then(() => {
-          setRule(dotProp.delete(rule, strippedKey))
-          message.success("Cut rule to clipboard")
-        })
+        saveObjectToLocalStorage(LOCAL_STORAGE_RULE_KEY, selectedRuleObj)
+        setRule(dotProp.delete(rule, strippedKey))
         break
 
       case "alt+r":
@@ -125,7 +125,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           return
         }
 
-        getCopiedObjectFromClipboard()
+        getObjectFromLocalStorage(LOCAL_STORAGE_RULE_KEY)
           .then(copiedRule => {
             if (strippedKey === "root") {
               setRule(copiedRule);
@@ -137,7 +137,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
         break;
 
       case "ctrl+v":
-        getCopiedObjectFromClipboard()
+        getObjectFromLocalStorage(LOCAL_STORAGE_RULE_KEY)
           .then(copiedRule => {
             if (selectedNodeId.includes("root:")) {
               setRule(dotProp.set(rule, strippedKey, copiedRule))
@@ -152,7 +152,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
               }
               return
             }
-            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove") {
+            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove" || selectedRuleObj.rule === "encrypt" || selectedRuleObj.rule === "decrypt" || selectedRuleObj.rule === "hash") {
               if (strippedKey === "root") {
                 setRule(dotProp.set(rule, "clause", copiedRule))
               } else {

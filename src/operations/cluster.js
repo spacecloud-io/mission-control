@@ -81,7 +81,6 @@ export function refreshClusterTokenIfPresent() {
         resolve()
       })
       .catch((ex) => {
-        localStorage.removeItem("token")
         reject(ex)
       })
   })
@@ -90,6 +89,17 @@ export function refreshClusterTokenIfPresent() {
 export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
   return new Promise((resolve, reject) => {
     client.cluster.setClusterLicense(clusterName, licenseKey, licenseValue)
+      .then(() => {
+        loadClusterEnv()
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export function applyOfflineClusterLicense(licenseKey) {
+  return new Promise((resolve, reject) => {
+    client.cluster.setOfflineClusterLicense(licenseKey)
       .then(() => {
         loadClusterEnv()
         resolve()

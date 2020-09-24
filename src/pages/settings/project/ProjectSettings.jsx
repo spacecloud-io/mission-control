@@ -2,14 +2,11 @@ import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
-import { get } from "automate-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
-import SecretConfigure from "../../../components/settings/project/SecretConfigure";
-import { notify, openProject, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { notify, openProject, incrementPendingRequests, decrementPendingRequests, lazyWithPreload } from "../../../utils";
 import { Button, Row, Col, Divider } from "antd";
-import store from "../../../store";
 import history from "../../../history";
 import WhitelistedDomains from "../../../components/settings/project/WhiteListedDomains";
 import AESConfigure from "../../../components/settings/project/AESConfigure";
@@ -19,6 +16,7 @@ import ProjectPageLayout, { Content } from "../../../components/project-page-lay
 import { loadLetsEncryptConfig, saveWhiteListedDomains, getWhiteListedDomains } from "../../../operations/letsencrypt";
 import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
 import { projectModules, actionQueuedMessage } from "../../../constants";
+const SecretConfigure = lazyWithPreload(() => import("../../../components/settings/project/SecretConfigure"));
 
 const ProjectSettings = () => {
   // Router params
@@ -50,10 +48,10 @@ const ProjectSettings = () => {
   const dockerRegistry = selectedProject.dockerRegistry
 
   // Handlers
-  const handleAddSecret = (secret, isPrimary, alg, publicKey, privateKey) => {
+  const handleAddSecret = (values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      addSecret(projectID, secret, isPrimary, alg, publicKey, privateKey)
+      addSecret(projectID, values)
         .then(({ queued }) => {
           notify("success", "Success", queued ? actionQueuedMessage : "Added new secret successfully")
           resolve()

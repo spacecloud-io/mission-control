@@ -10,7 +10,7 @@ import store from "./store"
 import history from "./history"
 import { Redirect, Route, useHistory } from "react-router-dom"
 import jwt from 'jsonwebtoken';
-import { loadProjects, getJWTSecret, loadProjectAPIToken, getSecretAlgorithm } from './operations/projects'
+import { loadProjects, getJWTSecret, loadProjectAPIToken } from './operations/projects'
 import { getDbType, setPreparedQueryRule, setColSecurityRule, getDbConfigs } from './operations/database'
 import { setRemoteEndpointRule } from './operations/remoteServices'
 import { setIngressRouteRule } from './operations/ingressRoutes'
@@ -18,7 +18,6 @@ import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
-import { RSA } from 'hybrid-crypto-js';
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -37,23 +36,19 @@ export function isJson(str) {
   return true;
 }
 
-export function copyObjectToClipboard(obj) {
-  return navigator.clipboard.writeText(JSON.stringify(obj))
+export function saveObjectToLocalStorage(key, obj) {
+  const value = JSON.stringify(obj)
+  localStorage.setItem(key, value)
 }
 
-export function getCopiedObjectFromClipboard() {
-  return new Promise((resolve, reject) => {
-    navigator.clipboard.readText()
-      .then(data => {
-        const isValueJson = isJson(data)
-        if (!isValueJson) {
-          reject("Copied object is not a valid JSON")
-          return
-        }
-        resolve(JSON.parse(data))
-      })
-      .catch(ex => reject(ex))
-  })
+export function getObjectFromLocalStorage(key) {
+  try {
+    const value = localStorage.getItem(key)
+    const obj = JSON.parse(value)
+    return Promise.resolve(obj)
+  } catch (error) {
+    return Promise.reject(String(error))
+  }
 }
 
 export function upsertArray(array, predicate, getItem) {
@@ -148,17 +143,6 @@ export const generateId = (len = 32) => {
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
-}
-
-export const generateRSAKeyPair = async () => {
-  const rsa = new RSA({
-    keySize: 2048,
-  });
-  const { publicKey, privateKey } = await rsa.generateKeyPairAsync();
-  return {
-    privateKey,
-    publicKey
-  }
 }
 
 export const generateJWTSecret = generateId
@@ -344,6 +328,15 @@ const getProjectToBeOpened = () => {
   return projectId
 }
 
+// Listens for cross tab logout events
+const registerAuthStateListener = () => {
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'token' && !isLoggedIn(store.getState())) {
+      redirectToLogin()
+    }
+  })
+}
+
 const registerSecurityRulesBroadCastListener = () => {
   const bc = new BroadcastChannel('security-rules');
   bc.onmessage = ({ data }) => {
@@ -376,7 +369,7 @@ const registerSecurityRulesBroadCastListener = () => {
   window.addEventListener("beforeunload", (ev) => bc.close());
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   let loginURL = getLoginURL(store.getState())
 
   if (!loginURL.startsWith("http")) {
@@ -442,6 +435,9 @@ export function performSetup() {
 
     // Register the broadcast listener to listen to changes in security rules from security rule builder(s) opened in another tabs 
     registerSecurityRulesBroadCastListener()
+
+    // Register cross tab logout listener
+    registerAuthStateListener()
   })
 }
 
@@ -481,6 +477,12 @@ function usePagePermissions() {
   }
 
   return { allowed: true }
+}
+
+export function lazyWithPreload(factory) {
+  const Component = React.lazy(factory);
+  Component.preload = factory;
+  return Component;
 }
 
 export const PrivateRoute = ({ component: Component, ...rest }) => {

@@ -1,27 +1,50 @@
 import React, { useState } from 'react'
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography } from 'antd';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography, Spin } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { generateJWTSecret, generateRSAKeyPair } from '../../../utils';
+import { generateJWTSecret } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
+import keypair from "keypair";
+import forge from "node-forge"
+
+const generateRSAPrivateKey = () => {
+  return keypair().private
+}
+
+const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
+  var forgePrivateKey = forge.pki.privateKeyFromPem(privateKey);
+
+  // get a Forge public key from the Forge private key
+  var forgePublicKey = forge.pki.setRsaPublicKey(forgePrivateKey.n, forgePrivateKey.e);
+
+  // convert the Forge public key to a PEM-formatted public key
+  var publicKey = forge.pki.publicKeyToPem(forgePublicKey);
+  return publicKey
+}
 
 
 const AddSecretModal = ({ handleSubmit, handleCancel }) => {
   const [form] = Form.useForm();
+
+  const [isPrivateKeyLoading, setPrivateKeyLoading] = useState(false);
+
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
-      const { secret, isPrimary, alg, publicKey, privateKey } = values;
-      handleSubmit(secret, isPrimary, alg, publicKey, privateKey).then(() => handleCancel())
+      const { alg, privateKey } = values;
+      values.publicKey = alg === "RS256" && privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : values.publicKey
+      handleSubmit(values).then(() => handleCancel())
     });
   };
 
-  const onAlgorithmChange = async (alg) => {
+  const onAlgorithmChange = (alg) => {
     if (alg === "RS256") {
-      const { publicKey, privateKey } = await generateRSAKeyPair();
-      form.setFieldsValue({
-        publicKey,
-        privateKey
-      })
+      setPrivateKeyLoading(true);
+      // We had to use this timeout to prevent the UI from freezing
+      setTimeout(async () => {
+        const privateKey = await generateRSAPrivateKey();
+        form.setFieldsValue({ privateKey })
+        setPrivateKeyLoading(false);
+      }, 500)
     }
   }
 
@@ -43,6 +66,8 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           <Select onChange={onAlgorithmChange}>
             <Select.Option value="HS256">HS256</Select.Option>
             <Select.Option value="RS256">RS256</Select.Option>
+            <Select.Option value="JWK_URL">JWK URL</Select.Option>
+            <Select.Option value="RS256_PUBLIC">RS256 PUBLIC</Select.Option>
           </Select>
         </Form.Item>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "HS256"}>
@@ -52,21 +77,37 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           >
             <Input.Password className="input" placeholder="Secret value" />
           </Form.Item>
+          <FormItemLabel name="Primary secret" />
+          <Form.Item name="isPrimary" valuePropName="checked">
+            <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
+          </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256"}>
+          <FormItemLabel name="Private key" />
+          <Form.Item name="privateKey">
+            {
+              isPrivateKeyLoading ?
+              <span><Spin className='page-loading' spinning={true} size="large" /> Generating Private Key......</span> :
+              <Input.TextArea rows={4} placeholder="Private key" />
+            }
+          </Form.Item>
+          <FormItemLabel name="Primary secret" />
+          <Form.Item name="isPrimary" valuePropName="checked">
+            <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
+          </Form.Item>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "JWK_URL"}>
+          <FormItemLabel name="JWK URL"/>
+          <Form.Item name="jwkUrl" rules={[{ required: true, message: 'Please provide an URL' }]}>
+            <Input placeholder="JWK URL" />
+          </Form.Item>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "RS256_PUBLIC"}>
           <FormItemLabel name="Public key" />
           <Form.Item name="publicKey">
             <Input.TextArea rows={4} placeholder="Public key" />
           </Form.Item>
-          <FormItemLabel name="Private key" />
-          <Form.Item name="privateKey">
-            <Input.TextArea rows={4} placeholder="Private key" />
-          </Form.Item>
         </ConditionalFormBlock>
-        <FormItemLabel name="Primary secret" />
-        <Form.Item name="isPrimary" valuePropName="checked">
-          <Checkbox >Use this secret in user management module of API gateway to sign tokens on successful signup/signin requests</Checkbox>
-        </Form.Item>
       </Form>
     </Modal>
   )
@@ -97,6 +138,18 @@ const ViewSecretModal = ({ secretData, handleCancel }) => {
           <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.privateKey} /></div>
         </React.Fragment>
       )}
+      {secretData.alg === "JWK_URL" && (
+        <React.Fragment>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.jwkUrl }} strong>URL</Typography.Paragraph>
+          <Input value={secretData.jwkUrl} />
+        </React.Fragment>
+      )}
+      {secretData.alg === "RS256_PUBLIC" && (
+        <React.Fragment>
+          <Typography.Paragraph style={{ fontSize: 16 }} copyable={{ text: secretData.publicKey }} strong>Public key</Typography.Paragraph>
+          <div style={{ marginBottom: 24 }}><Input.TextArea rows={4} value={secretData.publicKey} /></div>
+        </React.Fragment>
+      )}
     </Modal>
   )
 }
@@ -110,8 +163,8 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
   const [viewSecretModalVisible, setViewSecretModalVisible] = useState(false);
   const [secretData, setSecretData] = useState({});
 
-  const handleViewClick = (alg, secret, publicKey, privateKey) => {
-    setSecretData({ alg, secret, publicKey, privateKey });
+  const handleViewClick = (values) => {
+    setSecretData(values);
     setViewSecretModalVisible(true);
   }
 
@@ -125,6 +178,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
         <QuestionCircleOutlined />
       </Tooltip></span>,
       render: (_, record, index) => {
+        if (record.alg === "JWK_URL" || record.alg === "RS256_PUBLIC") return <span>N/A</span>
         return <Radio
           checked={record.isPrimary}
           onChange={!record.isPrimary ? () => handleChangePrimarySecret(index) : undefined} />
@@ -136,7 +190,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
       render: (_, record, index) => {
         return (
           <span>
-            <a onClick={() => handleViewClick(record.alg, record.secret, record.publicKey, record.privateKey)}>View</a>
+            <a onClick={() => handleViewClick(record)}>View</a>
             <Popconfirm
               title={record.isPrimary ? "You are deleting primary secret. Any remaining secret will be randomly chosen as primary key." : "Tokens signed with this secret will stop getting verified"}
               onConfirm={() => handleRemoveSecret(index)}
