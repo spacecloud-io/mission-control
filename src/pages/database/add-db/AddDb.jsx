@@ -10,14 +10,21 @@ import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
+import { getSecrets } from "../../../operations/secrets";
+import { useSelector } from 'react-redux';
 
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
+  const totalSecrets = useSelector(state => getSecrets(state))
 
   useEffect(() => {
     ReactGA.pageview("/projects/database/add-db");
   }, [])
+
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.id);
 
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
@@ -65,7 +72,7 @@ const AddDb = () => {
           <div>
             <Row>
               <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                <CreateDatabase projectId={projectID} handleSubmit={addDb} />
+                <CreateDatabase projectId={projectID} handleSubmit={addDb} envSecrets={envSecrets}/>
               </Col>
             </Row>
           </div>
