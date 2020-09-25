@@ -56,7 +56,7 @@ const Overview = () => {
         .finally(() => decrementPendingRequests())
     }
   }, [projectID, selectedDB])
-  
+
   const envSecrets = totalSecrets
     .filter(obj => obj.type === "env")
     .map(obj => obj.id);
@@ -342,7 +342,8 @@ const Overview = () => {
               handleSubmit={(colName, schema) => handleAddCollection(addColFormInEditMode, colName, schema)}
             />}
             {editConnModalVisible && <EditConnectionForm
-              initialValues={{ conn: connString, db: selectedDBType }}
+              initialValues={{ conn: connString }}
+              selectedDBType={selectedDBType}
               handleCancel={() => setEditConnModalVisible(false)}
               handleSubmit={handleEditConnString}
               envSecrets={envSecrets} />}

@@ -4,12 +4,12 @@ import FormItemLabel from "../../form-item-label/FormItemLabel";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { defaultDbConnectionStrings } from "../../../constants";
 
-const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, envSecrets }) => {
+const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, envSecrets, selectedDBType }) => {
   const [form] = Form.useForm();
   
   const formInitialValues = {
     loadFromSecret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? true : false,
-    conn: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? defaultDbConnectionStrings[initialValues.db] : initialValues.conn,
+    conn: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? defaultDbConnectionStrings[selectedDBType] : initialValues.conn,
     secret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? initialValues.conn.split('.')[1] : ''
   } 
   
