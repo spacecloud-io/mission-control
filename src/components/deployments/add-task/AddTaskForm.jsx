@@ -29,6 +29,7 @@ const AddTaskForm = props => {
     dockerSecret: initialValues ? initialValues.docker.secret : "",
     ports: initialValues ? initialValues.ports : [],
     imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
+    dockerCmd: initialValues && initialValues.docker.cmd ? initialValues.docker.cmd : [],
     cpu: initialValues ? initialValues.resources.cpu / 1000 : 0.1,
     memory: initialValues ? initialValues.resources.memory : 100,
     addGPUs: initialValues && initialValues.resources.gpu && initialValues.resources.gpu.type ? true : false,
@@ -203,6 +204,47 @@ const AddTaskForm = props => {
                     <Select.Option value="pull-if-not-exists">If not present</Select.Option>
                   </Select>
                 </Form.Item>
+                <FormItemLabel name="Docker commands" />
+                <Form.List name="dockerCmd">
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field) => (
+                          <Form.Item key={field.key} style={{ marginBottom: 8 }}>
+                            <Form.Item
+                              {...field}
+                              validateTrigger={['onChange', 'onBlur']}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input a value",
+                                }
+                              ]}
+                              noStyle
+                            >
+                              <Input placeholder="Docker command" style={{ width: "90%" }} />
+                            </Form.Item>
+                            <DeleteOutlined
+                              style={{ marginLeft: 16 }}
+                              onClick={() => {
+                                remove(field.name);
+                              }}
+                            />
+                          </Form.Item>
+                        ))}
+                        <Form.Item>
+                          <Button onClick={() => {
+                            form.validateFields(fields.map(obj => ["dockerCmd", obj.name]))
+                              .then(() => add())
+                              .catch(ex => console.log("Exception", ex))
+                          }}>
+                            <PlusOutlined /> Add
+                        </Button>
+                        </Form.Item>
+                      </div>
+                    );
+                  }}
+                </Form.List>
                 <FormItemLabel
                   name="Resources"
                   description="The resources to provide to each instance of the service"
