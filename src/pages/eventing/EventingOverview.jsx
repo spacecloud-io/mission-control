@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from "react-router-dom";
 import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
-import { Table, Button, Alert, Row, Col } from "antd"
+import { Table, Button, Alert, Row, Col, Input, Empty } from "antd"
 import '../../index.css';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
@@ -15,11 +15,16 @@ import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
-
+import Highlighter from 'react-highlight-words';
+import { FilterOutlined, SearchOutlined } from '@ant-design/icons';
+import FilterEvents from '../../components/eventing/FilterEvents';
+import { useDispatch } from 'react-redux';
+import { set } from 'automate-redux';
 
 const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
+	const dispatch = useDispatch()
 
 	useEffect(() => {
 		ReactGA.pageview("/projects/eventing/overview");
@@ -29,15 +34,17 @@ const EventingOverview = () => {
 	const rules = useSelector(state => getEventingTriggerRules(state))
 	const dbConfigs = useSelector(state => getDbConfigs(state))
 	const eventingConfig = useSelector(state => getEventingConfig(state))
-
+	const filters = useSelector(state => state.uiState.eventTriggerFilters)
 
 	// Component state
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
+	const [searchText, setSearchText] = useState('')
+	const [FilterModalVisible, setFilterModalVisible] = useState(false)
 
 	// Derived state
 	const dbList = Object.keys(dbConfigs)
-	const rulesTableData = Object.entries(rules).map(([id, { type }]) => ({ id, type }))
+	const rulesTableData = Object.entries(rules).map(([id, { type, options }]) => ({ id, source: getEventSourceFromType(type), type, options }))
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { id: ruleClicked, ...rules[ruleClicked] } : undefined
 	const eventingConfigured = eventingConfig.enabled && eventingConfig.dbAlias
@@ -56,6 +63,19 @@ const EventingOverview = () => {
 		setRuleClicked("")
 		setRuleModalVisibile(false)
 	}
+
+	const handleFilter = (filters) => dispatch(set("uiState.eventTriggerFilters", filters))
+	console.log(filters)
+	const applyFilters = (rules, filters = { source: '', options: {}, type: '' }) => {
+		const dataFilteredBySource = filters && filters.source ? rules.filter(rule => rule.source === filters.source) : rules;
+		const dataFilteredByOptionsDb = filters && filters.options && filters.options.db ? rules.filter(rule => rule.options && rule.options.db ? rule.options.db === filters.options.db : '') : dataFilteredBySource;
+		const dataFilteredByOptionsCol = filters && filters.options && filters.options.col ? rules.filter(rule => rule.options && rule.options.col ? rule.options.col === filters.options.col : '') : dataFilteredByOptionsDb;
+		const dataFilteredByType = filters && filters.type ? dataFilteredByOptionsCol.filter(rule => rule.type === filters.type) : dataFilteredByOptionsCol;
+		const dataFilteredBySearch = dataFilteredByType.filter(rule => rule.id.toLowerCase().includes(searchText.toLowerCase()))
+		return dataFilteredBySearch;
+	}
+
+	const filterRulesData = applyFilters(rulesTableData, filters);
 
 	const handleSetRule = (id, type, url, retries, timeout, options = {}, requestTemplate, outputFormat) => {
 		const isRulePresent = rules[id] ? true : false
@@ -85,7 +105,15 @@ const EventingOverview = () => {
 	const columns = [
 		{
 			title: 'Name',
-			dataIndex: 'id'
+			dataIndex: 'id',
+			render: (value) => {
+        return <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={value ? value.toString() : ''}
+          />
+      }
 		},
 		{
 			title: 'Source',
@@ -147,8 +175,20 @@ const EventingOverview = () => {
 					</div>}
 					{noOfRules > 0 && (
 						<React.Fragment>
-							<h3 style={{ display: "flex", justifyContent: "space-between" }}>Event Triggers <Button onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></h3>
-							<Table columns={columns} dataSource={rulesTableData} rowKey="id" />
+							<div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
+                <h3 style={{ margin: 'auto 0' }}>Event Triggers </h3> 
+                <div style={{ display: 'flex' }}>
+                  <Input.Search placeholder='Search by event name' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+									<Button style={{ marginLeft:'16px' }} onClick={() => setFilterModalVisible(true)}>Filter <FilterOutlined/></Button>
+                  <Button style={{ marginLeft:'16px' }} onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></div>
+              </div>
+							<Table 
+								columns={columns} 
+								dataSource={filterRulesData} 
+								rowKey="id"
+								locale={{ emptyText: searchText && rulesTableData.length !== 0 && filterRulesData.length === 0 ? 
+									<Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event trigger created yet. Add a event trigger' /> }}  />
 						</React.Fragment>
 					)}
 					{ruleModalVisible && <RuleForm
@@ -156,6 +196,11 @@ const EventingOverview = () => {
 						handleSubmit={handleSetRule}
 						dbList={dbList}
 						initialValues={ruleClickedInfo} />}
+					{FilterModalVisible && <FilterEvents
+						handleCancel={() => setFilterModalVisible(false)}
+						handleSubmit={handleFilter}
+						dbList={dbList}
+						initialValues={filters} />}
 				</div>
 			</div>
 		</div>

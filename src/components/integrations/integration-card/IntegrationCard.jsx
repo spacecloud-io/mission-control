@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Button, Popover, Menu, Modal, Typography } from 'antd';
 import { EllipsisOutlined } from "@ant-design/icons";
+import Highlighter from 'react-highlight-words';
+
 const { Paragraph } = Typography;
 
 const CardOptions = ({ handleViewDetails, handleViewPermissions, handleDelete, handleClick }) => {
@@ -23,7 +25,7 @@ const CardOptions = ({ handleViewDetails, handleViewPermissions, handleDelete, h
 }
 
 
-const IntegrationCard = ({ installed, name, desc, imgUrl, handleDelete, handleViewDetails, handleViewPermissions, handleOpenConsole, handleInstall }) => {
+const IntegrationCard = ({ installed, name, desc, imgUrl, handleDelete, handleViewDetails, handleViewPermissions, handleOpenConsole, handleInstall, searchText }) => {
 
   const [popoverVisible, setPopoverVisible] = useState(false)
 
@@ -41,7 +43,13 @@ const IntegrationCard = ({ installed, name, desc, imgUrl, handleDelete, handleVi
         </Popover>
       )}
       <center>
-        <h3 style={{ marginTop: 24 }}>{name}</h3>
+        <h3 style={{ marginTop: 24 }}>
+        <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={name ? name.toString() : ''}
+          /></h3>
         <Paragraph ellipsis={{ rows: 2 }} style={{ marginTop: 8 }}>
           {desc}
         </Paragraph>

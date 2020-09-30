@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import { LeftOutlined } from '@ant-design/icons';
-import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
+import { LeftOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Table, Row, Col, Popconfirm, Card, Input, Empty } from "antd";
 import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import './secretDetail.css';
 import { saveSecretKey, deleteSecretKey, saveRootPath, getSecrets } from "../../operations/secrets";
 import { projectModules, actionQueuedMessage } from "../../constants";
+import Highlighter from 'react-highlight-words';
 
 const getLabelFromSecretType = type => {
   switch (type) {
@@ -35,6 +36,7 @@ const SecretDetails = () => {
   const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
   const [secretKeyClicked, setSecretKeyClicked] = useState("");
   const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('')
 
   // Derived state
   let secret = secrets.find(obj => obj.id === secretId);
@@ -45,6 +47,10 @@ const SecretDetails = () => {
   useEffect(() => {
     ReactGA.pageview("/projects/secrets/secretDetails");
   }, [])
+
+  const filterSecretKeys = secretKeysData.filter(secret => {
+    return secret.name.toLowerCase().includes(searchText.toLowerCase())
+  })
 
   // Handlers
   const handleClickUpdateSecretKey = name => {
@@ -108,7 +114,15 @@ const SecretDetails = () => {
   const envColumns = [
     {
       title: "Environment Key",
-      dataIndex: "name"
+      dataIndex: "name",
+      render: (value) => {
+        return <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={value ? value.toString() : ''}
+          />
+      }
     },
     {
       title: "Actions",
@@ -134,7 +148,15 @@ const SecretDetails = () => {
   const fileColumns = [
     {
       title: "File Name",
-      dataIndex: "name"
+      dataIndex: "name",
+      render: (value) => {
+        return <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={value ? value.toString() : ''}
+          />
+      }
     },
     {
       title: "Actions",
@@ -206,31 +228,42 @@ const SecretDetails = () => {
                   )}
                 </React.Fragment>
               )}
-              <h3 style={{ display: "flex", justifyContent: "space-between" }}>
-                {getLabelFromSecretType(secretType)}
-                {secretType !== "docker" && (
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
+                <h3 style={{ margin: 'auto 0' }}>{getLabelFromSecretType(secretType)} </h3> 
+                <div style={{ display: 'flex' }}>
+                  {secretType !== "docker" && ( <React.Fragment>
+                  <Input.Search placeholder={`Search by ${secretType} ${secretType === 'env' ? 'key' : 'name'}`} style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
                   <Button
+                    style={{ marginLeft:'16px' }}
                     onClick={() => setSecretKeyModalVisible(true)}
                     type="primary"
                   >
                     Add
                   </Button>
-                )}
-              </h3>
+                  </React.Fragment>
+                  )}
+                </div>
+              </div>
               {secretType === "env" && (
                 <Table
                   columns={envColumns}
-                  dataSource={secretKeysData}
+                  dataSource={filterSecretKeys}
                   bordered={true}
                   pagination={false}
+                  locale={{ emptyText: secretKeysData.length !== 0 && filterSecretKeys.length === 0 ? 
+                    <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No environment variable created yet. Add a environment variable' /> }}      
                 />
               )}
               {secretType === "file" && (
                 <Table
                   columns={fileColumns}
-                  dataSource={secretKeysData}
+                  dataSource={filterSecretKeys}
                   bordered={true}
                   pagination={false}
+                  locale={{ emptyText: secretKeysData.length !== 0 && filterSecretKeys.length === 0 ? 
+                    <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No file secret created yet. Add a file secret' /> }}      
                 />
               )}
               {secretType === "docker" && (

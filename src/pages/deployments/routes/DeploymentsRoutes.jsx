@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
-import { RightOutlined } from '@ant-design/icons';
-import { Button, Table, Popconfirm, Collapse } from "antd";
+import { RightOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Table, Popconfirm, Collapse, Input, Empty } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
@@ -12,6 +12,8 @@ import routingSvg from "../../../assets/routing.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
 import { loadServiceRoutes, saveServiceRoutes, deleteServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 import { projectModules, actionQueuedMessage } from "../../../constants";
+import Highlighter from 'react-highlight-words';
+
 const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
@@ -35,13 +37,17 @@ const DeploymentsRoutes = () => {
   // Component state
   const [modalVisible, setModalVisible] = useState(false)
   const [routeClicked, setRouteClicked] = useState(null)
-
+  const [searchText, setSearchText] = useState('')
 
   deployments.forEach(obj => {
     if (!serviceRoutes[obj.id]) {
       serviceRoutes[obj.id] = []
     }
   })
+
+  const filterServiceRoutes = Object.entries(serviceRoutes).filter(route => {
+    return route[0].toLowerCase().includes(searchText.toLowerCase())
+	})
 
   const noOfServices = Object.keys(serviceRoutes).length
 
@@ -117,9 +123,15 @@ const DeploymentsRoutes = () => {
   const servicePanelHeader = (serviceId, routes) => {
     const rulesText = routes.length === 0 ? "No rules" : (routes.length === 1 ? "1 Rule" : `${routes.length} rules`)
     return (
-      <span>
-        {serviceId}<span style={{ marginLeft: 8, color: "rgba(0,0,0,0.56)" }}>({rulesText})</span>
-      </span>
+      <React.Fragment>
+      <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={serviceId ? serviceId.toString() : ''}
+          />
+      <span style={{ marginLeft: 8, color: "rgba(0,0,0,0.56)" }}>({rulesText})</span>
+      </React.Fragment>
     )
   }
 
@@ -139,8 +151,10 @@ const DeploymentsRoutes = () => {
             </div>
           }
           {
-            noOfServices > 0 && <Collapse expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>
-              {Object.entries(serviceRoutes).map(([serviceId, routes]) => (<Panel header={servicePanelHeader(serviceId, routes)} key={serviceId}>
+            noOfServices > 0 && <React.Fragment> 
+              <center><Input.Search placeholder='Search by service id' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} /></center>
+              <Collapse expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>
+              {filterServiceRoutes.map(([serviceId, routes]) => (<Panel header={servicePanelHeader(serviceId, routes)} key={serviceId}>
                 <div>
                   <div>
                     <span style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -159,8 +173,10 @@ const DeploymentsRoutes = () => {
                   <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
                 </div>
               </Panel>))}
-
             </Collapse>
+            {Object.keys(serviceRoutes).length !== 0 && filterServiceRoutes.length === 0  && 
+              <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} />}  
+            </React.Fragment>
           }
         </div>
       </div>

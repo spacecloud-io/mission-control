@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ReactGA from "react-ga";
-import { Button, Table, Popconfirm, Tag } from "antd";
+import { Button, Table, Popconfirm, Tag, Input, Empty } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
@@ -10,8 +10,9 @@ import source_code from "../../../assets/source_code.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
 import { deleteService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
-import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
+import Highlighter from 'react-highlight-words';
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -34,6 +35,18 @@ const DeploymentsOverview = () => {
   // Global state
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
+  const [searchText, setSearchText] = useState('')
+
+  const calculateStatus = (desiredReplicas, totalReplicas) =>{
+    const percent = totalReplicas / desiredReplicas * 100;
+    if(percent >= 80) {
+      return 'healthy'
+    }else if(percent > 0 && percent < 80){
+      return 'unhealthy'
+    }else{
+      return 'dead'
+    }
+  }
 
   // Derived state
   const data = deployments.map(obj => {
@@ -68,9 +81,14 @@ const DeploymentsOverview = () => {
       statsInclusionPrefixes: obj.statsInclusionPrefixes,
       desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
       totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
+      status: calculateStatus(deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0, deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0),
       deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
+
+  const filterData = data.filter(service => {
+    return service.id.toLowerCase().includes(searchText.toLowerCase())
+  })
 
   // Handlers
   const handleEditDeploymentClick = (serviceId, version) => {
@@ -104,7 +122,15 @@ const DeploymentsOverview = () => {
           if (status === deploymentStatuses.RUNNING || status === deploymentStatuses.SUCCEEDED) return <span style={{ color: '#52c41a' }}><CheckCircleOutlined /> {statusText}</span>
           else if (status === deploymentStatuses.FAILED) return <span style={{ color: '#f5222d' }}><CloseCircleOutlined /> {statusText}</span>
           else return <span style={{ color: '#fa8c16' }}><ExclamationCircleOutlined /> {statusText}</span>
-        }
+        },
+        filters: [
+          { text: 'Running', value: deploymentStatuses.RUNNING },
+          { text: 'Pending', value: deploymentStatuses.PENDING },
+          { text: 'Failed', value: deploymentStatuses.FAILED },
+          { text: 'Successed', value: deploymentStatuses.SUCCEEDED },
+          { text: 'Unknown', value: deploymentStatuses.UNKNOWN }
+        ],
+        onFilter: (value, record) => record.status.indexOf(value) === 0
       },
       {
         title: 'Action',
@@ -135,7 +161,15 @@ const DeploymentsOverview = () => {
     {
       title: "Service ID",
       dataIndex: "id",
-      key: "id"
+      key: "id",
+      render: (value) => {
+        return <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={value ? value.toString() : ''}
+          />
+      }
     },
     {
       title: "Version",
@@ -150,12 +184,18 @@ const DeploymentsOverview = () => {
     {
       title: "Status",
       key: "status",
-      render: (row) => {
-        const percent = row.totalReplicas / row.desiredReplicas * 100;
-        if (percent >= 80) return <Tag icon={<CheckCircleOutlined />} color="success">Healthy</Tag>
-        else if (percent < 80 && percent > 0) return <Tag icon={<ExclamationCircleOutlined />} color="warning" >Unhealthy</Tag>
-        else return <Tag icon={<CloseCircleOutlined />} color="error">Dead</Tag>
-      }
+      dataIndex: 'status',
+      render: (_, { status }) => {
+        if (status === 'healthy') return <Tag icon={<CheckCircleOutlined />} color="success">{capitalizeFirstCharacter(status)}</Tag>
+        else if (status === 'unhealthy') return <Tag icon={<ExclamationCircleOutlined />} color="warning" >{capitalizeFirstCharacter(status)}</Tag>
+        else return <Tag icon={<CloseCircleOutlined />} color="error">{capitalizeFirstCharacter(status)}</Tag>
+      },
+      filters: [
+        { text: 'Healthy', value: 'healthy' },
+        { text: 'Unhealthy', value: 'unhealthy' },
+        { text: 'Dead', value: 'dead' }
+      ],
+      onFilter: (value, record) => record.status.indexOf(value) === 0
     },
     {
       title: "Health",
@@ -216,24 +256,23 @@ const DeploymentsOverview = () => {
             ))}
           {data && data.length !== 0 && (
             <React.Fragment>
-              <div>
-                <span style={{ fontSize: 18, fontWeight: "bold" }}>
-                  Your Deployments
-                </span>
-                <Button
-                  style={{ float: "right" }}
-                  onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)}
-                >
-                  Add
-                </Button>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
+                <h3 style={{ margin: 'auto 0' }}>Your Deployments </h3> 
+                <div style={{ display: 'flex' }}>
+                  <Input.Search placeholder='Search by service id' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+                  <Button style={{ marginLeft:'16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)} type="primary">Add</Button>
+                </div>
               </div>
               <Table
                 bordered={true}
                 columns={tableColumns}
-                dataSource={data}
+                dataSource={filterData}
                 rowKey={(record) => record.id + record.version}
                 expandedRowRender={expandedRowRender}
                 style={{ marginTop: 16 }}
+                locale={{ emptyText: data.length !== 0 && filterData.length === 0 ? 
+                  <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No deployment service created yet. Add a service' /> }}  
               />
             </React.Fragment>
           )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import { useParams } from "react-router-dom";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Input, Empty } from "antd";
 import { useSelector } from 'react-redux';
 import ReactGA from 'react-ga';
 import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
@@ -11,6 +11,8 @@ import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleFo
 import securitySvg from '../../assets/security.svg';
 import { deleteEventingSecurityRule, saveEventingSecurityRule, loadEventingSecurityRules, getEventingTriggerRules, getEventingSecurityRules, getEventingDefaultSecurityRule } from '../../operations/eventing';
 import { securityRuleGroups, projectModules, actionQueuedMessage } from '../../constants';
+import Highlighter from 'react-highlight-words';
+import { SearchOutlined } from '@ant-design/icons';
 
 const EventingRules = () => {
   const { projectID } = useParams()
@@ -35,10 +37,16 @@ const EventingRules = () => {
 
   // Component state
   const [addRuleModalVisible, setAddRuleModalVisible] = useState(false)
+  const [searchText, setSearchText] = useState('')
 
   // Derived state
   const customEventTypes = Object.entries(eventRules).filter(([key, value]) => getEventSourceFromType(value.type) === "custom").map(([_, value]) => value.type)
   delete rule.id;
+  const rulesTableData = Object.keys(rules).map(val => ({ type: val }));
+
+  const filterRulesData = rulesTableData.filter(rule => {
+    return rule.type.toLowerCase().includes(searchText.toLowerCase())
+	})
 
   // Handlers
   const handleSubmit = (type, rule) => {
@@ -89,7 +97,15 @@ const EventingRules = () => {
     {
       title: "Event type",
       dataIndex: "type",
-      key: "type"
+      key: "type",
+      render: (value) => {
+        return <Highlighter 
+            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={value ? value.toString() : ''}
+          />
+      }
     },
     {
       title: "Actions",
@@ -113,8 +129,21 @@ const EventingRules = () => {
       <div className='page-content page-content--no-padding'>
         <EventTabs activeKey="rules" projectID={projectID} />
         <div className="event-tab-content">
-          <h3 style={{ display: "flex", justifyContent: "space-between" }}>Security Rules <Button onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button></h3>
-          {Object.keys(rules).length > 0 ? <Table dataSource={Object.keys(rules).map(val => ({ type: val }))} columns={columns} /> : <EmptyState />}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
+            <h3 style={{ margin: 'auto 0' }}>Security Rules </h3> 
+            <div style={{ display: 'flex' }}>
+              <Input.Search placeholder='Search by event type' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+              <Button style={{ marginLeft:'16px' }} onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button>
+            </div>
+          </div>
+          {Object.keys(rules).length > 0 ? 
+            <Table 
+              dataSource={filterRulesData} 
+              columns={columns}
+              locale={{ emptyText: rulesTableData.length !== 0 && filterRulesData.length === 0 ? 
+                <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event rule created yet. Add a event rule' /> }}
+            /> : <EmptyState />}
           {addRuleModalVisible && <EventSecurityRuleForm
             defaultRules={rule}
             handleSubmit={handleSubmit}

@@ -243,6 +243,7 @@ export const remoteServices = [
       "login": {
         "method": "POST",
         "path": "/v1/login",
+        "kind": "internal",
         "rule": {
           "rule": "allow"
         },
