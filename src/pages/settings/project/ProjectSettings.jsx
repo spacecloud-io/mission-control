@@ -109,6 +109,8 @@ const ProjectSettings = () => {
     deleteProject(projectID)
       .then(({ queued, newProjects }) => {
         if (!queued) {
+          if (localStorage.getItem("lastOpenedProject") === projectID) localStorage.removeItem("lastOpenedProject")
+          localStorage.removeItem(`lastUsedValues:${projectID}`)
           notify("success", "Success", "Removed project config successfully");
           if (newProjects.length === 0) {
             history.push(`/mission-control/welcome`);

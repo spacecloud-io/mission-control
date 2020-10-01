@@ -17,7 +17,7 @@ import logo from '../../assets/logo-black.svg';
 import upLogo from '../../logo.png';
 import crownSvg from "../../assets/crown.svg";
 import { isClusterUpgraded, isProdMode } from '../../operations/cluster';
-import { redirectToLogin } from '../../utils';
+import { redirectToLogin, setLastUsedValues } from '../../utils';
 
 const Topbar = (props) => {
   const history = useHistory()
@@ -29,7 +29,10 @@ const Topbar = (props) => {
   const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   const selectedProject = projects.find(project => project.id === projectID)
   const projectName = selectedProject ? selectedProject.name : ""
-  const handleDBSelect = (dbName) => history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
+  const handleDBSelect = (dbName) => {
+    setLastUsedValues(projectID, { db: dbName });
+    history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
+  } // MARK
   const svgIcon = dbIcons(selectedDB)
   const content = (
     <div className="popContent">
@@ -107,7 +110,7 @@ const Topbar = (props) => {
             {isProdMode(state) && (
               <Menu.Item>
                 <Tooltip title="Logout">
-                  <PoweroffOutlined style={{ fontSize: 24, verticalAlign: 'middle', color: 'rgba(0, 0, 0, 0.54)' }} onClick={onLogoutIconClick}/>
+                  <PoweroffOutlined style={{ fontSize: 24, verticalAlign: 'middle', color: 'rgba(0, 0, 0, 0.54)' }} onClick={onLogoutIconClick} />
                 </Tooltip>
               </Menu.Item>
             )}
