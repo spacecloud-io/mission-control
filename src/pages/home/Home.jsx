@@ -1,6 +1,6 @@
-import React from "react"
-import "./home.css"
-import SpaceUpLogo from "../../logo.png"
+import React from "react";
+import "./home.css";
+import SpaceUpLogo from "../../logo.png";
 
 export default ({ loadingPage }) => {
   return (
@@ -13,5 +13,5 @@ export default ({ loadingPage }) => {
         <span>Loading {loadingPage ? "page" : "data"}...</span>
       </div>
     </div>
-  )
-}
+  );
+};

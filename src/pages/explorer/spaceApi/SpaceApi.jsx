@@ -1,57 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { connect } from 'react-redux';
-import { get, set } from 'automate-redux';
-import client from '../../../client';
-import * as templates from '../templates.js';
-import ReactGA from 'react-ga';
-import Sidenav from '../../../components/sidenav/Sidenav';
-import Topbar from '../../../components/topbar/Topbar';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import { InfoCircleOutlined } from '@ant-design/icons';
-import { Checkbox, Input, Select, Button, Tooltip, Tag } from 'antd';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
-import '../explorer.css';
-import { notify, canGenerateToken } from '../../../utils';
-import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs"
-import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
-import { getAPIToken } from '../../../operations/projects';
-import { projectModules } from '../../../constants';
+import { connect } from "react-redux";
+import { get, set } from "automate-redux";
+import client from "../../../client";
+import * as templates from "../templates.js";
+import ReactGA from "react-ga";
+import Sidenav from "../../../components/sidenav/Sidenav";
+import Topbar from "../../../components/topbar/Topbar";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import { InfoCircleOutlined } from "@ant-design/icons";
+import { Checkbox, Input, Select, Button, Tooltip, Tag } from "antd";
+import "codemirror/theme/material.css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/addon/selection/active-line.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
+import "../explorer.css";
+import { notify, canGenerateToken } from "../../../utils";
+import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTabs";
+import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm";
+import { getAPIToken } from "../../../operations/projects";
+import { projectModules } from "../../../constants";
 
 const { Option } = Select;
 
-const SpaceApi = props => {
+const SpaceApi = (props) => {
   const { projectID } = useParams();
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState(null);
 
-  const [generateTokenModal, setGenerateTokenModal] = useState(false)
+  const [generateTokenModal, setGenerateTokenModal] = useState(false);
 
   useEffect(() => {
     ReactGA.pageview("/projects/explorer/spaceApi");
-  }, [])
+  }, []);
 
   const getToken = () => {
-    return props.useInternalToken ? props.internalToken : props.userToken
-  }
+    return props.useInternalToken ? props.internalToken : props.userToken;
+  };
 
   const applyRequest = () => {
     let code = props.spaceApiQuery;
     if (
-      code.includes('db.beginBatch') ||
-      code.includes('uploadFile') ||
-      code.includes('api.Service') ||
-      code.includes('liveQuery')
+      code.includes("db.beginBatch") ||
+      code.includes("uploadFile") ||
+      code.includes("api.Service") ||
+      code.includes("liveQuery")
     ) {
       notify(
-        'info',
-        'Not supported',
-        'Explorer does not support all APIs provided by Space Cloud. It supports only basic CRUD operations and function calls.'
+        "info",
+        "Not supported",
+        "Explorer does not support all APIs provided by Space Cloud. It supports only basic CRUD operations and function calls."
       );
       return;
     }
@@ -59,12 +59,12 @@ const SpaceApi = props => {
     setLoading(true);
     client
       .execSpaceAPI(props.projectId, code, getToken())
-      .then(res => {
+      .then((res) => {
         setResponse(res);
       })
-      .catch(ex => {
+      .catch((ex) => {
         setResponse(null);
-        notify('error', 'Something went wrong', ex);
+        notify("error", "Something went wrong", ex);
       })
       .finally(() => setLoading(false));
   };
@@ -73,100 +73,107 @@ const SpaceApi = props => {
     <div className="explorer">
       <Topbar showProjectSelector />
       <Sidenav selectedItem={projectModules.EXPLORER} />
-      <div className='page-content page-content--no-padding'>
+      <div className="page-content page-content--no-padding">
         <ExplorerTabs activeKey="spaceApi" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
           <div className="spaceapi">
-            <div className='row'>
-              Trigger requests to Space Cloud directly by coding below. No
-              need to setup any frontend project. (Note: Only javascript code
-                            is allowed below.) The <code>api</code> object is available in
-                            all requests.
-                        </div>
-            <div className='row'>
+            <div className="row">
+              Trigger requests to Space Cloud directly by coding below. No need
+              to setup any frontend project. (Note: Only javascript code is
+              allowed below.) The <code>api</code> object is available in all
+              requests.
+            </div>
+            <div className="row">
               <Checkbox
                 checked={props.useInternalToken}
-                onChange={e =>
-                  props.setUseInternalToken(e.target.checked)
-                }
+                onChange={(e) => props.setUseInternalToken(e.target.checked)}
               >
                 Bypass security rules
-                            </Checkbox>
+              </Checkbox>
               <Tooltip
-                placement='bottomLeft'
-                title='Use an internal token generated by Space Cloud to bypass all security rules for this request '
+                placement="bottomLeft"
+                title="Use an internal token generated by Space Cloud to bypass all security rules for this request "
               >
-                <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+                <InfoCircleOutlined style={{ color: "rgba(0,0,0,.45)" }} />
               </Tooltip>
             </div>
             {!props.useInternalToken && (
-              <div className='row' style={{ display: "flex" }}>
+              <div className="row" style={{ display: "flex" }}>
                 <Input.Password
-                  placeholder='JWT Token'
+                  placeholder="JWT Token"
                   value={props.userToken}
-                  onChange={e => props.setUserToken(e.target.value)}
+                  onChange={(e) => props.setUserToken(e.target.value)}
                 />
-                <Tooltip title={props.generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
-                  <Button disabled={!props.generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                <Tooltip
+                  title={
+                    props.generateTokenAllowed
+                      ? ""
+                      : "You are not allowed to perform this action. This action requires modify permissions on project config"
+                  }
+                >
+                  <Button
+                    disabled={!props.generateTokenAllowed}
+                    onClick={() => setGenerateTokenModal(true)}
+                  >
+                    Generate Token
+                  </Button>
                 </Tooltip>
               </div>
             )}
-            <div className='row'>
+            <div className="row">
               <CodeMirror
                 value={props.spaceApiQuery}
                 options={{
-                  mode: { name: 'javascript', json: true },
+                  mode: { name: "javascript", json: true },
                   lineNumbers: true,
                   styleActiveLine: true,
                   matchBrackets: true,
                   autoCloseBrackets: true,
                   tabSize: 2,
-                  autofocus: true
+                  autofocus: true,
                 }}
                 onBeforeChange={(editor, data, value) => {
                   props.handleSpaceApiQueryChange(value);
                 }}
               />
             </div>
-            <div className='row apply-container'>
+            <div className="row apply-container">
               <Select
                 value={props.selectedTemplate}
-                style={{ minWidth: '240px' }}
+                style={{ minWidth: "240px" }}
                 showSerach={true}
-                onChange={template => {
+                onChange={(template) => {
                   props.setSelectedTemplate(template);
                   props.handleSpaceApiQueryChange(
-                    templates[template + 'Template']
+                    templates[template + "Template"]
                   );
                 }}
-                placeholder='Pick a Template'
+                placeholder="Pick a Template"
               >
-                <Option value='insert'>Insert Document</Option>
-                <Option value='get'>Get documents</Option>
-                <Option value='call'>Call a function</Option>
+                <Option value="insert">Insert Document</Option>
+                <Option value="get">Get documents</Option>
+                <Option value="call">Call a function</Option>
               </Select>
-              <Button type='primary' onClick={applyRequest} loading={loading}>
+              <Button type="primary" onClick={applyRequest} loading={loading}>
                 Apply
-                            </Button>
+              </Button>
             </div>
             {loading === false && response && (
-              <div className='row'>
+              <div className="row">
                 <h3>
-                  Status:{' '}
-                  <Tag
-                    color={response.status === 200 ? '#4F8A10' : '#D8000C'}
-                  >
+                  Status:{" "}
+                  <Tag color={response.status === 200 ? "#4F8A10" : "#D8000C"}>
                     {response.status}
                   </Tag>
                 </h3>
                 <h3>Result: </h3>
-                <div className='result'>
+                <div className="result">
                   <CodeMirror
                     value={JSON.stringify(response.data, null, 2)}
                     options={{
-                      mode: { name: 'javascript', json: true },
+                      mode: { name: "javascript", json: true },
                       tabSize: 2,
-                      readOnly: true
+                      readOnly: true,
                     }}
                   />
                 </div>
@@ -174,57 +181,51 @@ const SpaceApi = props => {
             )}
           </div>
         </div>
-        {generateTokenModal && <GenerateTokenForm
-          handleCancel={() => setGenerateTokenModal(false)}
-          handleSubmit={props.setUserToken}
-          initialToken={getToken()}
-          projectID={projectID}
-        />}
+        {generateTokenModal && (
+          <GenerateTokenForm
+            handleCancel={() => setGenerateTokenModal(false)}
+            handleSubmit={props.setUserToken}
+            initialToken={getToken()}
+            projectID={projectID}
+          />
+        )}
       </div>
     </div>
   );
-
-}
+};
 
 const mapStateToProps = (state, ownProps) => {
-  const projectId = ownProps.match.params.projectID
+  const projectId = ownProps.match.params.projectID;
   return {
     projectId: projectId,
-    selectedTemplate: get(state, 'uiState.explorer.spaceApi.selectedTemplate'),
+    selectedTemplate: get(state, "uiState.explorer.spaceApi.selectedTemplate"),
     spaceApiQuery: get(
       state,
-      'uiState.explorer.spaceApi.query',
+      "uiState.explorer.spaceApi.query",
       templates.defaultTemplate
     ),
-    useInternalToken: get(
-      state,
-      'uiState.explorer.useInternalToken',
-      true
-    ),
-    userToken: get(state, 'uiState.explorer.userToken'),
+    useInternalToken: get(state, "uiState.explorer.useInternalToken", true),
+    userToken: get(state, "uiState.explorer.userToken"),
     internalToken: getAPIToken(state),
-    generateTokenAllowed: canGenerateToken(state, projectId)
+    generateTokenAllowed: canGenerateToken(state, projectId),
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    setSelectedTemplate: template => {
-      dispatch(set('uiState.explorer.spaceApi.selectedTemplate', template));
+    setSelectedTemplate: (template) => {
+      dispatch(set("uiState.explorer.spaceApi.selectedTemplate", template));
     },
-    handleSpaceApiQueryChange: query => {
-      dispatch(set('uiState.explorer.spaceApi.query', query));
+    handleSpaceApiQueryChange: (query) => {
+      dispatch(set("uiState.explorer.spaceApi.query", query));
     },
     setUseInternalToken: (useInternalToken) => {
-      dispatch(set('uiState.explorer.useInternalToken', useInternalToken))
+      dispatch(set("uiState.explorer.useInternalToken", useInternalToken));
     },
     setUserToken: (userToken) => {
-      dispatch(set('uiState.explorer.userToken', userToken))
-    }
+      dispatch(set("uiState.explorer.userToken", userToken));
+    },
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(SpaceApi);
+export default connect(mapStateToProps, mapDispatchToProps)(SpaceApi);

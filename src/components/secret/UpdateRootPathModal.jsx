@@ -4,14 +4,14 @@ import FormItemLabel from "../form-item-label/FormItemLabel";
 
 const UpdateRootPathModal = ({ rootPath, handleCancel, handleSubmit }) => {
   const [form] = Form.useForm();
-  const formInitialValues = { rootPath }
+  const formInitialValues = { rootPath };
 
   const handleOk = () => {
-    form.validateFields().then(values => {
+    form.validateFields().then((values) => {
       handleSubmit(values.rootPath).then(() => {
         handleCancel();
         form.resetFields();
-      })
+      });
     });
   };
 
@@ -32,6 +32,6 @@ const UpdateRootPathModal = ({ rootPath, handleCancel, handleSubmit }) => {
       </Form>
     </Modal>
   );
-}
+};
 
 export default UpdateRootPathModal;

@@ -1,21 +1,26 @@
-import React from "react"
-import { Modal, Select, Input, Form, Button, Space } from 'antd';
-import FormItemLabel from "../form-item-label/FormItemLabel"
+import React from "react";
+import { Modal, Select, Input, Form, Button, Space } from "antd";
+import FormItemLabel from "../form-item-label/FormItemLabel";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const formInitialValues = { services: [], targetHosts: [], requestHosts: [] }
+const formInitialValues = { services: [], targetHosts: [], requestHosts: [] };
 
-const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValues = formInitialValues }) => {
+const FilterForm = ({
+  handleCancel,
+  handleSubmit,
+  serviceNames = [],
+  initialValues = formInitialValues,
+}) => {
   const [form] = Form.useForm();
 
   const handleSubmitClick = () => {
     form.validateFields().then((filterValues) => {
-      handleSubmit(filterValues)
+      handleSubmit(filterValues);
       handleCancel();
     });
-  }
+  };
 
   return (
     <Modal
@@ -26,18 +31,26 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
       onCancel={handleCancel}
       onOk={handleSubmitClick}
       cancelButtonProps={{
-        style: { float: "left" }, onClick: () => {
-          handleSubmit(formInitialValues)
-          handleCancel()
-        }
+        style: { float: "left" },
+        onClick: () => {
+          handleSubmit(formInitialValues);
+          handleCancel();
+        },
       }}
       cancelText="Reset Filters"
     >
-      <Form layout="vertical" form={form} onFinish={handleSubmitClick} initialValues={initialValues}>
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={handleSubmitClick}
+        initialValues={initialValues}
+      >
         <FormItemLabel name="Filter by services" />
         <Form.Item name="services">
           <Select mode="tags" placeholder="Select services">
-            {serviceNames.map(val => <Option key={val}>{val}</Option>)}
+            {serviceNames.map((val) => (
+              <Option key={val}>{val}</Option>
+            ))}
           </Select>
         </Form.Item>
         <FormItemLabel name="Filter by target hosts" />
@@ -49,16 +62,19 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
                   <Form.Item key={field.key} style={{ marginBottom: 8 }}>
                     <Form.Item
                       {...field}
-                      validateTrigger={['onChange', 'onBlur']}
+                      validateTrigger={["onChange", "onBlur"]}
                       rules={[
                         {
                           required: true,
                           message: "Please input a target host",
-                        }
+                        },
                       ]}
                       noStyle
                     >
-                      <Input placeholder="Target host" style={{ width: "90%" }} />
+                      <Input
+                        placeholder="Target host"
+                        style={{ width: "90%" }}
+                      />
                     </Form.Item>
                     <DeleteOutlined
                       style={{ marginLeft: 16 }}
@@ -69,11 +85,16 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
                   </Form.Item>
                 ))}
                 <Form.Item>
-                  <Button onClick={() => {
-                    form.validateFields(fields.map(obj => ["targetHosts", obj.name]))
-                      .then(() => add())
-                      .catch(ex => console.log("Exception", ex))
-                  }}>
+                  <Button
+                    onClick={() => {
+                      form
+                        .validateFields(
+                          fields.map((obj) => ["targetHosts", obj.name])
+                        )
+                        .then(() => add())
+                        .catch((ex) => console.log("Exception", ex));
+                    }}
+                  >
                     <PlusOutlined /> Add target host
                   </Button>
                 </Form.Item>
@@ -90,16 +111,19 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
                   <Form.Item key={field.key} style={{ marginBottom: 8 }}>
                     <Form.Item
                       {...field}
-                      validateTrigger={['onChange', 'onBlur']}
+                      validateTrigger={["onChange", "onBlur"]}
                       rules={[
                         {
                           required: true,
                           message: "Please input a request host",
-                        }
+                        },
                       ]}
                       noStyle
                     >
-                      <Input placeholder="Request host" style={{ width: "90%" }} />
+                      <Input
+                        placeholder="Request host"
+                        style={{ width: "90%" }}
+                      />
                     </Form.Item>
                     <DeleteOutlined
                       style={{ marginLeft: 16 }}
@@ -110,11 +134,16 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
                   </Form.Item>
                 ))}
                 <Form.Item>
-                  <Button onClick={() => {
-                    form.validateFields(fields.map(obj => ["requestHosts", obj.name]))
-                      .then(() => add())
-                      .catch(ex => console.log("Exception", ex))
-                  }}>
+                  <Button
+                    onClick={() => {
+                      form
+                        .validateFields(
+                          fields.map((obj) => ["requestHosts", obj.name])
+                        )
+                        .then(() => add())
+                        .catch((ex) => console.log("Exception", ex));
+                    }}
+                  >
                     <PlusOutlined /> Add request host
                   </Button>
                 </Form.Item>
@@ -125,7 +154,6 @@ const FilterForm = ({ handleCancel, handleSubmit, serviceNames = [], initialValu
       </Form>
     </Modal>
   );
-}
+};
 
-export default FilterForm
-
+export default FilterForm;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import FormItemLabel from '../../form-item-label/FormItemLabel';
+import React, { useState } from "react";
+import FormItemLabel from "../../form-item-label/FormItemLabel";
 import {
   Form,
   Select,
@@ -11,17 +11,21 @@ import {
   Row,
   Col,
   AutoComplete,
-} from 'antd';
+} from "antd";
 import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
-import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
-import { notify, isJson } from '../../../utils';
-import { generateSchemaAST } from '../../../graphql';
-import { useSelector } from 'react-redux';
-import FormItem from 'antd/lib/form/FormItem';
+import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
+import { PlusOutlined, CloseOutlined } from "@ant-design/icons";
+import { notify, isJson } from "../../../utils";
+import { generateSchemaAST } from "../../../graphql";
+import { useSelector } from "react-redux";
+import FormItem from "antd/lib/form/FormItem";
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
-import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
-import { securityRuleGroups } from '../../../constants';
+import {
+  getCollectionSchema,
+  getDbConfigs,
+  getTrackedCollections,
+} from "../../../operations/database";
+import { securityRuleGroups } from "../../../constants";
 
 const { Option } = Select;
 
@@ -29,146 +33,185 @@ function AlertMsgApplyTransformations() {
   return (
     <div>
       <b>Info</b> <br />
-      Describe the transformed request body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+      Describe the transformed request body using{" "}
+      <a
+        href="https://golang.org/pkg/text/template/"
+        style={{ color: "#7EC6FF" }}
+      >
         <b>Go templates</b>
-      </a>. Space Cloud will execute the specified template to generate the new request.
+      </a>
+      . Space Cloud will execute the specified template to generate the new
+      request.
     </div>
   );
 }
 
 const getInputValueFromActualValue = (value, dataType) => {
   if (value === null || value === undefined) {
-    return ""
+    return "";
   }
   if (dataType === "object") {
-    return JSON.stringify(value, null, 2)
+    return JSON.stringify(value, null, 2);
   }
-  return String(value)
-}
+  return String(value);
+};
 
 const getTypeFromValue = (value) => {
   if (value === "") {
-    return
+    return;
   }
 
-  if (typeof value === "number") return "number"
-  if (typeof value === "boolean") return "bool"
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "bool";
   if (typeof value === "string") {
-    if (value.includes(".")) return "variable"
-    return "string"
+    if (value.includes(".")) return "variable";
+    return "string";
   }
-  if (typeof value === "object") return "object"
-}
+  if (typeof value === "object") return "object";
+};
 
 const createValueAndTypeValidator = (type, arrayAllowed) => {
   return (_, value, cb) => {
     if (!type || value == undefined) {
-      cb()
-      return
+      cb();
+      return;
     }
 
     if (type === "string") {
-      cb()
-      return
+      cb();
+      return;
     }
 
     // Allow variables
     if (value.includes(".")) {
-      cb()
-      return
+      cb();
+      return;
     }
-
 
     if (!arrayAllowed && value.includes(",")) {
-      cb("Commas are not allowed here!")
-      return
+      cb("Commas are not allowed here!");
+      return;
     }
 
-    const values = value.split(",").map(v => v.trim())
-    const areValuesValid = values.every(v => {
+    const values = value.split(",").map((v) => v.trim());
+    const areValuesValid = values.every((v) => {
       if (v) {
         switch (type) {
           case "number":
-            return !isNaN(v)
+            return !isNaN(v);
           case "bool":
-            return v === "true" || v === "false"
+            return v === "true" || v === "false";
           case "variable":
-            return v.includes(".")
+            return v.includes(".");
         }
       } else {
-        return true
+        return true;
       }
-    })
+    });
     if (!areValuesValid) {
-      let error = ""
+      let error = "";
       switch (type) {
         case "number":
-          error = "Value must be a number or a variable"
-          break
+          error = "Value must be a number or a variable";
+          break;
         case "bool":
-          error = "Value must be a boolean or a variable"
-          break
+          error = "Value must be a boolean or a variable";
+          break;
         case "variable":
-          error = "Value must be a variable"
-          break
+          error = "Value must be a variable";
+          break;
       }
-      cb(error)
-      return
+      cb(error);
+      return;
     }
-    cb()
-  }
-}
+    cb();
+  };
+};
 
 const parseValue = (value, type) => {
   switch (type) {
     case "number":
-      return parseNumber(value)
+      return parseNumber(value);
     case "bool":
-      return parseBoolean(value)
+      return parseBoolean(value);
     case "object":
-      return JSON.parse(value)
+      return JSON.parse(value);
     default:
-      return value
+      return value;
   }
-}
+};
 
 const parseBoolean = (value) => {
-  if (value === "true") return true
-  if (value === "false") return false
-  return value
-}
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return value;
+};
 
 const parseNumber = (value) => {
-  return !isNaN(value) ? Number(value) : value
-}
+  return !isNaN(value) ? Number(value) : value;
+};
 
 const parseArray = (value, type) => {
   if (!value.includes(",")) {
-    return value
+    return value;
   }
-  return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
-}
+  return value
+    .split(",")
+    .map((value) => value.trim())
+    .map((value) => parseValue(value, type));
+};
 
 const isTypeOfFieldsString = (fields) => {
-  return typeof fields === "string"
-}
+  return typeof fields === "string";
+};
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
+const rules = [
+  "allow",
+  "deny",
+  "authenticated",
+  "match",
+  "and",
+  "or",
+  "query",
+  "webhook",
+  "force",
+  "remove",
+  "encrypt",
+  "decrypt",
+  "hash",
+];
 
 const ConfigureRule = (props) => {
   // form
   const [form] = Form.useForm();
 
   // Component state
-  const [col, setCol] = useState('');
+  const [col, setCol] = useState("");
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db } = props.selectedRule;
-  const dbConfigs = useSelector(state => getDbConfigs(state))
-  const dbList = Object.keys(dbConfigs)
+  const {
+    rule,
+    type,
+    f1,
+    f2,
+    error,
+    fields,
+    field,
+    value,
+    url,
+    store,
+    outputFormat,
+    claims,
+    requestTemplate,
+    db,
+  } = props.selectedRule;
+  const dbConfigs = useSelector((state) => getDbConfigs(state));
+  const dbList = Object.keys(dbConfigs);
   const [selectedDb, setSelectedDb] = useState(db);
-  const data = useSelector(state => getTrackedCollections(state, selectedDb))
-  const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.ruleMetaData.group, props.ruleMetaData.id))
+  const data = useSelector((state) => getTrackedCollections(state, selectedDb));
+  const collectionSchemaString = useSelector((state) =>
+    getCollectionSchema(state, props.ruleMetaData.group, props.ruleMetaData.id)
+  );
 
   // Handlers
   const handleSelectDatabase = (value) => setSelectedDb(value);
@@ -178,35 +221,35 @@ const ConfigureRule = (props) => {
     // Parse values
     switch (values.rule) {
       case "match":
-        if (values.eval === 'in' || values.eval === 'notIn') {
-          values.f2 = parseArray(values.f2, values.type)
+        if (values.eval === "in" || values.eval === "notIn") {
+          values.f2 = parseArray(values.f2, values.type);
         } else {
-          values.f1 = parseValue(values.f1, values.type)
-          values.f2 = parseValue(values.f2, values.type)
+          values.f1 = parseValue(values.f1, values.type);
+          values.f2 = parseValue(values.f2, values.type);
         }
         break;
       case "force":
-        values.value = parseValue(values.value, values.type)
-        delete values["type"]
+        values.value = parseValue(values.value, values.type);
+        delete values["type"];
         break;
       case "query":
         try {
           values.find = JSON.parse(values.find);
         } catch (ex) {
-          notify("error", "Error", ex.toString())
+          notify("error", "Error", ex.toString());
           return;
         }
         break;
       case "webhook":
         if (values.setClaims) {
-          values.claims = JSON.parse(values.claims)
+          values.claims = JSON.parse(values.claims);
         }
         if (values["applyTransformations"]) {
-          values.template = "go"
+          values.template = "go";
         }
 
-        delete values["setClaims"]
-        delete values["applyTransformations"]
+        delete values["setClaims"];
+        delete values["applyTransformations"];
         break;
     }
 
@@ -214,14 +257,24 @@ const ConfigureRule = (props) => {
 
     if (values.rule === "and" || values.rule === "or") {
       if (!props.selectedRule.clauses) values.clauses = [];
-      else values.clauses = props.selectedRule.clauses
+      else values.clauses = props.selectedRule.clauses;
     }
-    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
-      values.clause = props.selectedRule.clause
-      values.fields = values.loadVar ? values.singleInputFields : values.multipleInputFields
-      delete values["loadVar"]
-      delete values["singleInputFields"]
-      delete values["multipleInputFields"]
+    if (
+      values.rule === "query" ||
+      values.rule === "webhook" ||
+      values.rule === "force" ||
+      values.rule === "remove" ||
+      values.rule === "encrypt" ||
+      values.rule === "decrypt" ||
+      values.rule === "hash"
+    ) {
+      values.clause = props.selectedRule.clause;
+      values.fields = values.loadVar
+        ? values.singleInputFields
+        : values.multipleInputFields;
+      delete values["loadVar"];
+      delete values["singleInputFields"];
+      delete values["multipleInputFields"];
     }
 
     props.onSubmit(values);
@@ -233,14 +286,23 @@ const ConfigureRule = (props) => {
 
   switch (props.ruleMetaData.ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:
-      const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.ruleMetaData.id];
-      const schemaFields = colSchemaFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: true }), {})
+      const colSchemaFields = generateSchemaAST(collectionSchemaString)[
+        props.ruleMetaData.id
+      ];
+      const schemaFields = colSchemaFields.reduce(
+        (prev, curr) => Object.assign({}, prev, { [curr.name]: true }),
+        {}
+      );
       switch (props.selectedNodeId) {
         case "create":
-          autoCompleteOptions = { args: { op: true, auth: true, token: true, doc: schemaFields } }
+          autoCompleteOptions = {
+            args: { op: true, auth: true, token: true, doc: schemaFields },
+          };
           break;
         case "read":
-          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields } }
+          autoCompleteOptions = {
+            args: { op: true, auth: true, token: true, find: schemaFields },
+          };
           break;
         case "update":
           const update = {
@@ -250,41 +312,57 @@ const ConfigureRule = (props) => {
             $min: schemaFields,
             $max: schemaFields,
             $currentDate: schemaFields,
-            $currentTimestamp: schemaFields
-          }
-          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields, update } }
+            $currentTimestamp: schemaFields,
+          };
+          autoCompleteOptions = {
+            args: {
+              op: true,
+              auth: true,
+              token: true,
+              find: schemaFields,
+              update,
+            },
+          };
           break;
         case "delete":
-          autoCompleteOptions = { args: { op: true, auth: true, token: true, find: schemaFields } }
-          break
+          autoCompleteOptions = {
+            args: { op: true, auth: true, token: true, find: schemaFields },
+          };
+          break;
       }
       break;
     case securityRuleGroups.FILESTORE:
     case securityRuleGroups.REMOTE_SERVICES:
     case securityRuleGroups.EVENTING:
     case securityRuleGroups.DB_PREPARED_QUERIES:
-      autoCompleteOptions = { args: { auth: true, params: true, token: true } }
+      autoCompleteOptions = { args: { auth: true, params: true, token: true } };
       break;
     case securityRuleGroups.INGRESS_ROUTES:
       const query = {
         path: true,
         pathArray: true,
         params: true,
-        headers: true
-      }
-      autoCompleteOptions = { args: { auth: true, params: true, query, token: true } }
+        headers: true,
+      };
+      autoCompleteOptions = {
+        args: { auth: true, params: true, query, token: true },
+      };
   }
 
-  const inheritedDataType = getTypeFromValue(value)
+  const inheritedDataType = getTypeFromValue(value);
   const formInitialValues = {
     rule,
-    type: (rule === "force") ? inheritedDataType : type,
+    type: rule === "force" ? inheritedDataType : type,
     f1: getInputValueFromActualValue(f1, type),
     eval: props.selectedRule.eval,
     f2: getInputValueFromActualValue(f2, type),
     loadVar: isTypeOfFieldsString(fields),
     singleInputFields: isTypeOfFieldsString(fields) ? fields : "",
-    multipleInputFields: isTypeOfFieldsString(fields) ? undefined : (fields && fields.length ? fields : [""]),
+    multipleInputFields: isTypeOfFieldsString(fields)
+      ? undefined
+      : fields && fields.length
+      ? fields
+      : [""],
     fields,
     field,
     value: getInputValueFromActualValue(value, inheritedDataType),
@@ -299,30 +377,30 @@ const ConfigureRule = (props) => {
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
     errorMsg: error ? true : false,
-    error
-  }
+    error,
+  };
 
   if (formInitialValues.type === "object") {
-    formInitialValues.value = JSON.stringify(formInitialValues.value, null, 2)
+    formInitialValues.value = JSON.stringify(formInitialValues.value, null, 2);
   }
 
   return (
     <Drawer
-      title='Configure rule'
-      placement='right'
+      title="Configure rule"
+      placement="right"
       onClose={props.closeDrawer}
       visible={true}
       width={560}
     >
       <Form
-        name='configure'
+        name="configure"
         form={form}
         onFinish={onFinish}
         initialValues={formInitialValues}
         validateMessages={{ required: "Please provide a value!" }}
       >
-        <FormItemLabel name='Rule Type' />
-        <Form.Item name='rule'>
+        <FormItemLabel name="Rule Type" />
+        <Form.Item name="rule">
           <Select placeholder="Rule">
             {rules.map((val) => (
               <Select.Option key={val} value={val}>
@@ -332,55 +410,75 @@ const ConfigureRule = (props) => {
           </Select>
         </Form.Item>
         <ConditionalFormBlock
-          dependency='rule'
-          condition={() => form.getFieldValue('rule') === 'match'}
+          dependency="rule"
+          condition={() => form.getFieldValue("rule") === "match"}
         >
-          <FormItemLabel name='Operands data type' />
-          <Form.Item name='type' rules={[{ required: true }]}>
+          <FormItemLabel name="Operands data type" />
+          <Form.Item name="type" rules={[{ required: true }]}>
             <Select placeholder="Data type">
-              <Select.Option value='string'>String</Select.Option>
-              <Select.Option value='number'>Number</Select.Option>
-              <Select.Option value='bool'>Bool</Select.Option>
+              <Select.Option value="string">String</Select.Option>
+              <Select.Option value="number">Number</Select.Option>
+              <Select.Option value="bool">Bool</Select.Option>
             </Select>
           </Form.Item>
-          <FormItemLabel name='First operand' />
-          <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
-            {
-              () => {
-                const type = form.getFieldValue("type")
-                return (
-                  <Form.Item name='f1' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, false) }]}>
-                    <ObjectAutoComplete placeholder="First operand" options={autoCompleteOptions} />
-                  </Form.Item>
-                )
-              }
-            }
+          <FormItemLabel name="First operand" />
+          <Form.Item
+            shouldUpdate={(prev, curr) => curr.type !== prev.type}
+            noStyle
+          >
+            {() => {
+              const type = form.getFieldValue("type");
+              return (
+                <Form.Item
+                  name="f1"
+                  rules={[
+                    { required: true },
+                    { validator: createValueAndTypeValidator(type, false) },
+                  ]}
+                >
+                  <ObjectAutoComplete
+                    placeholder="First operand"
+                    options={autoCompleteOptions}
+                  />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
-          <FormItemLabel name='Evaluation type' />
-          <Form.Item name='eval' rules={[{ required: true }]}>
+          <FormItemLabel name="Evaluation type" />
+          <Form.Item name="eval" rules={[{ required: true }]}>
             <Select placeholder="Evaluation">
-              <Select.Option value='=='>Equals to</Select.Option>
-              <Select.Option value='!='>Not equals to</Select.Option>
-              <Select.Option value='>'>Greater than</Select.Option>
-              <Select.Option value='>='>Greater than equal to</Select.Option>
-              <Select.Option value='<'>Lesser than</Select.Option>
-              <Select.Option value='<='>Lesser than equal to</Select.Option>
-              <Select.Option value='in'>In</Select.Option>
-              <Select.Option value='notIn'>Not in</Select.Option>
+              <Select.Option value="==">Equals to</Select.Option>
+              <Select.Option value="!=">Not equals to</Select.Option>
+              <Select.Option value=">">Greater than</Select.Option>
+              <Select.Option value=">=">Greater than equal to</Select.Option>
+              <Select.Option value="<">Lesser than</Select.Option>
+              <Select.Option value="<=">Lesser than equal to</Select.Option>
+              <Select.Option value="in">In</Select.Option>
+              <Select.Option value="notIn">Not in</Select.Option>
             </Select>
           </Form.Item>
-          <FormItemLabel name='Second operand' />
-          <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
-            {
-              () => {
-                const type = form.getFieldValue("type")
-                return (
-                  <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
-                    <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
-                  </Form.Item>
-                )
-              }
-            }
+          <FormItemLabel name="Second operand" />
+          <Form.Item
+            shouldUpdate={(prev, curr) => curr.type !== prev.type}
+            noStyle
+          >
+            {() => {
+              const type = form.getFieldValue("type");
+              return (
+                <Form.Item
+                  name="f2"
+                  rules={[
+                    { required: true },
+                    { validator: createValueAndTypeValidator(type, true) },
+                  ]}
+                >
+                  <ObjectAutoComplete
+                    placeholder="Second operand"
+                    options={autoCompleteOptions}
+                  />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
           <Alert
             description={
@@ -388,27 +486,28 @@ const ConfigureRule = (props) => {
                 You can use variables and helper functions inside operands
               </div>
             }
-            type='info'
+            type="info"
             showIcon
             style={{ marginBottom: 24 }}
           />
         </ConditionalFormBlock>
         <ConditionalFormBlock
-          dependency='rule'
+          dependency="rule"
           condition={() =>
-            form.getFieldValue('rule') === 'encrypt' ||
-            form.getFieldValue('rule') === 'decrypt' ||
-            form.getFieldValue('rule') === "remove" ||
-            form.getFieldValue('rule') === "hash"
+            form.getFieldValue("rule") === "encrypt" ||
+            form.getFieldValue("rule") === "decrypt" ||
+            form.getFieldValue("rule") === "remove" ||
+            form.getFieldValue("rule") === "hash"
           }
         >
-          <FormItemLabel name='Fields' />
+          <FormItemLabel name="Fields" />
           <Form.Item name="loadVar" valuePropName="checked">
-            <Checkbox>
-              Load fields from a variable
-            </Checkbox>
+            <Checkbox>Load fields from a variable</Checkbox>
           </Form.Item>
-          <ConditionalFormBlock dependency='loadVar' condition={() => form.getFieldValue('loadVar')}>
+          <ConditionalFormBlock
+            dependency="loadVar"
+            condition={() => form.getFieldValue("loadVar")}
+          >
             <Row>
               <Col span={14}>
                 <Form.Item name="singleInputFields">
@@ -417,8 +516,11 @@ const ConfigureRule = (props) => {
               </Col>
             </Row>
           </ConditionalFormBlock>
-          <ConditionalFormBlock dependency='loadVar' condition={() => !form.getFieldValue('loadVar')}>
-            <Form.List name='multipleInputFields'>
+          <ConditionalFormBlock
+            dependency="loadVar"
+            condition={() => !form.getFieldValue("loadVar")}
+          >
+            <Form.List name="multipleInputFields">
               {(fields, { add, remove }) => {
                 return (
                   <>
@@ -430,15 +532,24 @@ const ConfigureRule = (props) => {
                             key={[field.name]}
                             rules={[
                               { required: true },
-                              { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
+                              {
+                                validator: createValueAndTypeValidator(
+                                  "variable",
+                                  false
+                                ),
+                                validateTrigger: "onBlur",
+                              },
                             ]}
                           >
-                            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
+                            <ObjectAutoComplete
+                              placeholder="Field"
+                              options={autoCompleteOptions}
+                            />
                           </Form.Item>
                         </Col>
                         <Col span={2}>
                           <CloseOutlined
-                            style={{ margin: '0 8px' }}
+                            style={{ margin: "0 8px" }}
                             onClick={() => {
                               remove(field.name);
                             }}
@@ -448,14 +559,14 @@ const ConfigureRule = (props) => {
                     ))}
                     <Form.Item>
                       <Button
-                        type='dashed'
+                        type="dashed"
                         onClick={() => {
                           add();
                         }}
-                        style={{ width: '40%' }}
+                        style={{ width: "40%" }}
                       >
                         <PlusOutlined /> Add field
-                    </Button>
+                      </Button>
                     </Form.Item>
                   </>
                 );
@@ -464,18 +575,30 @@ const ConfigureRule = (props) => {
           </ConditionalFormBlock>
           <Alert
             description={<div>You can use variables inside fields</div>}
-            type='info'
+            type="info"
             showIcon
             style={{ marginBottom: 24 }}
           />
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
-          condition={() => form.getFieldValue('rule') === 'force'}
+          condition={() => form.getFieldValue("rule") === "force"}
         >
           <FormItemLabel name="Field" />
-          <FormItem name="field" rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }]}>
-            <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
+          <FormItem
+            name="field"
+            rules={[
+              { required: true },
+              {
+                validator: createValueAndTypeValidator("variable", false),
+                validateTrigger: "onBlur",
+              },
+            ]}
+          >
+            <ObjectAutoComplete
+              placeholder="Field"
+              options={autoCompleteOptions}
+            />
           </FormItem>
           <FormItemLabel name="Datatype" />
           <FormItem name="type" rules={[{ required: true }]}>
@@ -490,60 +613,83 @@ const ConfigureRule = (props) => {
           <FormItemLabel name="Value" />
           <ConditionalFormBlock
             dependency="type"
-            condition={() => form.getFieldValue('type') !== 'object'}>
-            <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
-              {
-                () => {
-                  const type = form.getFieldValue("type")
-                  return (
-                    <Form.Item name='value' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, false) }]}>
-                      <ObjectAutoComplete placeholder="Value" options={autoCompleteOptions} onChange={(value) => {
+            condition={() => form.getFieldValue("type") !== "object"}
+          >
+            <Form.Item
+              shouldUpdate={(prev, curr) => curr.type !== prev.type}
+              noStyle
+            >
+              {() => {
+                const type = form.getFieldValue("type");
+                return (
+                  <Form.Item
+                    name="value"
+                    rules={[
+                      { required: true },
+                      { validator: createValueAndTypeValidator(type, false) },
+                    ]}
+                  >
+                    <ObjectAutoComplete
+                      placeholder="Value"
+                      options={autoCompleteOptions}
+                      onChange={(value) => {
                         if (value.includes(".") && type !== "variable") {
-                          form.setFieldsValue({ type: "variable" })
+                          form.setFieldsValue({ type: "variable" });
                         }
-                      }} />
-                    </Form.Item>
-                  )
-                }
-              }
+                      }}
+                    />
+                  </Form.Item>
+                );
+              }}
             </Form.Item>
           </ConditionalFormBlock>
           <ConditionalFormBlock
             dependency="type"
-            condition={() => form.getFieldValue('type') === 'object'}>
-            <Form.Item shouldUpdate={(prev, curr) => (curr.type !== prev.type)} noStyle>
-              {
-                () => {
-                  const type = form.getFieldValue("type")
-                  return (
-                    <Form.Item name='value' rules={[{ required: true }, {
-                      validateTrigger: "onBlur",
-                      validator: (_, value, cb) => {
-                        if (value && !isJson(value)) {
-                          cb("Please provide a valid JSON object!")
-                          return
-                        }
-                        cb()
-                      }
-                    }]}>
-                      <AntCodeMirror options={{
-                        mode: { name: 'javascript', json: true },
+            condition={() => form.getFieldValue("type") === "object"}
+          >
+            <Form.Item
+              shouldUpdate={(prev, curr) => curr.type !== prev.type}
+              noStyle
+            >
+              {() => {
+                const type = form.getFieldValue("type");
+                return (
+                  <Form.Item
+                    name="value"
+                    rules={[
+                      { required: true },
+                      {
+                        validateTrigger: "onBlur",
+                        validator: (_, value, cb) => {
+                          if (value && !isJson(value)) {
+                            cb("Please provide a valid JSON object!");
+                            return;
+                          }
+                          cb();
+                        },
+                      },
+                    ]}
+                  >
+                    <AntCodeMirror
+                      options={{
+                        mode: { name: "javascript", json: true },
                         lineNumbers: true,
                         styleActiveLine: true,
                         matchBrackets: true,
                         autoCloseBrackets: true,
-                        tabSize: 2
-                      }} />
-                    </Form.Item>
-                  )
-                }
-              }
+                        tabSize: 2,
+                      }}
+                    />
+                  </Form.Item>
+                );
+              }}
             </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
-          condition={() => form.getFieldValue('rule') === "webhook"} >
+          condition={() => form.getFieldValue("rule") === "webhook"}
+        >
           <FormItemLabel name="URL" />
           <FormItem name="url" rules={[{ required: true }]}>
             <Input placeholder="URL" />
@@ -552,102 +698,114 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
-          <FormItemLabel name='Override claims' />
-          <Form.Item name='setClaims' valuePropName='checked'>
+          <FormItemLabel name="Override claims" />
+          <Form.Item name="setClaims" valuePropName="checked">
             <Checkbox>
               Override the value of the JWT claims in the request
-          </Checkbox>
+            </Checkbox>
           </Form.Item>
           <ConditionalFormBlock
-            dependency='setClaims'
-            condition={() => form.getFieldValue('setClaims') === true}
+            dependency="setClaims"
+            condition={() => form.getFieldValue("setClaims") === true}
           >
-            <FormItemLabel name='Specify claims' />
-            <Form.Item name="claims" rules={[{ required: true }, {
-              validator: (_, value, cb) => {
-                if (value && !isJson(value)) {
-                  cb("Please provide a valid JSON object!")
-                  return
-                }
-                cb()
-              },
-              validateTrigger: "onBlur"
-            }]} >
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
+            <FormItemLabel name="Specify claims" />
+            <Form.Item
+              name="claims"
+              rules={[
+                { required: true },
+                {
+                  validator: (_, value, cb) => {
+                    if (value && !isJson(value)) {
+                      cb("Please provide a valid JSON object!");
+                      return;
+                    }
+                    cb();
+                  },
+                  validateTrigger: "onBlur",
+                },
+              ]}
+            >
+              <AntCodeMirror
+                options={{
+                  mode: { name: "javascript", json: true },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2,
+                  autofocus: true,
+                }}
               />
             </Form.Item>
           </ConditionalFormBlock>
-          <FormItemLabel name='Apply transformations' />
-          <Form.Item name='applyTransformations' valuePropName='checked'>
+          <FormItemLabel name="Apply transformations" />
+          <Form.Item name="applyTransformations" valuePropName="checked">
             <Checkbox>
               Transform the webhook request body using templates
-          </Checkbox>
+            </Checkbox>
           </Form.Item>
           <ConditionalFormBlock
-            dependency='applyTransformations'
-            condition={() => form.getFieldValue('applyTransformations') === true}
+            dependency="applyTransformations"
+            condition={() =>
+              form.getFieldValue("applyTransformations") === true
+            }
           >
             <Alert
               message={<AlertMsgApplyTransformations />}
-              type='info'
+              type="info"
               showIcon
               style={{ marginBottom: 21 }}
             />
-            <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+            <FormItemLabel
+              name="Template output format"
+              description="Format for parsing the template output"
+            />
             <Form.Item name="outputFormat">
               <Select style={{ width: 96 }}>
-                <Option value='yaml'>YAML</Option>
-                <Option value='json'>JSON</Option>
+                <Option value="yaml">YAML</Option>
+                <Option value="json">JSON</Option>
               </Select>
             </Form.Item>
-            <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
-            <Form.Item name='requestTemplate' rules={[{ required: true }]}>
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
+            <FormItemLabel
+              name="Request template"
+              description="Template to generate the transformed request body"
+            />
+            <Form.Item name="requestTemplate" rules={[{ required: true }]}>
+              <AntCodeMirror
+                options={{
+                  mode: { name: "javascript", json: true },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2,
+                  autofocus: true,
+                }}
               />
             </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
-          dependency='rule'
-          condition={() => form.getFieldValue('rule') === 'query'}
+          dependency="rule"
+          condition={() => form.getFieldValue("rule") === "query"}
         >
-          <FormItemLabel name='Database' />
-          <Form.Item
-            name='db'
-            rules={[{ required: true }]}
-          >
+          <FormItemLabel name="Database" />
+          <Form.Item name="db" rules={[{ required: true }]}>
             <AutoComplete
-              placeholder='Select a database'
+              placeholder="Select a database"
               onChange={handleSelectDatabase}
-              options={dbList.map(db => ({ value: db }))}
+              options={dbList.map((db) => ({ value: db }))}
             />
           </Form.Item>
-          <FormItemLabel name='Collection / Table name' />
-          <Form.Item name='col' rules={[{ required: true }]}>
+          <FormItemLabel name="Collection / Table name" />
+          <Form.Item name="col" rules={[{ required: true }]}>
             <AutoComplete
-              placeholder='Collection / Table name'
+              placeholder="Collection / Table name"
               onSearch={handleSearch}
             >
               {data
                 .filter(
-                  (data) =>
-                    data.toLowerCase().indexOf(col.toLowerCase()) !== -1
+                  (data) => data.toLowerCase().indexOf(col.toLowerCase()) !== -1
                 )
                 .map((data) => (
                   <AutoComplete.Option key={data} value={data}>
@@ -656,49 +814,65 @@ const ConfigureRule = (props) => {
                 ))}
             </AutoComplete>
           </Form.Item>
-          <FormItemLabel name='Find query' style={{ border: '1px solid #D9D9D9' }} />
-          <Form.Item name="find" rules={[{ required: true }, {
-            validateTrigger: "onBlur",
-            validator: (_, value, cb) => {
-              if (value && !isJson(value)) {
-                cb("Please provide a valid JSON object!")
-                return
-              }
-              cb()
-            }
-          }]}>
-            <AntCodeMirror options={{
-              mode: { name: 'javascript', json: true },
-              lineNumbers: true,
-              styleActiveLine: true,
-              matchBrackets: true,
-              autoCloseBrackets: true,
-              tabSize: 2
-            }} />
+          <FormItemLabel
+            name="Find query"
+            style={{ border: "1px solid #D9D9D9" }}
+          />
+          <Form.Item
+            name="find"
+            rules={[
+              { required: true },
+              {
+                validateTrigger: "onBlur",
+                validator: (_, value, cb) => {
+                  if (value && !isJson(value)) {
+                    cb("Please provide a valid JSON object!");
+                    return;
+                  }
+                  cb();
+                },
+              },
+            ]}
+          >
+            <AntCodeMirror
+              options={{
+                mode: { name: "javascript", json: true },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2,
+              }}
+            />
           </Form.Item>
           <FormItemLabel name="Store" hint="(Optional)" />
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
         </ConditionalFormBlock>
-        <FormItemLabel name='Customize error message' />
-        <Form.Item name='errorMsg' valuePropName='checked'>
+        <FormItemLabel name="Customize error message" />
+        <Form.Item name="errorMsg" valuePropName="checked">
           <Checkbox checked={error ? true : false}>
             Customize the error message sent to client if the rule fails
           </Checkbox>
         </Form.Item>
         <ConditionalFormBlock
-          dependency='errorMsg'
-          condition={() => form.getFieldValue('errorMsg') === true}
+          dependency="errorMsg"
+          condition={() => form.getFieldValue("errorMsg") === true}
         >
-          <FormItemLabel name='Error message' />
-          <Form.Item name='error' rules={[{ required: true }]}>
+          <FormItemLabel name="Error message" />
+          <Form.Item name="error" rules={[{ required: true }]}>
             <Input placeholder="Error message" />
           </Form.Item>
         </ConditionalFormBlock>
-        <span style={{ float: 'right' }}>
-          <Button style={{ marginRight: 16 }} onClick={() => props.closeDrawer()}>Cancel</Button>
-          <Button type='primary' htmlType='submit'>
+        <span style={{ float: "right" }}>
+          <Button
+            style={{ marginRight: 16 }}
+            onClick={() => props.closeDrawer()}
+          >
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit">
             Save
           </Button>
         </span>

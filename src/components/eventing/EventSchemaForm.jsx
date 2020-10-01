@@ -1,59 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, AutoComplete, Row, Col, Form } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import FormItemLabel from "../form-item-label/FormItemLabel"
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import { notify } from '../../utils';
+import React, { useState, useEffect } from "react";
+import { Modal, AutoComplete, Row, Col, Form } from "antd";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import FormItemLabel from "../form-item-label/FormItemLabel";
+import "codemirror/theme/material.css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/addon/selection/active-line.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
+import { notify } from "../../utils";
 
-const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes }) => {
-  const [form] = Form.useForm()
+const EventSchemaForm = ({
+  handleSubmit,
+  handleCancel,
+  initialValues,
+  customEventTypes,
+}) => {
+  const [form] = Form.useForm();
   const [eventType, setEventType] = useState();
 
   const handleChangedValues = ({ eventType }) => {
     setEventType(eventType);
-  }
+  };
 
   if (!initialValues) {
     initialValues = {
       schema: `type {
   
 }`,
-    }
+    };
   }
 
   const [schema, setSchema] = useState(initialValues.schema);
 
   useEffect(() => {
     if (schema) {
-      const temp = schema.trim().slice(4).trim()
-      const index = temp.indexOf("{")
-      const newSchema = eventType ? `type ${eventType} ${temp.slice(index)}` : `type ${temp.slice(index)}`
-      setSchema(newSchema)
+      const temp = schema.trim().slice(4).trim();
+      const index = temp.indexOf("{");
+      const newSchema = eventType
+        ? `type ${eventType} ${temp.slice(index)}`
+        : `type ${temp.slice(index)}`;
+      setSchema(newSchema);
     }
-  }, [eventType])
+  }, [eventType]);
 
-
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
       try {
-        handleSubmit(values.eventType, schema)
-          .then(() => handleCancel())
+        handleSubmit(values.eventType, schema).then(() => handleCancel());
       } catch (ex) {
-        notify("error", "Error", ex.toString())
+        notify("error", "Error", ex.toString());
       }
     });
-  }
-
+  };
 
   return (
     <div>
       <Modal
-        className='edit-item-modal'
+        className="edit-item-modal"
         visible={true}
         width={520}
         okText="Add"
@@ -61,15 +65,28 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
         onOk={handleSubmitClick}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues} initialValues={{ 'eventType': eventType }}>
-          <FormItemLabel name='Event Type' />
-          <Form.Item name="eventType" rules={[{ required: true, message: `Event type is required` }]}>
-            <AutoComplete
-              placeholder="Example: event-type"
-            >
-              {customEventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
-                <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
-              ))}
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmitClick}
+          onValuesChange={handleChangedValues}
+          initialValues={{ eventType: eventType }}
+        >
+          <FormItemLabel name="Event Type" />
+          <Form.Item
+            name="eventType"
+            rules={[{ required: true, message: `Event type is required` }]}
+          >
+            <AutoComplete placeholder="Example: event-type">
+              {customEventTypes
+                .filter((value) =>
+                  eventType
+                    ? value.toLowerCase().includes(eventType.toLowerCase())
+                    : true
+                )
+                .map((type) => (
+                  <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
+                ))}
             </AutoComplete>
           </Form.Item>
           <Row>
@@ -84,10 +101,10 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
                   matchBrackets: true,
                   autoCloseBrackets: true,
                   tabSize: 2,
-                  autofocus: true
+                  autofocus: true,
                 }}
                 onBeforeChange={(editor, data, value) => {
-                  setSchema(value)
+                  setSchema(value);
                 }}
               />
             </Col>
@@ -96,6 +113,6 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
       </Modal>
     </div>
   );
-}
+};
 
 export default EventSchemaForm;

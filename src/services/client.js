@@ -1,37 +1,42 @@
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { HttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
+import { ApolloClient } from "apollo-client";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { HttpLink } from "apollo-link-http";
+import { setContext } from "apollo-link-context";
 
 function fetchJSON(origin, url, options) {
   if (origin) {
-    url = origin + url
+    url = origin + url;
   }
   return new Promise((resolve, reject) => {
-    fetch(url, options).then(res => {
-      const status = res.status
-      res.json().then(data => {
-        resolve({ status, data })
-      }).catch(ex => {
-        reject(ex)
+    fetch(url, options)
+      .then((res) => {
+        const status = res.status;
+        res
+          .json()
+          .then((data) => {
+            resolve({ status, data });
+          })
+          .catch((ex) => {
+            reject(ex);
+          });
       })
-    }).catch(ex => {
-      reject(ex)
-    })
-  })
+      .catch((ex) => {
+        reject(ex);
+      });
+  });
 }
 
 const defaultOptions = {
   credentials: "include",
   headers: {
-    "Content-Type": "application/json"
-  }
-}
+    "Content-Type": "application/json",
+  },
+};
 
 class Client {
   constructor(origin, options) {
-    this.origin = origin
-    this.options = Object.assign({}, defaultOptions, options)
+    this.origin = origin;
+    this.options = Object.assign({}, defaultOptions, options);
   }
 
   setToken(token) {
@@ -39,70 +44,101 @@ class Client {
   }
 
   getJSON(url) {
-    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'GET' }))
+    return fetchJSON(
+      this.origin,
+      url,
+      Object.assign({}, this.options, { method: "GET" })
+    );
   }
 
   postJSON(url, obj, token) {
-    const options = Object.assign({}, this.options, token ? { headers: Object.assign({}, this.options.headers, { Authorization: "Bearer " + token }) } : {})
-    return fetchJSON(this.origin, url, Object.assign({}, options, { method: 'POST', body: JSON.stringify(obj) }))
+    const options = Object.assign(
+      {},
+      this.options,
+      token
+        ? {
+            headers: Object.assign({}, this.options.headers, {
+              Authorization: "Bearer " + token,
+            }),
+          }
+        : {}
+    );
+    return fetchJSON(
+      this.origin,
+      url,
+      Object.assign({}, options, { method: "POST", body: JSON.stringify(obj) })
+    );
   }
 
   delete(url) {
-    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'DELETE' }))
+    return fetchJSON(
+      this.origin,
+      url,
+      Object.assign({}, this.options, { method: "DELETE" })
+    );
   }
   putJSON(url, obj) {
-    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'PUT', body: JSON.stringify(obj) }))
+    return fetchJSON(
+      this.origin,
+      url,
+      Object.assign({}, this.options, {
+        method: "PUT",
+        body: JSON.stringify(obj),
+      })
+    );
   }
 }
 
 export function createRESTClient(origin, options) {
-  return new Client(origin, options)
+  return new Client(origin, options);
 }
-
 
 const getFetcher = () => {
-  if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_ENABLE_MOCK === "true") {
-    return (...args) => fetch(...args)
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.REACT_APP_ENABLE_MOCK === "true"
+  ) {
+    return (...args) => fetch(...args);
   }
-  return undefined
-}
+  return undefined;
+};
 
 export function createGraphQLClient(uri, getToken) {
   // Create an http link for GraphQL client:
   const httpLink = new HttpLink({
     uri: uri,
-    fetch: getFetcher()
+    fetch: getFetcher(),
   });
 
   const httpAuthLink = setContext((_, { headers }) => {
     // get the authentication token from local storage if it exists
-    const token = getToken ? getToken() : undefined
+    const token = getToken ? getToken() : undefined;
     // return the headers to the context so httpLink can read them
     return {
       headers: {
         ...headers,
-        Authorization: token ? `Bearer ${token}` : ""
-      }
-    }
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    };
   });
 
   const defaultOptions = {
     watchQuery: {
-      fetchPolicy: 'no-cache',
-      errorPolicy: 'ignore'
+      fetchPolicy: "no-cache",
+      errorPolicy: "ignore",
     },
     query: {
-      fetchPolicy: 'no-cache',
-      errorPolicy: 'all'
-    }
-  }
+      fetchPolicy: "no-cache",
+      errorPolicy: "all",
+    },
+  };
 
   // Create a GraphQL client:
   const graphQLClient = new ApolloClient({
     cache: new InMemoryCache({ addTypename: false }),
     link: httpAuthLink.concat(httpLink),
-    defaultOptions: defaultOptions
+    defaultOptions: defaultOptions,
   });
 
-  return graphQLClient
+  return graphQLClient;
 }

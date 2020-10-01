@@ -11,9 +11,13 @@ function OnboardingPages() {
     <React.Fragment>
       <Route exact path="/mission-control/login" component={Login} />
       <PrivateRoute exact path="/mission-control/welcome" component={Welcome} />
-      <PrivateRoute exact path="/mission-control/create-project" component={CreateProject} />
+      <PrivateRoute
+        exact
+        path="/mission-control/create-project"
+        component={CreateProject}
+      />
     </React.Fragment>
-  )
+  );
 }
 
-export default OnboardingPages
+export default OnboardingPages;

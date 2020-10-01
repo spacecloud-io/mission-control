@@ -1,43 +1,53 @@
-import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
-import { Row, Col } from 'antd'
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
+import ReactGA from "react-ga";
+import { Row, Col } from "antd";
 
-import LoginForm from './LoginForm';
-import { notify, incrementPendingRequests, decrementPendingRequests, performActionsOnAuthenticated } from "../../utils"
+import LoginForm from "./LoginForm";
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+  performActionsOnAuthenticated,
+} from "../../utils";
 
-import './login.css'
-import logo from '../../assets/logo-black.svg'
-import loginBg from '../../assets/login.svg'
-import { login } from '../../operations/cluster';
+import "./login.css";
+import logo from "../../assets/logo-black.svg";
+import loginBg from "../../assets/login.svg";
+import { login } from "../../operations/cluster";
 
 const Login = () => {
-  const isLoading = useSelector(state => state.pendingRequests > 0)
+  const isLoading = useSelector((state) => state.pendingRequests > 0);
   const handleSubmit = (user, key) => {
-    incrementPendingRequests()
+    incrementPendingRequests();
     login(user, key)
       .then(() => {
-        notify("success", "Success", "Logged in successfully")
+        notify("success", "Success", "Logged in successfully");
 
         // This fetches projects and either opens a project or redirects to welcome page accordingly
-        performActionsOnAuthenticated()
+        performActionsOnAuthenticated();
       })
-      .catch(ex => notify("error", "Error logging in", ex))
-      .finally(() => decrementPendingRequests())
-  }
+      .catch((ex) => notify("error", "Error logging in", ex))
+      .finally(() => decrementPendingRequests());
+  };
   useEffect(() => {
     ReactGA.pageview("/login");
-  }, [])
+  }, []);
   return (
     <div className="login">
       <div className="main-wrapper">
         <Row className="row">
           <Col span={12} className="left-wrapper">
             <div className="left-content">
-              <img className="logo" src={logo} alt="logo" /><br />
+              <img className="logo" src={logo} alt="logo" />
+              <br />
               <div className="welcome">Welcome back!</div>
-              <div className="text">Login to configure your Space Cloud cluster.</div><br />
-              <img src={loginBg} alt="login" height="240" width="360" /><br />
+              <div className="text">
+                Login to configure your Space Cloud cluster.
+              </div>
+              <br />
+              <img src={loginBg} alt="login" height="240" width="360" />
+              <br />
             </div>
           </Col>
 
@@ -49,15 +59,16 @@ const Login = () => {
         </Row>
       </div>
 
-
       <div className="mobile-view">
-        <img className="logo" src={logo} alt="logo" /><br />
+        <img className="logo" src={logo} alt="logo" />
+        <br />
         <div className="welcome">Welcome back!</div>
-        <div className="text">Login to configure your Space Cloud cluster.</div><br />
+        <div className="text">Login to configure your Space Cloud cluster.</div>
+        <br />
         <LoginForm isLoading={isLoading} handleSubmit={handleSubmit} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

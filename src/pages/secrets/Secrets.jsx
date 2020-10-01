@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { Button, Table, Popconfirm, Empty } from "antd";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
-import { getSecretType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import {
+  getSecretType,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notify } from "../../utils";
@@ -17,27 +21,33 @@ const Secrets = () => {
   const { projectID } = useParams();
 
   // Global state
-  const secrets = useSelector(state => getSecrets(state))
+  const secrets = useSelector((state) => getSecrets(state));
 
   // Component state
   const [secretModalVisible, setSecretModalVisible] = useState(false);
-  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(false);
+  const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(
+    false
+  );
   const [secretIdClicked, setSecretIdClicked] = useState("");
 
   useEffect(() => {
     ReactGA.pageview("/projects/secrets");
-  }, [])
+  }, []);
 
   // Handlers
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       saveSecret(projectID, secretConfig)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Saved secret successfully")
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Saved secret successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
+        .catch((ex) => {
           notify("error", "Error saving secret", ex);
           reject();
         })
@@ -45,19 +55,25 @@ const Secrets = () => {
     });
   };
 
-  const handleDeleteSecret = secretId => {
-    incrementPendingRequests()
+  const handleDeleteSecret = (secretId) => {
+    incrementPendingRequests();
     deleteSecret(projectID, secretId)
-      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted secret successfully"))
-      .catch(ex => notify("error", "Error deleting secret", ex))
+      .then(({ queued }) =>
+        notify(
+          "success",
+          "Success",
+          queued ? actionQueuedMessage : "Deleted secret successfully"
+        )
+      )
+      .catch((ex) => notify("error", "Error deleting secret", ex))
       .finally(() => decrementPendingRequests());
   };
 
-  const handleSecretView = secretId => {
+  const handleSecretView = (secretId) => {
     history.push(`/mission-control/projects/${projectID}/secrets/${secretId}`);
   };
 
-  const handleClickUpdateDockerSecret = id => {
+  const handleClickUpdateDockerSecret = (id) => {
     setSecretIdClicked(id);
     setDockerSecretModalVisible(true);
   };
@@ -74,12 +90,12 @@ const Secrets = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "id"
+      dataIndex: "id",
     },
     {
       title: "Type",
       key: "type",
-      render: (_, record) => getSecretType(record.type)
+      render: (_, record) => getSecretType(record.type),
     },
     {
       title: "Actions",
@@ -88,20 +104,26 @@ const Secrets = () => {
         return (
           <span style={{ display: "flex", justifyContent: "inline" }}>
             {record.type === "docker" && (
-              <a onClick={(e) => {
-                e.stopPropagation()
-                handleClickUpdateDockerSecret(record.id)
-              }}>
+              <a
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClickUpdateDockerSecret(record.id);
+                }}
+              >
                 Update
               </a>
             )}
             {record.type !== "docker" && (
-              <a onClick={(e) => {
-                e.stopPropagation()
-                handleSecretView(record.id)
-              }}>View</a>
+              <a
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSecretView(record.id);
+                }}
+              >
+                View
+              </a>
             )}
-            <div onClick={e => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()}>
               <Popconfirm
                 title={`This will delete the secrets. Are you sure?`}
                 onConfirm={() => handleDeleteSecret(record.id)}
@@ -111,8 +133,8 @@ const Secrets = () => {
             </div>
           </span>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -131,8 +153,22 @@ const Secrets = () => {
             columns={columns}
             dataSource={secrets}
             bordered={true}
-            onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }}
-            locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No secrets created yet. Add a secret' /> }} />
+            onRow={(record) => {
+              return {
+                onClick: (event) => {
+                  handleSecretView(record.id);
+                },
+              };
+            }}
+            locale={{
+              emptyText: (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="No secrets created yet. Add a secret"
+                />
+              ),
+            }}
+          />
           {secretModalVisible && (
             <AddSecret
               handleCancel={handleSecretModalCancel}

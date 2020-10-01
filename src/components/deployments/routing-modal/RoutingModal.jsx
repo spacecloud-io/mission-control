@@ -1,23 +1,28 @@
 import React from "react";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { Modal, Input, Select, Row, Col, Button, message, Form } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify } from "../../../utils";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 const { Option } = Select;
 
-const RoutingRule = props => {
+const RoutingRule = (props) => {
   const [form] = Form.useForm();
   const initialValues = props.initialValues;
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
-      const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
+      values.targets = values.targets.map((o) =>
+        Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) })
+      );
+      const weightSum = values.targets.reduce(
+        (prev, curr) => prev + curr.weight,
+        0
+      );
       if (weightSum !== 100) {
-        message.error("Sum of all the target weights should be 100")
-        return
+        message.error("Sum of all the target weights should be 100");
+        return;
       }
-      values.port = Number(values.port)
+      values.port = Number(values.port);
       props.handleSubmit(values).then(() => props.handleCancel());
     });
   };
@@ -32,32 +37,51 @@ const RoutingRule = props => {
         onCancel={props.handleCancel}
         onOk={handleSubmitClick}
       >
-        <Form layout="vertical" form={form}
+        <Form
+          layout="vertical"
+          form={form}
           initialValues={{
             port: initialValues ? initialValues.port : "",
-            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }]
-          }}>
+            targets: initialValues
+              ? initialValues.targets
+              : [
+                  {
+                    type: "version",
+                    version: "",
+                    host: "",
+                    port: "",
+                    weight: "",
+                  },
+                ],
+          }}
+        >
           <FormItemLabel name="Port" />
-          <Form.Item name="port" rules={[
-            {
-              validator: (_, value, cb) => {
-                if (!value) {
-                  cb("Please provide a port value!")
-                  return
-                }
-                if (!Number.isInteger(Number(value))) {
-                  cb("Not a valid port value")
-                  return
-                }
-                cb()
-              }
-            }
-          ]}>
-            <Input placeholder="Service port (eg: 8080)" style={{ width: 300 }} />
+          <Form.Item
+            name="port"
+            rules={[
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb("Please provide a port value!");
+                    return;
+                  }
+                  if (!Number.isInteger(Number(value))) {
+                    cb("Not a valid port value");
+                    return;
+                  }
+                  cb();
+                },
+              },
+            ]}
+          >
+            <Input
+              placeholder="Service port (eg: 8080)"
+              style={{ width: 300 }}
+            />
           </Form.Item>
           <FormItemLabel name="Targets" />
           <React.Fragment>
-            <Form.List name="targets" >
+            <Form.List name="targets">
               {(fields, { add, remove }) => {
                 return (
                   <div>
@@ -67,22 +91,34 @@ const RoutingRule = props => {
                           <Form.Item
                             key={[field.name, "type"]}
                             name={[field.name, "type"]}
-                            validateTrigger={["onChange", "onBlur"]}>
+                            validateTrigger={["onChange", "onBlur"]}
+                          >
                             <Select style={{ width: "100%" }}>
-                              <Option value="version">Internal service version</Option>
+                              <Option value="version">
+                                Internal service version
+                              </Option>
                               <Option value="external">External host</Option>
                             </Select>
                           </Form.Item>
                         </Col>
-                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "version"}>
+                        <ConditionalFormBlock
+                          shouldUpdate={true}
+                          condition={() =>
+                            form.getFieldValue([
+                              "targets",
+                              field.name,
+                              "type",
+                            ]) === "version"
+                          }
+                        >
                           <Col span={4}>
                             <Form.Item
                               validateTrigger={["onChange", "onBlur"]}
                               rules={[
                                 {
                                   required: true,
-                                  message: "Version is required!"
-                                }
+                                  message: "Version is required!",
+                                },
                               ]}
                               name={[field.name, "version"]}
                               key={[field.name, "version"]}
@@ -94,15 +130,24 @@ const RoutingRule = props => {
                             </Form.Item>
                           </Col>
                         </ConditionalFormBlock>
-                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "external"}>
+                        <ConditionalFormBlock
+                          shouldUpdate={true}
+                          condition={() =>
+                            form.getFieldValue([
+                              "targets",
+                              field.name,
+                              "type",
+                            ]) === "external"
+                          }
+                        >
                           <Col span={8}>
                             <Form.Item
                               validateTrigger={["onChange", "onBlur"]}
                               rules={[
                                 {
                                   required: true,
-                                  message: "Host is required!"
-                                }
+                                  message: "Host is required!",
+                                },
                               ]}
                               name={[field.name, "host"]}
                               key={[field.name, "host"]}
@@ -121,16 +166,16 @@ const RoutingRule = props => {
                               {
                                 validator: (_, value, cb) => {
                                   if (!value) {
-                                    cb("Please provide a port value!")
-                                    return
+                                    cb("Please provide a port value!");
+                                    return;
                                   }
                                   if (!Number.isInteger(Number(value))) {
-                                    cb("Not a valid port value")
-                                    return
+                                    cb("Not a valid port value");
+                                    return;
                                   }
-                                  cb()
-                                }
-                              }
+                                  cb();
+                                },
+                              },
                             ]}
                             name={[field.name, "port"]}
                             key={[field.name, "port"]}
@@ -148,17 +193,22 @@ const RoutingRule = props => {
                               {
                                 validator: (_, value, cb) => {
                                   if (!value) {
-                                    cb("Please provide a weight!")
-                                    return
+                                    cb("Please provide a weight!");
+                                    return;
                                   }
-                                  const weightVal = Number(value)
-                                  if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-                                    cb("Weight should be a number between 1 to 100")
-                                    return
+                                  const weightVal = Number(value);
+                                  if (
+                                    !Number.isInteger(weightVal) ||
+                                    !(weightVal > 0 && weightVal <= 100)
+                                  ) {
+                                    cb(
+                                      "Weight should be a number between 1 to 100"
+                                    );
+                                    return;
                                   }
-                                  cb()
-                                }
-                              }
+                                  cb();
+                                },
+                              },
                             ]}
                             name={[field.name, "weight"]}
                             key={[field.name, "weight"]}
@@ -185,27 +235,46 @@ const RoutingRule = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.name, "type"]),
-                            ...fields.map(obj => ["targets", obj.name, "version"]),
-                            ...fields.map(obj => ["targets", obj.name, "host"]),
-                            ...fields.map(obj => ["targets", obj.name, "port"]),
-                            ...fields.map(obj => ["targets", obj.name, "weight"])
-                          ]
-                          form.validateFields(fieldKeys)
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "type",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "version",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "host",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "port",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "weight",
+                            ]),
+                          ];
+                          form
+                            .validateFields(fieldKeys)
                             .then(() => add({ type: "version" }))
-                            .catch(ex => console.log("Exception", ex))
+                            .catch((ex) => console.log("Exception", ex));
                         }}
                         style={{ marginTop: 10 }}
                       >
                         <PlusOutlined /> Add another target
-                          </Button>
+                      </Button>
                     </Form.Item>
                   </div>
                 );
               }}
             </Form.List>
-
-
           </React.Fragment>
         </Form>
       </Modal>

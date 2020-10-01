@@ -1,24 +1,26 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import { loadSecrets } from '../../operations/secrets';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { loadSecrets } from "../../operations/secrets";
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
 
 const SecretsIndex = () => {
-  const { projectID } = useParams()
+  const { projectID } = useParams();
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests());
     }
-  }, [projectID])
+  }, [projectID]);
 
-  return (
-    null
-  )
-}
+  return null;
+};
 
 export default SecretsIndex;

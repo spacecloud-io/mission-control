@@ -1,18 +1,34 @@
 import React, { useState } from "react";
-import { DeleteOutlined, PlusOutlined, CaretRightOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Checkbox, Row, Col, Button, message, Form, Collapse, Alert } from "antd";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  CaretRightOutlined,
+} from "@ant-design/icons";
+import {
+  Modal,
+  Input,
+  Select,
+  Checkbox,
+  Row,
+  Col,
+  Button,
+  message,
+  Form,
+  Collapse,
+  Alert,
+} from "antd";
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import { notify } from "../../utils";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
-import { defaultIngressRoutingRule } from '../../constants';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/mode/go/go';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
+import { defaultIngressRoutingRule } from "../../constants";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import "codemirror/theme/material.css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/mode/go/go";
+import "codemirror/addon/selection/active-line.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -21,19 +37,29 @@ function AlertMsgApplyTransformations() {
   return (
     <div>
       <b>Info</b> <br />
-      Describe the transformed request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+      Describe the transformed request/response body using{" "}
+      <a
+        href="https://golang.org/pkg/text/template/"
+        style={{ color: "#7EC6FF" }}
+      >
         <b>Go templates</b>
-      </a>. Space Cloud will execute the specified template to generate the new request/response.
+      </a>
+      . Space Cloud will execute the specified template to generate the new
+      request/response.
     </div>
   );
 }
 
-const IngressRoutingModal = props => {
+const IngressRoutingModal = (props) => {
   const [form] = Form.useForm();
 
   const initialValues = props.initialValues;
-  const [requestTemplateData, setRequestTemplateData] = useState(initialValues ? initialValues.requestTemplate : "");
-  const [responseTemplateData, setResponseTemplateData] = useState(initialValues ? initialValues.responseTemplate : "");
+  const [requestTemplateData, setRequestTemplateData] = useState(
+    initialValues ? initialValues.requestTemplate : ""
+  );
+  const [responseTemplateData, setResponseTemplateData] = useState(
+    initialValues ? initialValues.responseTemplate : ""
+  );
   const children = [];
 
   const checkHost = (host) => {
@@ -42,7 +68,7 @@ const IngressRoutingModal = props => {
     } else {
       return true;
     }
-  }
+  };
 
   const checkMethod = (methods) => {
     if (methods.length === 0 || (methods.length === 1 && methods[0] === "*")) {
@@ -50,57 +76,103 @@ const IngressRoutingModal = props => {
     } else {
       return true;
     }
-  }
+  };
 
   const formInitialValues = {
     routeType: initialValues ? initialValues.routeType : "prefix",
     url: initialValues ? initialValues.url : "",
     performRewrite: initialValues && initialValues.rewrite ? true : false,
     rewrite: initialValues ? initialValues.rewrite : "",
-    allowSpecificHosts: initialValues && checkHost(initialValues.allowedHosts) ? true : false,
-    allowedHosts: initialValues && checkHost(initialValues.allowedHosts) ? initialValues.allowedHosts : [],
-    allowSpecificMethods: initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
-    allowedMethods: initialValues && checkMethod(initialValues.allowedMethods) ? initialValues.allowedMethods : [],
-    targets: (initialValues && initialValues.targets) ? initialValues.targets : [{ scheme: "http" }],
-    setHeaders: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? true : false,
-    headers: (initialValues && initialValues.headers && initialValues.headers.length > 0) ? initialValues.headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
-    setResHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? true : false,
-    resHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? initialValues.resHeaders.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
-    applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
-    outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
-  }
+    allowSpecificHosts:
+      initialValues && checkHost(initialValues.allowedHosts) ? true : false,
+    allowedHosts:
+      initialValues && checkHost(initialValues.allowedHosts)
+        ? initialValues.allowedHosts
+        : [],
+    allowSpecificMethods:
+      initialValues && checkMethod(initialValues.allowedMethods) ? true : false,
+    allowedMethods:
+      initialValues && checkMethod(initialValues.allowedMethods)
+        ? initialValues.allowedMethods
+        : [],
+    targets:
+      initialValues && initialValues.targets
+        ? initialValues.targets
+        : [{ scheme: "http" }],
+    setHeaders:
+      initialValues && initialValues.headers && initialValues.headers.length > 0
+        ? true
+        : false,
+    headers:
+      initialValues && initialValues.headers && initialValues.headers.length > 0
+        ? initialValues.headers.map((obj) =>
+            Object.assign({}, obj, { op: obj.op ? obj.op : "set" })
+          )
+        : [{ op: "set", key: "", value: "" }],
+    setResHeaders:
+      initialValues &&
+      initialValues.resHeaders &&
+      initialValues.resHeaders.length > 0
+        ? true
+        : false,
+    resHeaders:
+      initialValues &&
+      initialValues.resHeaders &&
+      initialValues.resHeaders.length > 0
+        ? initialValues.resHeaders.map((obj) =>
+            Object.assign({}, obj, { op: obj.op ? obj.op : "set" })
+          )
+        : [{ op: "set", key: "", value: "" }],
+    applyTransformations:
+      initialValues &&
+      (initialValues.requestTemplate || initialValues.responseTemplate)
+        ? true
+        : false,
+    outputFormat:
+      initialValues && initialValues.outputFormat
+        ? initialValues.outputFormat
+        : "yaml",
+  };
 
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      values = Object.assign({}, formInitialValues, values)
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
+      values = Object.assign({}, formInitialValues, values);
       try {
-        if (!values.allowSpecificHosts) values.allowedHosts = ["*"]
-        if (!values.allowSpecificMethods) values.allowedMethods = ["*"]
-        if (!values.performRewrite) values.rewrite = undefined
-        if (!values.setHeaders) values.headers = []
-        if (!values.setResHeaders) values.resHeaders = []
+        if (!values.allowSpecificHosts) values.allowedHosts = ["*"];
+        if (!values.allowSpecificMethods) values.allowedMethods = ["*"];
+        if (!values.performRewrite) values.rewrite = undefined;
+        if (!values.setHeaders) values.headers = [];
+        if (!values.setResHeaders) values.resHeaders = [];
         if (values.applyTransformations) {
-          values.requestTemplate = requestTemplateData
-          values.responseTemplate = responseTemplateData
+          values.requestTemplate = requestTemplateData;
+          values.responseTemplate = responseTemplateData;
         }
-        values.rule = defaultIngressRoutingRule
-        values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
-        const weightSum = values.targets.reduce((prev, curr) => prev + curr.weight, 0)
+        values.rule = defaultIngressRoutingRule;
+        values.targets = values.targets.map((o) =>
+          Object.assign({}, o, {
+            weight: Number(o.weight),
+            port: Number(o.port),
+          })
+        );
+        const weightSum = values.targets.reduce(
+          (prev, curr) => prev + curr.weight,
+          0
+        );
         if (weightSum !== 100) {
-          message.error("Sum of all the target weights should be 100")
-          return
+          message.error("Sum of all the target weights should be 100");
+          return;
         }
         delete values["allowSpecificHosts"];
         delete values["allowSpecificMethods"];
         delete values["performRewrite"];
         delete values["setHeaders"];
         delete values["setResHeaders"];
-        delete values["applyTransformations"]
+        delete values["applyTransformations"];
         props.handleSubmit(values).then(() => props.handleCancel());
       } catch (error) {
-        notify("error", "Error", error)
+        notify("error", "Error", error);
       }
-    })
+    });
   };
 
   return (
@@ -113,36 +185,54 @@ const IngressRoutingModal = props => {
         onCancel={props.handleCancel}
         onOk={handleSubmitClick}
       >
-        <Form layout="vertical" form={form}
-          initialValues={formInitialValues}>
+        <Form layout="vertical" form={form} initialValues={formInitialValues}>
           <FormItemLabel name="Route matching type" />
-          <Form.Item name="routeType" rules={[{ required: true, message: "Route type is required" }]}>
+          <Form.Item
+            name="routeType"
+            rules={[{ required: true, message: "Route type is required" }]}
+          >
             <Select style={{ width: 200 }}>
               <Select.Option value="prefix">Prefix Match</Select.Option>
               <Select.Option value="exact">Exact Match</Select.Option>
             </Select>
           </Form.Item>
-          <ConditionalFormBlock dependency="routeType" condition={() => form.getFieldValue("routeType") === "prefix"}>
+          <ConditionalFormBlock
+            dependency="routeType"
+            condition={() => form.getFieldValue("routeType") === "prefix"}
+          >
             <FormItemLabel name="Prefix" />
-            <Form.Item name="url" rules={[{ required: true, message: "Please provide prefix" }]}>
+            <Form.Item
+              name="url"
+              rules={[{ required: true, message: "Please provide prefix" }]}
+            >
               <Input placeholder="Prefix for incoming request (eg:/v1/)" />
             </Form.Item>
           </ConditionalFormBlock>
-          <ConditionalFormBlock dependency="routeType" condition={() => form.getFieldValue("routeType") === "exact"}>
+          <ConditionalFormBlock
+            dependency="routeType"
+            condition={() => form.getFieldValue("routeType") === "exact"}
+          >
             <FormItemLabel name="URL" />
-            <Form.Item name="url" rules={[{ required: true, message: "Please provide URL" }]}>
+            <Form.Item
+              name="url"
+              rules={[{ required: true, message: "Please provide URL" }]}
+            >
               <Input placeholder="The exact URL of incoming request (eg:/v1/foo/bar)" />
             </Form.Item>
           </ConditionalFormBlock>
           <FormItemLabel name="Rewrite" />
           <Form.Item name="performRewrite" valuePropName="checked">
-            <Checkbox>
-              Rewrite incoming request URL to target service
-              </Checkbox>
+            <Checkbox>Rewrite incoming request URL to target service</Checkbox>
           </Form.Item>
-          <ConditionalFormBlock dependency="performRewrite" condition={() => form.getFieldValue("performRewrite")}>
+          <ConditionalFormBlock
+            dependency="performRewrite"
+            condition={() => form.getFieldValue("performRewrite")}
+          >
             <FormItemLabel name="Rewrite URL" />
-            <Form.Item name="rewrite" rules={[{ required: true, message: "Please provide URL" }]}>
+            <Form.Item
+              name="rewrite"
+              rules={[{ required: true, message: "Please provide URL" }]}
+            >
               <Input placeholder="New Request URL that will override the incoming request " />
             </Form.Item>
           </ConditionalFormBlock>
@@ -150,14 +240,20 @@ const IngressRoutingModal = props => {
           <Form.Item name="allowSpecificHosts" valuePropName="checked">
             <Checkbox>Allow traffic with specified hosts only</Checkbox>
           </Form.Item>
-          <ConditionalFormBlock dependency="allowSpecificHosts" condition={() => form.getFieldValue("allowSpecificHosts")}>
+          <ConditionalFormBlock
+            dependency="allowSpecificHosts"
+            condition={() => form.getFieldValue("allowSpecificHosts")}
+          >
             <FormItemLabel name="Allowed hosts " />
-            <Form.Item name="allowedHosts" rules={[
-              {
-                required: true,
-                message: "Please enter the domain for the project"
-              }
-            ]}>
+            <Form.Item
+              name="allowedHosts"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter the domain for the project",
+                },
+              ]}
+            >
               <Select
                 mode="tags"
                 placeholder="Add hosts that you want to allow for this route"
@@ -172,14 +268,20 @@ const IngressRoutingModal = props => {
           <Form.Item name="allowSpecificMethods" valuePropName="checked">
             <Checkbox>Allow traffic with specified methods only</Checkbox>
           </Form.Item>
-          <ConditionalFormBlock dependency="allowSpecificMethods" condition={() => form.getFieldValue("allowSpecificMethods")}>
+          <ConditionalFormBlock
+            dependency="allowSpecificMethods"
+            condition={() => form.getFieldValue("allowSpecificMethods")}
+          >
             <FormItemLabel name="Allowed methods " />
-            <Form.Item name="allowedMethods" rules={[
-              {
-                required: true,
-                message: "Please enter the domain for the project"
-              }
-            ]}>
+            <Form.Item
+              name="allowedMethods"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter the domain for the project",
+                },
+              ]}
+            >
               <Select
                 mode="tags"
                 placeholder="Add hosts that you want to allow for this route"
@@ -207,10 +309,17 @@ const IngressRoutingModal = props => {
                     {fields.map((field) => (
                       <Row key={field.name} gutter={8}>
                         <Col span={3}>
-                          <Form.Item name={[field.name, "scheme"]}
+                          <Form.Item
+                            name={[field.name, "scheme"]}
                             style={{ marginBottom: 0 }}
                             validateTrigger={["onChange", "onBlur"]}
-                            rules={[{ required: true, message: "Please enter scheme!" }]}>
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter scheme!",
+                              },
+                            ]}
+                          >
                             <Select style={{ width: "100%" }}>
                               <Option value="http">HTTP</Option>
                               <Option value="https">HTTPS</Option>
@@ -224,8 +333,8 @@ const IngressRoutingModal = props => {
                             rules={[
                               {
                                 required: true,
-                                message: "Host is required!"
-                              }
+                                message: "Host is required!",
+                              },
                             ]}
                             name={[field.name, "host"]}
                           >
@@ -242,16 +351,16 @@ const IngressRoutingModal = props => {
                               {
                                 validator: (_, value, cb) => {
                                   if (!value) {
-                                    cb("Please provide a port value!")
-                                    return
+                                    cb("Please provide a port value!");
+                                    return;
                                   }
                                   if (!Number.isInteger(Number(value))) {
-                                    cb("Not a valid port value")
-                                    return
+                                    cb("Not a valid port value");
+                                    return;
                                   }
-                                  cb()
-                                }
-                              }
+                                  cb();
+                                },
+                              },
                             ]}
                             name={[field.name, "port"]}
                           >
@@ -268,17 +377,22 @@ const IngressRoutingModal = props => {
                               {
                                 validator: (_, value, cb) => {
                                   if (!value) {
-                                    cb("Please provide a weight!")
-                                    return
+                                    cb("Please provide a weight!");
+                                    return;
                                   }
-                                  const weightVal = Number(value)
-                                  if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-                                    cb("Weight should be a number between 1 to 100")
-                                    return
+                                  const weightVal = Number(value);
+                                  if (
+                                    !Number.isInteger(weightVal) ||
+                                    !(weightVal > 0 && weightVal <= 100)
+                                  ) {
+                                    cb(
+                                      "Weight should be a number between 1 to 100"
+                                    );
+                                    return;
                                   }
-                                  cb()
-                                }
-                              }
+                                  cb();
+                                },
+                              },
                             ]}
                             name={[field.name, "weight"]}
                           >
@@ -304,19 +418,36 @@ const IngressRoutingModal = props => {
                       <Button
                         onClick={() => {
                           const fieldKeys = [
-                            ...fields.map(obj => ["targets", obj.name, "scheme"]),
-                            ...fields.map(obj => ["targets", obj.name, "host"]),
-                            ...fields.map(obj => ["targets", obj.name, "port"]),
-                            ...fields.map(obj => ["targets", obj.name, "weight"]),
-                          ]
-                          form.validateFields(fieldKeys)
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "scheme",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "host",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "port",
+                            ]),
+                            ...fields.map((obj) => [
+                              "targets",
+                              obj.name,
+                              "weight",
+                            ]),
+                          ];
+                          form
+                            .validateFields(fieldKeys)
                             .then(() => add({ scheme: "http" }))
-                            .catch(ex => console.log("Exception", ex))
+                            .catch((ex) => console.log("Exception", ex));
                         }}
                         style={{ marginTop: -10 }}
                       >
                         <PlusOutlined /> Add another target
-                          </Button>
+                      </Button>
                     </Form.Item>
                   </div>
                 );
@@ -330,21 +461,16 @@ const IngressRoutingModal = props => {
               <CaretRightOutlined rotate={isActive ? 90 : 0} />
             )}
           >
-            <Panel
-              header='Advanced'
-              key='1'
-            >
-              <FormItemLabel name='Modify request headers' />
-              <Form.Item name='setHeaders' valuePropName='checked'>
-                <Checkbox>
-                  Modify the value of headers in the request
-              </Checkbox>
+            <Panel header="Advanced" key="1">
+              <FormItemLabel name="Modify request headers" />
+              <Form.Item name="setHeaders" valuePropName="checked">
+                <Checkbox>Modify the value of headers in the request</Checkbox>
               </Form.Item>
               <ConditionalFormBlock
-                dependency='setHeaders'
-                condition={() => form.getFieldValue('setHeaders') === true}
+                dependency="setHeaders"
+                condition={() => form.getFieldValue("setHeaders") === true}
               >
-                <FormItemLabel name='Specify request header modifications' />
+                <FormItemLabel name="Specify request header modifications" />
                 <Form.List name="headers">
                   {(fields, { add, remove }) => {
                     return (
@@ -357,31 +483,56 @@ const IngressRoutingModal = props => {
                                   name={[field.name, "op"]}
                                   key={[field.name, "op"]}
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header operation" }]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input header operation",
+                                    },
+                                  ]}
                                   style={{ marginRight: 16 }}
                                 >
                                   <Select placeholder="Select header operation">
-                                    <Option value='set'>Set</Option>
-                                    <Option value='add'>Add</Option>
-                                    <Option value='del'>Delete</Option>
+                                    <Option value="set">Set</Option>
+                                    <Option value="add">Add</Option>
+                                    <Option value="del">Delete</Option>
                                   </Select>
                                 </Form.Item>
                               </Col>
                               <Col span={8}>
-                                <Form.Item name={[field.name, "key"]}
+                                <Form.Item
+                                  name={[field.name, "key"]}
                                   key={[field.name, "key"]}
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header key" }]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input header key",
+                                    },
+                                  ]}
                                   style={{ marginRight: 16 }}
                                 >
                                   <Input placeholder="Header key" />
                                 </Form.Item>
                               </Col>
-                              <ConditionalFormBlock dependency="headers" condition={() => form.getFieldValue(["headers", field.name, "op"]) !== "del"}>
+                              <ConditionalFormBlock
+                                dependency="headers"
+                                condition={() =>
+                                  form.getFieldValue([
+                                    "headers",
+                                    field.name,
+                                    "op",
+                                  ]) !== "del"
+                                }
+                              >
                                 <Col span={8}>
                                   <Form.Item
                                     validateTrigger={["onChange", "onBlur"]}
-                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Please input header value",
+                                      },
+                                    ]}
                                     name={[field.name, "value"]}
                                     key={[field.name, "value"]}
                                     style={{ marginRight: 16 }}
@@ -391,12 +542,14 @@ const IngressRoutingModal = props => {
                                 </Col>
                               </ConditionalFormBlock>
                               <Col span={3}>
-                                {fields.length > 1 &&
+                                {fields.length > 1 && (
                                   <Button
                                     onClick={() => remove(field.name)}
-                                    style={{ marginRight: "2%", float: "left" }}>
+                                    style={{ marginRight: "2%", float: "left" }}
+                                  >
                                     <DeleteOutlined />
-                                  </Button>}
+                                  </Button>
+                                )}
                               </Col>
                             </Row>
                           </React.Fragment>
@@ -405,34 +558,46 @@ const IngressRoutingModal = props => {
                           <Button
                             onClick={() => {
                               const fieldKeys = [
-                                ...fields.map(obj => ["headers", obj.name, "op"]),
-                                ...fields.map(obj => ["headers", obj.name, "key"]),
-                                ...fields.map(obj => ["headers", obj.name, "value"]),
-                              ]
-                              form.validateFields(fieldKeys)
+                                ...fields.map((obj) => [
+                                  "headers",
+                                  obj.name,
+                                  "op",
+                                ]),
+                                ...fields.map((obj) => [
+                                  "headers",
+                                  obj.name,
+                                  "key",
+                                ]),
+                                ...fields.map((obj) => [
+                                  "headers",
+                                  obj.name,
+                                  "value",
+                                ]),
+                              ];
+                              form
+                                .validateFields(fieldKeys)
                                 .then(() => add())
-                                .catch(ex => console.log("Exception", ex))
+                                .catch((ex) => console.log("Exception", ex));
                             }}
                             style={{ marginRight: "2%", float: "left" }}
                           >
-                            <PlusOutlined /> Add modification</Button>
+                            <PlusOutlined /> Add modification
+                          </Button>
                         </Form.Item>
                       </div>
                     );
                   }}
                 </Form.List>
               </ConditionalFormBlock>
-              <FormItemLabel name='Modify response headers' />
-              <Form.Item name='setResHeaders' valuePropName='checked'>
-                <Checkbox>
-                  Modify the value of headers in the response
-              </Checkbox>
+              <FormItemLabel name="Modify response headers" />
+              <Form.Item name="setResHeaders" valuePropName="checked">
+                <Checkbox>Modify the value of headers in the response</Checkbox>
               </Form.Item>
               <ConditionalFormBlock
-                dependency='setResHeaders'
-                condition={() => form.getFieldValue('setResHeaders') === true}
+                dependency="setResHeaders"
+                condition={() => form.getFieldValue("setResHeaders") === true}
               >
-                <FormItemLabel name='Specify response header modifications' />
+                <FormItemLabel name="Specify response header modifications" />
                 <Form.List name="resHeaders">
                   {(fields, { add, remove }) => {
                     return (
@@ -445,31 +610,56 @@ const IngressRoutingModal = props => {
                                   name={[field.name, "op"]}
                                   key={[field.name, "op"]}
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header operation" }]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input header operation",
+                                    },
+                                  ]}
                                   style={{ marginRight: 16 }}
                                 >
                                   <Select placeholder="Select header operation">
-                                    <Option value='set'>Set</Option>
-                                    <Option value='add'>Add</Option>
-                                    <Option value='del'>Delete</Option>
+                                    <Option value="set">Set</Option>
+                                    <Option value="add">Add</Option>
+                                    <Option value="del">Delete</Option>
                                   </Select>
                                 </Form.Item>
                               </Col>
                               <Col span={8}>
-                                <Form.Item name={[field.name, "key"]}
+                                <Form.Item
+                                  name={[field.name, "key"]}
                                   key={[field.name, "key"]}
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please input header key" }]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input header key",
+                                    },
+                                  ]}
                                   style={{ marginRight: 16 }}
                                 >
                                   <Input placeholder="Header key" />
                                 </Form.Item>
                               </Col>
-                              <ConditionalFormBlock dependency="resHeaders" condition={() => form.getFieldValue(["resHeaders", field.name, "op"]) !== "del"}>
+                              <ConditionalFormBlock
+                                dependency="resHeaders"
+                                condition={() =>
+                                  form.getFieldValue([
+                                    "resHeaders",
+                                    field.name,
+                                    "op",
+                                  ]) !== "del"
+                                }
+                              >
                                 <Col span={8}>
                                   <Form.Item
                                     validateTrigger={["onChange", "onBlur"]}
-                                    rules={[{ required: true, message: "Please input header value" }]}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Please input header value",
+                                      },
+                                    ]}
                                     name={[field.name, "value"]}
                                     key={[field.name, "value"]}
                                     style={{ marginRight: 16 }}
@@ -479,12 +669,14 @@ const IngressRoutingModal = props => {
                                 </Col>
                               </ConditionalFormBlock>
                               <Col span={3}>
-                                {fields.length > 1 &&
+                                {fields.length > 1 && (
                                   <Button
                                     onClick={() => remove(field.name)}
-                                    style={{ marginRight: "2%", float: "left" }}>
+                                    style={{ marginRight: "2%", float: "left" }}
+                                  >
                                     <DeleteOutlined />
-                                  </Button>}
+                                  </Button>
+                                )}
                               </Col>
                             </Row>
                           </React.Fragment>
@@ -493,52 +685,77 @@ const IngressRoutingModal = props => {
                           <Button
                             onClick={() => {
                               const fieldKeys = [
-                                ...fields.map(obj => ["resHeaders", obj.name, "op"]),
-                                ...fields.map(obj => ["resHeaders", obj.name, "key"]),
-                                ...fields.map(obj => ["resHeaders", obj.name, "value"]),
-                              ]
-                              form.validateFields(fieldKeys)
+                                ...fields.map((obj) => [
+                                  "resHeaders",
+                                  obj.name,
+                                  "op",
+                                ]),
+                                ...fields.map((obj) => [
+                                  "resHeaders",
+                                  obj.name,
+                                  "key",
+                                ]),
+                                ...fields.map((obj) => [
+                                  "resHeaders",
+                                  obj.name,
+                                  "value",
+                                ]),
+                              ];
+                              form
+                                .validateFields(fieldKeys)
                                 .then(() => add())
-                                .catch(ex => console.log("Exception", ex))
+                                .catch((ex) => console.log("Exception", ex));
                             }}
                             style={{ marginRight: "2%", float: "left" }}
                           >
-                            <PlusOutlined /> Add modification</Button>
+                            <PlusOutlined /> Add modification
+                          </Button>
                         </Form.Item>
                       </div>
                     );
                   }}
                 </Form.List>
               </ConditionalFormBlock>
-              <FormItemLabel name='Apply transformations' />
-              <Form.Item name='applyTransformations' valuePropName='checked'>
+              <FormItemLabel name="Apply transformations" />
+              <Form.Item name="applyTransformations" valuePropName="checked">
                 <Checkbox>
                   Transform the request and/or response using templates
-                  </Checkbox>
+                </Checkbox>
               </Form.Item>
               <ConditionalFormBlock
-                dependency='applyTransformations'
-                condition={() => form.getFieldValue('applyTransformations') === true}
+                dependency="applyTransformations"
+                condition={() =>
+                  form.getFieldValue("applyTransformations") === true
+                }
               >
                 <Alert
                   message={<AlertMsgApplyTransformations />}
-                  type='info'
+                  type="info"
                   showIcon
                   style={{ marginBottom: 21 }}
                 />
-                <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+                <FormItemLabel
+                  name="Template output format"
+                  description="Format for parsing the template output"
+                />
                 <Form.Item name="outputFormat">
                   <Select style={{ width: 96 }}>
-                    <Option value='yaml'>YAML</Option>
-                    <Option value='json'>JSON</Option>
+                    <Option value="yaml">YAML</Option>
+                    <Option value="json">JSON</Option>
                   </Select>
                 </Form.Item>
-                <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
-                <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+                <FormItemLabel
+                  name="Request template"
+                  hint="(Optional)"
+                  description="Template to generate the transformed request body. Keep it empty to skip transforming the request body."
+                />
+                <Form.Item
+                  style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}
+                >
                   <CodeMirror
                     value={requestTemplateData}
                     options={{
-                      mode: { name: 'go' },
+                      mode: { name: "go" },
                       lineNumbers: true,
                       styleActiveLine: true,
                       matchBrackets: true,
@@ -551,12 +768,18 @@ const IngressRoutingModal = props => {
                     }}
                   />
                 </Form.Item>
-                <FormItemLabel name="Response template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
-                <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
+                <FormItemLabel
+                  name="Response template"
+                  hint="(Optional)"
+                  description="Template to generate the transformed response body. Keep it empty to skip transforming the response body."
+                />
+                <Form.Item
+                  style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}
+                >
                   <CodeMirror
                     value={responseTemplateData}
                     options={{
-                      mode: { name: 'go' },
+                      mode: { name: "go" },
                       lineNumbers: true,
                       styleActiveLine: true,
                       matchBrackets: true,

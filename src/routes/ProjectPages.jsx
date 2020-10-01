@@ -13,8 +13,8 @@ import DBBrowse from "../pages/database/browse/DBBrowse";
 import DBSettings from "../pages/database/settings/DBSettings";
 import DBQueries from "../pages/database/queries/DBQueries";
 import AddDb from "../pages/database/add-db/AddDb";
-import PreparedQueries from '../pages/database/prepared-queries/PreparedQueries';
-import AddPreparedQueries from '../pages/database/prepared-queries/AddPreparedQueries';
+import PreparedQueries from "../pages/database/prepared-queries/PreparedQueries";
+import AddPreparedQueries from "../pages/database/prepared-queries/AddPreparedQueries";
 import FileStorageIndex from "../pages/file-storage/FileStorageIndex";
 import FileStorage from "../pages/file-storage/FileStorage";
 import FileStorageConfig from "../pages/file-storage/FileStorageConfig";
@@ -41,90 +41,335 @@ import ProjectSettings from "../pages/settings/project/ProjectSettings";
 import ClusterSettings from "../pages/settings/cluster/ClusterSettings";
 import LicenseSettings from "../pages/settings/license/LicenseSettings";
 import ApplyLicense from "../pages/settings/apply-license/ApplyLicense";
-import RoutingOverview from '../pages/routing/overview/Overview';
-import RoutingSettings from '../pages/routing/settings/Settings';
+import RoutingOverview from "../pages/routing/overview/Overview";
+import RoutingSettings from "../pages/routing/settings/Settings";
 import SecretsIndex from "../pages/secrets/Index";
-import Secrets from '../pages/secrets/Secrets';
-import SecretDetails from '../pages/secrets/SecretDetails';
-import IntegrationsIndex from '../pages/integrations/Index';
-import ExploreIntegrations from '../pages/integrations/ExploreIntegrations';
-import InstalledIntegrations from '../pages/integrations/InstalledIntegrations';
-import InstallIntegration from '../pages/integrations/InstallIntegration';
-import IntegrationDetails from '../pages/integrations/IntegrationDetails';
-import IntegrationPermissions from '../pages/integrations/IntegrationPermissions';
-
+import Secrets from "../pages/secrets/Secrets";
+import SecretDetails from "../pages/secrets/SecretDetails";
+import IntegrationsIndex from "../pages/integrations/Index";
+import ExploreIntegrations from "../pages/integrations/ExploreIntegrations";
+import InstalledIntegrations from "../pages/integrations/InstalledIntegrations";
+import InstallIntegration from "../pages/integrations/InstallIntegration";
+import IntegrationDetails from "../pages/integrations/IntegrationDetails";
+import IntegrationPermissions from "../pages/integrations/IntegrationPermissions";
 
 function ProjectPages() {
   return (
     <React.Fragment>
-      <PrivateRoute exact path="/mission-control/projects/:projectID"
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/overview`} />} />
-      <PrivateRoute exact path="/mission-control/projects/:projectID/overview" component={Overview} />
-      <Route path="/mission-control/projects/:projectID/no-permissions" component={NoPermissions} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.DATABASE}`} component={DatabaseIndexPage} />
+      <PrivateRoute
+        exact
+        path="/mission-control/projects/:projectID"
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/overview`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path="/mission-control/projects/:projectID/overview"
+        component={Overview}
+      />
+      <Route
+        path="/mission-control/projects/:projectID/no-permissions"
+        component={NoPermissions}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.DATABASE}`}
+        component={DatabaseIndexPage}
+      />
       <Switch>
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}`} component={DatabaseEmptyStatePage} />
-        <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/add-db`} component={AddDb} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB`} component={DatabasePage} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/overview`} component={DBOverview} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/browse`} component={DBBrowse} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/settings`} component={DBSettings} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/queries`} component={DBQueries} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries`} component={PreparedQueries} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/add`} component={AddPreparedQueries} />
-        <DatabasePageRoute exact path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/:preparedQueryId/edit`} component={AddPreparedQueries} />
+        <PrivateRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}`}
+          component={DatabaseEmptyStatePage}
+        />
+        <PrivateRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/add-db`}
+          component={AddDb}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB`}
+          component={DatabasePage}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/overview`}
+          component={DBOverview}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/browse`}
+          component={DBBrowse}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/settings`}
+          component={DBSettings}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/queries`}
+          component={DBQueries}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries`}
+          component={PreparedQueries}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/add`}
+          component={AddPreparedQueries}
+        />
+        <DatabasePageRoute
+          exact
+          path={`/mission-control/projects/:projectID/${projectModules.DATABASE}/:selectedDB/prepared-queries/:preparedQueryId/edit`}
+          component={AddPreparedQueries}
+        />
       </Switch>
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorageIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorage} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}/configure`} component={FileStorageConfig} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`} component={ClusterSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`} component={ApplyLicense} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INGRESS_ROUTES}/overview`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}/overview`} component={RoutingOverview} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}/settings`} component={RoutingSettings} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.EVENTING}`} component={EventingIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.EVENTING}/overview`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/overview`} component={EventingOverview} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/rules`} component={EventingRules} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/schema`} component={EventingSchema} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/event-logs`} component={EventingLogs} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/settings`} component={EventingSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/queue-event`} component={QueueEvent} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}`} component={RemoteServicesIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}`} component={RemoteServices} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName`} component={Endpoints} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName/endpoints/add`} component={ConfigureEndpoint} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName/endpoints/:endpointName/edit`} component={ConfigureEndpoint} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.USER_MANAGEMENT}`} component={UserManagement} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.EXPLORER}/graphql`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/graphql`} component={Graphql} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/spaceApi`} component={SpaceApi} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`} component={DeploymentsIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`} component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.DEPLOYMENTS}/overview`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/overview`} component={DeploymentsOverview} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/configure`} component={ConfigureDeployment} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={Secrets} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`} component={SecretDetails} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`} component={IntegrationsIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INTEGRATIONS}/explore`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/explore`} component={ExploreIntegrations} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/installed`} component={InstalledIntegrations} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/details/:integrationId`} component={IntegrationDetails} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/install/:integrationId`} component={InstallIntegration} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/permissions/:integrationId`} component={IntegrationPermissions} />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`}
+        component={FileStorageIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`}
+        component={FileStorage}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}/configure`}
+        component={FileStorageConfig}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/settings/project`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`}
+        component={ProjectSettings}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`}
+        component={ClusterSettings}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`}
+        component={LicenseSettings}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`}
+        component={ApplyLicense}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INGRESS_ROUTES}/overview`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}/overview`}
+        component={RoutingOverview}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}/settings`}
+        component={RoutingSettings}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}`}
+        component={EventingIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.EVENTING}/overview`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/overview`}
+        component={EventingOverview}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/rules`}
+        component={EventingRules}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/schema`}
+        component={EventingSchema}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/event-logs`}
+        component={EventingLogs}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/settings`}
+        component={EventingSettings}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EVENTING}/queue-event`}
+        component={QueueEvent}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}`}
+        component={RemoteServicesIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}`}
+        component={RemoteServices}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName`}
+        component={Endpoints}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName/endpoints/add`}
+        component={ConfigureEndpoint}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.REMOTE_SERVICES}/:serviceName/endpoints/:endpointName/edit`}
+        component={ConfigureEndpoint}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.USER_MANAGEMENT}`}
+        component={UserManagement}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.EXPLORER}/graphql`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/graphql`}
+        component={Graphql}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.EXPLORER}/spaceApi`}
+        component={SpaceApi}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`}
+        component={DeploymentsIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.DEPLOYMENTS}/overview`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/overview`}
+        component={DeploymentsOverview}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/configure`}
+        component={ConfigureDeployment}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`}
+        component={DeploymentsRoutes}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`}
+        component={DeploymentsLogs}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`}
+        component={SecretsIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`}
+        component={Secrets}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`}
+        component={SecretDetails}
+      />
+      <PrivateRoute
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`}
+        component={IntegrationsIndex}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`}
+        component={(props) => (
+          <Redirect
+            to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INTEGRATIONS}/explore`}
+          />
+        )}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/explore`}
+        component={ExploreIntegrations}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/installed`}
+        component={InstalledIntegrations}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/details/:integrationId`}
+        component={IntegrationDetails}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/install/:integrationId`}
+        component={InstallIntegration}
+      />
+      <PrivateRoute
+        exact
+        path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/permissions/:integrationId`}
+        component={IntegrationPermissions}
+      />
     </React.Fragment>
-  )
+  );
 }
 
-export default ProjectPages
+export default ProjectPages;

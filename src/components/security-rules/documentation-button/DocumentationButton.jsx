@@ -8,7 +8,7 @@ function DocumentationButton() {
       Documentation
       <LinkOutlined />
     </Button>
-  )
+  );
 }
 
-export default DocumentationButton
+export default DocumentationButton;

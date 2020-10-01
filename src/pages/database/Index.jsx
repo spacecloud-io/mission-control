@@ -1,46 +1,54 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { loadDbSchemas, loadDbConfig, loadDbRules, loadDbPreparedQueries } from '../../operations/database';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import { loadSecrets } from '../../operations/secrets';
+import {
+  loadDbSchemas,
+  loadDbConfig,
+  loadDbRules,
+  loadDbPreparedQueries,
+} from "../../operations/database";
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
+import { loadSecrets } from "../../operations/secrets";
 
-import './database.css'
-import '../../index.css'
+import "./database.css";
+import "../../index.css";
 
 const Database = () => {
-  const { projectID } = useParams()
+  const { projectID } = useParams();
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadDbConfig(projectID)
-        .catch(ex => notify("error", "Error fetching database config", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching database config", ex))
+        .finally(() => decrementPendingRequests());
 
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadDbSchemas(projectID)
-        .catch(ex => notify("error", "Error fetching database schemas", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching database schemas", ex))
+        .finally(() => decrementPendingRequests());
 
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadDbRules(projectID)
-        .catch(ex => notify("error", "Error fetching database rules", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching database rules", ex))
+        .finally(() => decrementPendingRequests());
 
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadDbPreparedQueries(projectID)
-        .catch(ex => notify("error", "Error fetching prepared queries", ex))
-        .finally(() => decrementPendingRequests())
-      
-      incrementPendingRequests()
-      loadSecrets(projectID)
-        .catch(ex => notify("error", "Error fetching secrets", ex))
-        .finally(() => decrementPendingRequests())
-      
-    }
-  }, [projectID])
+        .catch((ex) => notify("error", "Error fetching prepared queries", ex))
+        .finally(() => decrementPendingRequests());
 
-  return null
-}
+      incrementPendingRequests();
+      loadSecrets(projectID)
+        .catch((ex) => notify("error", "Error fetching secrets", ex))
+        .finally(() => decrementPendingRequests());
+    }
+  }, [projectID]);
+
+  return null;
+};
 
 export default Database;

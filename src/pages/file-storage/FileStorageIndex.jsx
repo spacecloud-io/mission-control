@@ -1,24 +1,28 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import { loadFileStoreConfig } from '../../operations/fileStore';
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
+import { loadFileStoreConfig } from "../../operations/fileStore";
 
 const FileStorageIndex = () => {
-  const { projectID } = useParams()
+  const { projectID } = useParams();
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadFileStoreConfig(projectID)
-        .catch(ex => notify("error", "Error fetching file storage config", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) =>
+          notify("error", "Error fetching file storage config", ex)
+        )
+        .finally(() => decrementPendingRequests());
     }
-  }, [projectID])
+  }, [projectID]);
 
-  return (
-    null
-  )
-}
+  return null;
+};
 
 export default FileStorageIndex;

@@ -1,80 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import FormItemLabel from "../../form-item-label/FormItemLabel"
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import "./add-collection.css"
+import React, { useState, useEffect } from "react";
+import { Modal, Form, Input } from "antd";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import FormItemLabel from "../../form-item-label/FormItemLabel";
+import "codemirror/theme/material.css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/addon/selection/active-line.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
+import "./add-collection.css";
 
-const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initialValues }) => {
+const AddCollectionForm = ({
+  editMode,
+  dbType,
+  handleSubmit,
+  handleCancel,
+  initialValues,
+}) => {
   const [form] = Form.useForm();
-  const [colName, setcolName] = useState('')
+  const [colName, setcolName] = useState("");
 
-  const defaultSchema = `type ${(initialValues && initialValues.name) ? initialValues.name : ""}{
-  ${(dbType === 'mongo' || dbType === 'embedded') ? '_id' : 'id'}: ID! @primary
-}`
+  const defaultSchema = `type ${
+    initialValues && initialValues.name ? initialValues.name : ""
+  }{
+  ${dbType === "mongo" || dbType === "embedded" ? "_id" : "id"}: ID! @primary
+}`;
 
-  const initialSchema = (initialValues && initialValues.schema) ? initialValues.schema : defaultSchema
+  const initialSchema =
+    initialValues && initialValues.schema
+      ? initialValues.schema
+      : defaultSchema;
 
   if (!initialValues) {
-    initialValues = {}
+    initialValues = {};
   }
 
   const [schema, setSchema] = useState(initialSchema);
 
-  const handleChangedValues = ({ name }) => { setcolName(name) };
+  const handleChangedValues = ({ name }) => {
+    setcolName(name);
+  };
   useEffect(() => {
     if (schema && colName) {
-      const temp = schema.trim().slice(4).trim()
-      const index = temp.indexOf("{")
-      const newSchema = colName ? `type ${colName} ${temp.slice(index)}` : `type ${temp.slice(index)}`
-      setSchema(newSchema)
+      const temp = schema.trim().slice(4).trim();
+      const index = temp.indexOf("{");
+      const newSchema = colName
+        ? `type ${colName} ${temp.slice(index)}`
+        : `type ${temp.slice(index)}`;
+      setSchema(newSchema);
     }
-  }, [colName])
+  }, [colName]);
 
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      handleSubmit(values.name, schema).then(() => handleCancel())
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
+      handleSubmit(values.name, schema).then(() => handleCancel());
     });
   };
-
 
   return (
     <div>
       <Modal
-        className='add-collection-modal'
+        className="add-collection-modal"
         visible={true}
         width={720}
         okText={editMode ? "Save" : "Add"}
-        title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
+        title={`${editMode ? "Edit" : "Add"} ${
+          dbType === "mongo" ? "Collection" : "Table"
+        }`}
         onOk={handleSubmitClick}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues}
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmitClick}
+          onValuesChange={handleChangedValues}
           initialValues={{
-            'name': initialValues.name,
-          }}>
-          <FormItemLabel name={dbType === 'mongo' ? 'Collection Name' : 'Table Name'} />
-          <Form.Item name="name" rules={[{
-            validator: (_, value, cb) => {
-              if (!value) {
-                cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name is required`)
-                return
-              }
-              if (!(/^[0-9a-zA-Z_]+$/.test(value))) {
-                cb(`${dbType === 'mongo' ? 'Collection' : 'Table'} name can only contain alphanumeric characters and underscores!`)
-                return
-              }
-              cb()
-            }
-          }]}>
+            name: initialValues.name,
+          }}
+        >
+          <FormItemLabel
+            name={dbType === "mongo" ? "Collection Name" : "Table Name"}
+          />
+          <Form.Item
+            name="name"
+            rules={[
+              {
+                validator: (_, value, cb) => {
+                  if (!value) {
+                    cb(
+                      `${
+                        dbType === "mongo" ? "Collection" : "Table"
+                      } name is required`
+                    );
+                    return;
+                  }
+                  if (!/^[0-9a-zA-Z_]+$/.test(value)) {
+                    cb(
+                      `${
+                        dbType === "mongo" ? "Collection" : "Table"
+                      } name can only contain alphanumeric characters and underscores!`
+                    );
+                    return;
+                  }
+                  cb();
+                },
+              },
+            ]}
+          >
             <Input
               className="input"
-              placeholder={`Enter ${dbType === "mongo" ? "Collection" : "Table"} name`}
+              placeholder={`Enter ${
+                dbType === "mongo" ? "Collection" : "Table"
+              } name`}
               disabled={editMode}
               autoFocus={true}
             />
@@ -89,16 +127,16 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
               styleActiveLine: true,
               matchBrackets: true,
               autoCloseBrackets: true,
-              tabSize: 2
+              tabSize: 2,
             }}
             onBeforeChange={(editor, data, value) => {
-              setSchema(value)
+              setSchema(value);
             }}
           />
         </Form>
       </Modal>
     </div>
   );
-}
+};
 
 export default AddCollectionForm;

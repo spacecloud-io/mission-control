@@ -8,22 +8,22 @@ const { TabPane } = Tabs;
 export default ({ activeKey, projectID }) => {
   return (
     <div className="explorer-tabs">
-      <Tabs defaultActiveKey={activeKey} >
-        <TabPane tab='GraphQL' key='graphql'>
+      <Tabs defaultActiveKey={activeKey}>
+        <TabPane tab="GraphQL" key="graphql">
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/${projectModules.EXPLORER}/graphql`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.EXPLORER}/graphql`,
             }}
           />
         </TabPane>
-        <TabPane tab='Space Api' key='spaceApi'>
+        <TabPane tab="Space Api" key="spaceApi">
           <Redirect
             to={{
-              pathname: `/mission-control/projects/${projectID}/${projectModules.EXPLORER}/spaceApi`
+              pathname: `/mission-control/projects/${projectID}/${projectModules.EXPLORER}/spaceApi`,
             }}
           />
         </TabPane>
       </Tabs>
     </div>
-  )
-}
+  );
+};

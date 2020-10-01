@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 function CollapseHeader(props) {
   return (
@@ -6,7 +6,7 @@ function CollapseHeader(props) {
       <img src={props.icon} alt={props.desc} height="20" width="20" />
       <span>{props.desc}</span>
     </div>
-  )
+  );
 }
 
-export default CollapseHeader
+export default CollapseHeader;

@@ -1,11 +1,11 @@
-import React from 'react'
-import { Switch, Button, Form } from 'antd';
-import FormItemLabel from "../form-item-label/FormItemLabel"
+import React from "react";
+import { Switch, Button, Form } from "antd";
+import FormItemLabel from "../form-item-label/FormItemLabel";
 
 const Email = ({ initialValues, handleSubmit }) => {
   const [form] = Form.useForm();
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
       handleSubmit({ enabled: values.enabled });
     });
   };
@@ -21,7 +21,7 @@ const Email = ({ initialValues, handleSubmit }) => {
         <Button onClick={handleSubmitClick}>Save</Button>
       </Form.Item>
     </Form>
-  )
-}
+  );
+};
 
 export default Email;

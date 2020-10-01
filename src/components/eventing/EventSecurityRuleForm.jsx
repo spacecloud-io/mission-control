@@ -16,19 +16,19 @@ const EventSecurityRuleForm = ({
   handleCancel,
   initialValues,
   defaultRules,
-  customEventTypes
+  customEventTypes,
 }) => {
   const [form] = Form.useForm();
-  const [eventType, setEventType] = useState()
+  const [eventType, setEventType] = useState();
 
   const handleChangedValue = ({ eventType }) => {
-    setEventType(eventType)
-  }
+    setEventType(eventType);
+  };
 
   if (!initialValues) {
     initialValues = {
       rules:
-        Object.keys(defaultRules).length > 0 ? defaultRules : defaultEventRule
+        Object.keys(defaultRules).length > 0 ? defaultRules : defaultEventRule,
     };
   }
 
@@ -36,16 +36,17 @@ const EventSecurityRuleForm = ({
     JSON.stringify(initialValues.rules, null, 2)
   );
 
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
       try {
-        handleSubmit(values.eventType, JSON.parse(rule))
-        .then(() => handleCancel())
+        handleSubmit(values.eventType, JSON.parse(rule)).then(() =>
+          handleCancel()
+        );
       } catch (ex) {
         notify("error", "Error", ex.toString());
       }
     });
-  }
+  };
 
   return (
     <div>
@@ -58,18 +59,30 @@ const EventSecurityRuleForm = ({
         onOk={handleSubmitClick}
         onCancel={handleCancel}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValue}>
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmitClick}
+          onValuesChange={handleChangedValue}
+        >
           <FormItemLabel name="Event Type" />
-          <Form.Item name="eventType" rules={[
-                { required: true, message: "Please provide a event type!" }
-              ]}>
-              <AutoComplete
-                placeholder="Example: event-type"
-              >
-                {customEventTypes.filter(value => eventType ? (value.toLowerCase().includes(eventType.toLowerCase())) : true).map(type => (
+          <Form.Item
+            name="eventType"
+            rules={[
+              { required: true, message: "Please provide a event type!" },
+            ]}
+          >
+            <AutoComplete placeholder="Example: event-type">
+              {customEventTypes
+                .filter((value) =>
+                  eventType
+                    ? value.toLowerCase().includes(eventType.toLowerCase())
+                    : true
+                )
+                .map((type) => (
                   <AutoComplete.Option key={type}>{type}</AutoComplete.Option>
                 ))}
-              </AutoComplete>
+            </AutoComplete>
           </Form.Item>
           <div>
             <FormItemLabel name="Rule" />
@@ -82,7 +95,7 @@ const EventSecurityRuleForm = ({
                 matchBrackets: true,
                 autoCloseBrackets: true,
                 tabSize: 2,
-                autofocus: false
+                autofocus: false,
               }}
               onBeforeChange={(editor, data, value) => {
                 setRule(value);

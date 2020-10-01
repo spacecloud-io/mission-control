@@ -1,68 +1,116 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import routingSvg from "../../../assets/routing.svg";
 import { Button, Table, Popconfirm, Tag, Space } from "antd";
 import IngressRoutingModal from "../../../components/ingress-routing/IngressRoutingModal";
-import { notify, generateId, decrementPendingRequests, incrementPendingRequests, openSecurityRulesPage } from "../../../utils";
-import { deleteIngressRoute, saveIngressRouteConfig, loadIngressRoutes, getIngressRoutes } from "../../../operations/ingressRoutes";
-import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
+import {
+  notify,
+  generateId,
+  decrementPendingRequests,
+  incrementPendingRequests,
+  openSecurityRulesPage,
+} from "../../../utils";
+import {
+  deleteIngressRoute,
+  saveIngressRouteConfig,
+  loadIngressRoutes,
+  getIngressRoutes,
+} from "../../../operations/ingressRoutes";
+import ProjectPageLayout, {
+  Content,
+} from "../../../components/project-page-layout/ProjectPageLayout";
 import IngressTabs from "../../../components/ingress-routing/ingress-tabs/IngressTabs";
 import { FilterOutlined } from "@ant-design/icons";
 import FilterForm from "../../../components/ingress-routing/FilterForm";
 import { set } from "automate-redux";
-import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
-import { securityRuleGroups, projectModules, actionQueuedMessage } from "../../../constants";
+import {
+  getUniqueServiceIDs,
+  loadServices,
+} from "../../../operations/deployments";
+import {
+  securityRuleGroups,
+  projectModules,
+  actionQueuedMessage,
+} from "../../../constants";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
 };
 
-const applyFilters = (data, projectId, filters = { services: [], targetHosts: [], requestHosts: [] }) => {
-  const { services, targetHosts, requestHosts } = filters
-  const serviceHosts = services.map(serviceId => `${serviceId}.${projectId}.svc.cluster.local`)
-  const dataFilteredByServices = services.length === 0 ? data : data.filter(obj => obj.targets.some(target => serviceHosts.some(host => host === target.host)))
-  const dataFilteredByTargetHosts = targetHosts.length === 0 ? dataFilteredByServices : dataFilteredByServices.filter(obj => obj.targets.some(target => targetHosts.some(host => host === target.host)))
-  const dataFilteredByRequestHosts = requestHosts.length === 0 ? dataFilteredByTargetHosts : dataFilteredByTargetHosts.filter(obj => obj.allowedHosts.some(allowedHost => requestHosts.some(host => allowedHost === "*" || allowedHost === host)))
-  return dataFilteredByRequestHosts
-}
+const applyFilters = (
+  data,
+  projectId,
+  filters = { services: [], targetHosts: [], requestHosts: [] }
+) => {
+  const { services, targetHosts, requestHosts } = filters;
+  const serviceHosts = services.map(
+    (serviceId) => `${serviceId}.${projectId}.svc.cluster.local`
+  );
+  const dataFilteredByServices =
+    services.length === 0
+      ? data
+      : data.filter((obj) =>
+          obj.targets.some((target) =>
+            serviceHosts.some((host) => host === target.host)
+          )
+        );
+  const dataFilteredByTargetHosts =
+    targetHosts.length === 0
+      ? dataFilteredByServices
+      : dataFilteredByServices.filter((obj) =>
+          obj.targets.some((target) =>
+            targetHosts.some((host) => host === target.host)
+          )
+        );
+  const dataFilteredByRequestHosts =
+    requestHosts.length === 0
+      ? dataFilteredByTargetHosts
+      : dataFilteredByTargetHosts.filter((obj) =>
+          obj.allowedHosts.some((allowedHost) =>
+            requestHosts.some(
+              (host) => allowedHost === "*" || allowedHost === host
+            )
+          )
+        );
+  return dataFilteredByRequestHosts;
+};
 
 function RoutingOverview() {
   const { projectID } = useParams();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/projects/ingress-routes");
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadIngressRoutes(projectID)
-        .catch(ex => notify("error", "Error fetching ingress routes", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching ingress routes", ex))
+        .finally(() => decrementPendingRequests());
     }
-  }, [projectID])
+  }, [projectID]);
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
-      loadServices(projectID)
-        .finally(() => decrementPendingRequests())
+      incrementPendingRequests();
+      loadServices(projectID).finally(() => decrementPendingRequests());
     }
-  }, [projectID])
+  }, [projectID]);
 
   // Global state
-  let routes = useSelector(state => getIngressRoutes(state))
-  const serviceNames = useSelector(state => getUniqueServiceIDs(state))
+  let routes = useSelector((state) => getIngressRoutes(state));
+  const serviceNames = useSelector((state) => getUniqueServiceIDs(state));
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false);
   const [routeClicked, setRouteClicked] = useState("");
-  const filters = useSelector(state => state.uiState.ingressFilters)
+  const filters = useSelector((state) => state.uiState.ingressFilters);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Derived state
@@ -79,15 +127,15 @@ function RoutingOverview() {
     requestTemplate: modify.requestTemplate,
     responseTemplate: modify.responseTemplate,
     outputFormat: modify.outputFormat,
-    rule: rule
+    rule: rule,
   }));
 
-  const filteredData = applyFilters(data, projectID, filters)
+  const filteredData = applyFilters(data, projectID, filters);
 
   const len = routes.length;
 
   const routeClickedInfo = routeClicked
-    ? data.find(obj => obj.id === routeClicked)
+    ? data.find((obj) => obj.id === routeClicked)
     : undefined;
 
   // Handlers
@@ -100,7 +148,7 @@ function RoutingOverview() {
           methods: values.allowedMethods,
           url: values.url,
           rewrite: values.rewrite,
-          type: values.routeType
+          type: values.routeType,
         },
         targets: values.targets,
         rule: values.rule,
@@ -109,35 +157,46 @@ function RoutingOverview() {
           resHeaders: values.resHeaders,
           requestTemplate: values.requestTemplate,
           responseTemplate: values.responseTemplate,
-          outputFormat: values.outputFormat
-        }
+          outputFormat: values.outputFormat,
+        },
       };
-      incrementPendingRequests()
+      incrementPendingRequests();
       saveIngressRouteConfig(projectID, config.id, config)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Saved routing config successfully");
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Saved routing config successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
-          notify("error", "Error saving routing config", ex)
-          reject(ex)
+        .catch((ex) => {
+          notify("error", "Error saving routing config", ex);
+          reject(ex);
         })
         .finally(() => decrementPendingRequests());
     });
   };
 
-  const handleSecureClick = id => openSecurityRulesPage(projectID, securityRuleGroups.INGRESS_ROUTES, id)
+  const handleSecureClick = (id) =>
+    openSecurityRulesPage(projectID, securityRuleGroups.INGRESS_ROUTES, id);
 
-  const handleRouteClick = id => {
+  const handleRouteClick = (id) => {
     setRouteClicked(id);
     setModalVisible(true);
   };
 
-  const handleDelete = id => {
-    incrementPendingRequests()
+  const handleDelete = (id) => {
+    incrementPendingRequests();
     deleteIngressRoute(projectID, id)
-      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
-      .catch(ex => notify("error", "Error", ex.toString()))
+      .then(({ queued }) =>
+        notify(
+          "success",
+          "Success",
+          queued ? actionQueuedMessage : "Deleted rule successfully"
+        )
+      )
+      .catch((ex) => notify("error", "Error", ex.toString()))
       .finally(() => decrementPendingRequests());
   };
 
@@ -146,28 +205,30 @@ function RoutingOverview() {
     setModalVisible(false);
   };
 
-  const handleFilter = (filters) => dispatch(set("uiState.ingressFilters", filters))
+  const handleFilter = (filters) =>
+    dispatch(set("uiState.ingressFilters", filters));
 
   const columns = [
     {
       title: <b>{"Allowed Hosts"}</b>,
       dataIndex: "allowedHosts",
       key: "allowedHosts",
-      render: hosts => (
+      render: (hosts) => (
         <span>
-          {hosts.map(host => {
+          {hosts.map((host) => {
             return <Tag key={host}>{host}</Tag>;
           })}
         </span>
-      )
+      ),
     },
     {
       title: <b>{"Request URL"}</b>,
-      render: (_, { routeType, url }) => calculateRequestURL(routeType, url)
+      render: (_, { routeType, url }) => calculateRequestURL(routeType, url),
     },
     {
       title: <b>{"Targets"}</b>,
-      render: (_, { targets }) => (targets && targets.length) ? targets.length : 0
+      render: (_, { targets }) =>
+        targets && targets.length ? targets.length : 0,
     },
     {
       title: <b>{"Actions"}</b>,
@@ -185,8 +246,8 @@ function RoutingOverview() {
             </Popconfirm>
           </span>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -220,7 +281,7 @@ function RoutingOverview() {
               <h3
                 style={{
                   display: "flex",
-                  justifyContent: "space-between"
+                  justifyContent: "space-between",
                 }}
               >
                 Ingress Routing rules
@@ -229,7 +290,10 @@ function RoutingOverview() {
                     <Button onClick={() => setFilterModalVisible(true)}>
                       Filters <FilterOutlined />
                     </Button>
-                    <Button type="primary" onClick={() => setModalVisible(true)}>
+                    <Button
+                      type="primary"
+                      onClick={() => setModalVisible(true)}
+                    >
                       Add
                     </Button>
                   </Space>
@@ -245,12 +309,14 @@ function RoutingOverview() {
               handleCancel={handleModalCancel}
             />
           )}
-          {filterModalVisible && <FilterForm
-            initialValues={filters}
-            serviceNames={serviceNames}
-            handleSubmit={handleFilter}
-            handleCancel={() => setFilterModalVisible(false)}
-          />}
+          {filterModalVisible && (
+            <FilterForm
+              initialValues={filters}
+              serviceNames={serviceNames}
+              handleSubmit={handleFilter}
+              handleCancel={() => setFilterModalVisible(false)}
+            />
+          )}
         </Content>
       </ProjectPageLayout>
     </div>

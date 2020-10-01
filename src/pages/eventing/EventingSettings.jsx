@@ -1,37 +1,50 @@
-import React, { useEffect } from 'react';
-import { useParams, } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import ReactGA from 'react-ga';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import Topbar from '../../components/topbar/Topbar';
-import Sidenav from '../../components/sidenav/Sidenav';
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import ReactGA from "react-ga";
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
+import Topbar from "../../components/topbar/Topbar";
+import Sidenav from "../../components/sidenav/Sidenav";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import EventingConfigure from '../../components/eventing/EventingConfigure';
-import './event.css';
-import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
-import { getDbConfigs } from '../../operations/database';
-import { projectModules, actionQueuedMessage } from '../../constants';
+import EventingConfigure from "../../components/eventing/EventingConfigure";
+import "./event.css";
+import {
+  saveEventingConfig,
+  getEventingConfig,
+} from "../../operations/eventing";
+import { getDbConfigs } from "../../operations/database";
+import { projectModules, actionQueuedMessage } from "../../constants";
 
 const EventingSettings = () => {
   const { projectID } = useParams();
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/settings");
-  }, [])
+  }, []);
 
   // Global state
-  const loading = useSelector(state => state.pendingRequests > 0)
-  const eventingConfig = useSelector(state => getEventingConfig(state))
-  const dbConfigs = useSelector(state => getDbConfigs(state));
+  const loading = useSelector((state) => state.pendingRequests > 0);
+  const eventingConfig = useSelector((state) => getEventingConfig(state));
+  const dbConfigs = useSelector((state) => getDbConfigs(state));
 
   // Derived state
-  const dbList = Object.keys(dbConfigs)
+  const dbList = Object.keys(dbConfigs);
 
   const handleEventingConfig = ({ enabled, dbAlias }) => {
-    incrementPendingRequests()
+    incrementPendingRequests();
     saveEventingConfig(projectID, enabled, dbAlias)
-      .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved eventing config successfully"))
-      .catch(ex => notify("error", "Error saving eventing config", ex))
+      .then(({ queued }) =>
+        notify(
+          "success",
+          "Success",
+          queued ? actionQueuedMessage : "Saved eventing config successfully"
+        )
+      )
+      .catch((ex) => notify("error", "Error saving eventing config", ex))
       .finally(() => decrementPendingRequests());
   };
 
@@ -39,7 +52,7 @@ const EventingSettings = () => {
     <div>
       <Topbar showProjectSelector />
       <Sidenav selectedItem={projectModules.EVENTING} />
-      <div className='page-content page-content--no-padding'>
+      <div className="page-content page-content--no-padding">
         <EventTabs activeKey="settings" projectID={projectID} />
         <div className="event-tab-content">
           <h2>Eventing Config</h2>
@@ -52,8 +65,8 @@ const EventingSettings = () => {
           />
         </div>
       </div>
-    </div >
+    </div>
   );
-}
+};
 
 export default EventingSettings;

@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import { LeftOutlined } from '@ant-design/icons';
+import { LeftOutlined } from "@ant-design/icons";
 import { Button, Table, Row, Col, Popconfirm, Card } from "antd";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
 import AddSecretKey from "../../components/secret/AddSecretKey";
-import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import UpdateRootPathModal from "../../components/secret/UpdateRootPathModal";
+import {
+  notify,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
 import { useHistory, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import './secretDetail.css';
-import { saveSecretKey, deleteSecretKey, saveRootPath, getSecrets } from "../../operations/secrets";
+import "./secretDetail.css";
+import {
+  saveSecretKey,
+  deleteSecretKey,
+  saveRootPath,
+  getSecrets,
+} from "../../operations/secrets";
 import { projectModules, actionQueuedMessage } from "../../constants";
 
-const getLabelFromSecretType = type => {
+const getLabelFromSecretType = (type) => {
   switch (type) {
     case "docker":
       return "Docker Secret";
@@ -29,7 +38,7 @@ const SecretDetails = () => {
   const { projectID, secretId } = useParams();
 
   // Global state
-  const secrets = useSelector(state => getSecrets(state))
+  const secrets = useSelector((state) => getSecrets(state));
 
   // Component state
   const [secretKeyModalVisible, setSecretKeyModalVisible] = useState(false);
@@ -37,30 +46,34 @@ const SecretDetails = () => {
   const [rootPathModalVisible, setRootPathModalVisible] = useState(false);
 
   // Derived state
-  let secret = secrets.find(obj => obj.id === secretId);
+  let secret = secrets.find((obj) => obj.id === secretId);
   if (!secret) secret = { data: {} };
   const secretType = secret.type;
-  const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
+  const secretKeysData = Object.keys(secret.data).map((key) => ({ name: key }));
 
   useEffect(() => {
     ReactGA.pageview("/projects/secrets/secretDetails");
-  }, [])
+  }, []);
 
   // Handlers
-  const handleClickUpdateSecretKey = name => {
+  const handleClickUpdateSecretKey = (name) => {
     setSecretKeyClicked(name);
     setSecretKeyModalVisible(true);
   };
 
   const handleSetSecretKey = (key, value) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       saveSecretKey(projectID, secretId, key, value)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Saved secret key successfully");
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Saved secret key successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
+        .catch((ex) => {
           notify("error", "Error saving secret key value", ex);
           reject();
         })
@@ -68,15 +81,19 @@ const SecretDetails = () => {
     });
   };
 
-  const handleDeleteSecretKey = name => {
+  const handleDeleteSecretKey = (name) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       deleteSecretKey(projectID, secretId, name)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Deleted secret key successfully");
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Deleted secret key successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
+        .catch((ex) => {
           notify("error", "Error saving secret key value", ex);
           reject();
         })
@@ -91,24 +108,28 @@ const SecretDetails = () => {
 
   const handleUpdateRootpath = (path) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       saveRootPath(projectID, secretId, path)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Saved root path successfully");
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Saved root path successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
+        .catch((ex) => {
           notify("error", "Error saving root path", ex);
           reject();
         })
         .finally(() => decrementPendingRequests());
     });
-  }
+  };
 
   const envColumns = [
     {
       title: "Environment Key",
-      dataIndex: "name"
+      dataIndex: "name",
     },
     {
       title: "Actions",
@@ -127,14 +148,14 @@ const SecretDetails = () => {
             </Popconfirm>
           </span>
         );
-      }
-    }
+      },
+    },
   ];
 
   const fileColumns = [
     {
       title: "File Name",
-      dataIndex: "name"
+      dataIndex: "name",
     },
     {
       title: "Actions",
@@ -153,8 +174,8 @@ const SecretDetails = () => {
             </Popconfirm>
           </span>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -179,7 +200,7 @@ const SecretDetails = () => {
               zIndex: 98,
               display: "flex",
               alignItems: "center",
-              padding: "0 16px"
+              padding: "0 16px",
             }}
           >
             <Button type="link" onClick={() => history.goBack()}>
@@ -193,10 +214,16 @@ const SecretDetails = () => {
             <Col lg={{ span: 15, offset: 1 }} xs={{ span: 22, offset: 1 }}>
               {secretType === "file" && (
                 <React.Fragment>
-                  <h3>Secret mount location <a style={{ textDecoration: "underline", fontSize: 14 }} onClick={() => setRootPathModalVisible(true)}>(Edit)</a></h3>
-                  <div className="mount-location">
-                    {secret.rootPath}
-                  </div>
+                  <h3>
+                    Secret mount location{" "}
+                    <a
+                      style={{ textDecoration: "underline", fontSize: 14 }}
+                      onClick={() => setRootPathModalVisible(true)}
+                    >
+                      (Edit)
+                    </a>
+                  </h3>
+                  <div className="mount-location">{secret.rootPath}</div>
                   {rootPathModalVisible && (
                     <UpdateRootPathModal
                       rootPath={secret.rootPath}

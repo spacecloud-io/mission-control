@@ -1,4 +1,13 @@
-import { generateSchemaAST, generateSchemaASTs, generateGraphQLQueryFromGraphQLAST, generateRandomFieldValues, generateSampleQueryDBDelete, generateSampleQueryDBInsert, generateSampleQueryDBRead, generateSampleQueryDBUpdate } from "./graphql";
+import {
+  generateSchemaAST,
+  generateSchemaASTs,
+  generateGraphQLQueryFromGraphQLAST,
+  generateRandomFieldValues,
+  generateSampleQueryDBDelete,
+  generateSampleQueryDBInsert,
+  generateSampleQueryDBRead,
+  generateSampleQueryDBUpdate,
+} from "./graphql";
 
 describe("generateSchemaAST method", () => {
   it("generates correct schema AST from a GraphQL schema string", () => {
@@ -24,7 +33,7 @@ describe("generateSchemaAST method", () => {
       f18: mytype5 @link(table: mytype5, from: id, to: nicefield)
       f19: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
     }
-    `
+    `;
     const expectedSchemaAST = {
       mytype: [
         {
@@ -38,7 +47,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f2",
@@ -51,7 +60,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f3",
@@ -64,7 +73,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f4",
@@ -77,7 +86,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f5",
@@ -90,7 +99,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f6",
@@ -103,7 +112,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f7",
@@ -116,7 +125,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f8",
@@ -129,7 +138,7 @@ describe("generateSchemaAST method", () => {
           isArray: true,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f9",
@@ -142,7 +151,7 @@ describe("generateSchemaAST method", () => {
           isArray: true,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f10",
@@ -155,7 +164,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f11",
@@ -168,7 +177,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f12",
@@ -181,7 +190,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: true,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f13",
@@ -194,7 +203,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: true,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f14",
@@ -207,7 +216,7 @@ describe("generateSchemaAST method", () => {
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: true
+          hasNestedFields: true,
         },
         {
           name: "f15",
@@ -218,13 +227,13 @@ describe("generateSchemaAST method", () => {
           hasForeignConstraint: true,
           foreign: {
             table: "mytype3",
-            field: "myfield"
+            field: "myfield",
           },
           isLink: false,
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f16",
@@ -235,13 +244,13 @@ describe("generateSchemaAST method", () => {
           hasForeignConstraint: true,
           foreign: {
             table: "mytype3",
-            field: "myfield"
+            field: "myfield",
           },
           isLink: false,
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f17",
@@ -254,12 +263,12 @@ describe("generateSchemaAST method", () => {
           link: {
             table: "mytype4",
             from: "id",
-            to: "somefield"
+            to: "somefield",
           },
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: false
+          hasNestedFields: false,
         },
         {
           name: "f18",
@@ -272,12 +281,12 @@ describe("generateSchemaAST method", () => {
           link: {
             table: "mytype5",
             from: "id",
-            to: "nicefield"
+            to: "nicefield",
           },
           isArray: false,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: true
+          hasNestedFields: true,
         },
         {
           name: "f19",
@@ -290,22 +299,22 @@ describe("generateSchemaAST method", () => {
           link: {
             table: "mytype6",
             from: "id",
-            to: "goodfield"
+            to: "goodfield",
           },
           isArray: true,
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
-          hasNestedFields: true
-        }
-      ]
-    }
+          hasNestedFields: true,
+        },
+      ],
+    };
     expect(generateSchemaAST(schemaString)).toEqual(expectedSchemaAST);
   });
 
   it("returns an empty object for empty schema string", () => {
-    expect(generateSchemaAST('')).toEqual({})
-    expect(generateSchemaAST()).toEqual({})
-  })
+    expect(generateSchemaAST("")).toEqual({});
+    expect(generateSchemaAST()).toEqual({});
+  });
 });
 
 describe("generateGraphQLQueryFromGraphQLAST method", () => {
@@ -317,33 +326,31 @@ describe("generateGraphQLQueryFromGraphQLAST method", () => {
           name: "users",
           args: [
             { name: "where", value: { id: "$id", address: "$address" } },
-            { name: "skip", value: "$skip" }
+            { name: "skip", value: "$skip" },
           ],
-          directives: [
-            { name: "db" }
-          ],
+          directives: [{ name: "db" }],
           fields: [
             {
-              name: "id"
+              name: "id",
             },
             {
-              name: "name"
-            }
-          ]
-        }
-      ]
-    }
+              name: "name",
+            },
+          ],
+        },
+      ],
+    };
 
     const queryString1 = `query {
   users(where: {id: $id, address: $address}, skip: $skip) @db {
     id
     name
   }
-}`
+}`;
 
-    expect(generateGraphQLQueryFromGraphQLAST(ast1)).toEqual(queryString1)
-  })
-})
+    expect(generateGraphQLQueryFromGraphQLAST(ast1)).toEqual(queryString1);
+  });
+});
 
 describe("generateRandomFieldValues method", () => {
   it("generates the values for nested fields", () => {
@@ -354,31 +361,31 @@ describe("generateRandomFieldValues method", () => {
         fields: [
           {
             name: "_eq",
-            type: "ID"
-          }
-        ]
-      }
-    ]
+            type: "ID",
+          },
+        ],
+      },
+    ];
     const result = {
       id: {
-        _eq: "0ujsszwN8NRY24YaXiTIE2VWDTS"
-      }
-    }
-    expect(generateRandomFieldValues(fields)).toEqual(result)
-  })
+        _eq: "0ujsszwN8NRY24YaXiTIE2VWDTS",
+      },
+    };
+    expect(generateRandomFieldValues(fields)).toEqual(result);
+  });
   it("generates the values for array of literal values", () => {
     const fields = [
       {
         name: "id",
         type: "String",
-        isArray: true
-      }
-    ]
+        isArray: true,
+      },
+    ];
     const result = {
-      id: ["lorem ipsum"]
-    }
-    expect(generateRandomFieldValues(fields)).toEqual(result)
-  })
+      id: ["lorem ipsum"],
+    };
+    expect(generateRandomFieldValues(fields)).toEqual(result);
+  });
 
   it("generates the values for array of objects", () => {
     const fields = [
@@ -388,49 +395,49 @@ describe("generateRandomFieldValues method", () => {
         fields: [
           {
             name: "title",
-            type: "String"
-          }
+            type: "String",
+          },
         ],
-        isArray: true
-      }
-    ]
+        isArray: true,
+      },
+    ];
     const result = {
-      posts: [{ title: "lorem ipsum" }]
-    }
-    expect(generateRandomFieldValues(fields)).toEqual(result)
-  })
+      posts: [{ title: "lorem ipsum" }],
+    };
+    expect(generateRandomFieldValues(fields)).toEqual(result);
+  });
 
   it("generates correct values for all types", () => {
     const fields = [
       {
         name: "k1",
-        type: "ID"
+        type: "ID",
       },
       {
         name: "k2",
-        type: "String"
+        type: "String",
       },
       {
         name: "k3",
-        type: "Integer"
+        type: "Integer",
       },
       {
         name: "k4",
-        type: "Float"
+        type: "Float",
       },
       {
         name: "k5",
-        type: "Boolean"
+        type: "Boolean",
       },
       {
         name: "k6",
-        type: "DateTime"
+        type: "DateTime",
       },
       {
         name: "k7",
-        type: "JSON"
+        type: "JSON",
       },
-    ]
+    ];
     const result = {
       k1: "0ujsszwN8NRY24YaXiTIE2VWDTS",
       k2: "lorem ipsum",
@@ -439,12 +446,12 @@ describe("generateRandomFieldValues method", () => {
       k5: true,
       k6: "2017-11-13T03:15:45.108Z",
       k7: {
-        foo: "bar"
-      }
-    }
-    expect(generateRandomFieldValues(fields)).toEqual(result)
-  })
-})
+        foo: "bar",
+      },
+    };
+    expect(generateRandomFieldValues(fields)).toEqual(result);
+  });
+});
 
 describe("generateSampleQueryDBDelete method", () => {
   it("generates proper delete query without filters", () => {
@@ -454,10 +461,10 @@ describe("generateSampleQueryDBDelete method", () => {
           id: ID! @primary
           name: String
           email: ID! @unique
-        }`
-      }
-    }
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+        }`,
+      },
+    };
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   delete_users @db1 {
@@ -469,13 +476,15 @@ describe("generateSampleQueryDBDelete method", () => {
       response: {
         data: {
           delete_users: {
-            status: 200
-          }
-        }
-      }
-    }
-    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db1", false)).toEqual(result)
-  })
+            status: 200,
+          },
+        },
+      },
+    };
+    expect(
+      generateSampleQueryDBDelete(schemaASTs, "users", "db1", false)
+    ).toEqual(result);
+  });
 
   it("generates proper delete query filters", () => {
     const dbSchemas = {
@@ -484,10 +493,10 @@ describe("generateSampleQueryDBDelete method", () => {
           id: ID! @primary
           name: String
           email: ID! @unique
-        }`
-      }
-    }
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+        }`,
+      },
+    };
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   delete_users(where: {id: {_eq: $id}}) @db1 {
@@ -496,19 +505,21 @@ describe("generateSampleQueryDBDelete method", () => {
   }
 }`,
       variables: {
-        id: "0ujsszwN8NRY24YaXiTIE2VWDTS"
+        id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
       },
       response: {
         data: {
           delete_users: {
-            status: 200
-          }
-        }
-      }
-    }
-    expect(generateSampleQueryDBDelete(schemaASTs, "users", "db1", true)).toEqual(result)
-  })
-})
+            status: 200,
+          },
+        },
+      },
+    };
+    expect(
+      generateSampleQueryDBDelete(schemaASTs, "users", "db1", true)
+    ).toEqual(result);
+  });
+});
 
 describe("generateSampleQueryDBInsert method", () => {
   it("generates proper insert query for table with linked inserts", () => {
@@ -526,11 +537,11 @@ describe("generateSampleQueryDBInsert method", () => {
           created_on: DateTime! @createdAt
           last_updated: DateTime! @updatedAt
           author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
-    }
+        }`,
+      },
+    };
 
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   insert_authors(docs: $docs) @db1 {
@@ -547,11 +558,11 @@ describe("generateSampleQueryDBInsert method", () => {
             posts: [
               {
                 id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
-                title: "lorem ipsum"
-              }
-            ]
-          }
-        ]
+                title: "lorem ipsum",
+              },
+            ],
+          },
+        ],
       },
       response: {
         data: {
@@ -567,18 +578,22 @@ describe("generateSampleQueryDBInsert method", () => {
                     title: "lorem ipsum",
                     author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                     created_on: "2017-11-13T03:15:45.108Z",
-                    last_updated: "2017-11-13T03:15:45.108Z"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      }
-    }
-    const actualResult = generateSampleQueryDBInsert(schemaASTs, "authors", "db1")
-    expect(actualResult).toEqual(result)
-  })
+                    last_updated: "2017-11-13T03:15:45.108Z",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    };
+    const actualResult = generateSampleQueryDBInsert(
+      schemaASTs,
+      "authors",
+      "db1"
+    );
+    expect(actualResult).toEqual(result);
+  });
 
   it("generates proper insert query for table with cross db linked inserts", () => {
     const dbSchemas = {
@@ -587,7 +602,7 @@ describe("generateSampleQueryDBInsert method", () => {
           id: ID! @primary
           name: String
           posts: [posts] @link(table: posts, from: id, to: author_id, db: db2)
-        }`
+        }`,
       },
       db2: {
         posts: `type posts {
@@ -597,11 +612,11 @@ describe("generateSampleQueryDBInsert method", () => {
           created_on: DateTime! @createdAt
           last_updated: DateTime! @updatedAt
           author: authors @link(table: authors, from: author_id, to: id, db: db1)
-        }`
-      }
-    }
+        }`,
+      },
+    };
 
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   insert_authors(docs: $docs) @db1 {
@@ -618,11 +633,11 @@ describe("generateSampleQueryDBInsert method", () => {
             posts: [
               {
                 id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
-                title: "lorem ipsum"
-              }
-            ]
-          }
-        ]
+                title: "lorem ipsum",
+              },
+            ],
+          },
+        ],
       },
       response: {
         data: {
@@ -638,18 +653,22 @@ describe("generateSampleQueryDBInsert method", () => {
                     title: "lorem ipsum",
                     author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                     created_on: "2017-11-13T03:15:45.108Z",
-                    last_updated: "2017-11-13T03:15:45.108Z"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      }
-    }
-    const actualResult = generateSampleQueryDBInsert(schemaASTs, "authors", "db1")
-    expect(actualResult).toEqual(result)
-  })
+                    last_updated: "2017-11-13T03:15:45.108Z",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    };
+    const actualResult = generateSampleQueryDBInsert(
+      schemaASTs,
+      "authors",
+      "db1"
+    );
+    expect(actualResult).toEqual(result);
+  });
 
   it("generates proper insert query for table that has foreign key and read only link on others table", () => {
     const dbSchemas = {
@@ -666,11 +685,11 @@ describe("generateSampleQueryDBInsert method", () => {
           created_on: DateTime! @createdAt
           last_updated: DateTime! @updatedAt
           author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
-    }
+        }`,
+      },
+    };
 
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   insert_posts(docs: $docs) @db1 {
@@ -686,10 +705,10 @@ describe("generateSampleQueryDBInsert method", () => {
             title: "lorem ipsum",
             author: {
               id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
-              name: "lorem ipsum"
-            }
-          }
-        ]
+              name: "lorem ipsum",
+            },
+          },
+        ],
       },
       response: {
         data: {
@@ -704,18 +723,22 @@ describe("generateSampleQueryDBInsert method", () => {
                 last_updated: "2017-11-13T03:15:45.108Z",
                 author: {
                   id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
-                  name: "lorem ipsum"
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-    const actualResult = generateSampleQueryDBInsert(schemaASTs, "posts", "db1")
-    expect(actualResult).toEqual(result)
-  })
-})
+                  name: "lorem ipsum",
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const actualResult = generateSampleQueryDBInsert(
+      schemaASTs,
+      "posts",
+      "db1"
+    );
+    expect(actualResult).toEqual(result);
+  });
+});
 
 describe("generateSampleQueryDBRead method", () => {
   it("generates proper read query for 1 to many relation", () => {
@@ -735,10 +758,10 @@ describe("generateSampleQueryDBRead method", () => {
           created_on: DateTime! @createdAt
           last_updated: DateTime! @updatedAt
           author: authors @link(table: authors, from: author_id, to: id)
-        }`
-      }
-    }
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+        }`,
+      },
+    };
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `query {
   authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
@@ -759,7 +782,7 @@ describe("generateSampleQueryDBRead method", () => {
         id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
         sort: ["email", "joined_on"],
         skip: 20,
-        limit: 10
+        limit: 10,
       },
       response: {
         data: {
@@ -774,17 +797,27 @@ describe("generateSampleQueryDBRead method", () => {
                   title: "lorem ipsum",
                   author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   created_on: "2017-11-13T03:15:45.108Z",
-                  last_updated: "2017-11-13T03:15:45.108Z"
-                }
+                  last_updated: "2017-11-13T03:15:45.108Z",
+                },
               ],
-              joined_on: "2017-11-13T03:15:45.108Z"
-            }
-          ]
-        }
-      }
-    }
-    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
-  })
+              joined_on: "2017-11-13T03:15:45.108Z",
+            },
+          ],
+        },
+      },
+    };
+    expect(
+      generateSampleQueryDBRead(
+        schemaASTs,
+        "authors",
+        "db1",
+        true,
+        true,
+        true,
+        true
+      )
+    ).toEqual(result);
+  });
 
   it("generates proper read query for 1 to many relation with cross db links", () => {
     const dbSchemas = {
@@ -795,7 +828,7 @@ describe("generateSampleQueryDBRead method", () => {
           email: ID!
           posts: [posts] @link(table: posts, from: id, to: author_id, db: db2)
           joined_on: DateTime! @createdAt
-        }`
+        }`,
       },
       db2: {
         posts: `type posts {
@@ -805,10 +838,10 @@ describe("generateSampleQueryDBRead method", () => {
           created_on: DateTime! @createdAt
           last_updated: DateTime! @updatedAt
           author: authors @link(table: authors, from: author_id, to: id, db: db1)
-        }`
-      }
-    }
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+        }`,
+      },
+    };
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `query {
   authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
@@ -829,7 +862,7 @@ describe("generateSampleQueryDBRead method", () => {
         id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
         sort: ["email", "joined_on"],
         skip: 20,
-        limit: 10
+        limit: 10,
       },
       response: {
         data: {
@@ -844,17 +877,27 @@ describe("generateSampleQueryDBRead method", () => {
                   author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   title: "lorem ipsum",
                   created_on: "2017-11-13T03:15:45.108Z",
-                  last_updated: "2017-11-13T03:15:45.108Z"
-                }
+                  last_updated: "2017-11-13T03:15:45.108Z",
+                },
               ],
-              joined_on: "2017-11-13T03:15:45.108Z"
-            }
-          ]
-        }
-      }
-    }
-    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
-  })
+              joined_on: "2017-11-13T03:15:45.108Z",
+            },
+          ],
+        },
+      },
+    };
+    expect(
+      generateSampleQueryDBRead(
+        schemaASTs,
+        "authors",
+        "db1",
+        true,
+        true,
+        true,
+        true
+      )
+    ).toEqual(result);
+  });
 
   it("generates proper read query for many to many relation", () => {
     const dbSchemas = {
@@ -880,10 +923,10 @@ describe("generateSampleQueryDBRead method", () => {
           posts_id: ID! @foreign(table: posts, field: id)
           posts: [posts] @link(table: posts, from: posts_id, to: id)
           authors: [authors] @link(table: authors, from: authors_id, to: id) 
-        }`
-      }
-    }
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+        }`,
+      },
+    };
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `query {
   authors(where: {id: {_eq: $id}}, sort: $sort, skip: $skip, limit: $limit) @db1 {
@@ -904,7 +947,7 @@ describe("generateSampleQueryDBRead method", () => {
         id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
         sort: ["email", "joined_on"],
         skip: 20,
-        limit: 10
+        limit: 10,
       },
       response: {
         data: {
@@ -919,18 +962,28 @@ describe("generateSampleQueryDBRead method", () => {
                   title: "lorem ipsum",
                   author_id: "0ujsszwN8NRY24YaXiTIE2VWDTS",
                   created_on: "2017-11-13T03:15:45.108Z",
-                  last_updated: "2017-11-13T03:15:45.108Z"
-                }
+                  last_updated: "2017-11-13T03:15:45.108Z",
+                },
               ],
-              joined_on: "2017-11-13T03:15:45.108Z"
-            }
-          ]
-        }
-      }
-    }
-    expect(generateSampleQueryDBRead(schemaASTs, "authors", "db1", true, true, true, true)).toEqual(result)
-  })
-})
+              joined_on: "2017-11-13T03:15:45.108Z",
+            },
+          ],
+        },
+      },
+    };
+    expect(
+      generateSampleQueryDBRead(
+        schemaASTs,
+        "authors",
+        "db1",
+        true,
+        true,
+        true,
+        true
+      )
+    ).toEqual(result);
+  });
+});
 
 describe("generateSampleQueryDBUpdate method", () => {
   it("generates proper upsert query", () => {
@@ -952,11 +1005,11 @@ describe("generateSampleQueryDBUpdate method", () => {
         created_on: DateTime! @createdAt
         last_updated: DateTime! @updatedAt
         author: authors @link(table: authors, from: author_id, to: id)
-      }`
-      }
-    }
+      }`,
+      },
+    };
 
-    const schemaASTs = generateSchemaASTs(dbSchemas)
+    const schemaASTs = generateSchemaASTs(dbSchemas);
     const result = {
       query: `mutation {
   update_authors(where: {id: {_eq: $id}}, set: $set, op: upsert) @db1 {
@@ -969,19 +1022,25 @@ describe("generateSampleQueryDBUpdate method", () => {
         set: {
           name: "lorem ipsum",
           address: {
-            foo: "bar"
-          }
-        }
+            foo: "bar",
+          },
+        },
       },
       response: {
         data: {
           update_authors: {
-            status: 200
-          }
-        }
-      }
-    }
-    const actualResult = generateSampleQueryDBUpdate(schemaASTs, "authors", "db1", true, true)
-    expect(actualResult).toEqual(result)
-  })
-})
+            status: 200,
+          },
+        },
+      },
+    };
+    const actualResult = generateSampleQueryDBUpdate(
+      schemaASTs,
+      "authors",
+      "db1",
+      true,
+      true
+    );
+    expect(actualResult).toEqual(result);
+  });
+});

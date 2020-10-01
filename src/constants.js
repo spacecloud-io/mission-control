@@ -1,19 +1,19 @@
 export const fileStoreProviders = {
   LOCAL: "local",
   AMAZON_S3: "amazon-s3",
-  GCP_STORAGE: "gcp-storage"
-}
+  GCP_STORAGE: "gcp-storage",
+};
 
 export const endpointTypes = {
   INTERNAL: "internal",
   EXTERNAL: "external",
-  PREPARED: "prepared"
-}
+  PREPARED: "prepared",
+};
 
 export const permissionVerbs = {
   READ: "read",
-  MODIFY: "modify"
-}
+  MODIFY: "modify",
+};
 
 export const configResourceTypes = {
   DB_CONFIG: "db-config",
@@ -38,8 +38,8 @@ export const configResourceTypes = {
   CLUSTER_CONFIG: "cluster",
   LETSENCRYPT: "letsencrypt",
   INTEGRATIONS: "integration",
-  INTEGRATION_HOOKS: "integration-hook"
-}
+  INTEGRATION_HOOKS: "integration-hook",
+};
 
 export const apiResourceTypes = {
   DB_CREATE: "db-create",
@@ -54,10 +54,10 @@ export const apiResourceTypes = {
   FILE_READ: "file-read",
   FILE_DELETE: "file-delete",
   SERVICE_CALL: "service-call",
-  INTERNAL_API_ACCESS: "internal-api-access"
-}
+  INTERNAL_API_ACCESS: "internal-api-access",
+};
 
-// These are UI modules/sections (sidenav items). These should not be confused with the space cloud modules 
+// These are UI modules/sections (sidenav items). These should not be confused with the space cloud modules
 export const projectModules = {
   OVERVIEW: "overview",
   DATABASE: "database",
@@ -71,24 +71,43 @@ export const projectModules = {
   INTEGRATIONS: "integrations",
   EXPLORER: "explorer",
   SETTINGS: "settings",
-  SECURITY_RULES: "security-rules"
-}
+  SECURITY_RULES: "security-rules",
+};
 
 export const moduleResources = {
   [projectModules.OVERVIEW]: [],
-  [projectModules.DATABASE]: [configResourceTypes.DB_CONFIG, configResourceTypes.DB_RULES, configResourceTypes.DB_SCHEMA, configResourceTypes.DB_PREPARED_QUERIES],
-  [projectModules.FILESTORE]: [configResourceTypes.FILESTORE_CONFIG, configResourceTypes.FILESTORE_RULES],
-  [projectModules.EVENTING]: [configResourceTypes.EVENTING_CONFIG, configResourceTypes.EVENTING_RULES, configResourceTypes.EVENTING_SCHEMA, configResourceTypes.EVENTING_TRIGGER],
+  [projectModules.DATABASE]: [
+    configResourceTypes.DB_CONFIG,
+    configResourceTypes.DB_RULES,
+    configResourceTypes.DB_SCHEMA,
+    configResourceTypes.DB_PREPARED_QUERIES,
+  ],
+  [projectModules.FILESTORE]: [
+    configResourceTypes.FILESTORE_CONFIG,
+    configResourceTypes.FILESTORE_RULES,
+  ],
+  [projectModules.EVENTING]: [
+    configResourceTypes.EVENTING_CONFIG,
+    configResourceTypes.EVENTING_RULES,
+    configResourceTypes.EVENTING_SCHEMA,
+    configResourceTypes.EVENTING_TRIGGER,
+  ],
   [projectModules.REMOTE_SERVICES]: [configResourceTypes.REMOTE_SERVICES],
-  [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES],
+  [projectModules.DEPLOYMENTS]: [
+    configResourceTypes.SERVICES,
+    configResourceTypes.SERVICE_ROUTES,
+  ],
   [projectModules.SECRETS]: [configResourceTypes.SECRETS],
-  [projectModules.INGRESS_ROUTES]: [configResourceTypes.INGRESS_ROUTES, configResourceTypes.INGRESS_GLOBAL],
+  [projectModules.INGRESS_ROUTES]: [
+    configResourceTypes.INGRESS_ROUTES,
+    configResourceTypes.INGRESS_GLOBAL,
+  ],
   [projectModules.USER_MANAGEMENT]: [configResourceTypes.USER_MANAGEMENT],
   [projectModules.INTEGRATIONS]: [],
   [projectModules.EXPLORER]: [],
   [projectModules.SETTINGS]: [],
-  [projectModules.SECURITY_RULES]: []
-}
+  [projectModules.SECURITY_RULES]: [],
+};
 
 export const configResourceTypeLabels = {
   [configResourceTypes.DB_CONFIG]: "Database config",
@@ -113,8 +132,8 @@ export const configResourceTypeLabels = {
   [configResourceTypes.INTEGRATION_HOOKS]: "Integration hooks",
   [configResourceTypes.LETSENCRYPT]: "Letsencrypt",
   [configResourceTypes.PROJECT_CONFIG]: "Project config",
-  [configResourceTypes.CLUSTER_CONFIG]: "Cluster config"
-}
+  [configResourceTypes.CLUSTER_CONFIG]: "Cluster config",
+};
 
 export const apiResourceTypeLabels = {
   [apiResourceTypes.DB_CREATE]: "Database create",
@@ -129,24 +148,26 @@ export const apiResourceTypeLabels = {
   [apiResourceTypes.FILE_READ]: "File read",
   [apiResourceTypes.FILE_DELETE]: "File delete",
   [apiResourceTypes.SERVICE_CALL]: "Remote service call",
-  [apiResourceTypes.INTERNAL_API_ACCESS]: "Internal API access"
-}
+  [apiResourceTypes.INTERNAL_API_ACCESS]: "Internal API access",
+};
 
 export const dbTypes = {
   MONGO: "mongo",
   POSTGRESQL: "postgres",
   MYSQL: "mysql",
   SQLSERVER: "sqlserver",
-  EMBEDDED: "embedded"
-}
+  EMBEDDED: "embedded",
+};
 
 export const defaultDbConnectionStrings = {
   [dbTypes.MONGO]: "mongodb://localhost:27017",
-  [dbTypes.POSTGRESQL]: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable",
+  [dbTypes.POSTGRESQL]:
+    "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable",
   [dbTypes.MYSQL]: "root:my-secret-pw@tcp(localhost:3306)/",
-  [dbTypes.SQLSERVER]: "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=yourStrong(!)Password;",
-  [dbTypes.EMBEDDED]: "embedded.db"
-}
+  [dbTypes.SQLSERVER]:
+    "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=yourStrong(!)Password;",
+  [dbTypes.EMBEDDED]: "embedded.db",
+};
 
 export const securityRuleGroups = {
   DB_COLLECTIONS: "collections",
@@ -154,71 +175,79 @@ export const securityRuleGroups = {
   FILESTORE: "file-store",
   EVENTING: "eventing",
   REMOTE_SERVICES: "remote-services",
-  INGRESS_ROUTES: "ingress-routes"
-}
+  INGRESS_ROUTES: "ingress-routes",
+};
 
 export const defaultDBRules = {
   create: {
-    rule: 'allow'
+    rule: "allow",
   },
   read: {
-    rule: 'allow'
+    rule: "allow",
   },
   update: {
-    rule: 'allow'
+    rule: "allow",
   },
   delete: {
-    rule: 'allow'
-  }
-}
+    rule: "allow",
+  },
+};
 
 export const defaultFileRule = {
   create: {
-    rule: "allow"
+    rule: "allow",
   },
   read: {
-    rule: "allow"
+    rule: "allow",
   },
   delete: {
-    rule: "allow"
-  }
-}
+    rule: "allow",
+  },
+};
 
 export const defaultEventRule = {
-  rule: "allow"
-}
+  rule: "allow",
+};
 
 export const defaultEndpointRule = {
-  rule: "allow"
-}
+  rule: "allow",
+};
 
 export const defaultIngressRoutingRule = {
-  rule: "allow"
-}
+  rule: "allow",
+};
 
 export const defaultPreparedQueryRule = {
-  rule: "allow"
-}
+  rule: "allow",
+};
 
 export const deploymentStatuses = {
   PENDING: "PENDING",
   SUCCEEDED: "SUCCEEDED",
   RUNNING: "RUNNING",
   FAILED: "FAILED",
-  UNKNOWN: "UNKOWN"
-}
+  UNKNOWN: "UNKOWN",
+};
 
-export const actionQueuedMessage = "Action queued successfully"
+export const actionQueuedMessage = "Action queued successfully";
 
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
-    return productionURL
+    return productionURL;
   }
   if (process.env.REACT_APP_ENABLE_MOCK === "true") {
-    return mockURL
+    return mockURL;
   }
-  return developmentURL
-}
+  return developmentURL;
+};
 
-export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
-export const spaceUpAPIGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")
+export const spaceCloudClusterOrigin = getURL(
+  undefined,
+  "http://localhost:4122",
+  undefined
+);
+export const spaceUpAPIGraphQLURL = getURL(
+  "https://api.spaceuptech.com/v1/api/spacecloud/graphql",
+  "https://testing.spaceuptech.com/v1/api/spacecloud/graphql",
+  "/v1/api/spacecloud/graphql"
+);

@@ -1,13 +1,15 @@
 import React from "react";
-import qs from 'qs';
+import qs from "qs";
 import { Result } from "antd";
-import ProjectPageLayout, { Content } from "../../components/project-page-layout/ProjectPageLayout";
+import ProjectPageLayout, {
+  Content,
+} from "../../components/project-page-layout/ProjectPageLayout";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useLocation } from "react-router-dom";
 
 function NoPermissions() {
-  const location = useLocation()
+  const location = useLocation();
   const { moduleId } = qs.parse(location.search, { ignoreQueryPrefix: true });
   return (
     <React.Fragment>
@@ -22,7 +24,7 @@ function NoPermissions() {
         </Content>
       </ProjectPageLayout>
     </React.Fragment>
-  )
+  );
 }
 
-export default NoPermissions
+export default NoPermissions;

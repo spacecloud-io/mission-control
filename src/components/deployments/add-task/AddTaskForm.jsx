@@ -1,7 +1,7 @@
 import React from "react";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { Form, AutoComplete } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, AutoComplete } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 import {
   Modal,
@@ -18,49 +18,71 @@ import {
 const { Option } = Select;
 const { Panel } = Collapse;
 
-const AddTaskForm = props => {
+const AddTaskForm = (props) => {
   const { initialValues, dockerSecrets, secrets } = props;
   const [form] = Form.useForm();
 
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
     dockerImage: initialValues ? initialValues.docker.image : "",
-    registryType: (initialValues && initialValues.docker.secret) ? "private" : "public",
+    registryType:
+      initialValues && initialValues.docker.secret ? "private" : "public",
     dockerSecret: initialValues ? initialValues.docker.secret : "",
     ports: initialValues ? initialValues.ports : [],
-    imagePullPolicy: initialValues ? initialValues.docker.imagePullPolicy : "pull-if-not-exists",
+    imagePullPolicy: initialValues
+      ? initialValues.docker.imagePullPolicy
+      : "pull-if-not-exists",
     cpu: initialValues ? initialValues.resources.cpu / 1000 : 0.1,
     memory: initialValues ? initialValues.resources.memory : 100,
-    addGPUs: initialValues && initialValues.resources.gpu && initialValues.resources.gpu.type ? true : false,
-    gpuType: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.type : "nvdia",
-    gpuCount: initialValues && initialValues.resources.gpu ? initialValues.resources.gpu.value : 1,
-    secrets: (initialValues && initialValues.secrets && initialValues.secrets.length > 0) ? initialValues.secrets : [],
-    env: (initialValues && Object.keys(initialValues.env).length > 0)
-      ? Object.entries(initialValues.env).map(([key, value]) => ({
-        key: key,
-        value: value
-      }))
-      : [],
-  }
+    addGPUs:
+      initialValues &&
+      initialValues.resources.gpu &&
+      initialValues.resources.gpu.type
+        ? true
+        : false,
+    gpuType:
+      initialValues && initialValues.resources.gpu
+        ? initialValues.resources.gpu.type
+        : "nvdia",
+    gpuCount:
+      initialValues && initialValues.resources.gpu
+        ? initialValues.resources.gpu.value
+        : 1,
+    secrets:
+      initialValues && initialValues.secrets && initialValues.secrets.length > 0
+        ? initialValues.secrets
+        : [],
+    env:
+      initialValues && Object.keys(initialValues.env).length > 0
+        ? Object.entries(initialValues.env).map(([key, value]) => ({
+            key: key,
+            value: value,
+          }))
+        : [],
+  };
 
-  const handleSubmitClick = e => {
-    form.validateFields().then(values => {
-      values = Object.assign({}, formInitialValues, values)
-      const gpu = values["addGPUs"] === true ? { type: values["gpuType"], value: Number(values["gpuCount"]) } : undefined
+  const handleSubmitClick = (e) => {
+    form.validateFields().then((values) => {
+      values = Object.assign({}, formInitialValues, values);
+      const gpu =
+        values["addGPUs"] === true
+          ? { type: values["gpuType"], value: Number(values["gpuCount"]) }
+          : undefined;
       values.cpu = Number(values.cpu);
       values.memory = Number(values.memory);
       values.min = Number(values.min);
       values.max = Number(values.max);
       values.concurrency = Number(values.concurrency);
-      values.gpu = gpu
+      values.gpu = gpu;
       values.serviceType = "image";
-      values.dockerSecret = values.registryType === "private" ? values.dockerSecret : undefined
+      values.dockerSecret =
+        values.registryType === "private" ? values.dockerSecret : undefined;
       delete values["addGPUs"];
       delete values["gpuType"];
       delete values["gpuCount"];
       delete values["registryType"];
-      props.handleSubmit(values, initialValues ? "edit" : "add")
-      props.handleCancel()
+      props.handleSubmit(values, initialValues ? "edit" : "add");
+      props.handleCancel();
     });
   };
 
@@ -71,7 +93,7 @@ const AddTaskForm = props => {
     okText: initialValues ? "Save" : "Add",
     title: initialValues ? "Update Task" : "Add task",
     onOk: handleSubmitClick,
-    onCancel: props.handleCancel
+    onCancel: props.handleCancel,
   };
   return (
     <div>
@@ -79,21 +101,26 @@ const AddTaskForm = props => {
         <Form layout="vertical" form={form} initialValues={formInitialValues}>
           <React.Fragment>
             <FormItemLabel name="Task ID" />
-            <Form.Item name="id" rules={[
-              {
-                validator: (_, value, cb) => {
-                  if (!value) {
-                    cb("Please provide a task id!")
-                    return
-                  }
-                  if (!(/^[0-9a-zA-Z]+$/.test(value))) {
-                    cb("Service ID can only contain alphanumeric characters!")
-                    return
-                  }
-                  cb()
-                }
-              }
-            ]}>
+            <Form.Item
+              name="id"
+              rules={[
+                {
+                  validator: (_, value, cb) => {
+                    if (!value) {
+                      cb("Please provide a task id!");
+                      return;
+                    }
+                    if (!/^[0-9a-zA-Z]+$/.test(value)) {
+                      cb(
+                        "Service ID can only contain alphanumeric characters!"
+                      );
+                      return;
+                    }
+                    cb();
+                  },
+                },
+              ]}
+            >
               <Input
                 placeholder="Task ID"
                 style={{ width: 288 }}
@@ -101,12 +128,15 @@ const AddTaskForm = props => {
               />
             </Form.Item>
             <FormItemLabel name="Docker container" />
-            <Form.Item name="dockerImage" rules={[
-              {
-                required: true,
-                message: "Please input docker container!"
-              }
-            ]}>
+            <Form.Item
+              name="dockerImage"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input docker container!",
+                },
+              ]}
+            >
               <Input placeholder="eg: spaceuptech/basic-service" />
             </Form.Item>
             <FormItemLabel name="Docker registry type" />
@@ -116,18 +146,27 @@ const AddTaskForm = props => {
                 <Radio value="private">Private Registry</Radio>
               </Radio.Group>
             </Form.Item>
-            <ConditionalFormBlock dependency="registryType" condition={() => form.getFieldValue("registryType") === "private"}>
+            <ConditionalFormBlock
+              dependency="registryType"
+              condition={() => form.getFieldValue("registryType") === "private"}
+            >
               <FormItemLabel
                 name="Docker secret"
                 description="Docker secret for authentication to pull private Docker images"
               />
-              <Form.Item name="dockerSecret" rules={[
-                {
-                  required: true,
-                  message: "Please input docker secret!"
-                }]
-              }>
-                <AutoComplete placeholder="Select docker secret to be applied" options={dockerSecrets.map(secret => ({ value: secret }))} />
+              <Form.Item
+                name="dockerSecret"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input docker secret!",
+                  },
+                ]}
+              >
+                <AutoComplete
+                  placeholder="Select docker secret to be applied"
+                  options={dockerSecrets.map((secret) => ({ value: secret }))}
+                />
               </Form.Item>
             </ConditionalFormBlock>
             <FormItemLabel name="Ports" />
@@ -144,7 +183,13 @@ const AddTaskForm = props => {
                                 name={[field.name, "protocol"]}
                                 key={[field.name, "protocol"]}
                                 style={{ display: "inline-block" }}
-                                rules={[{ required: true, message: "Please enter protocol!" }]}>
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please enter protocol!",
+                                  },
+                                ]}
+                              >
                                 <Select style={{ width: 120 }}>
                                   <Option value="http">HTTP</Option>
                                 </Select>
@@ -153,7 +198,12 @@ const AddTaskForm = props => {
                             <Col>
                               <Form.Item
                                 validateTrigger={["onChange", "onBlur"]}
-                                rules={[{ required: true, message: "Please enter port!" }]}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please enter port!",
+                                  },
+                                ]}
                                 name={[field.name, "port"]}
                                 key={[field.name, "port"]}
                               >
@@ -179,9 +229,21 @@ const AddTaskForm = props => {
                       <Form.Item>
                         <Button
                           onClick={() => {
-                            form.validateFields([...fields.map(obj => ["ports", obj.name, "port"]), ...fields.map(obj => ["ports", obj.name, "protocol"])])
+                            form
+                              .validateFields([
+                                ...fields.map((obj) => [
+                                  "ports",
+                                  obj.name,
+                                  "port",
+                                ]),
+                                ...fields.map((obj) => [
+                                  "ports",
+                                  obj.name,
+                                  "protocol",
+                                ]),
+                              ])
                               .then(() => add({ protocol: "http", port: "" }))
-                              .catch(ex => console.log("Exception", ex))
+                              .catch((ex) => console.log("Exception", ex));
                           }}
                           style={{ marginTop: -10 }}
                         >
@@ -193,14 +255,16 @@ const AddTaskForm = props => {
                 }}
               </Form.List>
             </React.Fragment>
-            <Collapse bordered={false} style={{ background: 'white' }}>
+            <Collapse bordered={false} style={{ background: "white" }}>
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
                 <Form.Item name="imagePullPolicy">
                   <Select style={{ width: 175 }}>
                     <Select.Option value="always">Always</Select.Option>
-                    <Select.Option value="pull-if-not-exists">If not present</Select.Option>
+                    <Select.Option value="pull-if-not-exists">
+                      If not present
+                    </Select.Option>
                   </Select>
                 </Form.Item>
                 <FormItemLabel
@@ -212,16 +276,20 @@ const AddTaskForm = props => {
                     <Input addonBefore="vCPUs" style={{ width: 160 }} />
                   </Form.Item>
                   <Form.Item name="memory">
-                    <Input addonBefore="Memory (in MBs)" style={{ width: 240, marginLeft: 32 }} />
+                    <Input
+                      addonBefore="Memory (in MBs)"
+                      style={{ width: 240, marginLeft: 32 }}
+                    />
                   </Form.Item>
                 </Input.Group>
                 <FormItemLabel name="GPUs" />
                 <Form.Item name="addGPUs" valuePropName="checked">
-                  <Checkbox>
-                    Consume GPUs
-                    </Checkbox>
+                  <Checkbox>Consume GPUs</Checkbox>
                 </Form.Item>
-                <ConditionalFormBlock dependency="addGPUs" condition={() => form.getFieldValue("addGPUs")}>
+                <ConditionalFormBlock
+                  dependency="addGPUs"
+                  condition={() => form.getFieldValue("addGPUs")}
+                >
                   <FormItemLabel name="GPU resources" />
                   <Input.Group compact>
                     <Form.Item name="gpuType">
@@ -234,7 +302,11 @@ const AddTaskForm = props => {
                       </Select>
                     </Form.Item>
                     <Form.Item name="gpuCount">
-                      <Input addonBefore="No of GPUs" style={{ width: 240, marginLeft: 32 }} min={1} />
+                      <Input
+                        addonBefore="No of GPUs"
+                        style={{ width: 240, marginLeft: 32 }}
+                        min={1}
+                      />
                     </Form.Item>
                   </Input.Group>
                 </ConditionalFormBlock>
@@ -251,20 +323,38 @@ const AddTaskForm = props => {
                                   key={[field.name, "key"]}
                                   name={[field.name, "key"]}
                                   style={{ display: "inline-block" }}
-                                  rules={[{ required: true, message: "Please enter key!" }]}>
-                                  <Input style={{ width: 120 }} placeholder="Key" />
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please enter key!",
+                                    },
+                                  ]}
+                                >
+                                  <Input
+                                    style={{ width: 120 }}
+                                    placeholder="Key"
+                                  />
                                 </Form.Item>
                               </Col>
                               <Col span={9}>
                                 <Form.Item
                                   validateTrigger={["onChange", "onBlur"]}
-                                  rules={[{ required: true, message: "Please enter value!" }]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please enter value!",
+                                    },
+                                  ]}
                                   name={[field.name, "value"]}
                                   key={[field.name, "value"]}
                                   style={{ marginRight: 30 }}
                                 >
                                   <Input
-                                    style={{ width: 280, marginLeft: -40, marginRight: 30 }}
+                                    style={{
+                                      width: 280,
+                                      marginLeft: -40,
+                                      marginRight: 30,
+                                    }}
                                     placeholder="Value"
                                   />
                                 </Form.Item>
@@ -283,9 +373,21 @@ const AddTaskForm = props => {
                         <Form.Item>
                           <Button
                             onClick={() => {
-                              form.validateFields([...fields.map(obj => ["env", obj.name, "key"]), ...fields.map(obj => ["env", obj.name, "value"])])
+                              form
+                                .validateFields([
+                                  ...fields.map((obj) => [
+                                    "env",
+                                    obj.name,
+                                    "key",
+                                  ]),
+                                  ...fields.map((obj) => [
+                                    "env",
+                                    obj.name,
+                                    "value",
+                                  ]),
+                                ])
                                 .then(() => add())
-                                .catch(ex => console.log("Exception", ex))
+                                .catch((ex) => console.log("Exception", ex));
                             }}
                             style={{ marginTop: -10 }}
                           >
@@ -303,7 +405,7 @@ const AddTaskForm = props => {
                     placeholder="Select secrets to be applied"
                     style={{ width: 410 }}
                   >
-                    {secrets.map(secret => (
+                    {secrets.map((secret) => (
                       <Option value={secret}>{secret}</Option>
                     ))}
                   </Select>
@@ -313,7 +415,7 @@ const AddTaskForm = props => {
           </React.Fragment>
         </Form>
       </Modal>
-    </div >
+    </div>
   );
 };
 

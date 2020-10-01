@@ -3,15 +3,26 @@ import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
+import {
+  notify,
+  getEventSourceFromType,
+  incrementPendingRequests,
+  decrementPendingRequests,
+} from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
 import { set } from "automate-redux";
 import RuleEditor from "../../components/rule-editor/RuleEditor";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
-import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
+import {
+  deleteEventingSchema,
+  saveEventingSchema,
+  loadEventingSchemas,
+  getEventingSchemas,
+  getEventingTriggerRules,
+} from "../../operations/eventing";
 import { projectModules, actionQueuedMessage } from "../../constants";
 
 const EventingSchema = () => {
@@ -22,21 +33,21 @@ const EventingSchema = () => {
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/schema");
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (projectID) {
-      incrementPendingRequests()
+      incrementPendingRequests();
       loadEventingSchemas(projectID)
-        .catch(ex => notify("error", "Error fetching eventing schemas", ex))
-        .finally(() => decrementPendingRequests())
+        .catch((ex) => notify("error", "Error fetching eventing schemas", ex))
+        .finally(() => decrementPendingRequests());
     }
-  }, [projectID])
+  }, [projectID]);
 
   // Global state
-  const selectedEvent = useSelector(state => state.uiState.selectedEvent);
-  const eventRules = useSelector(state => getEventingTriggerRules(state))
-  const schemas = useSelector(state => getEventingSchemas(state))
+  const selectedEvent = useSelector((state) => state.uiState.selectedEvent);
+  const eventRules = useSelector((state) => getEventingTriggerRules(state));
+  const schemas = useSelector((state) => getEventingSchemas(state));
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
@@ -48,44 +59,51 @@ const EventingSchema = () => {
     .map(([_, value]) => value.type);
 
   // Handlers
-  const handleSelect = eventType =>
+  const handleSelect = (eventType) =>
     dispatch(set("uiState.selectedEvent", eventType));
-
 
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false);
     setAddColFormInEditMode(false);
   };
 
-  const handleDelete = type => {
+  const handleDelete = (type) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       deleteEventingSchema(projectID, type)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Removed event schema successfully")
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Removed event schema successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
-          notify("error", "Error removing event schema", ex)
-          reject()
+        .catch((ex) => {
+          notify("error", "Error removing event schema", ex);
+          reject();
         })
-        .finally(() => decrementPendingRequests())
+        .finally(() => decrementPendingRequests());
     });
   };
 
   const handleAddSchema = (type, schema) => {
     return new Promise((resolve, reject) => {
-      incrementPendingRequests()
+      incrementPendingRequests();
       saveEventingSchema(projectID, type, schema)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Saved event schema successfully")
-          resolve()
+          notify(
+            "success",
+            "Success",
+            queued ? actionQueuedMessage : "Saved event schema successfully"
+          );
+          resolve();
         })
-        .catch(ex => {
-          notify("error", "Error saving event schema", ex)
-          reject()
+        .catch((ex) => {
+          notify("error", "Error saving event schema", ex);
+          reject();
         })
-        .finally(() => decrementPendingRequests())
+        .finally(() => decrementPendingRequests());
     });
   };
 
@@ -122,7 +140,7 @@ const EventingSchema = () => {
             rules={schemas}
             selectedRuleName={selectedEvent}
             handleSelect={handleSelect}
-            handleSubmit={schema => handleAddSchema(selectedEvent, schema)}
+            handleSubmit={(schema) => handleAddSchema(selectedEvent, schema)}
             canDeleteRules
             handleDelete={handleDelete}
             stringifyRules={false}

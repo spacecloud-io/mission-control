@@ -1,33 +1,35 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import { Modal, Card, Form } from 'antd';
-import FormItemLabel from "../../form-item-label/FormItemLabel"
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import jwt from 'jsonwebtoken';
+import { Controlled as CodeMirror } from "react-codemirror2";
+import { Modal, Card, Form } from "antd";
+import FormItemLabel from "../../form-item-label/FormItemLabel";
+import "codemirror/theme/material.css";
+import "codemirror/lib/codemirror.css";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/addon/selection/active-line.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
+import jwt from "jsonwebtoken";
 import { notify, generateToken } from "../../../utils";
 import { useSelector } from "react-redux";
 
 const GenerateTokenForm = (props) => {
   const [form] = Form.useForm();
-  const decodedClaims = jwt.decode(props.initialToken)
-  const initialPayload = decodedClaims ? decodedClaims : {}
+  const decodedClaims = jwt.decode(props.initialToken);
+  const initialPayload = decodedClaims ? decodedClaims : {};
 
-  const [data, setData] = useState(JSON.stringify(initialPayload, null, 2))
-  const generatedToken = useSelector(state => generateToken(state, props.projectID, data))
-  const handleSubmit = e => {
-    form.validateFields().then(values => {
+  const [data, setData] = useState(JSON.stringify(initialPayload, null, 2));
+  const generatedToken = useSelector((state) =>
+    generateToken(state, props.projectID, data)
+  );
+  const handleSubmit = (e) => {
+    form.validateFields().then((values) => {
       try {
-        JSON.parse(data)
+        JSON.parse(data);
         props.handleSubmit(generatedToken);
         props.handleCancel();
       } catch (ex) {
-        notify("error", "Error", ex.toString())
+        notify("error", "Error", ex.toString());
       }
     });
   };
@@ -52,10 +54,10 @@ const GenerateTokenForm = (props) => {
             matchBrackets: true,
             autoCloseBrackets: true,
             tabSize: 2,
-            autofocus: true
+            autofocus: true,
           }}
           onBeforeChange={(editor, data, value) => {
-            setData(value)
+            setData(value);
           }}
         />
         <div style={{ paddingTop: 16 }}>
@@ -66,7 +68,7 @@ const GenerateTokenForm = (props) => {
         </div>
       </Form>
     </Modal>
-  )
-}
+  );
+};
 
-export default GenerateTokenForm
+export default GenerateTokenForm;
