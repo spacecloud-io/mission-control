@@ -23,9 +23,9 @@ const ConfigureEndpoint = () => {
     ReactGA.pageview(`/projects/remote-services/endpoints/${endpointName ? "edit" : "add"}`);
   }, []);
 
-  const handleSaveEndpoint = (kind, name, method, path, rule, token, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout) => {
+  const handleSaveEndpoint = (kind, name, method, path, rule, token, claims, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout) => {
     const isEndpointPresent = endpoints[name] ? true : false
-    const endpointConfig = { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout }
+    const endpointConfig = { kind, method, path, rule, token, claims, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout }
     incrementPendingRequests()
     saveRemoteServiceEndpoint(projectID, serviceName, name, endpointConfig)
       .then(({ queued }) => {
