@@ -156,6 +156,7 @@ export const generateProjectConfig = (projectId, name) => ({
   contextTimeGraphQL: 5
 })
 
+notification.config({ placement: "topRight", top: 80 });
 export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: String(msg), duration: duration });
 }
