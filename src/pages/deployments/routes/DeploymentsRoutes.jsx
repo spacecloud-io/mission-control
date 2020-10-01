@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ReactGA from 'react-ga';
-import { RightOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Table, Popconfirm, Collapse, Input, Empty } from "antd";
+import { RightOutlined } from '@ant-design/icons';
+import { Button, Table, Popconfirm, Collapse, Input } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
@@ -13,6 +13,7 @@ import { notify, incrementPendingRequests, decrementPendingRequests } from "../.
 import { loadServiceRoutes, saveServiceRoutes, deleteServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
 
 const { Panel } = Collapse;
 
@@ -45,9 +46,9 @@ const DeploymentsRoutes = () => {
     }
   })
 
-  const filterServiceRoutes = Object.entries(serviceRoutes).filter(route => {
+  const filteredServiceRoutes = Object.entries(serviceRoutes).filter(route => {
     return route[0].toLowerCase().includes(searchText.toLowerCase())
-	})
+  })
 
   const noOfServices = Object.keys(serviceRoutes).length
 
@@ -124,13 +125,13 @@ const DeploymentsRoutes = () => {
     const rulesText = routes.length === 0 ? "No rules" : (routes.length === 1 ? "1 Rule" : `${routes.length} rules`)
     return (
       <React.Fragment>
-      <Highlighter 
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={serviceId ? serviceId.toString() : ''}
-          />
-      <span style={{ marginLeft: 8, color: "rgba(0,0,0,0.56)" }}>({rulesText})</span>
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={serviceId ? serviceId.toString() : ''}
+        />
+        <span style={{ marginLeft: 8, color: "rgba(0,0,0,0.56)" }}>({rulesText})</span>
       </React.Fragment>
     )
   }
@@ -151,31 +152,34 @@ const DeploymentsRoutes = () => {
             </div>
           }
           {
-            noOfServices > 0 && <React.Fragment> 
-              <center><Input.Search placeholder='Search by service id' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} /></center>
+            noOfServices > 0 && <React.Fragment>
+              <Input.Search placeholder='Search by service id' style={{ width: '320px', marginBottom: 16 }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
               <Collapse expandIconPosition="right" expandIcon={({ isActive }) => <RightOutlined rotate={isActive ? 270 : 90} />}>
-              {filterServiceRoutes.map(([serviceId, routes]) => (<Panel header={servicePanelHeader(serviceId, routes)} key={serviceId}>
-                <div>
+                {filteredServiceRoutes.map(([serviceId, routes]) => (<Panel header={servicePanelHeader(serviceId, routes)} key={serviceId}>
                   <div>
-                    <span style={{ fontSize: 16, fontWeight: "bold" }}>
-                      Routing rules
+                    <div>
+                      <span style={{ fontSize: 16, fontWeight: "bold" }}>
+                        Routing rules
                      </span>
-                    <Button
-                      style={{ float: "right" }}
-                      onClick={() => {
-                        setRouteClicked({ serviceId: serviceId });
-                        setModalVisible(true)
-                      }}
-                    >
-                      Add
+                      <Button
+                        style={{ float: "right" }}
+                        onClick={() => {
+                          setRouteClicked({ serviceId: serviceId });
+                          setModalVisible(true)
+                        }}
+                      >
+                        Add
                     </Button>
+                    </div>
+                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
                   </div>
-                  <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
+                </Panel>))}
+              </Collapse>
+              {Object.keys(serviceRoutes).length !== 0 &&
+                <div style={{ paddingTop: 24 }}>
+                  <EmptySearchResults searchText={searchText} />
                 </div>
-              </Panel>))}
-            </Collapse>
-            {Object.keys(serviceRoutes).length !== 0 && filterServiceRoutes.length === 0  && 
-              <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} />}  
+              }
             </React.Fragment>
           }
         </div>

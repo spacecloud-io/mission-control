@@ -12,7 +12,7 @@ import { notify, incrementPendingRequests, decrementPendingRequests, openSecurit
 import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons'
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
 
 const PreparedQueries = () => {
   // Router params
@@ -28,7 +28,7 @@ const PreparedQueries = () => {
     defaultRule = defaultPreparedQueryRule
   }
 
-  const filterPreparedQueriesData = preparedQueriesData.filter(query => {
+  const filteredPreparedQueriesData = preparedQueriesData.filter(query => {
     return query.name.toLowerCase().includes(searchText.toLowerCase());
   })
 
@@ -59,7 +59,7 @@ const PreparedQueries = () => {
       dataIndex: 'name',
       key: 'name',
       render: (value) => {
-        return <Highlighter 
+        return <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[searchText]}
           autoEscape
@@ -106,15 +106,17 @@ const PreparedQueries = () => {
               <h3 style={{ margin: 'auto 0' }}>Prepared queries</h3>
               <div style={{ display: "flex" }}>
                 <Input.Search placeholder='Search by prepared query name' onChange={e => setSearchText(e.target.value)} allowClear={true} style={{ minWidth: '320px' }} />
-                <Button type="primary" style={{ marginLeft:'16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
+                <Button type="primary" style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
               </div>
             </div>
             <Table
               columns={preparedQueriesColumns}
-              dataSource={filterPreparedQueriesData}
-              locale={{ emptyText: preparedQueriesData.length !== 0 && filterPreparedQueriesData.length === 0 ? 
-                <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No prepared query created yet. Add a prepared query' /> }}  />
+              dataSource={filteredPreparedQueriesData}
+              locale={{
+                emptyText: preparedQueriesData.length !== 0 ?
+                  <EmptySearchResults searchText={searchText} /> :
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No prepared query created yet. Add a prepared query' />
+              }} />
           </div>
         </div>
       </div>

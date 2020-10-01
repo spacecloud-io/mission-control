@@ -16,10 +16,11 @@ import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerR
 import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
 import Highlighter from 'react-highlight-words';
-import { FilterOutlined, SearchOutlined } from '@ant-design/icons';
+import { FilterOutlined } from '@ant-design/icons';
 import FilterEvents from '../../components/eventing/FilterEvents';
 import { useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
+import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
 
 const EventingOverview = () => {
 	// Router params
@@ -40,7 +41,7 @@ const EventingOverview = () => {
 	const [ruleModalVisible, setRuleModalVisibile] = useState(false)
 	const [ruleClicked, setRuleClicked] = useState("")
 	const [searchText, setSearchText] = useState('')
-	const [FilterModalVisible, setFilterModalVisible] = useState(false)
+	const [filterModalVisible, setFilterModalVisible] = useState(false)
 
 	// Derived state
 	const dbList = Object.keys(dbConfigs)
@@ -48,6 +49,7 @@ const EventingOverview = () => {
 	const noOfRules = rulesTableData.length
 	const ruleClickedInfo = ruleClicked ? { id: ruleClicked, ...rules[ruleClicked] } : undefined
 	const eventingConfigured = eventingConfig.enabled && eventingConfig.dbAlias
+	const customEventTypes = rulesTableData.filter(obj => obj.source === "custom").map(obj => obj.type)
 
 	// Handlers
 	const handleEditRuleClick = (id) => {
@@ -65,7 +67,6 @@ const EventingOverview = () => {
 	}
 
 	const handleFilter = (filters) => dispatch(set("uiState.eventTriggerFilters", filters))
-	console.log(filters)
 	const applyFilters = (rules, filters = { source: '', options: {}, type: '' }) => {
 		const dataFilteredBySource = filters && filters.source ? rules.filter(rule => rule.source === filters.source) : rules;
 		const dataFilteredByOptionsDb = filters && filters.options && filters.options.db ? rules.filter(rule => rule.options && rule.options.db ? rule.options.db === filters.options.db : '') : dataFilteredBySource;
@@ -75,7 +76,7 @@ const EventingOverview = () => {
 		return dataFilteredBySearch;
 	}
 
-	const filterRulesData = applyFilters(rulesTableData, filters);
+	const filteredRulesData = applyFilters(rulesTableData, filters);
 
 	const handleSetRule = (id, type, url, retries, timeout, options = {}, requestTemplate, outputFormat) => {
 		const isRulePresent = rules[id] ? true : false
@@ -107,13 +108,13 @@ const EventingOverview = () => {
 			title: 'Name',
 			dataIndex: 'id',
 			render: (value) => {
-        return <Highlighter 
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={value ? value.toString() : ''}
-          />
-      }
+				return <Highlighter
+					highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+					searchWords={[searchText]}
+					autoEscape
+					textToHighlight={value ? value.toString() : ''}
+				/>
+			}
 		},
 		{
 			title: 'Source',
@@ -136,11 +137,11 @@ const EventingOverview = () => {
 		}
 	]
 
-  const alertMsg = <div>
-    <span>Head over to the </span>
-    <Link to={`/mission-control/projects/${projectID}/eventing/settings`}>Eventing Settings tab</Link>
-    <span> to configure eventing.</span>
-  </div>
+	const alertMsg = <div>
+		<span>Head over to the </span>
+		<Link to={`/mission-control/projects/${projectID}/eventing/settings`}>Eventing Settings tab</Link>
+		<span> to configure eventing.</span>
+	</div>
 
 	const dbAlert = () => {
 		if (!eventingConfigured)
@@ -175,20 +176,22 @@ const EventingOverview = () => {
 					</div>}
 					{noOfRules > 0 && (
 						<React.Fragment>
-							<div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
-                <h3 style={{ margin: 'auto 0' }}>Event Triggers </h3> 
-                <div style={{ display: 'flex' }}>
-                  <Input.Search placeholder='Search by event name' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
-									<Button style={{ marginLeft:'16px' }} onClick={() => setFilterModalVisible(true)}>Filter <FilterOutlined/></Button>
-                  <Button style={{ marginLeft:'16px' }} onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></div>
-              </div>
-							<Table 
-								columns={columns} 
-								dataSource={filterRulesData} 
+							<div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+								<h3 style={{ margin: 'auto 0' }}>Event Triggers </h3>
+								<div style={{ display: 'flex' }}>
+									<Input.Search placeholder='Search by trigger name' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+									<Button style={{ marginLeft: '16px' }} onClick={() => setFilterModalVisible(true)}>Filter <FilterOutlined /></Button>
+									<Button style={{ marginLeft: '16px' }} onClick={() => setRuleModalVisibile(true)} type="primary">Add</Button></div>
+							</div>
+							<Table
+								columns={columns}
+								dataSource={filteredRulesData}
 								rowKey="id"
-								locale={{ emptyText: searchText && rulesTableData.length !== 0 && filterRulesData.length === 0 ? 
-									<Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event trigger created yet. Add a event trigger' /> }}  />
+								locale={{
+									emptyText: rulesTableData.length !== 0 ?
+										<EmptySearchResults searchText={searchText} /> :
+										<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event trigger created yet. Add a event trigger' />
+								}} />
 						</React.Fragment>
 					)}
 					{ruleModalVisible && <RuleForm
@@ -196,10 +199,11 @@ const EventingOverview = () => {
 						handleSubmit={handleSetRule}
 						dbList={dbList}
 						initialValues={ruleClickedInfo} />}
-					{FilterModalVisible && <FilterEvents
+					{filterModalVisible && <FilterEvents
 						handleCancel={() => setFilterModalVisible(false)}
 						handleSubmit={handleFilter}
 						dbList={dbList}
+						customEventTypes={customEventTypes}
 						initialValues={filters} />}
 				</div>
 			</div>

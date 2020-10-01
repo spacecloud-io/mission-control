@@ -6,25 +6,22 @@ import { useSelector } from 'react-redux'
 import { getTrackedCollections } from '../../operations/database';
 const { Option } = Select;
 
-const FilterEvents = ({ handleCancel, handleSubmit, initialValues, dbList }) => {
+const FilterEvents = ({ handleCancel, handleSubmit, initialValues, dbList, customEventTypes }) => {
   const [form] = Form.useForm();
 
   const formInitialValue = {
-    source: initialValues ? initialValues.source : '',
+    source: initialValues ? initialValues.source : undefined,
     options: {
       db: initialValues && initialValues.options ? initialValues.options.db : '',
       col: initialValues && initialValues.options ? initialValues.options.col : ''
     },
-    type: initialValues ? initialValues.type : ''
+    type: initialValues ? initialValues.type : undefined
   }
   const [selectedDb, setSelectedDb] = useState(formInitialValue && formInitialValue.db ? formInitialValue.db : "");
   const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
 
-  const [value, setValue] = useState("");
-
-  const handleSearch = value => setValue(value);
   const handleSelectDatabase = value => setSelectedDb(value)
-  
+
   const handleSubmitClick = () => {
     form.validateFields().then((filterValues) => {
       handleSubmit(filterValues)
@@ -64,15 +61,7 @@ const FilterEvents = ({ handleCancel, handleSubmit, initialValues, dbList }) => 
               <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={dbList.map(db => ({ value: db }))} />
             </Form.Item>
             <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
-              <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
-                {
-                  trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
-                    <Option key={data} value={data}>
-                      {data}
-                    </Option>
-                  ))
-                }
-              </AutoComplete>
+              <AutoComplete placeholder="Collection / Table name" options={trackedCollections.map(value => ({ value }))} />
             </Form.Item>
           </Input.Group>
           <FormItemLabel name="Filter by trigger operation" />
@@ -96,7 +85,7 @@ const FilterEvents = ({ handleCancel, handleSubmit, initialValues, dbList }) => 
         <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "custom"}>
           <FormItemLabel name="Filter by type" />
           <Form.Item name="type">
-            <Input placeholder="Custom event type (Example: my_custom_event_type)" defaultValue="" />
+            <AutoComplete placeholder="Custom event type (Example: my_custom_event_type)" options={customEventTypes.map(value => ({ value }))} />
           </Form.Item>
         </ConditionalFormBlock>
       </Form>

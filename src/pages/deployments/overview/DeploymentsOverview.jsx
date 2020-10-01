@@ -10,9 +10,10 @@ import source_code from "../../../assets/source_code.svg";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter } from "../../../utils";
 import { decrement } from "automate-redux";
 import { deleteService, getServices, getServicesStatus, loadServicesStatus } from "../../../operations/deployments";
-import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { projectModules, deploymentStatuses, actionQueuedMessage } from "../../../constants";
 import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults"
 
 const DeploymentsOverview = () => {
   const { projectID } = useParams();
@@ -37,13 +38,13 @@ const DeploymentsOverview = () => {
   const deploymentStatus = useSelector(state => getServicesStatus(state));
   const [searchText, setSearchText] = useState('')
 
-  const calculateStatus = (desiredReplicas, totalReplicas) =>{
+  const calculateStatus = (desiredReplicas, totalReplicas) => {
     const percent = totalReplicas / desiredReplicas * 100;
-    if(percent >= 80) {
+    if (percent >= 80) {
       return 'healthy'
-    }else if(percent > 0 && percent < 80){
+    } else if (percent > 0 && percent < 80) {
       return 'unhealthy'
-    }else{
+    } else {
       return 'dead'
     }
   }
@@ -51,6 +52,8 @@ const DeploymentsOverview = () => {
   // Derived state
   const data = deployments.map(obj => {
     const task = obj.tasks && obj.tasks.length ? obj.tasks[0] : {};
+    const desiredReplicas = deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0
+    const totalReplicas = deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0
     return {
       id: obj.id,
       version: obj.version,
@@ -79,14 +82,14 @@ const DeploymentsOverview = () => {
       whitelists: obj.whitelists,
       upstreams: obj.upstreams,
       statsInclusionPrefixes: obj.statsInclusionPrefixes,
-      desiredReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0,
-      totalReplicas: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0,
-      status: calculateStatus(deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] ? deploymentStatus[obj.id][obj.version].desiredReplicas : 0, deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas.filter(obj => obj.status === deploymentStatuses.RUNNING).length : 0),
+      desiredReplicas: desiredReplicas,
+      totalReplicas: totalReplicas,
+      status: calculateStatus(desiredReplicas, totalReplicas),
       deploymentStatus: deploymentStatus[obj.id] && deploymentStatus[obj.id][obj.version] && deploymentStatus[obj.id][obj.version].replicas ? deploymentStatus[obj.id][obj.version].replicas : []
     };
   });
 
-  const filterData = data.filter(service => {
+  const filteredData = data.filter(service => {
     return service.id.toLowerCase().includes(searchText.toLowerCase())
   })
 
@@ -163,12 +166,12 @@ const DeploymentsOverview = () => {
       dataIndex: "id",
       key: "id",
       render: (value) => {
-        return <Highlighter 
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={value ? value.toString() : ''}
-          />
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
       }
     },
     {
@@ -256,23 +259,25 @@ const DeploymentsOverview = () => {
             ))}
           {data && data.length !== 0 && (
             <React.Fragment>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
-                <h3 style={{ margin: 'auto 0' }}>Your Deployments </h3> 
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+                <h3 style={{ margin: 'auto 0' }}>Your Deployments </h3>
                 <div style={{ display: 'flex' }}>
-                  <Input.Search placeholder='Search by service id' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
-                  <Button style={{ marginLeft:'16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)} type="primary">Add</Button>
+                  <Input.Search placeholder='Search by service id' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+                  <Button style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/deployments/configure`)} type="primary">Add</Button>
                 </div>
               </div>
               <Table
                 bordered={true}
                 columns={tableColumns}
-                dataSource={filterData}
+                dataSource={filteredData}
                 rowKey={(record) => record.id + record.version}
                 expandedRowRender={expandedRowRender}
                 style={{ marginTop: 16 }}
-                locale={{ emptyText: data.length !== 0 && filterData.length === 0 ? 
-                  <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No deployment service created yet. Add a service' /> }}  
+                locale={{
+                  emptyText: data.length !== 0 ?
+                    <EmptySearchResults searchText={searchText} /> :
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No deployment service created yet. Add a service' />
+                }}
               />
             </React.Fragment>
           )}

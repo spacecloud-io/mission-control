@@ -9,12 +9,12 @@ import EditPrefixForm from "../../components/file-storage/EditPrefixForm"
 import { notify, getFileStorageProviderLabelFromStoreType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import { useHistory } from "react-router-dom";
 import fileStorageSvg from "../../assets/file-storage.svg"
-import { Button, Descriptions, Badge, Popconfirm, Table, Row, Input, Empty } from "antd"
+import { Button, Descriptions, Badge, Popconfirm, Table, Input, Empty } from "antd"
 import disconnectedImg from "../../assets/disconnected.jpg"
 import { loadFileStoreConnState, deleteFileStoreRule, saveFileStoreRule, saveFileStoreConfig, saveFileStorePrefix, getFileStoreRules, getFileStoreConfig, getFileStoreConnState, loadFileStoreRules } from '../../operations/fileStore';
 import { securityRuleGroups, projectModules, actionQueuedMessage } from '../../constants';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
 
 const Rules = () => {
 	const history = useHistory();
@@ -123,10 +123,10 @@ const Rules = () => {
 			.finally(() => decrementPendingRequests())
 	}, [])
 
-	const filterRules = rules.filter(rule => {
-			return rule.id.toLowerCase().includes(searchText.toLowerCase()) ||
-						 rule.prefix.toLowerCase().includes(searchText.toLowerCase())
-	}) 
+	const filteredRules = rules.filter(rule => {
+		return rule.id.toLowerCase().includes(searchText.toLowerCase()) ||
+			rule.prefix.toLowerCase().includes(searchText.toLowerCase())
+	})
 
 	const columns = [
 		{
@@ -134,11 +134,11 @@ const Rules = () => {
 			dataIndex: 'id',
 			key: 'id',
 			render: (value) => {
-				return <Highlighter 
-						highlightStyle= {{ backgroundColor: '#ffc069', padding: 0 }} 
-						searchWords={[searchText]}
-						autoEscape
-						textToHighlight={value ? value.toString() : ''} 
+				return <Highlighter
+					highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+					searchWords={[searchText]}
+					autoEscape
+					textToHighlight={value ? value.toString() : ''}
 				/>
 			}
 		},
@@ -147,11 +147,11 @@ const Rules = () => {
 			dataIndex: 'prefix',
 			key: 'prefix',
 			render: (value) => {
-				return <Highlighter 
-						highlightStyle= {{ backgroundColor: '#ffc069', padding: 0 }} 
-						searchWords={[searchText]}
-						autoEscape
-						textToHighlight={value ? value.toString() : ''} 
+				return <Highlighter
+					highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+					searchWords={[searchText]}
+					autoEscape
+					textToHighlight={value ? value.toString() : ''}
 				/>
 			}
 		},
@@ -209,18 +209,20 @@ const Rules = () => {
 						</div>}
 						{connected && <React.Fragment>
 							<div style={{ margin: '32px 0 16px 0', display: "flex", justifyContent: "space-between" }}>
-								<h3 style={{ margin: 'auto 0' }}>Security Rules</h3> 
+								<h3 style={{ margin: 'auto 0' }}>Security Rules</h3>
 								<div style={{ display: 'flex' }}>
 									<Input.Search placeholder='Search by rule name or prefix' style={{ minWidth: '320px' }} onChange={e => setSearchText(e.target.value)} allowClear={true} />
 									<Button style={{ marginLeft: '16px' }} onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button>
 								</div>
 							</div>
-							<Table 
-								dataSource={filterRules} 
+							<Table
+								dataSource={filteredRules}
 								columns={columns}
-								locale={{ emptyText: rules.length !== 0 && filterRules.length === 0 ? 
-									<Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No security rule created yet. Add a security rule' /> }}  />
+								locale={{
+									emptyText: rules.length !== 0 ?
+										<EmptySearchResults searchText={searchText} /> :
+										<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No security rule created yet. Add a security rule' />
+								}} />
 						</React.Fragment>}
 					</React.Fragment>}
 					{addRuleModalVisible && <AddRuleForm

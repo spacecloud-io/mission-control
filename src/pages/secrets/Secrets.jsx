@@ -12,7 +12,7 @@ import { notify } from "../../utils";
 import { saveSecret, deleteSecret, getSecrets } from "../../operations/secrets";
 import { projectModules, actionQueuedMessage } from "../../constants";
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons'
+import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
 
 const Secrets = () => {
   const history = useHistory();
@@ -31,10 +31,10 @@ const Secrets = () => {
     ReactGA.pageview("/projects/secrets");
   }, [])
 
-  const filterSecrets = secrets.filter(secret => {
+  const filteredSecrets = secrets.filter(secret => {
     return secret.id.toLowerCase().includes(searchText.toLowerCase())
   })
-  
+
   // Handlers
   const handleAddSecret = (secretConfig) => {
     return new Promise((resolve, reject) => {
@@ -83,12 +83,12 @@ const Secrets = () => {
       title: "Name",
       dataIndex: "id",
       render: (value) => {
-        return <Highlighter 
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={value ? value.toString() : ''}
-          />
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
       }
     },
     {
@@ -142,21 +142,23 @@ const Secrets = () => {
       <div>
         <Sidenav selectedItem={projectModules.SECRETS} />
         <div className="page-content">
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
-            <h3 style={{ margin: 'auto 0' }}>Secrets </h3> 
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+            <h3 style={{ margin: 'auto 0' }}>Secrets </h3>
             <div style={{ display: 'flex' }}>
-              <Input.Search placeholder='Search by secret name' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
-              <Button style={{ marginLeft:'16px' }} onClick={() => setSecretModalVisible(true)} type="primary">Add</Button>
+              <Input.Search placeholder='Search by secret name' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+              <Button style={{ marginLeft: '16px' }} onClick={() => setSecretModalVisible(true)} type="primary">Add</Button>
             </div>
           </div>
           <Table
             columns={columns}
-            dataSource={filterSecrets}
+            dataSource={filteredSecrets}
             bordered={true}
             onRow={(record) => { return { onClick: event => { handleSecretView(record.id) } } }}
-            locale={{ emptyText: secrets.length !== 0 && filterSecrets.length === 0 ? 
-              <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No secrets created yet. Add a secret' /> }}  />
+            locale={{
+              emptyText: secrets.length !== 0 ?
+                <EmptySearchResults searchText={searchText} /> :
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No secrets created yet. Add a secret' />
+            }} />
           {secretModalVisible && (
             <AddSecret
               handleCancel={handleSecretModalCancel}

@@ -25,7 +25,7 @@ const ExploreIntegrations = () => {
       <ProjectPageLayout>
         <IntegrationTabs activeKey='explore' projectID={projectID} />
         <Content>
-          <center><Input.Search placeholder='Search by integration name' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} /></center>
+          <Input.Search placeholder='Search by integration name' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
           <Row>
             <Col lg={{ span: 20 }} sm={{ span: 14 }}>
               <IntegrationsList 

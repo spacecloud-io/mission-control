@@ -19,7 +19,7 @@ import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, l
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import { getSecrets } from '../../../operations/secrets';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons'
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
 
 const Overview = () => {
   // Router params
@@ -207,7 +207,7 @@ const Overview = () => {
   }
   const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
 
-  const filterTrackedCollections = trackedCollections.filter(collection => {
+  const filteredTrackedCollections = trackedCollections.filter(collection => {
     return collection.name.toLowerCase().includes(searchText.toLowerCase());
   })
 
@@ -328,10 +328,10 @@ const Overview = () => {
               </div>
               <Table 
                 columns={trackedTableColumns} 
-                dataSource={filterTrackedCollections} 
+                dataSource={filteredTrackedCollections} 
                 bordered 
-                locale={{ emptyText: trackedCollections.length !== 0 && filterTrackedCollections.length === 0 ? 
-                  <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
+                locale={{ emptyText: trackedCollections.length !== 0 ? 
+                  <EmptySearchResults searchText={searchText} /> : 
                   <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked table created yet. Add a table' /> }}  />    
               {unTrackedCollections.length > 0 && (
                 <Row>

@@ -3,7 +3,7 @@ import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from "../../utils"
 import ReactGA from 'react-ga';
-import { LeftOutlined, SearchOutlined } from '@ant-design/icons';
+import { LeftOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm, Input, Empty } from "antd";
 import Topbar from "../../components/topbar/Topbar"
 import Sidenav from "../../components/sidenav/Sidenav"
@@ -11,6 +11,7 @@ import endpointImg from "../../assets/structure.svg"
 import { endpointTypes, securityRuleGroups, projectModules, actionQueuedMessage } from "../../constants"
 import { deleteRemoteServiceEndpoint, getRemoteServiceEndpoints } from "../../operations/remoteServices"
 import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
 
 const ServiceTopBar = ({ projectID, serviceName }) => {
 
@@ -52,14 +53,18 @@ const RemoteService = () => {
   const [searchText, setSearchText] = useState('')
 
   // Derived state
-  const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => ({ name, method, path, kind }))
+  const endpointsTableData = Object.entries(endpoints).map(([name, { path, kind, method }]) => {
+    return {
+      name,
+      method,
+      kind,
+      path: kind === endpointTypes.PREPARED ? `http://localhost:4122/v1/api/${projectID}/graphql` : path
+    }
+  })
   const noOfEndpoints = endpointsTableData.length
-  
-  const filterEndpointsData = endpointsTableData.filter(endpoint => {
-    return endpoint.kind !== endpointTypes.PREPARED ? endpoint.path.toLowerCase().includes(searchText.toLowerCase()) ||
-           endpoint.name.toLowerCase().includes(searchText.toLowerCase()) :
-           `http://localhost:4122/v1/api/${projectID}/graphql`.toLowerCase().includes(searchText.toLowerCase()) ||
-           endpoint.name.toLowerCase().includes(searchText.toLowerCase())    
+
+  const filteredEndpointsData = endpointsTableData.filter(endpoint => {
+    return endpoint.path.toLowerCase().includes(searchText.toLowerCase()) || endpoint.name.toLowerCase().includes(searchText.toLowerCase())
   })
 
   // Handlers
@@ -79,12 +84,12 @@ const RemoteService = () => {
       dataIndex: 'name',
       key: 'name',
       render: (value) => {
-        return <Highlighter 
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={value ? value.toString() : ''}
-          />
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
       }
     },
     {
@@ -115,23 +120,17 @@ const RemoteService = () => {
         { text: 'GET', value: 'GET' },
         { text: 'DELETE', value: 'DELETE' }
       ],
-      onFilter: (value, { method, kind}) => kind !== endpointTypes.PREPARED ? method.indexOf(value) === 0 : 'POST'.indexOf(value) === 0 
+      onFilter: (value, { method, kind }) => kind !== endpointTypes.PREPARED ? method.indexOf(value) === 0 : 'POST'.indexOf(value) === 0
     },
     {
       title: 'Path',
-      render: (_, { kind, path }) => 
-        kind === endpointTypes.PREPARED ? 
-          <Highlighter 
-          highlightStyle= {{ backgroundColor: '#ffc069', padding: 0 }} 
+      render: (_, { path }) =>
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[searchText]}
           autoEscape
-          textToHighlight={`http://localhost:4122/v1/api/${projectID}/graphql`} 
-          /> : <Highlighter 
-          highlightStyle= {{ backgroundColor: '#ffc069', padding: 0 }} 
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={path ? path.toString() : ''} 
-          /> 
+          textToHighlight={path ? path.toString() : ''}
+        />
     },
     {
       title: 'Actions',
@@ -165,20 +164,22 @@ const RemoteService = () => {
           </div>}
           {noOfEndpoints > 0 && (
             <React.Fragment>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
-                <h3 style={{ margin: 'auto 0' }}>Endpoints </h3> 
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+                <h3 style={{ margin: 'auto 0' }}>Endpoints </h3>
                 <div style={{ display: 'flex' }}>
-                  <Input.Search placeholder='Search by endpoint name or path' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
-                  <Button style={{ marginLeft:'16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/add`)} type="primary">Add</Button>
+                  <Input.Search placeholder='Search by endpoint name or path' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+                  <Button style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/add`)} type="primary">Add</Button>
                 </div>
               </div>
-              <Table 
-                columns={tableColumns} 
-                dataSource={filterEndpointsData} 
+              <Table
+                columns={tableColumns}
+                dataSource={filteredEndpointsData}
                 pagination={false}
-                locale={{ emptyText: endpointsTableData.length !== 0 && filterEndpointsData.length === 0 ? 
-                  <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} /> : 
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No endpoint created yet. Add a endpoint' /> }}  />
+                locale={{
+                  emptyText: endpointsTableData.length !== 0 ?
+                    <EmptySearchResults searchText={searchText} /> :
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No endpoint created yet. Add a endpoint' />
+                }} />
             </React.Fragment>
           )}
         </div>

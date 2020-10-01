@@ -37,7 +37,7 @@ const InstalledIntegrations = () => {
       <ProjectPageLayout>
         <IntegrationTabs activeKey='installed' projectID={projectID} />
         <Content>
-          <center><Input.Search placeholder='Search by installed integration name' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} /></center>
+          <Input.Search placeholder='Search by installed integration name' style={{ width:'320px', marginBottom: '16px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
           {installedIntegrations.length === 0 && emptyState}
           {installedIntegrations.length > 0 && (
             <Row>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col, Card, Button, Typography, Upload, Empty } from "antd";
+import { Row, Col, Card, Button, Typography, Upload } from "antd";
 import IntegrationCard from "../integration-card/IntegrationCard";
 import { incrementPendingRequests, decrementPendingRequests, notify, formatIntegrationImageUrl } from "../../../utils";
 import { deleteIntegration } from "../../../operations/integrations";
@@ -9,7 +9,7 @@ import uploadSvg from '../../../assets/upload.svg';
 import { useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import EmptySearchResults from "../../utils/empty-search-results/EmptySearchResults"
 
 const { Paragraph } = Typography;
 
@@ -19,7 +19,7 @@ function IntegrationsList({ integrations, showUploadCard, searchText }) {
   const { projectID } = useParams()
   const dispatch = useDispatch();
 
-  const filterIntegrations = integrations.filter(integration => {
+  const filteredIntegrations = integrations.filter(integration => {
     return integration.name.toLowerCase().includes(searchText.toLowerCase())
   })
 
@@ -95,7 +95,7 @@ function IntegrationsList({ integrations, showUploadCard, searchText }) {
           </Card>
         </Col>
       )}
-      {filterIntegrations.map(({ id, name, description, installed, appUrl }) => {
+      {filteredIntegrations.map(({ id, name, description, installed, appUrl }) => {
         return (
           <Col lg={{ span: 8 }}>
             <IntegrationCard
@@ -113,9 +113,9 @@ function IntegrationsList({ integrations, showUploadCard, searchText }) {
           </Col>
         )
       })}
-      {!filterUploadIntegration && filterIntegrations.length === 0 && 
+      {!filterUploadIntegration && filteredIntegrations.length === 0 && 
         <Col span={20} offset={4}>
-          <Empty image={<SearchOutlined style={{ fontSize:'64px', opacity:'25%'  }}/>} description={<p style={{ marginTop:'-30px', opacity: '50%' }}>No search result found for <b>'{searchText}'</b></p>} />
+          <EmptySearchResults searchText={searchText} />
         </Col>}
     </Row>
   )
