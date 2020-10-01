@@ -32,7 +32,7 @@ const Topbar = (props) => {
   const handleDBSelect = (dbName) => {
     setLastUsedValues(projectID, { db: dbName });
     history.push(`/mission-control/projects/${projectID}/database/${dbName}`)
-  } // MARK
+  }
   const svgIcon = dbIcons(selectedDB)
   const content = (
     <div className="popContent">
