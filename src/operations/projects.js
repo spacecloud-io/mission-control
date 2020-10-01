@@ -48,6 +48,8 @@ export const deleteProject = (projectId) => {
         const newProjects = projects.filter(obj => obj.id !== projectId)
         if (!queued) {
           store.dispatch(set("projects", newProjects))
+          localStorage.removeItem("lastOpenedProject")
+          localStorage.removeItem(`lastUsedValues:${projectId}`)
         }
         resolve({ queued, newProjects })
       })

@@ -8,7 +8,7 @@ import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 import ReactGA from 'react-ga'
 import '../database.css';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests, setLastUsedValues } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
 import { getSecrets } from "../../../operations/secrets";
 import { useSelector } from 'react-redux';
@@ -32,6 +32,7 @@ const AddDb = () => {
       .then(({ queued, enabledEventing }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
+          setLastUsedValues(projectID, { db: alias})
           notify("success", "Success", "Successfully added database")
           if (enabledEventing) {
             notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")

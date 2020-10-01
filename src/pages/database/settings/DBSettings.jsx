@@ -6,7 +6,7 @@ import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
+import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage, setLastUsedValues } from '../../../utils';
 import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
@@ -103,6 +103,7 @@ const Settings = () => {
     removeDbConfig(projectID, selectedDB)
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
+          setLastUsedValues(projectID, { db: ""});
           history.push(`/mission-control/projects/${projectID}/database`)
           notify("success", "Success", "Successfully removed database config")
           if (disabledEventing) {
