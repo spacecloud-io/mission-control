@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { notify, canGenerateToken } from '../../../utils';
+import { notify, canGenerateToken, isJson } from '../../../utils';
 import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip, InputNumber } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -17,6 +17,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
+import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -47,7 +48,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
   const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
   const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
   const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
@@ -61,8 +62,10 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     name: name,
     method: method ? method : "POST",
     path: path,
-    overrideToken: token ? true : false,
+    overrideToken: token || claims ? true : false,
+    overrideTokenMechanism: claims ? "claims" : (token ? "token" : "claims"),
     token: token,
+    claims: claims ? JSON.stringify(claims, null, 2) : "",
     setHeaders: headers && headers.length > 0 ? true : false,
     headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (requestTemplate || responseTemplate) ? true : false,
@@ -72,7 +75,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
 
   const handleFinish = (values) => {
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, applyTransformations, overrideToken, outputFormat, headers, setHeaders, timeout } = values
+    const { kind, name, method, path, token, claims, applyTransformations, overrideToken, overrideTokenMechanism, outputFormat, headers, setHeaders, timeout } = values
     try {
       handleSubmit(
         kind,
@@ -80,7 +83,8 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
         method,
         path,
         rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
-        overrideToken ? token : undefined,
+        overrideToken && overrideTokenMechanism === "token" ? token : undefined,
+        overrideToken && overrideTokenMechanism === "claims" ? JSON.parse(claims) : undefined,
         outputFormat,
         (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
         (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
@@ -279,19 +283,53 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                   dependency='overrideToken'
                   condition={() => form.getFieldValue('overrideToken') === true}
                 >
-                  <FormItemLabel name='Token' />
-                  <Input.Group compact style={{ display: "flex" }}>
-                    <Form.Item
-                      name="token"
-                      style={{ flexGrow: 1 }}
-                      rules={[{ required: true, message: 'Please provide a token!' }]}
-                    >
-                      <Input.Password placeholder="JWT Token" />
+                  <Form.Item name="overrideTokenMechanism">
+                    <Radio.Group>
+                      <Radio.Button value="claims">JSON claims (recommended)</Radio.Button>
+                      <Radio.Button value="token">Raw token</Radio.Button>
+                    </Radio.Group>
+                  </Form.Item>
+                  <ConditionalFormBlock
+                    dependency='overrideTokenMechanism'
+                    condition={() => form.getFieldValue('overrideTokenMechanism') === "claims"}
+                  >
+                    <Form.Item name='claims' rules={[{ required: true }, {
+                      validateTrigger: "onBlur",
+                      validator: (_, value, cb) => {
+                        if (value && !isJson(value)) {
+                          cb("Please provide a valid JSON object!")
+                          return
+                        }
+                        cb()
+                      }
+                    }]}>
+                      <AntCodeMirror options={{
+                        mode: { name: 'javascript', json: true },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2
+                      }} />
                     </Form.Item>
-                    <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
-                      <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
-                    </Tooltip>
-                  </Input.Group>
+                  </ConditionalFormBlock>
+                  <ConditionalFormBlock
+                    dependency='overrideTokenMechanism'
+                    condition={() => form.getFieldValue('overrideTokenMechanism') === "token"}
+                  >
+                    <Input.Group compact style={{ display: "flex" }}>
+                      <Form.Item
+                        name="token"
+                        style={{ flexGrow: 1 }}
+                        rules={[{ required: true, message: 'Please provide a token!' }]}
+                      >
+                        <Input.Password placeholder="JWT Token" />
+                      </Form.Item>
+                      <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                        <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                      </Tooltip>
+                    </Input.Group>
+                  </ConditionalFormBlock>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
                   <FormItemLabel name='Modify request headers' />
