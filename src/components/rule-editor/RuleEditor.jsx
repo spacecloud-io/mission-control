@@ -10,10 +10,14 @@ import 'codemirror/addon/edit/closebrackets.js';
 import "./rule-editor.css"
 import { notify } from "../../utils";
 import useDeepCompareEffect from 'use-deep-compare-effect'
+import Highlighter from "react-highlight-words";
+import EmptySearchResults from "../utils/empty-search-results/EmptySearchResults";
 
-const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit }) => {
+const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRules = true, handleSelect, canDeleteRules = false, handleDelete, handleSubmit, searchText }) => {
   const entries = Object.entries(rules)
-
+  const filteredEntries = entries.filter(rule => {
+    return rule[0].toLowerCase().includes(searchText.toLowerCase())
+  })
   const noOfRules = entries.length;
 
   const [selectedRule, setSelectedRule] = useState("")
@@ -64,16 +68,24 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
       {(noOfRules > 0) && <div>
         <Row type="flex">
           <Col xs={24} sm={24} md={24} lg={8} xl={6} className="rule-editor__rule-list">
-            {entries.map(([ruleName, obj]) => {
+            {filteredEntries.map(([ruleName, obj]) => {
               return <div
                 className={`rule-editor__rule-item ${selectedRuleName === ruleName ? "rule-editor__rule-item--active" : ""} `}
                 onClick={() => handleSelect(ruleName)}>
-                <span>{ruleName}</span>
+                <Highlighter
+                  highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                  searchWords={[searchText]}
+                  autoEscape
+                  textToHighlight={ruleName ? ruleName.toString() : ''}
+                />
                 {canDeleteRules && <i className="material-icons" onClick={(e) => handleDeleteClick(e, ruleName)}>delete</i>}
               </div>
             })}
           </Col>
-          <Col xs={24} sm={24} md={24} lg={16} xl={18}>
+          {entries.length !== 0 && <Col span={24} style={{ paddingTop: 24 }}>
+            <EmptySearchResults searchText={searchText} />
+          </Col>}
+          {filteredEntries.length !== 0 && <Col xs={24} sm={24} md={24} lg={16} xl={18}>
             <div className='code'>
               <CodeMirror
                 value={selectedRule}
@@ -92,7 +104,7 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
             <div className="rule-editor__footer">
               <Button type="primary" disabled={!unSavedChanges} onClick={handleSaveClick}>Save</Button>
             </div>
-          </Col>
+          </Col>}
         </Row>
       </div>}
     </div>

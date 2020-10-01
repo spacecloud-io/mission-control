@@ -139,6 +139,60 @@ export const eventingTriggers = [
     "url": "http://localhost:3000/v1/my-event",
     "retries": 3,
     "timeout": 5000
+  },
+  {
+    "id": "UserAdded",
+    "type": "DB_INSERT",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb",
+      "col": "users"
+    }
+  },
+  {
+    "id": "UserDeleted",
+    "type": "DB_DELETE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb",
+      "col": "users"
+    }
+  },
+  {
+    "id": "PostAdded",
+    "type": "DB_INSERT",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb2",
+      "col": "posts"
+    }
+  },
+  {
+    "id": "FileAdded",
+    "type": "FILE_CREATE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
+  },
+  {
+    "id": "FileDeleted",
+    "type": "FILE_DELETE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
+  },
+  {
+    "id": "Trigger2",
+    "type": "MY_CUSTOM_EVENT2",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
   }
 ]
 
@@ -243,6 +297,7 @@ export const remoteServices = [
       "login": {
         "method": "POST",
         "path": "/v1/login",
+        "kind": "internal",
         "rule": {
           "rule": "allow"
         },
@@ -280,6 +335,194 @@ export const remoteServices = [
 export const services = [
   {
     "id": "service1",
+    "version": "v1",
+    "projectId": "todoapp",
+    "scale": {
+      "replicas": 0,
+      "minReplicas": 0,
+      "maxReplicas": 10,
+      "concurrency": 50,
+      "mode": "per-second"
+    },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
+    "tasks": [
+      {
+        "id": "task1",
+        "ports": [
+          {
+            "protocol": "http",
+            "port": 8080,
+            "name": "http"
+          },
+          {
+            "protocol": "http",
+            "port": 8081,
+            "name": "http"
+          }
+        ],
+        "resources": {
+          "cpu": 200,
+          "memory": 200,
+          "gpu": {
+            "type": "amd",
+            "value": 25
+          }
+        },
+        "docker": {
+          "cmd": ["node ./index.js"],
+          "image": "asd",
+          "secret": "DockerHubSecret",
+          "imagePullPolicy": "always"
+        },
+        "secrets": [
+          "EnvSecret"
+        ],
+        "env": {
+          "f00": "bar",
+          "key1": "val1"
+        },
+        "runtime": "image"
+      }
+    ],
+    "affinity": [
+      {
+        "id": "123",
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpressions": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
+    "whitelists": [
+      {
+        "projectId": "todoapp",
+        "service": "s1"
+      },
+      {
+        "projectId": "todoapp",
+        "service": "s2"
+      }
+    ],
+    "upstreams": [
+      {
+        "projectId": "todoapp",
+        "service": "s3"
+      },
+      {
+        "projectId": "myapp",
+        "service": "s4"
+      }
+    ],
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
+  },
+  {
+    "id": "service1",
+    "version": "v2",
+    "projectId": "todoapp",
+    "scale": {
+      "replicas": 0,
+      "minReplicas": 0,
+      "maxReplicas": 10,
+      "concurrency": 50,
+      "mode": "per-second"
+    },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
+    "tasks": [
+      {
+        "id": "task1",
+        "ports": [
+          {
+            "protocol": "http",
+            "port": 8080,
+            "name": "http"
+          },
+          {
+            "protocol": "http",
+            "port": 8081,
+            "name": "http"
+          }
+        ],
+        "resources": {
+          "cpu": 200,
+          "memory": 200,
+          "gpu": {
+            "type": "amd",
+            "value": 25
+          }
+        },
+        "docker": {
+          "cmd": ["node ./index.js"],
+          "image": "asd",
+          "secret": "DockerHubSecret",
+          "imagePullPolicy": "always"
+        },
+        "secrets": [
+          "EnvSecret"
+        ],
+        "env": {
+          "f00": "bar",
+          "key1": "val1"
+        },
+        "runtime": "image"
+      }
+    ],
+    "affinity": [
+      {
+        "id": "123",
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpressions": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
+    "whitelists": [
+      {
+        "projectId": "todoapp",
+        "service": "s1"
+      },
+      {
+        "projectId": "todoapp",
+        "service": "s2"
+      }
+    ],
+    "upstreams": [
+      {
+        "projectId": "todoapp",
+        "service": "s3"
+      },
+      {
+        "projectId": "myapp",
+        "service": "s4"
+      }
+    ],
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
+  },
+  {
+    "id": "service2",
     "version": "v1",
     "projectId": "todoapp",
     "scale": {

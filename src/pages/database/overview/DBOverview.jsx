@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 import ReactGA from 'react-ga';
 
-import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
+import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty, Input } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
@@ -18,6 +18,8 @@ import history from '../../../history';
 import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import { getSecrets } from '../../../operations/secrets';
+import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
 
 const Overview = () => {
   // Router params
@@ -38,6 +40,7 @@ const Overview = () => {
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
+  const [searchText, setSearchText] = useState('');
 
   // Derived state
   const { hostName, port } = parseDbConnString(connString);
@@ -203,11 +206,24 @@ const Overview = () => {
     })
   }
   const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
+
+  const filteredTrackedCollections = trackedCollections.filter(collection => {
+    return collection.name.toLowerCase().includes(searchText.toLowerCase());
+  })
+
   const trackedTableColumns = [
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      render: (value) => {
+        return <Highlighter
+                  highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                  searchWords={[searchText]}
+                  autoEscape
+                  textToHighlight={value ? value.toString() : ''}
+                />
+      }
     },
     {
       title: 'Realtime',
@@ -300,20 +316,23 @@ const Overview = () => {
               </div>
             </div>}
             {connected && <React.Fragment>
-              <div>
-                <div style={{ marginTop: '32px' }}>
-                  <span className='collections'>
-                    Tracked {label}s
-                    </span>
-                  <Button style={{ float: "right" }} type="primary"
+              <div style={{ margin: '32px 0 16px 0', display: 'flex', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 'auto 0' }}>Tracked {label}s </h3>
+                <div style={{ display: 'flex' }}>
+                  <Input.Search placeholder={`Search by ${label} name`} style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)}/>
+                  <Button style={{ marginLeft:'16px' }} type="primary"
                     onClick={handleAddClick}>
                     Add {label}
                   </Button>
                 </div>
-                <div style={{ marginTop: '32px' }}>
-                  <Table columns={trackedTableColumns} dataSource={trackedCollections} bordered locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' /> }} />
-                </div>
               </div>
+              <Table 
+                columns={trackedTableColumns} 
+                dataSource={filteredTrackedCollections} 
+                bordered 
+                locale={{ emptyText: trackedCollections.length !== 0 ? 
+                  <EmptySearchResults searchText={searchText} /> : 
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked table created yet. Add a table' /> }}  />    
               {unTrackedCollections.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>

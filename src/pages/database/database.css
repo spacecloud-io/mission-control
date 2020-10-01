@@ -77,13 +77,6 @@
     cursor: pointer;
 }
 
-.collections {
-    font-style: normal;
-    font-size: 18px;
-    line-height: 27px;
-    color: rgba(0,0,0,0.87);
-}
-
 .tablehead {
     color: black;
     text-align: center;

@@ -31,7 +31,6 @@ function graphQLAPIHandler(request, schema) {
 export function makeServer({ environment = "development" } = {}) {
   let server = new Server({
     environment,
-    fixtures: fixtures,
 
     routes() {
       this.namespace = "v1";

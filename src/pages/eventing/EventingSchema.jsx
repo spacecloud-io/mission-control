@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Input } from "antd";
 import ReactGA from 'react-ga';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
@@ -13,6 +13,7 @@ import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
 import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
 import { projectModules, actionQueuedMessage } from "../../constants";
+import Highlighter from 'react-highlight-words';
 
 const EventingSchema = () => {
   // Router params
@@ -41,6 +42,7 @@ const EventingSchema = () => {
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
+  const [searchText, setSearchText] = useState('')
 
   // Derived state
   const customEventTypes = Object.entries(eventRules)
@@ -112,12 +114,13 @@ const EventingSchema = () => {
       <div className="page-content page-content--no-padding">
         <EventTabs activeKey="schema" projectID={projectID} />
         <div className="event-tab-content">
-          <h3 style={{ display: "flex", justifyContent: "space-between" }}>
-            Schema
-            <Button type="primary" onClick={() => setAddColModalVisible(true)}>
-              Add
-            </Button>
-          </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
+            <h3 style={{ margin: 'auto 0' }}>Schema </h3> 
+            <div style={{ display: 'flex' }}>
+              <Input.Search placeholder='Search by event type' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+              <Button style={{ marginLeft:'16px' }} onClick={() => setAddColModalVisible(true)} type="primary">Add</Button>
+            </div>
+          </div>
           <RuleEditor
             rules={schemas}
             selectedRuleName={selectedEvent}
@@ -127,6 +130,7 @@ const EventingSchema = () => {
             handleDelete={handleDelete}
             stringifyRules={false}
             emptyState={<EmptyState />}
+            searchText={searchText}
           />
           {addColModalVisible && (
             <EventSchemaForm
