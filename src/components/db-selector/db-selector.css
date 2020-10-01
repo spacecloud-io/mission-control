@@ -3,7 +3,7 @@
   margin-right: 16px !important;
 }
 
-.db-dropdown .ant-select-selection--single{
+.db-dropdown .ant-select-selection--single {
   font-size: 12px;
   width: 170px;
 }
@@ -15,7 +15,7 @@
 }
 
 .select-database .checked {
-  color: #FF6700;
+  color: #ff6700;
 }
 
 .select-database .modal-header .header .line {

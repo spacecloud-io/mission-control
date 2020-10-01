@@ -1,90 +1,89 @@
 .welcome-page {
-    background-image: url("../../assets/Wave.svg");
-    background-size: cover;
-    height: 100vh;
-    overflow: hidden;
-    text-align: center;
+  background-image: url("../../assets/Wave.svg");
+  background-size: cover;
+  height: 100vh;
+  overflow: hidden;
+  text-align: center;
 }
 
 .welcome-page .outer-rectangle {
-    background: #ff6700;
-    border-radius: 60px;
-    position: absolute;
-    top: 20vh;
-    bottom: 15vh;
-    left: 34vw;
-    right: 34vw;
+  background: #ff6700;
+  border-radius: 60px;
+  position: absolute;
+  top: 20vh;
+  bottom: 15vh;
+  left: 34vw;
+  right: 34vw;
 }
 
 .welcome-page .inner-rectangle {
-    background: #002C39;
-    border-radius: 60px;
-    position: absolute;
-    top: 22vh;
-    bottom: 17vh;
-    left: 31vw;
-    right: 31vw;
-    color: #FFF;
-    padding: 56px 0;
+  background: #002c39;
+  border-radius: 60px;
+  position: absolute;
+  top: 22vh;
+  bottom: 17vh;
+  left: 31vw;
+  right: 31vw;
+  color: #fff;
+  padding: 56px 0;
 }
-@media screen and (max-width:768px) {
-    .welcome-page .inner-rectangle {
-        top: 21.5vh;
-        bottom: 16.5vh;
-        left: 15vw;
-        right: 15vw;
-        padding: 16px 0;
-    }
-    .welcome-page .outer-rectangle {
-        top: 20vh;
-        bottom: 15vh;
-        left: 20vw;
-        right: 20vw;
-    }
+@media screen and (max-width: 768px) {
+  .welcome-page .inner-rectangle {
+    top: 21.5vh;
+    bottom: 16.5vh;
+    left: 15vw;
+    right: 15vw;
+    padding: 16px 0;
+  }
+  .welcome-page .outer-rectangle {
+    top: 20vh;
+    bottom: 15vh;
+    left: 20vw;
+    right: 20vw;
+  }
 }
 
 .welcome-page .welcome {
-    font-size: 32px;
-    font-weight: 500;
+  font-size: 32px;
+  font-weight: 500;
 }
 
 .welcome-page .text {
-    margin-top: 32px;
-    padding: 0 64px;
-    font-size: 16px;
+  margin-top: 32px;
+  padding: 0 64px;
+  font-size: 16px;
 }
 
 .welcome-page .create-btn {
-    font-weight: 600;
-    margin-top: 48px;
+  font-weight: 600;
+  margin-top: 48px;
 }
 
 .welcome-page .content {
-    transform: translateY(26%);
+  transform: translateY(26%);
 }
-@media screen and (max-width:480px) {
-    .welcome-page .content {
-        transform: translateY(6%);
-    }
+@media screen and (max-width: 480px) {
+  .welcome-page .content {
+    transform: translateY(6%);
+  }
 }
-@media screen and (min-width:480px) and (max-width:600px) {
-    .welcome-page .content {
-        transform: translateY(35%);
-    }
+@media screen and (min-width: 480px) and (max-width: 600px) {
+  .welcome-page .content {
+    transform: translateY(35%);
+  }
 }
-@media screen and (min-width:600px) and (max-width:1024px){
-    .welcome-page .content {
-        transform: translateY(4%);
-    }
-}
-
-@media screen and (max-width:450px) {
-    .welcome-page .text {
-        padding: 0 32px;
-        margin-top: 24px;
-    }
-    .welcome-page .create-btn {
-        margin-top: 32px;
-    }
+@media screen and (min-width: 600px) and (max-width: 1024px) {
+  .welcome-page .content {
+    transform: translateY(4%);
+  }
 }
 
+@media screen and (max-width: 450px) {
+  .welcome-page .text {
+    padding: 0 32px;
+    margin-top: 24px;
+  }
+  .welcome-page .create-btn {
+    margin-top: 32px;
+  }
+}

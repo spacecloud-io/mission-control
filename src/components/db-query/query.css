@@ -1,5 +1,5 @@
 .query-block {
-  background: #F6F7F8;
+  background: #f6f7f8;
 }
 
 .query-font {
@@ -16,11 +16,11 @@
 }
 
 .darkTheme .cm-s-default.CodeMirror {
-  background-color: #F6F7F8;
+  background-color: #f6f7f8;
 }
 
 .darkTheme .cm-s-default .CodeMirror-gutters {
-  background: #EEEEEE;
+  background: #eeeeee;
   color: rgb(83, 127, 126);
   border: none;
 }

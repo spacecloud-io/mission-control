@@ -5,9 +5,9 @@
 }
 
 .select-project .checked {
-  color: #FF6700;
+  color: #ff6700;
 }
 
-.select-project  .modal-header .header .line {
+.select-project .modal-header .header .line {
   margin-bottom: 0;
 }

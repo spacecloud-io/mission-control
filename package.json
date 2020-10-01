@@ -53,8 +53,8 @@
     "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "format": "npm run lint:js; npm run lint:css",
-    "format:css": "prettier --write src/**/*.{css}",
+    "format": "npm run format:js; npm run format:css",
+    "format:css": "prettier --write src/**/*.css",
     "format:js": "prettier --write src/**/*.{js,jsx}",
     "lint": "eslint src/**/*.{js,jsx}"
   },

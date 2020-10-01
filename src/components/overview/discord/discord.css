@@ -1,16 +1,16 @@
-.discord-card{
-    text-align:center;
-    padding: 24px;
+.discord-card {
+  text-align: center;
+  padding: 24px;
 }
 
-.discord-btn{
-    color:#ffffff;
-    background-color:#7289DA;
-    border:none;
-    padding:5px 5px;
-    margin-top: 3%;
-    font-size: 18px;
-    width: 100%;
-    cursor: pointer;
-    border: 1px solid #7289DA;
+.discord-btn {
+  color: #ffffff;
+  background-color: #7289da;
+  border: none;
+  padding: 5px 5px;
+  margin-top: 3%;
+  font-size: 18px;
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid #7289da;
 }
