@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import client from "../../../client";
 import ReactGA from 'react-ga';
-import { Cascader, Alert } from "antd";
+import { Cascader, Alert, Input } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
@@ -14,6 +14,7 @@ import { getServices, loadServicesStatus, getServicesStatus } from "../../../ope
 import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { projectModules } from "../../../constants";
 import { getToken } from "../../../operations/cluster";
+import Highlighter from 'react-highlight-words';
 
 const DeploymentLogs = (props) => {
   const { projectID } = useParams()
@@ -23,6 +24,8 @@ const DeploymentLogs = (props) => {
   const { id, version, replica, task } = props.location.state ? props.location.state : {};
   const [cascaderValue, setCascaderValue] = useState([id, version, replica, task])
   const [logsCompleted, setLogsCompleted] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const regex = new RegExp(`${searchText.toLowerCase()}`)
   const token = getToken()
 
   const fetchLogs = (task, replica) => {
@@ -133,12 +136,19 @@ const DeploymentLogs = (props) => {
             placeholder="Please select"
             value={cascaderValue}
           />
-          <FormItemLabel name="Logs" />
+          <div style={{ display: 'flex', justifyContent:'space-between' }}>
+            <FormItemLabel name="Logs" />
+            <Input.Search placeholder='Type any regex pattern to search for logs' style={{ width: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)}  /> 
+          </div>
           <Alert
             message={logsCompleted ? "The logs stream is closed. Checkout the replica status to make sure the replica is still up." : "Logs are streamed here in realtime."}
             type="info"
             showIcon />
-          {logs && < div className="terminal-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(logs) }} ></div>}
+          {logs && <Highlighter highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+            searchWords={[searchText]}
+            autoEscape
+            className="terminal-wrapper"
+            textToHighlight={regex.test(logs.toLowerCase()) ? DOMPurify.sanitize(logs) : ''} />}
           {!logs &&
             (
               <div className="terminal-wrapper" >
