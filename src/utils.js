@@ -27,6 +27,25 @@ const embeddedSvg = require('./assets/embeddedSmall.svg')
 
 const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+export function getGraphQLEndpoints(projectId) {
+  const protocol = window.location.protocol
+  const host = window.location.host
+  let httpProtocol, wsProtocol;
+
+  if (protocol === "https:") {
+    httpProtocol = "https:"
+    wsProtocol = "wss:"
+  } else {
+    httpProtocol = "http:"
+    wsProtocol = "ws:"
+  }
+
+  const httpUrl = `${httpProtocol}//${host}/v1/api/${projectId}/graphql`
+  const websocketUrl = `${wsProtocol}//${host}/v1/api/${projectId}/graphql/socket`
+
+  return { httpUrl, websocketUrl }
+}
+
 export function isJson(str) {
   try {
     JSON.parse(str);
