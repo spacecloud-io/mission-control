@@ -7,7 +7,7 @@ import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { Checkbox, Input, Tooltip, Button } from 'antd';
+import { Checkbox, Input, Tooltip, Button, Typography } from 'antd';
 import '../explorer.css';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.css';
@@ -15,7 +15,7 @@ import ExplorerTabs from "../../../components/explorer/explorer-tabs/ExplorerTab
 import GenerateTokenForm from "../../../components/explorer/generateToken/GenerateTokenForm"
 import { getAPIToken } from '../../../operations/projects';
 import { projectModules } from '../../../constants';
-import { canGenerateToken } from '../../../utils';
+import { canGenerateToken, getGraphQLEndpoints } from '../../../utils';
 
 const Graphql = props => {
 
@@ -39,6 +39,9 @@ const Graphql = props => {
       getToken()
     );
   }
+
+  const { httpUrl } = getGraphQLEndpoints(projectID)
+
   return (
     <div className='explorer'>
       <Topbar showProjectSelector />
@@ -46,6 +49,32 @@ const Graphql = props => {
       <div className='page-content page-content--no-padding'>
         <ExplorerTabs activeKey="graphql" projectID={projectID} />
         <div style={{ padding: "32px 32px 0" }}>
+          <div className="row">
+            <h3>GraphQL endpoint</h3>
+            <div style={{
+              lineHeight: "38px",
+              border: "1px solid #f0f0f0"
+            }}>
+              <div style={{
+                display: "inline-block",
+                padding: "0 16px",
+                borderRight: "1px solid #f0f0f0",
+                backgroundColor: "#fafafa",
+                color: "#fd9540",
+                fontWeight: "bold"
+              }}>
+                POST
+              </div>
+              <div style={{
+                display: "inline-block",
+                padding: "0 16px"
+              }}>
+                <Typography.Text copyable={true}>
+                  {httpUrl}
+                </Typography.Text>
+              </div>
+            </div>
+          </div>
           <div className='row'>
             <Checkbox
               checked={props.useInternalToken}
