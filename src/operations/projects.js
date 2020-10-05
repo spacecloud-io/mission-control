@@ -78,13 +78,13 @@ export const saveDockerRegistry = (projectId, dockerRegistry) => saveProjectSett
 
 export const saveAesKey = (projectId, aesKey) => saveProjectSetting(projectId, "aesKey", aesKey)
 
-export const addSecret = (projectId, values) => {
+export const saveSecret = (projectId, values, index) => {
   const { isPrimary, alg } = values;
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
   const kid = alg !== "JWK_URL" ? generateId() : undefined;
   const newSecret = { ...values, kid }
-  const newSecrets = [...oldSecrets, newSecret]
+  const newSecrets = index !== undefined ? oldSecrets.map((obj, i) => i === index ? Object.assign({}, values, { kid: obj.kid }) : obj) : [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 

@@ -34,10 +34,7 @@ function Overview() {
           <Col lg={{ span: 20 }} sm={{ span: 24 }}>
             <h3>GraphQL Endpoints</h3>
 
-            <EndpointCard host={host} protocol={protocol} projectId={projectID} />
-            {/* <Col lg={{ span: 24 }}>
-              <EndpointCard host={host} protocol={protocol} projectId={projectID} />
-            </Col> */}
+            <EndpointCard projectId={projectID} />
             <h3 style={{ marginTop: 24 }}>Community</h3>
             <Row>
               <Col lg={{ span: 11, offset: 0 }}>
