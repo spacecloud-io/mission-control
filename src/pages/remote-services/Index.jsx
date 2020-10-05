@@ -59,6 +59,9 @@ const RemoteServices = () => {
       incrementPendingRequests()
       saveRemoteService(projectID, name, newServiceConfig)
         .then(({ queued }) => {
+          if(!serviceConfig){
+            history.push(`/mission-control/projects/${projectID}/remote-services/${name}`)
+          }
           notify("success", "Success", queued ? actionQueuedMessage : `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
           resolve()
         })
