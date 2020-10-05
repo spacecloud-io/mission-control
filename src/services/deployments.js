@@ -85,14 +85,15 @@ class Deployments {
     const body = response.body
     const readableStream = body.getReader()
     const decoder = new TextDecoder('utf-8')
-    readableStream.read().then(function processStrem({ done, value }) {
+    readableStream.read().then(function processStream({ done, value }) {
       if (done) {
         onComplete()
         return
       }
 
-      onLogsAdded(decoder.decode(value))
-      return readableStream.read().then(processStrem)
+      const chunkValue = decoder.decode(value)
+      onLogsAdded(chunkValue.split("\n"))
+      return readableStream.read().then(processStream)
     })
 
     return () => readableStream.cancel()
