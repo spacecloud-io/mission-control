@@ -107,7 +107,7 @@ const DeploymentLogs = (props) => {
       <ProjectPageLayout>
         <InnerTopBar title="Deployment logs" />
         <Content style={{ display: "flex", flexDirection: "column" }}>
-          <FormItemLabel name="Select target" />
+        <h3>Select target</h3>
           <Cascader
             style={{ marginBottom: 24, width: 400 }}
             options={options}
@@ -115,9 +115,9 @@ const DeploymentLogs = (props) => {
             placeholder="Please select"
             value={cascaderValue}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <FormItemLabel name="Logs" />
-            <Input.Search placeholder='Type any regex pattern to search for logs' style={{ width: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: "center" }}>
+            <h3 style={{ margin: "auto 0px" }}>Logs</h3>
+            <Input.Search placeholder='Paste any regex pattern to search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
           </div>
           <Alert
             message={logsCompleted ? "The logs stream is closed. Checkout the replica status to make sure the replica is still up." : "Logs are streamed here in realtime."}
