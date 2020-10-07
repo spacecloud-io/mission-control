@@ -18,6 +18,7 @@
     "graphql": "^14.5.4",
     "graphql-prettier": "^1.0.6",
     "graphql-tag": "^2.10.3",
+    "jsonlint-mod": "^1.7.6",
     "jsonwebtoken": "^8.5.1",
     "keypair": "^1.0.1",
     "less": "^3.9.0",

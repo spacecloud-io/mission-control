@@ -10,6 +10,8 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/lint/json-lint.js';
+import 'codemirror/addon/lint/lint.js';
 import { notify, canGenerateToken } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
@@ -111,7 +113,9 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
             matchBrackets: true,
             autoCloseBrackets: true,
             tabSize: 2,
-            autofocus: true
+            autofocus: true,
+            gutters: ['CodeMirror-lint-markers'],
+            lint: true
           }}
           onBeforeChange={(editor, data, value) => {
             setData(value)

@@ -9,6 +9,8 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/lint/json-lint.js';
+import 'codemirror/addon/lint/lint.js';
 import { notify } from '../../utils';
 import { useForm } from 'antd/lib/form/util';
 
@@ -59,7 +61,9 @@ const SecurityRulesForm = ({ handleSubmit, handleCancel, defaultRule, currentRul
                 matchBrackets: true,
                 autoCloseBrackets: true,
                 tabSize: 2,
-                autofocus: false
+                autofocus: false,
+                gutters: ['CodeMirror-lint-markers'],
+                lint: true
               }}
               onBeforeChange={(editor, data, value) => {
                 setRule(value)

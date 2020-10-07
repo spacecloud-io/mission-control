@@ -9,6 +9,8 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/selection/active-line.js'
 import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/lint/json-lint.js';
+import 'codemirror/addon/lint/lint.js';
 import "./add-rule-modal.css"
 import { notify } from "../../utils";
 import { defaultFileRule } from "../../constants";
@@ -61,7 +63,9 @@ const AddRuleForm = (props) => {
             matchBrackets: true,
             autoCloseBrackets: true,
             tabSize: 2,
-            autofocus: true
+            autofocus: true,
+            gutters: ['CodeMirror-lint-markers'],
+            lint: true
           }}
           onBeforeChange={(editor, data, value) => {
             setData(value)
