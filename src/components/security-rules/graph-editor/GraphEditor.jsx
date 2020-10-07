@@ -84,7 +84,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
       message.error("No operations are allowed on root block")
       return
     }
-
+    
     const strippedKey = getStrippedKey(selectedNodeId)
     const selectedRuleObj = Object.assign({}, strippedKey === "root" ? rule : dotProp.get(rule, strippedKey))
 
@@ -239,6 +239,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           ruleMetaData={ruleMetaData}
           onSubmit={onSubmit}
           selectedNodeId={getStrippedKey(doubleClickedNodeId).split(".")[0]}
+          blockDepth={doubleClickedNodeId.split(".").length}
         />
       )}
     </React.Fragment>
