@@ -324,7 +324,12 @@ const ConfigureRule = (props) => {
         <FormItemLabel name='Rule Type' />
         <Form.Item name='rule'>
           <Select placeholder="Rule">
-            {rules.map((val) => (
+            {rules
+            .filter((val) => {
+              if (props.blockDepth === 1) return true
+              return !["allow", "deny", "authenticated"].includes(val)
+            })
+            .map((val) => (
               <Select.Option key={val} value={val}>
                 {val}
               </Select.Option>
