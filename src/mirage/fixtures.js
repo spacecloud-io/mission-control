@@ -656,6 +656,14 @@ export const secrets = [
       "password": "123",
       "url": "http://localhost:5000"
     }
+  },
+  {
+    "id": "Secret1",
+    "type": "env",
+    "data": {
+      "abc": "abc",
+      "xyz": "xyz"
+    }
   }
 ]
 

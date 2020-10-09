@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams, useHistory } from "react-router";
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
-import { DeleteOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, RightOutlined, PlusOutlined, QuestionCircleFilled } from '@ant-design/icons';
 import AddTaskForm from "../../../components/deployments/add-task/AddTaskForm";
 import AddAffinityForm from "../../../components/deployments/add-affinity/AddAffinityForm";
 import Topbar from "../../../components/topbar/Topbar";
@@ -12,6 +12,7 @@ import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/pro
 import { getSecrets } from "../../../operations/secrets";
 import { saveService } from "../../../operations/deployments";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter, generateId } from "../../../utils";
+import { KedaTiggerType } from '../../../constants';
 
 import {
   Form,
@@ -23,8 +24,9 @@ import {
   Button,
   Collapse,
   Table,
-  Popconfirm
+  Popconfirm, Alert, Tooltip
 } from "antd";
+import AddScalerForm from "../../../components/deployments/add-scaler/AddScalerForm";
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -38,6 +40,8 @@ const ConfigureDeployment = props => {
       setTasks(props.location.state.deploymentClickedInfo.tasks)
       const affinities = props.location.state.deploymentClickedInfo.affinity
       setAffinities(affinities ? affinities : [])
+      const scalers = props.location.state.deploymentClickedInfo.triggers
+      setScalers(scalers ? scalers : [])
     }
   }, [])
 
@@ -52,6 +56,9 @@ const ConfigureDeployment = props => {
   const [addAffinityModalVisibility, setAddAffinityModalVisibility] = useState(false);
   const [selectedTaskInfo, setSelectedTaskInfo] = useState(null);
   const [selectedAffinityInfo, setSelectedAffinityInfo] = useState(null);
+  const [scalers, setScalers] = useState([{name: 'Request per second', type: 'requests-per-second', metadata: '50'}]); 
+  const [addScalerModalVisibility, setAddScalerModalVisibility] = useState(false);
+  const [selectedScalerInfo, setSelectedScalerInfo] = useState(null);
 
   // Derived state
   const operation = props.location.state && props.location.state.deploymentClickedInfo ? "edit" : "add";
@@ -60,8 +67,8 @@ const ConfigureDeployment = props => {
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
     version: initialValues ? initialValues.version : "",
-    mode: initialValues ? initialValues.scale.mode : "parallel",
-    concurrency: initialValues ? initialValues.scale.concurrency : 50,
+    pollingInterval: initialValues ? initialValues.pollingInterval : 15,
+    coolDown: initialValues ? initialValues.coolDown : 120,
     min: initialValues ? initialValues.scale.minReplicas : 1,
     max: initialValues ? initialValues.scale.maxReplicas : 100,
     whitelists: (initialValues && initialValues.whitelists && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: projectID, service: "*" }],
@@ -94,6 +101,11 @@ const ConfigureDeployment = props => {
     setAddTaskModalVisibility(true)
   }
 
+  const onAddScalerClick = () => {
+    setSelectedScalerInfo(null)
+    setAddScalerModalVisibility(true)
+  }
+
   const onAddAffinityClick = () => {
     setSelectedAffinityInfo(null)
     setAddAffinityModalVisibility(true)
@@ -101,6 +113,10 @@ const ConfigureDeployment = props => {
 
   const removeTask = (id) => {
     setTasks(tasks.filter(val => val.id !== id))
+  }
+
+  const removeScaler = (name) => {
+    setScalers(scalers.filter(val => val.name !== name))
   }
 
   const removeAffinity = (id) => {
@@ -148,6 +164,30 @@ const ConfigureDeployment = props => {
     }
   };
 
+  const handleScalerSubmit = (values, operation) => {
+    if(operation === 'add' && values.type !== 'keda'){
+      setScalers([...scalers, {name: values.name, type: values.type, metadata: values.target}])
+    }else if(operation === 'add' && values.type === 'keda'){
+      setScalers([...scalers, {name: values.name, type: values.kedaType, metadata: values.kedaTargets, authRef: values.kedaSecrets}])
+    }else if(operation === 'edit' && values.type !== 'keda'){
+      const newScalerArray = scalers.map(val => {
+        if(values.name === val.name){
+          return {name: values.name, type: values.type, metadata: values.target};
+        }
+        return val
+      })
+      setScalers(newScalerArray)
+    }else if(operation === 'edit' && values.type === 'keda') {
+      const newScalerArray = scalers.map((val, index) => {
+        if(values.name === val.name){
+          return {name: values.name, type: values.kedaType, metadata: values.kedaTargets, authRef: values.kedaSecrets};
+        }
+        return val;
+      })
+      setScalers(newScalerArray)
+    }
+  }
+
   const handleAffinitySubmit = (values, operation) => {
     if (operation === "add") {
       setAffinities([...affinities, values]);
@@ -183,6 +223,9 @@ const ConfigureDeployment = props => {
           mode: values.mode
         },
         tasks: tasks,
+        triggers: scalers,
+        pollingInterval: values.pollingInterval,
+        coolDown: values.coolDown,
         whitelists: values.whitelists,
         upstreams: values.upstreams,
         statsInclusionPrefixes: values.statsInclusionPrefixes,
@@ -233,6 +276,60 @@ const ConfigureDeployment = props => {
             <Popconfirm
               title="Are you sure delete this?"
               onConfirm={() => removeTask(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <a style={{ color: "red" }}>Delete</a>
+            </Popconfirm>
+          </span>
+        )
+      }
+    }
+  ]
+
+  const scalersColumn = [
+    {
+      title: 'Name',
+      dataIndex: 'name'
+    },
+    {
+      title: 'Scaler',
+      dataIndex: 'type',
+      render: (_, { type }) => {
+        switch(type){
+          case 'requests-per-second':
+            return capitalizeFirstCharacter(type).replaceAll('-', ' ');
+            break;
+          case 'active-requests':
+            return capitalizeFirstCharacter(type).replace('-', ' ');
+            break;
+          case 'cpu':
+            return type.toUpperCase();
+            break;
+          case 'ram':
+            return type.toUpperCase();
+            break;
+          default: const kedaType = Object.entries(KedaTiggerType).find(([key, value]) => value === type)
+            return `KEDA (${kedaType[0]})`;
+            break;
+        }
+      }
+    },
+    {
+      title: 'Actions',
+      className: 'column-actions',
+      render: (_, record) => {
+        return (
+          <span>
+            <a onClick={() => {
+              setSelectedScalerInfo(scalers.find(val => val.name === record.name));
+              setAddScalerModalVisibility(true);
+            }}>
+              Edit
+            </a>
+            <Popconfirm
+              title="Are you sure delete this?"
+              onConfirm={() => removeScaler(record.name)}
               okText="Yes"
               cancelText="No"
             >
@@ -340,21 +437,14 @@ const ConfigureDeployment = props => {
                     <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
                       <Panel header="Advanced" key="1">
                         <br />
-                        <FormItemLabel
-                          name="Auto scaling"
-                          description="Auto scale your container instances between min and max replicas based on the following config"
-                        />
-                        <Input.Group compact>
-                          <Form.Item name="mode" style={{ marginBottom: 0 }}>
-                            <Select placeholder="Select auto scaling mode">
-                              <Option value="per-second">Requests per second</Option>
-                              <Option value="parallel">Parallel requests</Option>
-                            </Select>
-                          </Form.Item>
-                          <Form.Item name="concurrency">
-                            <Input  min={1} />
-                          </Form.Item>
-                        </Input.Group>
+                        <FormItemLabel name='Scalers' extra={<Button style={{ float: 'right' }} onClick={onAddScalerClick}>Add scaler</Button>}/>
+                        <Alert 
+                          style={{ margin: '16px 0' }}
+                          showIcon 
+                          type='info' 
+                          message=' ' 
+                          description='Space Cloud supports autoscaling on multiple scaling paramaters like requests per second, active requests, cpu, ram, etc along with event driven scaling. The highest scale output from the configured scalers would be used to determine the desired scale of a service.' />
+                        <Table dataSource={scalers} columns={scalersColumn} pagination={false} style={{ marginBottom: '24px' }} />
                         <FormItemLabel name="Replicas" />
                         <Input.Group compact>
                           <Form.Item name="min">
@@ -365,6 +455,34 @@ const ConfigureDeployment = props => {
                               addonBefore="Max"
                               style={{ width: 160, marginLeft: 32 }}
                               min={1}
+                            />
+                          </Form.Item>
+                        </Input.Group>
+                        <FormItemLabel
+                          name="Autoscaling nature"
+                          description="Control the frequency/behavious of autoscaling"
+                        />
+                        <Input.Group compact>
+                          <Form.Item name="pollingInterval">
+                            <Input addonBefore={
+                              <div>Polling interval 
+                                <Tooltip title='polling interval'>
+                                  <QuestionCircleFilled style={{ marginLeft: '16px' }}/>
+                                </Tooltip>
+                              </div>}
+                            style={{ width: 277 }}
+                            placeholder='Polling interval'/>
+                          </Form.Item>
+                          <Form.Item name="coolDown">
+                            <Input
+                              addonBefore={
+                                <div>Cooldown interval 
+                                  <Tooltip title='cooldown interval'>
+                                    <QuestionCircleFilled style={{ marginLeft: '16px' }}/>
+                                  </Tooltip>
+                                </div>}
+                              style={{ width: 324, marginLeft: 32 }}
+                              placeholder='Cooldown interval'
                             />
                           </Form.Item>
                         </Input.Group>
@@ -582,6 +700,15 @@ const ConfigureDeployment = props => {
           secrets={secrets}
           handleCancel={() => setAddTaskModalVisibility(false)}
           handleSubmit={handleTaskSubmit}
+        />
+      )}
+      {addScalerModalVisibility && (
+        <AddScalerForm
+          visible={addScalerModalVisibility}
+          initialValues={selectedScalerInfo}
+          secrets={totalSecrets}
+          handleCancel={() => setAddScalerModalVisibility(false)}
+          handleSubmit={handleScalerSubmit}
         />
       )}
       {addAffinityModalVisibility && (

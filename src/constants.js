@@ -210,6 +210,34 @@ export const deploymentStatuses = {
 
 export const actionQueuedMessage = "Action queued successfully"
 
+export const KedaTiggerType = {
+  'ActiveMQ Artemis': 'artemis-queue',
+  'Apache Kafka': 'kafka',
+  'AWS Cloud Watch': 'aws-cloudwatch',
+  'AWS Kinesis Stream': 'aws-kinesis-stream',
+  'AWS SQS Queue': 'aws-sqs-queue',
+  'Azure Blob Storage': 'azure-blob',
+  'Azure Event Hubs': 'azure-eventhub',
+  'Azure Log Analytics': 'azure-log-analytics',
+  'Azure Monitor': 'azure-monitor',
+  'Azure Service Bus': 'azure-servicebus',
+  'Azure Storage Queue': 'azure-queue',
+  'Cron': 'cron',
+  'External': 'external',
+  'External Push': 'external-push',
+  'Google Cloud Platform ‎Pub/Sub': 'gcp-pubsub',
+  'Huawei Cloudeye': 'huawei-cloudeye',
+  'Liiklus Topic': 'liiklus',
+  'Metrics API': 'metric-api',
+  'MySQL': 'mysql',
+  'NATS Streaming': 'stan',
+  'PostgreSQL': 'postgresql',
+  'Prometheus': 'prometheus',
+  'RabbitMQ Queue': 'rabbitmq',
+  'Redis Lists': 'redis',
+  'Redis Streams': 'redis-streams'  
+}
+
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
     return productionURL
