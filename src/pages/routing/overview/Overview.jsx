@@ -21,12 +21,13 @@ const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
 };
 
-const applyFilters = (data, projectId, filters = { services: [], targetHosts: [], requestHosts: [] }) => {
-  const { services, targetHosts, requestHosts } = filters
+const applyFilters = (data, projectId, filters = { services: [], requestUrls: [], targetHosts: [], requestHosts: [] }) => {
+  const { services, requestUrls, targetHosts, requestHosts } = filters
   const serviceHosts = services.map(serviceId => `${serviceId}.${projectId}.svc.cluster.local`)
   const dataFilteredByServices = services.length === 0 ? data : data.filter(obj => obj.targets.some(target => serviceHosts.some(host => host === target.host)))
-  const dataFilteredByTargetHosts = targetHosts.length === 0 ? dataFilteredByServices : dataFilteredByServices.filter(obj => obj.targets.some(target => targetHosts.some(host => host === target.host)))
-  const dataFilteredByRequestHosts = requestHosts.length === 0 ? dataFilteredByTargetHosts : dataFilteredByTargetHosts.filter(obj => obj.allowedHosts.some(allowedHost => requestHosts.some(host => allowedHost === "*" || allowedHost === host)))
+  const dataFilteredByRequestUrls = requestUrls.length === 0 ? dataFilteredByServices : dataFilteredByServices.filter(obj => requestUrls.some(url => obj.url.includes(url)))
+  const dataFilteredByTargetHosts = targetHosts.length === 0 ? dataFilteredByRequestUrls : dataFilteredByRequestUrls.filter(obj => obj.targets.some(target => targetHosts.some(host => host === target.host)))
+  const dataFilteredByRequestHosts = requestHosts.length === 0 ? dataFilteredByTargetHosts : dataFilteredByTargetHosts.filter(obj => !obj.allowedHosts || !obj.allowedHosts.length || obj.allowedHosts.some(allowedHost => requestHosts.some(host => allowedHost === "*" || allowedHost === host)))
   return dataFilteredByRequestHosts
 }
 
@@ -223,7 +224,7 @@ function RoutingOverview() {
                   justifyContent: "space-between"
                 }}
               >
-                Ingress Routing rules
+                Ingress routes {filteredData.length ? `(${filteredData.length})` : ""}
                 <span>
                   <Space>
                     <Button onClick={() => setFilterModalVisible(true)}>

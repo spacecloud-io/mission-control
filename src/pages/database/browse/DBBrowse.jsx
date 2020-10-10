@@ -113,7 +113,7 @@ const Browse = () => {
     const dataFields = data.length > 0 ? Object.keys(data[0]) : []
     const schemaFields = colSchemaFields.map(obj => obj.name)
     const fields = [...new Set([...dataFields, ...schemaFields])]
-    const fieldColumns = fields.map((name) => ({ key: name, title: name, dataIndex: name }))
+    const fieldColumns = fields.map((name) => ({ key: name, title: name, dataIndex: name, ellipsis: true }))
     const actionColumn = {
       key: "action",
       render: (record) => {

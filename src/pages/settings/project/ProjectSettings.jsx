@@ -14,7 +14,7 @@ import GraphQLTimeout from "../../../components/settings/project/GraphQLTimeout"
 import DockerRegistry from "../../../components/settings/project/DockerRegistry";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { loadLetsEncryptConfig, saveWhiteListedDomains, getWhiteListedDomains } from "../../../operations/letsencrypt";
-import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, addSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
+import { saveAesKey, saveDockerRegistry, saveContextTimeGraphQL, deleteProject, saveSecret, changePrimarySecret, removeSecret } from "../../../operations/projects";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 const SecretConfigure = lazyWithPreload(() => import("../../../components/settings/project/SecretConfigure"));
 
@@ -48,16 +48,16 @@ const ProjectSettings = () => {
   const dockerRegistry = selectedProject.dockerRegistry
 
   // Handlers
-  const handleAddSecret = (values) => {
+  const handleSaveSecret = (values, index) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      addSecret(projectID, values)
+      saveSecret(projectID, values, index)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : "Added new secret successfully")
+          notify("success", "Success", queued ? actionQueuedMessage : "Saved secret successfully")
           resolve()
         })
         .catch(ex => {
-          notify("error", "Error adding secret", ex)
+          notify("error", "Error saving secret", ex)
           reject()
         })
         .finally(() => decrementPendingRequests());
@@ -145,7 +145,7 @@ const ProjectSettings = () => {
               <Divider />
               <SecretConfigure
                 secrets={secrets}
-                handleAddSecret={handleAddSecret}
+                handleSaveSecret={handleSaveSecret}
                 handleChangePrimarySecret={handleChangePrimarySecret}
                 handleRemoveSecret={handleRemoveSecret} />
               <Divider />

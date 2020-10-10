@@ -108,7 +108,6 @@ const ConfigureDeployment = props => {
   }
 
   const handleTaskSubmit = (values, operation) => {
-    const dockerCommands = selectedTaskInfo ? selectedTaskInfo.docker.cmd : []
 
     let newTask = {
       id: values.id,
@@ -124,7 +123,7 @@ const ConfigureDeployment = props => {
         image: values.dockerImage,
         secret: values.dockerSecret,
         imagePullPolicy: values.imagePullPolicy,
-        cmd: dockerCommands
+        cmd: values.dockerCmd
       },
       secrets: values.secrets,
       env: values.env
