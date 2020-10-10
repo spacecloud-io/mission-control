@@ -52,6 +52,10 @@ import InstalledIntegrations from '../pages/integrations/InstalledIntegrations';
 import InstallIntegration from '../pages/integrations/InstallIntegration';
 import IntegrationDetails from '../pages/integrations/IntegrationDetails';
 import IntegrationPermissions from '../pages/integrations/IntegrationPermissions';
+import CacheEmptyStatePage from '../pages/cache/empty-state/EmptyState';
+import AddCache from '../pages/cache/add-cache/AddCache';
+import CacheOverview from '../pages/cache/overview/Overview';
+import PurgeCache from "../pages/cache/purge-cache/PurgeCache";
 
 
 function ProjectPages() {
@@ -77,6 +81,10 @@ function ProjectPages() {
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorageIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorage} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}/configure`} component={FileStorageConfig} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}`} component={CacheEmptyStatePage} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}/add-cache`} component={AddCache} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}/overview`} component={CacheOverview} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}/purge-cache`} component={PurgeCache} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}`}
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />

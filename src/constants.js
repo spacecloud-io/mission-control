@@ -62,6 +62,7 @@ export const projectModules = {
   OVERVIEW: "overview",
   DATABASE: "database",
   FILESTORE: "file-storage",
+  CACHE: "cache",
   EVENTING: "eventing",
   REMOTE_SERVICES: "remote-services",
   DEPLOYMENTS: "deployments",
