@@ -13,8 +13,6 @@ import 'codemirror/mode/go/go';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import 'codemirror/addon/lint/json-lint.js';
-import 'codemirror/addon/lint/lint.js';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -547,8 +545,6 @@ const IngressRoutingModal = props => {
                       autoCloseBrackets: true,
                       tabSize: 2,
                       autofocus: true,
-                      gutters: ['CodeMirror-lint-markers'],
-                      lint: true
                     }}
                     onBeforeChange={(editor, data, value) => {
                       setRequestTemplateData(value);
@@ -567,8 +563,6 @@ const IngressRoutingModal = props => {
                       autoCloseBrackets: true,
                       tabSize: 2,
                       autofocus: false,
-                      gutters: ['CodeMirror-lint-markers'],
-                      lint: true
                     }}
                     onBeforeChange={(editor, data, value) => {
                       setResponseTemplateData(value);
