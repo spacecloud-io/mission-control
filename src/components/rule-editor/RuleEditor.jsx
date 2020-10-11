@@ -7,8 +7,6 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
-import 'codemirror/addon/lint/json-lint.js';
-import 'codemirror/addon/lint/lint.js';
 import "./rule-editor.css"
 import { notify } from "../../utils";
 import useDeepCompareEffect from 'use-deep-compare-effect'
@@ -99,8 +97,6 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
                   autoCloseBrackets: true,
                   tabSize: 2,
                   autofocus: true,
-                  gutters: ['CodeMirror-lint-markers'],
-                  lint: true
                 }}
                 onBeforeChange={(editor, data, value) => { setSelectedRule(value) }}
               />

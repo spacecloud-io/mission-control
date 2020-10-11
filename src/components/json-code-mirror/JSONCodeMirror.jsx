@@ -18,7 +18,7 @@ function JSONCodeMirror(props) {
         props.onChange(value)
     }
     return (
-        <div style={props.style ? props.style : undefined} I>
+        <div style={props.style ? props.style : undefined}>
             <CodeMirror
                 value={value}
                 options={{
@@ -28,9 +28,9 @@ function JSONCodeMirror(props) {
                     matchBrackets: true,
                     autoCloseBrackets: true,
                     tabSize: 2,
-                    autofocus: true,
                     gutters: ['CodeMirror-lint-markers'],
-                    lint: props.required ? true : !!value
+                    lint: !!value,
+                    ...props.options
                 }}
                 onBeforeChange={(editor, data, value) => {
                     handleChangeValue(value);

@@ -16,7 +16,6 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
 
   const dispatch = useDispatch()
   const [generateTokenModalVisible, setGenerateTokenModalVisible] = useState(false)
-  const [data, setData] = useState("{}")
   const [eventResponse, setEventResponse] = useState(null)
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
@@ -34,7 +33,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
   const handleClickSubmit = e => {
     form.validateFields().then(fieldsValue => {
       try {
-        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken())
+        handleSubmit(fieldsValue["eventType"], JSON.parse(fieldsValue.data), fieldsValue["isSynchronous"], getToken())
           .then(res => {
             setEventResponse(res)
             if (!triggeredEventOnce) setTriggeredEventOnce(true)

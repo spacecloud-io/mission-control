@@ -6,19 +6,10 @@ import { generateId, notify } from '../../../utils';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { useDispatch, useSelector } from 'react-redux';
 import { reset } from 'automate-redux';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
-import 'codemirror/addon/lint/json-lint.js';
-import 'codemirror/addon/lint/lint.js';
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const FilterSorterForm = (props) => {
   const [form] = Form.useForm();
-  const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
   const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
@@ -34,7 +25,7 @@ const FilterSorterForm = (props) => {
             values.filters[index].value = val.arrays ? val.arrays.map(el => el.value) : [];
           }
           if (val.datatype === "json" || !primitives.includes(val.datatype)) {
-            values.filters[index].value = !json[index] ? "" : JSON.parse(json[index]);
+            values.filters[index].value = JSON.parse(values.filters[index].value);
           }
         })
         props.filterTable(values)
@@ -262,23 +253,16 @@ const FilterSorterForm = (props) => {
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "json"}>
                         <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                          <CodeMirror
-                            value={json[field.name] ? json[field.name] : ""}
-                            options={{
-                              mode: { name: 'javascript', json: true },
-                              lineNumbers: true,
-                              styleActiveLine: true,
-                              matchBrackets: true,
-                              autoCloseBrackets: true,
-                              tabSize: 2,
-                              autofocus: true,
-                              gutters: ['CodeMirror-lint-markers'],
-                              lint: true
-                            }}
-                            onBeforeChange={(editor, data, value) => {
-                              setJson(Object.assign({}, json, { [field.name]: value }))
-                            }}
-                          />
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              { required: true, message: 'Please enter value!' },
+                            ]}
+                          >
+                            <JSONCodeMirror />
+                          </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
                       <Col span={2}>
