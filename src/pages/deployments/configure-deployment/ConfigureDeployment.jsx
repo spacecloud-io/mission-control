@@ -12,7 +12,7 @@ import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/pro
 import { getSecrets } from "../../../operations/secrets";
 import { saveService } from "../../../operations/deployments";
 import { notify, incrementPendingRequests, decrementPendingRequests, capitalizeFirstCharacter, generateId } from "../../../utils";
-import { KedaTiggerType } from '../../../constants';
+import { kedaTriggerTypes } from '../../../constants';
 
 import {
   Form,
@@ -20,14 +20,12 @@ import {
   Row,
   Col,
   Card,
-  Select,
   Button,
   Collapse,
   Table,
   Popconfirm, Alert, Tooltip
 } from "antd";
 import AddScalerForm from "../../../components/deployments/add-scaler/AddScalerForm";
-const { Option } = Select;
 const { Panel } = Collapse;
 
 const ConfigureDeployment = props => {
@@ -40,7 +38,7 @@ const ConfigureDeployment = props => {
       setTasks(props.location.state.deploymentClickedInfo.tasks)
       const affinities = props.location.state.deploymentClickedInfo.affinity
       setAffinities(affinities ? affinities : [])
-      const scalers = props.location.state.deploymentClickedInfo.triggers
+      const scalers = props.location.state.deploymentClickedInfo.autoScale.triggers
       setScalers(scalers ? scalers : [])
     }
   }, [])
@@ -56,7 +54,7 @@ const ConfigureDeployment = props => {
   const [addAffinityModalVisibility, setAddAffinityModalVisibility] = useState(false);
   const [selectedTaskInfo, setSelectedTaskInfo] = useState(null);
   const [selectedAffinityInfo, setSelectedAffinityInfo] = useState(null);
-  const [scalers, setScalers] = useState([{name: 'Request per second', type: 'requests-per-second', metadata: '50'}]); 
+  const [scalers, setScalers] = useState([{name: 'Request per second', type: 'requests-per-second', metadata: { target: 50 }}]); 
   const [addScalerModalVisibility, setAddScalerModalVisibility] = useState(false);
   const [selectedScalerInfo, setSelectedScalerInfo] = useState(null);
 
@@ -67,10 +65,10 @@ const ConfigureDeployment = props => {
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
     version: initialValues ? initialValues.version : "",
-    pollingInterval: initialValues ? initialValues.pollingInterval : 15,
-    coolDown: initialValues ? initialValues.coolDown : 120,
-    min: initialValues ? initialValues.scale.minReplicas : 1,
-    max: initialValues ? initialValues.scale.maxReplicas : 100,
+    pollingInterval: initialValues ? initialValues.autoScale.pollingInterval : 15,
+    coolDown: initialValues ? initialValues.autoScale.coolDown : 120,
+    min: initialValues ? initialValues.autoScale.minReplicas : 1,
+    max: initialValues ? initialValues.autoScale.maxReplicas : 100,
     whitelists: (initialValues && initialValues.whitelists && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: projectID, service: "*" }],
     upstreams: (initialValues && initialValues.upstreams && initialValues.upstreams.length > 0) ? initialValues.upstreams : [{ projectId: projectID, service: "*" }],
     statsInclusionPrefixes: (initialValues && initialValues.statsInclusionPrefixes) ? initialValues.statsInclusionPrefixes : "http.inbound,cluster_manager,listener_manager",
@@ -87,6 +85,8 @@ const ConfigureDeployment = props => {
   const secrets = totalSecrets
     .filter(obj => obj.type !== "docker")
     .map(obj => obj.id);
+
+  const envSecrets = totalSecrets.filter(secret => secret.type === 'env')
 
   const tasksTableData = tasks.map(val => (
     {
@@ -165,24 +165,14 @@ const ConfigureDeployment = props => {
   };
 
   const handleScalerSubmit = (values, operation) => {
-    if(operation === 'add' && values.type !== 'keda'){
-      setScalers([...scalers, {name: values.name, type: values.type, metadata: values.target}])
-    }else if(operation === 'add' && values.type === 'keda'){
-      setScalers([...scalers, {name: values.name, type: values.kedaType, metadata: values.kedaTargets, authRef: values.kedaSecrets}])
-    }else if(operation === 'edit' && values.type !== 'keda'){
+    if(operation === 'add'){
+      setScalers([...scalers, values])
+    }else {
       const newScalerArray = scalers.map(val => {
         if(values.name === val.name){
-          return {name: values.name, type: values.type, metadata: values.target};
+          return values;
         }
         return val
-      })
-      setScalers(newScalerArray)
-    }else if(operation === 'edit' && values.type === 'keda') {
-      const newScalerArray = scalers.map((val, index) => {
-        if(values.name === val.name){
-          return {name: values.name, type: values.kedaType, metadata: values.kedaTargets, authRef: values.kedaSecrets};
-        }
-        return val;
       })
       setScalers(newScalerArray)
     }
@@ -215,17 +205,15 @@ const ConfigureDeployment = props => {
         id: values.id,
         version: values.version,
         projectId: projectID,
-        scale: {
+        autoScale: {
+          pollingInterval: values.pollingInterval,
+          coolDown: values.coolDown,
           replicas: 0,
           minReplicas: Number(values.min),
           maxReplicas: Number(values.max),
-          concurrency: Number(values.concurrency),
-          mode: values.mode
+          triggers: scalers
         },
         tasks: tasks,
-        triggers: scalers,
-        pollingInterval: values.pollingInterval,
-        coolDown: values.coolDown,
         whitelists: values.whitelists,
         upstreams: values.upstreams,
         statsInclusionPrefixes: values.statsInclusionPrefixes,
@@ -298,18 +286,18 @@ const ConfigureDeployment = props => {
       render: (_, { type }) => {
         switch(type){
           case 'requests-per-second':
-            return capitalizeFirstCharacter(type).replaceAll('-', ' ');
+            return 'Requests per second';
             break;
           case 'active-requests':
-            return capitalizeFirstCharacter(type).replace('-', ' ');
+            return 'Active requests';
             break;
           case 'cpu':
-            return type.toUpperCase();
+            return 'CPU';
             break;
           case 'ram':
-            return type.toUpperCase();
+            return 'RAM';
             break;
-          default: const kedaType = Object.entries(KedaTiggerType).find(([key, value]) => value === type)
+          default: const kedaType = Object.entries(kedaTriggerTypes).find(([key, value]) => value === type)
             return `KEDA (${kedaType[0]})`;
             break;
         }
@@ -706,7 +694,8 @@ const ConfigureDeployment = props => {
         <AddScalerForm
           visible={addScalerModalVisibility}
           initialValues={selectedScalerInfo}
-          secrets={totalSecrets}
+          secrets={envSecrets}
+          scalers={scalers}
           handleCancel={() => setAddScalerModalVisibility(false)}
           handleSubmit={handleScalerSubmit}
         />

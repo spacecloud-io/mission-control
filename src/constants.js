@@ -210,7 +210,7 @@ export const deploymentStatuses = {
 
 export const actionQueuedMessage = "Action queued successfully"
 
-export const KedaTiggerType = {
+export const kedaTriggerTypes = {
   'ActiveMQ Artemis': 'artemis-queue',
   'Apache Kafka': 'kafka',
   'AWS Cloud Watch': 'aws-cloudwatch',

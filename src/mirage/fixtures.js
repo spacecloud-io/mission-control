@@ -337,12 +337,17 @@ export const services = [
     "id": "service1",
     "version": "v1",
     "projectId": "todoapp",
-    "scale": {
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDown": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
-      "concurrency": 50,
-      "mode": "per-second"
+      "triggers": [{
+        "name": "scale1",
+        "type": "cpu",
+        "metadata": {"target": 50}
+      }]
     },
     "labels": {
       "diskType": "ssd",
@@ -431,12 +436,17 @@ export const services = [
     "id": "service1",
     "version": "v2",
     "projectId": "todoapp",
-    "scale": {
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDown": 120,
       "replicas": 0,
       "minReplicas": 0,
-      "maxReplicas": 10,
-      "concurrency": 50,
-      "mode": "per-second"
+      "maxReplicas": 100,
+      "triggers": [{
+        "name": "scale1",
+        "type": "requests-per-second",
+        "metadata": {"target": 50}
+      }]
     },
     "labels": {
       "diskType": "ssd",
@@ -525,12 +535,18 @@ export const services = [
     "id": "service2",
     "version": "v1",
     "projectId": "todoapp",
-    "scale": {
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDown": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
-      "concurrency": 50,
-      "mode": "per-second"
+      "triggers": [{
+        "name": "scale1",
+        "type": "azure-blob-storage",
+        "metadata": {"abc": "abc", "xyz": "xyz"},
+        "authRef": {"secretMapping": [{"param": "abc", "key": "secrets.EnvSecret.foo"}]}
+      }]
     },
     "labels": {
       "diskType": "ssd",
