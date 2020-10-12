@@ -2,24 +2,21 @@ import React, { useState, useEffect } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
-import { Button, Input } from "antd";
+import { Button, Empty, Input, Table, Popconfirm } from "antd";
 import ReactGA from 'react-ga';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
-import { useSelector, useDispatch } from "react-redux";
-import { set } from "automate-redux";
-import RuleEditor from "../../components/rule-editor/RuleEditor";
+import { useSelector } from "react-redux";
 import EventSchemaForm from "../../components/eventing/EventSchemaForm";
 import dataModellingSvg from "../../assets/data-modelling.svg";
 import { deleteEventingSchema, saveEventingSchema, loadEventingSchemas, getEventingSchemas, getEventingTriggerRules } from "../../operations/eventing";
 import { projectModules, actionQueuedMessage } from "../../constants";
 import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
 
 const EventingSchema = () => {
   // Router params
   const { projectID } = useParams();
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     ReactGA.pageview("/projects/eventing/schema");
@@ -35,28 +32,28 @@ const EventingSchema = () => {
   }, [projectID])
 
   // Global state
-  const selectedEvent = useSelector(state => state.uiState.selectedEvent);
   const eventRules = useSelector(state => getEventingTriggerRules(state))
   const schemas = useSelector(state => getEventingSchemas(state))
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
-  const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
+  const [selectedSchema, setSelectedSchema] = useState();
   const [searchText, setSearchText] = useState('')
 
   // Derived state
   const customEventTypes = Object.entries(eventRules)
     .filter(([key, value]) => getEventSourceFromType(value.type) === "custom")
     .map(([_, value]) => value.type);
+  const schemasTableData = Object.keys(schemas).map(val => ({ type: val }));
+
+  const filteredSchemasData = schemasTableData.filter(rule => {
+    return rule.type.toLowerCase().includes(searchText.toLowerCase())
+  })
 
   // Handlers
-  const handleSelect = eventType =>
-    dispatch(set("uiState.selectedEvent", eventType));
-
-
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false);
-    setAddColFormInEditMode(false);
+    setSelectedSchema(null);
   };
 
   const handleDelete = type => {
@@ -91,6 +88,11 @@ const EventingSchema = () => {
     });
   };
 
+  const handleEditSchema = (type) => {
+    setSelectedSchema(type);
+    setAddColModalVisible(true);
+  }
+
   const EmptyState = () => {
     return (
       <div>
@@ -107,6 +109,35 @@ const EventingSchema = () => {
     );
   };
 
+  const columns = [
+    {
+      title: "Event type",
+      dataIndex: "type",
+      key: "type",
+      render: (value) => {
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
+      }
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      className: "column-actions",
+      render: (_, record) => (
+        <span>
+          <a onClick={() => handleEditSchema(record.type)}>Edit</a>
+          <Popconfirm title={`Are you sure you want to delete this rule?`} onConfirm={() => handleDelete(record.type)}>
+            <a style={{ color: "red" }}>Delete</a>
+          </Popconfirm>
+        </span>
+      )
+    }
+  ]
+
   return (
     <div>
       <Topbar showProjectSelector />
@@ -114,31 +145,30 @@ const EventingSchema = () => {
       <div className="page-content page-content--no-padding">
         <EventTabs activeKey="schema" projectID={projectID} />
         <div className="event-tab-content">
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom:'16px' }}>
-            <h3 style={{ margin: 'auto 0' }}>Schema </h3> 
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+            <h3 style={{ margin: 'auto 0' }}>Schema </h3>
             <div style={{ display: 'flex' }}>
-              <Input.Search placeholder='Search by event type' style={{ minWidth:'320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
-              <Button style={{ marginLeft:'16px' }} onClick={() => setAddColModalVisible(true)} type="primary">Add</Button>
+              <Input.Search placeholder='Search by event type' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+              <Button style={{ marginLeft: '16px' }} onClick={() => setAddColModalVisible(true)} type="primary">Add</Button>
             </div>
           </div>
-          <RuleEditor
-            rules={schemas}
-            selectedRuleName={selectedEvent}
-            handleSelect={handleSelect}
-            handleSubmit={schema => handleAddSchema(selectedEvent, schema)}
-            canDeleteRules
-            handleDelete={handleDelete}
-            stringifyRules={false}
-            emptyState={<EmptyState />}
-            searchText={searchText}
-          />
+          {Object.keys(schemas).length > 0 ?
+            <Table
+              dataSource={filteredSchemasData}
+              columns={columns}
+              locale={{
+                emptyText: schemasTableData.length !== 0 ?
+                  <EmptySearchResults searchText={searchText} /> :
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event schema created yet. Add a event schema' />
+              }}
+            /> : <EmptyState />}
           {addColModalVisible && (
             <EventSchemaForm
-              editMode={addColFormInEditMode}
               projectId={projectID}
               customEventTypes={customEventTypes}
               handleCancel={() => handleCancelAddColModal(false)}
               handleSubmit={handleAddSchema}
+              initialValues={{ eventType: selectedSchema, schema: schemas[selectedSchema] }}
             />
           )}
         </div>

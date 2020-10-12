@@ -12,13 +12,12 @@ import { notify } from '../../utils';
 
 const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes }) => {
   const [form] = Form.useForm()
-  const [eventType, setEventType] = useState();
-
+  const [eventType, setEventType] = useState(initialValues.eventType);
   const handleChangedValues = ({ eventType }) => {
     setEventType(eventType);
   }
 
-  if (!initialValues) {
+  if (!initialValues.schema) {
     initialValues = {
       schema: `type {
   
