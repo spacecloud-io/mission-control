@@ -56,6 +56,8 @@ import CacheEmptyStatePage from '../pages/cache/empty-state/EmptyState';
 import AddCache from '../pages/cache/add-cache/AddCache';
 import CacheOverview from '../pages/cache/overview/Overview';
 import PurgeCache from "../pages/cache/purge-cache/PurgeCache";
+import RabbitMQ from "../pages/settings/cluster/rabbit-mq/RabbitMQ";
+import ConfigureRedis from "../pages/settings/cluster/redis/ConfigureRedis";
 
 
 function ProjectPages() {
@@ -89,6 +91,8 @@ function ProjectPages() {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`} component={ClusterSettings} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster/rabbit-mq/config`} component={RabbitMQ} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster/redis/config`} component={ConfigureRedis} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`} component={ApplyLicense} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}
