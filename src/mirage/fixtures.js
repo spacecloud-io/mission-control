@@ -339,14 +339,14 @@ export const services = [
     "projectId": "todoapp",
     "autoScale": {
       "pollingInterval": 15,
-      "coolDown": 120,
+      "coolDownInterval": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
       "triggers": [{
-        "name": "scale1",
+        "name": "Scaler1",
         "type": "cpu",
-        "metadata": {"target": 50}
+        "metadata": { "target": 50 }
       }]
     },
     "labels": {
@@ -438,14 +438,14 @@ export const services = [
     "projectId": "todoapp",
     "autoScale": {
       "pollingInterval": 15,
-      "coolDown": 120,
+      "coolDownInterval": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 100,
       "triggers": [{
-        "name": "scale1",
+        "name": "Scaler1",
         "type": "requests-per-second",
-        "metadata": {"target": 50}
+        "metadata": { "target": 50 }
       }]
     },
     "labels": {
@@ -537,15 +537,15 @@ export const services = [
     "projectId": "todoapp",
     "autoScale": {
       "pollingInterval": 15,
-      "coolDown": 120,
+      "coolDownInterval": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
       "triggers": [{
-        "name": "scale1",
+        "name": "Scaler1",
         "type": "azure-blob-storage",
-        "metadata": {"abc": "abc", "xyz": "xyz"},
-        "authRef": {"secretMapping": [{"param": "abc", "key": "secrets.EnvSecret.foo"}]}
+        "metadata": { "abc": "abc", "xyz": "xyz" },
+        "authRef": { "secretMapping": [{ "param": "abc", "key": "secrets.EnvSecret.foo" }] }
       }]
     },
     "labels": {

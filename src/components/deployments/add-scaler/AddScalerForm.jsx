@@ -1,36 +1,29 @@
 import React from 'react';
-import { Modal, Form, Radio, Input, Alert, Select, Row, Col, Button, AutoComplete } from 'antd';
+import { Modal, Form, Radio, Input, Alert, Row, Col, Button, AutoComplete } from 'antd';
 import RadioCards from '../../radio-cards/RadioCards';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
-import { kedaTriggerTypes, spaceCloudClusterOrigin } from '../../../constants';
+import { kedaTriggerTypes } from '../../../constants';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import ObjectAutoComplete from '../../object-autocomplete/ObjectAutoComplete';
-import { useSelector } from 'react-redux';
-import { getServices } from '../../../operations/deployments';
 
-const AddScalerForm = (props) =>{
+const AddScalerForm = (props) => {
 
-  const { initialValues, secrets, handleSubmit, handleCancel, scalers = [] } = props;
+  const { initialValues, secrets, handleSubmit, handleCancel, scalerNames = [] } = props;
   const [form] = Form.useForm();
-  const scalersName = scalers.map(scaler => scaler.name)
 
   const getSelectedType = (type) => {
     switch (type) {
       case 'requests-per-second':
         return 'requests-per-second';
-        break;
       case 'active-requests':
         return 'active-requests';
-        break;
       case 'cpu':
         return 'cpu';
-        break;
       case 'ram':
         return 'ram';
-        break;
-      default: return 'keda'
-        break;
+      default:
+        return 'keda'
     }
   }
 
@@ -39,55 +32,55 @@ const AddScalerForm = (props) =>{
     type: initialValues && initialValues.type ? getSelectedType(initialValues.type) : 'requests-per-second',
     requestsPerSecondTarget: initialValues && initialValues.metadata && initialValues.type === 'requests-per-second' ? initialValues.metadata.target : '',
     activeRequestsTarget: initialValues && initialValues.metadata && initialValues.type === 'active-requests' ? initialValues.metadata.target : '',
-    cpuTarget: initialValues && initialValues.metadata && initialValues.type === 'cpu'  ? initialValues.metadata.target : '',
+    cpuTarget: initialValues && initialValues.metadata && initialValues.type === 'cpu' ? initialValues.metadata.target : '',
     ramTarget: initialValues && initialValues.metadata && initialValues.type === 'ram' ? initialValues.metadata.target : '',
     kedaType: initialValues && initialValues.type && getSelectedType(initialValues.type) === 'keda' ? initialValues.type : undefined,
-    kedaTargets: initialValues && initialValues.metadata && getSelectedType(initialValues.type) === 'keda' ? 
-      Object.entries(initialValues.metadata).map(([key, value]) => ({key: key, value: value })) : [],
+    kedaTargets: initialValues && initialValues.metadata && getSelectedType(initialValues.type) === 'keda' ?
+      Object.entries(initialValues.metadata).map(([key, value]) => ({ key: key, value: value })) : [],
     kedaSecrets: initialValues && initialValues.authRef && initialValues.authRef.secretMapping ? initialValues.authRef.secretMapping : []
   }
 
   const handleSubmitClick = () => {
-    form.validateFields().then(values =>{
+    form.validateFields().then(values => {
       const operation = initialValues ? 'edit' : 'add';
       let triggersConfig = {};
-      switch(values.type){
+      switch (values.type) {
         case 'requests-per-second':
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: Number(values.requestsPerSecondTarget) }
+            metadata: { target: values.requestsPerSecondTarget }
           };
           break;
         case 'active-requests':
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: Number(values.activeRequestsTarget) }
+            metadata: { target: values.activeRequestsTarget }
           };
           break;
         case 'cpu':
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: Number(values.cpuTarget) }
+            metadata: { target: values.cpuTarget }
           };
           break;
         case 'ram':
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: Number(values.ramTarget) }
+            metadata: { target: values.ramTarget }
           };
           break;
-        default: 
+        default:
           triggersConfig = {
             name: values.name,
             type: values.kedaType,
             metadata: values.kedaTargets.reduce((prev, cur) => Object.assign({}, prev, { [cur.key]: cur.value }), {}),
             authRef: { secretMapping: values.kedaSecrets }
           };
-        break;
+          break;
       }
       handleSubmit(triggersConfig, operation)
       handleCancel()
@@ -95,17 +88,17 @@ const AddScalerForm = (props) =>{
   }
 
   const secretObj = secrets.reduce((prevSecret, currSecret) => {
-    return Object.assign({}, prevSecret, 
-        { [currSecret.id]: Object.keys(currSecret.data).reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }),{}) })
+    return Object.assign({}, prevSecret,
+      { [currSecret.id]: Object.keys(currSecret.data).reduce((prev, curr) => Object.assign({}, prev, { [curr]: true }), {}) })
   }, {})
 
   const autoCompleteOptions = { secrets: secretObj }
 
   const kedaAlertDes = <div>
     Check out the <a href='https://keda.sh/docs' target='_blank' style={{ color: '#4DA9FF' }}>documentation of KEDA </a>
-    for the list of event trigger sources and their configuration. Space Cloud transparently forwards 
-    the provided metadata to the KEDA. For providing <a href='' style={{ color: '#4DA9FF' }}> TriggerAuthentication </a> 
-    create Space Cloud secret and specify the keys in the Secret metadata section below. 
+    for the list of event trigger sources and their configuration. Space Cloud transparently forwards
+    the provided metadata to the KEDA. For providing <a href='https://keda.sh/docs/1.4/concepts/authentication/' target='_blank' style={{ color: '#4DA9FF' }}> TriggerAuthentication </a>
+    create Space Cloud secret and specify the keys in the Secret metadata section below.
   </div>
 
   const modalProps = {
@@ -117,30 +110,26 @@ const AddScalerForm = (props) =>{
     onOk: handleSubmitClick,
     onCancel: props.handleCancel
   };
-  return(
+  return (
     <Modal {...modalProps}>
       <Form layout='vertical' form={form} initialValues={formInitialValue}>
         <FormItemLabel name='Name' />
-        <Form.Item name='name' rules={[{ 
+        <Form.Item name='name' rules={[{
           validator: (_, value, cb) => {
             if (!value) {
               cb("Please input a name")
               return
             }
-            if (!(/^[0-9a-zA-Z]+$/.test(value))) {
-              cb("Service ID can only contain alphanumeric characters!")
-              return
-            }
-            const check = scalersName.some(data => value === data);
+            const check = scalerNames.some(data => value === data);
             if (check && !initialValues) {
-              cb("Alias name already taken by another scaler. Please provide a unique name!")
+              cb("This name is already taken by another scaler. Please provide a unique name!")
               return
             }
             cb()
           }
-         }]}>
-          <Input 
-            placeholder='Name' 
+        }]}>
+          <Input
+            placeholder='Name'
             style={{ width: '80%' }}
             disabled={initialValues ? true : false} />
         </Form.Item>
@@ -169,7 +158,7 @@ const AddScalerForm = (props) =>{
         <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'cpu'}>
           <FormItemLabel name='Percentage of CPU consumption' />
           <Form.Item name='cpuTarget' rules={[{ required: true, message: 'Please input CPU consumption in percentage' }]}>
-            <Input placeholder='CPU consumption' style={{ width:'80%' }} />
+            <Input placeholder='CPU consumption' style={{ width: '80%' }} />
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'ram'}>
@@ -182,13 +171,10 @@ const AddScalerForm = (props) =>{
           <Alert showIcon type='info' message=' ' description={kedaAlertDes} style={{ margin: '24px 0' }} />
           <FormItemLabel name='KEDA trigger type' />
           <Form.Item name='kedaType' rules={[{ required: true, message: 'Please select KEDA type' }]}>
-            <AutoComplete placeholder='Select a KEDA trigger type' style={{ width: '80%' }}>
-              {Object.entries(kedaTriggerTypes).map(([key, value]) => {
-                return <AutoComplete.Option 
-                  value={value}
-                  >{key}</AutoComplete.Option>
-              })}
-            </AutoComplete>
+            <AutoComplete
+              placeholder='Select a KEDA trigger type'
+              options={kedaTriggerTypes}
+              filterOption={true} />
           </Form.Item>
           <FormItemLabel name='Metadata' />
           <Form.List name="kedaTargets" style={{ display: "inline-block" }}>
@@ -236,8 +222,8 @@ const AddScalerForm = (props) =>{
                     <Button
                       onClick={() => {
                         const fieldKeys = [
-                          ...fields.map(obj => ["kedaTargets", obj.name,"key"]),
-                          ...fields.map(obj => ["kedaTargets", obj.name,"value"])
+                          ...fields.map(obj => ["kedaTargets", obj.name, "key"]),
+                          ...fields.map(obj => ["kedaTargets", obj.name, "value"])
                         ]
                         form.validateFields(fieldKeys)
                           .then(() => add())
@@ -299,8 +285,8 @@ const AddScalerForm = (props) =>{
                     <Button
                       onClick={() => {
                         const fieldKeys = [
-                          ...fields.map(obj => ["param", obj.name,"param"]),
-                          ...fields.map(obj => ["key", obj.name,"key"])
+                          ...fields.map(obj => ["param", obj.name, "param"]),
+                          ...fields.map(obj => ["key", obj.name, "key"])
                         ]
                         form.validateFields(fieldKeys)
                           .then(() => add())

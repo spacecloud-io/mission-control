@@ -72,7 +72,7 @@ const DeploymentsOverview = () => {
       max: obj.autoScale.maxReplicas,
       replicas: obj.autoScale.replicas,
       pollingInterval: obj.autoScale.pollingInterval,
-      coolDown: obj.autoScale.coolDown,
+      coolDownInterval: obj.autoScale.coolDownInterval,
       env: task.env
         ? Object.entries(task.env).map(([key, value]) => ({
           key: key,

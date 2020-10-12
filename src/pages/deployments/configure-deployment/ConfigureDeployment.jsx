@@ -28,6 +28,10 @@ import {
 import AddScalerForm from "../../../components/deployments/add-scaler/AddScalerForm";
 const { Panel } = Collapse;
 
+const initialScalers = [
+  { name: 'Request per second', type: 'requests-per-second', metadata: { target: "50" } }
+]
+
 const ConfigureDeployment = props => {
   const { projectID } = useParams();
   const history = useHistory();
@@ -54,19 +58,20 @@ const ConfigureDeployment = props => {
   const [addAffinityModalVisibility, setAddAffinityModalVisibility] = useState(false);
   const [selectedTaskInfo, setSelectedTaskInfo] = useState(null);
   const [selectedAffinityInfo, setSelectedAffinityInfo] = useState(null);
-  const [scalers, setScalers] = useState([{name: 'Request per second', type: 'requests-per-second', metadata: { target: 50 }}]); 
+  const [scalers, setScalers] = useState(initialScalers);
   const [addScalerModalVisibility, setAddScalerModalVisibility] = useState(false);
   const [selectedScalerInfo, setSelectedScalerInfo] = useState(null);
 
   // Derived state
   const operation = props.location.state && props.location.state.deploymentClickedInfo ? "edit" : "add";
+  const scalerNames = scalers.map(scaler => scaler.name)
 
   const initialValues = operation === "edit" ? props.location.state.deploymentClickedInfo : undefined;
   const formInitialValues = {
     id: initialValues ? initialValues.id : "",
     version: initialValues ? initialValues.version : "",
     pollingInterval: initialValues ? initialValues.autoScale.pollingInterval : 15,
-    coolDown: initialValues ? initialValues.autoScale.coolDown : 120,
+    coolDownInterval: initialValues ? initialValues.autoScale.coolDownInterval : 120,
     min: initialValues ? initialValues.autoScale.minReplicas : 1,
     max: initialValues ? initialValues.autoScale.maxReplicas : 100,
     whitelists: (initialValues && initialValues.whitelists && initialValues.whitelists.length > 0) ? initialValues.whitelists : [{ projectId: projectID, service: "*" }],
@@ -165,11 +170,11 @@ const ConfigureDeployment = props => {
   };
 
   const handleScalerSubmit = (values, operation) => {
-    if(operation === 'add'){
+    if (operation === 'add') {
       setScalers([...scalers, values])
-    }else {
+    } else {
       const newScalerArray = scalers.map(val => {
-        if(values.name === val.name){
+        if (values.name === val.name) {
           return values;
         }
         return val
@@ -207,7 +212,7 @@ const ConfigureDeployment = props => {
         projectId: projectID,
         autoScale: {
           pollingInterval: values.pollingInterval,
-          coolDown: values.coolDown,
+          coolDownInterval: values.coolDownInterval,
           replicas: 0,
           minReplicas: Number(values.min),
           maxReplicas: Number(values.max),
@@ -284,22 +289,18 @@ const ConfigureDeployment = props => {
       title: 'Scaler',
       dataIndex: 'type',
       render: (_, { type }) => {
-        switch(type){
+        switch (type) {
           case 'requests-per-second':
             return 'Requests per second';
-            break;
           case 'active-requests':
             return 'Active requests';
-            break;
           case 'cpu':
             return 'CPU';
-            break;
           case 'ram':
             return 'RAM';
-            break;
-          default: const kedaType = Object.entries(kedaTriggerTypes).find(([key, value]) => value === type)
-            return `KEDA (${kedaType[0]})`;
-            break;
+          default:
+            const kedaType = kedaTriggerTypes.find(({ value }) => value === type)
+            return `KEDA (${kedaType ? kedaType.value : type})`;
         }
       }
     },
@@ -425,12 +426,12 @@ const ConfigureDeployment = props => {
                     <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
                       <Panel header="Advanced" key="1">
                         <br />
-                        <FormItemLabel name='Scalers' extra={<Button style={{ float: 'right' }} onClick={onAddScalerClick}>Add scaler</Button>}/>
-                        <Alert 
+                        <FormItemLabel name='Scalers' extra={<Button style={{ float: 'right' }} onClick={onAddScalerClick}>Add scaler</Button>} />
+                        <Alert
                           style={{ margin: '16px 0' }}
-                          showIcon 
-                          type='info' 
-                          message=' ' 
+                          showIcon
+                          type='info'
+                          message=' '
                           description='Space Cloud supports autoscaling on multiple scaling paramaters like requests per second, active requests, cpu, ram, etc along with event driven scaling. The highest scale output from the configured scalers would be used to determine the desired scale of a service.' />
                         <Table dataSource={scalers} columns={scalersColumn} pagination={false} style={{ marginBottom: '24px' }} />
                         <FormItemLabel name="Replicas" />
@@ -453,20 +454,20 @@ const ConfigureDeployment = props => {
                         <Input.Group compact>
                           <Form.Item name="pollingInterval">
                             <Input addonBefore={
-                              <div>Polling interval 
-                                <Tooltip title='polling interval'>
-                                  <QuestionCircleFilled style={{ marginLeft: '16px' }}/>
+                              <div>Polling interval
+                                <Tooltip title='The interval to poll the output of scalers'>
+                                  <QuestionCircleFilled style={{ marginLeft: '16px' }} />
                                 </Tooltip>
                               </div>}
-                            style={{ width: 277 }}
-                            placeholder='Polling interval'/>
+                              style={{ width: 277 }}
+                              placeholder='Polling interval' />
                           </Form.Item>
-                          <Form.Item name="coolDown">
+                          <Form.Item name="coolDownInterval">
                             <Input
                               addonBefore={
-                                <div>Cooldown interval 
-                                  <Tooltip title='cooldown interval'>
-                                    <QuestionCircleFilled style={{ marginLeft: '16px' }}/>
+                                <div>Cooldown interval
+                                  <Tooltip title='The interval to wait before scaling down to zero'>
+                                    <QuestionCircleFilled style={{ marginLeft: '16px' }} />
                                   </Tooltip>
                                 </div>}
                               style={{ width: 324, marginLeft: 32 }}
@@ -695,7 +696,7 @@ const ConfigureDeployment = props => {
           visible={addScalerModalVisibility}
           initialValues={selectedScalerInfo}
           secrets={envSecrets}
-          scalers={scalers}
+          scalerNames={scalerNames}
           handleCancel={() => setAddScalerModalVisibility(false)}
           handleSubmit={handleScalerSubmit}
         />
