@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
@@ -12,6 +12,14 @@ import 'codemirror/addon/lint/lint.js';
 
 function JSONCodeMirror(props) {
   const [value, setValue] = useState(props.value ? props.value : '')
+  // Introduce delay between enabling the linter to remove the transient error
+  const [enableLinter, setEnableLinter] = useState(false)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setEnableLinter(true)
+    }, 1000)
+  }, [])
 
   const handleChangeValue = (value) => {
     setValue(value)
@@ -29,7 +37,7 @@ function JSONCodeMirror(props) {
           autoCloseBrackets: true,
           tabSize: 2,
           gutters: ['CodeMirror-lint-markers'],
-          lint: !!value,
+          lint: value && enableLinter ? true : false,
           ...props.options
         }}
         onBeforeChange={(editor, data, value) => {

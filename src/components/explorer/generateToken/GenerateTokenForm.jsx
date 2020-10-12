@@ -1,23 +1,28 @@
-import React, { useState } from "react"
+import React from "react"
 import { Modal, Card, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import jwt from 'jsonwebtoken';
 import { notify, generateToken } from "../../../utils";
-import { useSelector } from "react-redux";
 import JSONCodeMirror from "../../json-code-mirror/JSONCodeMirror";
+import store from "../../../store";
+
+const getToken = (claims, projectId) => {
+  return generateToken(store.getState(), projectId, claims)
+}
 
 const GenerateTokenForm = (props) => {
   const [form] = Form.useForm();
   const decodedClaims = jwt.decode(props.initialToken)
   const initialPayload = decodedClaims ? decodedClaims : {}
+  const formInitialValues = {
+    claims: JSON.stringify(initialPayload, null, 2)
+  }
 
-  const [data, setData] = useState(JSON.stringify(initialPayload, null, 2))
-  const generatedToken = useSelector(state => generateToken(state, props.projectID, data))
   const handleSubmit = e => {
     form.validateFields().then(values => {
       try {
-        JSON.parse(data)
-        props.handleSubmit(generatedToken);
+        JSON.parse(values.claims)
+        props.handleSubmit(getToken(values.claims, props.projectID));
         props.handleCancel();
       } catch (ex) {
         notify("error", "Error", ex.toString())
@@ -34,15 +39,25 @@ const GenerateTokenForm = (props) => {
       onCancel={props.handleCancel}
       onOk={handleSubmit}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" initialValues={formInitialValues}>
         <FormItemLabel name="Token claims" />
-        <JSONCodeMirror value={data} onChange={value => setData(value)} options={{ autofocus: true }} />
-        <div style={{ paddingTop: 16 }}>
-          <FormItemLabel name="Generated token" />
-          <Card bodyStyle={{ backgroundColor: "#F2F2F2" }}>
-            <h4>{generatedToken}</h4>
-          </Card>
-        </div>
+        <Form.Item name="claims">
+          <JSONCodeMirror options={{ autofocus: true }} />
+        </Form.Item>
+        <Form.Item dependencies={["claims"]}>
+          {() => {
+            const claims = form.getFieldValue("claims")
+            const generatedToken = getToken(claims, props.projectID)
+            return (
+              <div>
+                <FormItemLabel name="Generated token" />
+                <Card bodyStyle={{ backgroundColor: "#F2F2F2" }}>
+                  <h4>{generatedToken}</h4>
+                </Card>
+              </div>
+            )
+          }}
+        </Form.Item>
       </Form>
     </Modal>
   )
