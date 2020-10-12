@@ -53,7 +53,7 @@ const EventingSchema = () => {
   // Handlers
   const handleCancelAddColModal = () => {
     setAddColModalVisible(false);
-    setSelectedSchema(null);
+    setSelectedSchema();
   };
 
   const handleDelete = type => {
