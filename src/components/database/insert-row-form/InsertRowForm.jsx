@@ -228,16 +228,16 @@ const InsertRowForm = (props) => {
                         </Col>
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
-                        <Col span={10} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
+                        <Col span={10}>
                           <Form.Item
-                           name={[field.name, 'value']}
-                           key={[field.name, 'value']}
-                           style={{ display: 'inline-block', width: '100%' }}
-                           rules={[
-                             isFieldRequired(field.name)
-                           ]}
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
                           >
-                            <JSONCodeMirror />
+                            <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
@@ -245,16 +245,16 @@ const InsertRowForm = (props) => {
                         shouldUpdate={true}
                         condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
                       >
-                        <Col span={10} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
+                        <Col span={10}>
                           <Form.Item
-                           name={[field.name, 'value']}
-                           key={[field.name, 'value']}
-                           style={{ display: 'inline-block', width: '100%' }}
-                           rules={[
-                             isFieldRequired(field.name)
-                           ]}
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
                           >
-                            <JSONCodeMirror />
+                            <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>

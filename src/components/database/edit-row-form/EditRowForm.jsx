@@ -98,7 +98,7 @@ const EditRowForm = (props) => {
           {(fields, { add, remove }) => {
             return (
               <div>
-                {fields.map((field, index) => (
+                {fields.map((field) => (
                   <>
                     <Row key={field.key} gutter={10}>
                       <Col span={5}>
@@ -335,7 +335,7 @@ const EditRowForm = (props) => {
                             </Col>
                           </ConditionalFormBlock>
                           <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
-                            <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
+                            <Col span={7}>
                               <Form.Item
                                 name={[field.name, 'value']}
                                 key={[field.name, 'value']}
@@ -344,7 +344,7 @@ const EditRowForm = (props) => {
                                   isFieldRequired(field.name)
                                 ]}
                               >
-                                <JSONCodeMirror />
+                                <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
@@ -352,8 +352,8 @@ const EditRowForm = (props) => {
                             shouldUpdate={true}
                             condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
                           >
-                            <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                            <Form.Item
+                            <Col span={7}>
+                              <Form.Item
                                 name={[field.name, 'value']}
                                 key={[field.name, 'value']}
                                 style={{ display: 'inline-block', width: '100%' }}
@@ -361,7 +361,7 @@ const EditRowForm = (props) => {
                                   isFieldRequired(field.name)
                                 ]}
                               >
-                                <JSONCodeMirror />
+                                <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>

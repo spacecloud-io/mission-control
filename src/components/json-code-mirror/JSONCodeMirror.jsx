@@ -11,33 +11,33 @@ import 'codemirror/addon/lint/json-lint.js';
 import 'codemirror/addon/lint/lint.js';
 
 function JSONCodeMirror(props) {
-    const [value, setValue] = useState(props.value ? props.value : '')
+  const [value, setValue] = useState(props.value ? props.value : '')
 
-    const handleChangeValue = (value) => {
-        setValue(value)
-        props.onChange(value)
-    }
-    return (
-        <div style={props.style ? props.style : undefined}>
-            <CodeMirror
-                value={value}
-                options={{
-                    mode: { name: "javascript", json: true },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    gutters: ['CodeMirror-lint-markers'],
-                    lint: !!value,
-                    ...props.options
-                }}
-                onBeforeChange={(editor, data, value) => {
-                    handleChangeValue(value);
-                }}
-            />
-        </div>
-    )
+  const handleChangeValue = (value) => {
+    setValue(value)
+    props.onChange(value)
+  }
+  return (
+    <div style={props.style ? props.style : undefined}>
+      <CodeMirror
+        value={value}
+        options={{
+          mode: { name: "javascript", json: true },
+          lineNumbers: true,
+          styleActiveLine: true,
+          matchBrackets: true,
+          autoCloseBrackets: true,
+          tabSize: 2,
+          gutters: ['CodeMirror-lint-markers'],
+          lint: !!value,
+          ...props.options
+        }}
+        onBeforeChange={(editor, data, value) => {
+          handleChangeValue(value);
+        }}
+      />
+    </div>
+  )
 }
 
 export default JSONCodeMirror;

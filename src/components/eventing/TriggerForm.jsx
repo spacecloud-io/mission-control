@@ -48,7 +48,8 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
     eventType: initialEventType,
     isSynchronous: false,
     bypassSecurityRules: useInternalToken,
-    token: token
+    token: token,
+    data: "{}"
   }
 
   return (
@@ -112,7 +113,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
       {eventResponse && <React.Fragment>
         <br />
         <FormItemLabel name="Response" />
-        <JSONView data={eventResponse}/>
+        <JSONView data={eventResponse} />
       </React.Fragment>}
     </React.Fragment>
   );

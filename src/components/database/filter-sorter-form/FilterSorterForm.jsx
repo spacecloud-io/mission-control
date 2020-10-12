@@ -14,7 +14,8 @@ const FilterSorterForm = (props) => {
 
   const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
 
-  const filters = useSelector(state => state.uiState.explorer.filters);
+  const filters = useSelector(state => state.uiState.explorer.filters)
+    .map(obj => Object.assign({}, obj, { value: obj.datatype === "json" ? JSON.stringify(obj.value, null, 2) : obj.value }))
   const sorters = useSelector(state => state.uiState.explorer.sorters);
   const dispatch = useDispatch();
   const onFinish = () => {
@@ -252,7 +253,7 @@ const FilterSorterForm = (props) => {
                         </Col>
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "json"}>
-                        <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
+                        <Col span={7}>
                           <Form.Item
                             name={[field.name, 'value']}
                             key={[field.name, 'value']}
@@ -261,7 +262,7 @@ const FilterSorterForm = (props) => {
                               { required: true, message: 'Please enter value!' },
                             ]}
                           >
-                            <JSONCodeMirror />
+                            <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
