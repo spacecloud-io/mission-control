@@ -152,16 +152,15 @@ const EventingSchema = () => {
               <Button style={{ marginLeft: '16px' }} onClick={() => setAddColModalVisible(true)} type="primary">Add</Button>
             </div>
           </div>
-          {Object.keys(schemas).length > 0 ?
-            <Table
-              dataSource={filteredSchemasData}
-              columns={columns}
-              locale={{
-                emptyText: schemasTableData.length !== 0 ?
-                  <EmptySearchResults searchText={searchText} /> :
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event schema created yet. Add a event schema' />
-              }}
-            /> : <EmptyState />}
+          <Table
+            dataSource={filteredSchemasData}
+            columns={columns}
+            locale={{
+              emptyText: schemasTableData.length !== 0 ?
+                <EmptySearchResults searchText={searchText} /> :
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No event schema created yet. Add a event schema' />
+            }}
+          />
           {addColModalVisible && (
             <EventSchemaForm
               projectId={projectID}
