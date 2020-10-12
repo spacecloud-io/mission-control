@@ -12,13 +12,12 @@ import { notify } from '../../utils';
 
 const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEventTypes }) => {
   const [form] = Form.useForm()
-  const [eventType, setEventType] = useState();
-
+  const [eventType, setEventType] = useState(initialValues.eventType);
   const handleChangedValues = ({ eventType }) => {
     setEventType(eventType);
   }
 
-  if (!initialValues) {
+  if (!initialValues.schema) {
     initialValues = {
       schema: `type {
   
@@ -56,8 +55,8 @@ const EventSchemaForm = ({ handleSubmit, handleCancel, initialValues, customEven
         className='edit-item-modal'
         visible={true}
         width={520}
-        okText="Add"
-        title="Add event schema"
+        okText={initialValues.eventType ? "Edit" : "Add"}
+        title={initialValues.eventType ? "Edit event schema" : "Add event schema"}
         onOk={handleSubmitClick}
         onCancel={handleCancel}
       >
