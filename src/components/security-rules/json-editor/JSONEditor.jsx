@@ -6,6 +6,8 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/selection/active-line.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
+import 'codemirror/addon/lint/json-lint.js';
+import 'codemirror/addon/lint/lint.js';
 
 function JSONEditor({ rule, setRule }) {
 
@@ -21,6 +23,8 @@ function JSONEditor({ rule, setRule }) {
         autoCloseBrackets: true,
         tabSize: 2,
         autofocus: true,
+        gutters: [],
+        lint: true
       }}
       onBeforeChange={(editor, data, value) => {
         setRule(value);

@@ -12,7 +12,6 @@ import {
   Col,
   AutoComplete,
 } from 'antd';
-import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { notify, isJson } from '../../../utils';
@@ -22,6 +21,7 @@ import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const { Option } = Select;
 
@@ -531,14 +531,7 @@ const ConfigureRule = (props) => {
                         cb()
                       }
                     }]}>
-                      <AntCodeMirror options={{
-                        mode: { name: 'javascript', json: true },
-                        lineNumbers: true,
-                        styleActiveLine: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        tabSize: 2
-                      }} />
+                      <JSONCodeMirror />
                     </Form.Item>
                   )
                 }
@@ -578,16 +571,7 @@ const ConfigureRule = (props) => {
               },
               validateTrigger: "onBlur"
             }]} >
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
-              />
+              <JSONCodeMirror />
             </Form.Item>
           </ConditionalFormBlock>
           <FormItemLabel name='Apply transformations' />
@@ -615,16 +599,7 @@ const ConfigureRule = (props) => {
             </Form.Item>
             <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
             <Form.Item name='requestTemplate' rules={[{ required: true }]}>
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
-              />
+              <JSONCodeMirror />
             </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>
@@ -672,14 +647,7 @@ const ConfigureRule = (props) => {
               cb()
             }
           }]}>
-            <AntCodeMirror options={{
-              mode: { name: 'javascript', json: true },
-              lineNumbers: true,
-              styleActiveLine: true,
-              matchBrackets: true,
-              autoCloseBrackets: true,
-              tabSize: 2
-            }} />
+            <JSONCodeMirror />
           </Form.Item>
           <FormItemLabel name="Store" hint="(Optional)" />
           <FormItem name="store" rules={[{ required: false }]}>

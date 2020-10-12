@@ -1,28 +1,16 @@
 import React from 'react';
 import { Card, Typography } from 'antd';
+import { getGraphQLEndpoints } from '../../../utils';
 
 
-const EndpointCard = (props) => {
-
-	const { protocol, host, projectId } = props;
-	let httpProtocol, wsProtocol;
-
-	if (protocol === "https:") {
-		httpProtocol = "https:"
-		wsProtocol = "wss:"
-	} else {
-		httpProtocol = "http:"
-		wsProtocol = "ws:"
-	}
-
-	const graphqlHttpURL = `${httpProtocol}//${host}/v1/api/${projectId}/graphql`
-	const graphqlWebsocketURL = `${wsProtocol}//${host}/v1/api/${projectId}/graphql/socket`
+const EndpointCard = ({ projectId }) => {
+	const { httpUrl, websocketUrl } = getGraphQLEndpoints(projectId)
 
 	return (
 		<Card style={{ overflow: "auto" }}>
-			<Typography.Text strong>HTTP URL:</Typography.Text><Typography.Text copyable ellipsis>{graphqlHttpURL}</Typography.Text>
-			<br/>
-			<Typography.Text strong>Websocket URL:</Typography.Text><Typography.Text copyable ellipsis>{graphqlWebsocketURL}</Typography.Text>
+			<Typography.Text strong>HTTP URL:</Typography.Text><Typography.Text copyable ellipsis>{httpUrl}</Typography.Text>
+			<br />
+			<Typography.Text strong>Websocket URL:</Typography.Text><Typography.Text copyable ellipsis>{websocketUrl}</Typography.Text>
 		</Card>
 	);
 }

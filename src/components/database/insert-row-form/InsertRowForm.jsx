@@ -3,17 +3,10 @@ import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, 
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { generateId, notify } from '../../../utils';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const InsertRowForm = (props) => {
   const [form] = Form.useForm();
-  const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
   const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
@@ -26,7 +19,7 @@ const InsertRowForm = (props) => {
             values.rows[index].value = val.arrays ? val.arrays.map(el => el.value) : []
           }
           if (val.datatype === "json" || !primitives.includes(val.datatype)) {
-            values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
+            values.rows[index].value = JSON.parse(values.rows[index].value)
           }
         })
         props.insertRow(values.rows).then(() => props.handleCancel())
@@ -235,43 +228,34 @@ const InsertRowForm = (props) => {
                         </Col>
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
-                        <Col span={10} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                          <CodeMirror
-                            value={json[field.name] ? json[field.name] : ""}
-                            options={{
-                              mode: { name: 'javascript', json: true },
-                              lineNumbers: true,
-                              styleActiveLine: true,
-                              matchBrackets: true,
-                              autoCloseBrackets: true,
-                              tabSize: 2
-                            }}
-                            onBeforeChange={(editor, data, value) => {
-                              setJson(Object.assign({}, json, { [field.name]: value }))
-                            }}
-                          />
+                        <Col span={10}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
+                          >
+                            <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
+                          </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
                       <ConditionalFormBlock
                         shouldUpdate={true}
                         condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
                       >
-                        <Col span={10} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                          <CodeMirror
-                            value={json[field.name] ? json[field.name] : ""}
-                            options={{
-                              mode: { name: 'javascript', json: true },
-                              lineNumbers: true,
-                              styleActiveLine: true,
-                              matchBrackets: true,
-                              autoCloseBrackets: true,
-                              tabSize: 2,
-                              autofocus: true
-                            }}
-                            onBeforeChange={(editor, data, value) => {
-                              setJson(Object.assign({}, json, { [field.name]: value }))
-                            }}
-                          />
+                        <Col span={10}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
+                          >
+                            <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
+                          </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
                       <Col span={2}>

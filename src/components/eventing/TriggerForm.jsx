@@ -1,20 +1,14 @@
 import React, { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { Controlled as CodeMirror } from 'react-codemirror2';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { Form, AutoComplete, Checkbox, Tooltip, Button, Input } from 'antd';
 import FormItemLabel from "../form-item-label/FormItemLabel"
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
 import { notify, canGenerateToken } from "../../utils";
 import { get, set } from "automate-redux";
 import GenerateTokenForm from "../explorer/generateToken/GenerateTokenForm"
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 import JSONView from "../utils/json-view/JSONView";
+import JSONCodeMirror from "../json-code-mirror/JSONCodeMirror";
 
 const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken, projectId }) => {
   const [form] = Form.useForm()
@@ -22,7 +16,6 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
 
   const dispatch = useDispatch()
   const [generateTokenModalVisible, setGenerateTokenModalVisible] = useState(false)
-  const [data, setData] = useState("{}")
   const [eventResponse, setEventResponse] = useState(null)
   const [triggeredEventOnce, setTriggeredEventOnce] = useState(false)
   const useInternalToken = useSelector(state => get(state, "uiState.eventing.useInternalToken", true))
@@ -40,7 +33,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
   const handleClickSubmit = e => {
     form.validateFields().then(fieldsValue => {
       try {
-        handleSubmit(fieldsValue["eventType"], JSON.parse(data), fieldsValue["isSynchronous"], getToken())
+        handleSubmit(fieldsValue["eventType"], JSON.parse(fieldsValue.data), fieldsValue["isSynchronous"], getToken())
           .then(res => {
             setEventResponse(res)
             if (!triggeredEventOnce) setTriggeredEventOnce(true)
@@ -55,7 +48,8 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
     eventType: initialEventType,
     isSynchronous: false,
     bypassSecurityRules: useInternalToken,
-    token: token
+    token: token,
+    data: "{}"
   }
 
   return (
@@ -102,21 +96,9 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
           </div>
         </ConditionalFormBlock>
         <FormItemLabel name="Event data" description="JSON object" />
-        <CodeMirror
-          value={data}
-          options={{
-            mode: { name: "javascript", json: true },
-            lineNumbers: true,
-            styleActiveLine: true,
-            matchBrackets: true,
-            autoCloseBrackets: true,
-            tabSize: 2,
-            autofocus: true
-          }}
-          onBeforeChange={(editor, data, value) => {
-            setData(value)
-          }}
-        />
+        <Form.Item name="data">
+          <JSONCodeMirror />
+        </Form.Item>
         <br />
         <Form.Item>
           <Button htmlType="submit">{triggeredEventOnce ? "Trigger another event" : "Trigger event"}</Button>
@@ -131,7 +113,7 @@ const TriggerForm = ({ handleSubmit, eventTypes, initialEventType, internalToken
       {eventResponse && <React.Fragment>
         <br />
         <FormItemLabel name="Response" />
-        <JSONView data={eventResponse}/>
+        <JSONView data={eventResponse} />
       </React.Fragment>}
     </React.Fragment>
   );

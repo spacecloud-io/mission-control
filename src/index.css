@@ -215,3 +215,7 @@ body {
 .ant-notification-notice-icon-info {
   color: #1890ff !important;
 }
+
+.CodeMirror-lint-tooltip.cm-s-default {
+  z-index: 10000;
+}

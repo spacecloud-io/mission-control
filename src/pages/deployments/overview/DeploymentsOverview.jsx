@@ -68,11 +68,11 @@ const DeploymentsOverview = () => {
       memory: task.resources.memory,
       gpuType: task.resources.gpu ? task.resources.gpu.type : "",
       gpuCount: task.resources.gpu ? task.resources.gpu.value : 0,
-      min: obj.scale.minReplicas,
-      max: obj.scale.maxReplicas,
-      replicas: obj.scale.replicas,
-      autoscalingMode: obj.scale.mode,
-      concurrency: obj.scale.concurrency,
+      min: obj.autoScale.minReplicas,
+      max: obj.autoScale.maxReplicas,
+      replicas: obj.autoScale.replicas,
+      pollingInterval: obj.autoScale.pollingInterval,
+      coolDownInterval: obj.autoScale.coolDownInterval,
       env: task.env
         ? Object.entries(task.env).map(([key, value]) => ({
           key: key,

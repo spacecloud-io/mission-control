@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography, Spin } from 'antd';
+import { QuestionCircleOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Tooltip, Button, Radio, Alert, Popconfirm, Table, Modal, Input, Checkbox, Select, Typography, Spin, Collapse } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { generateJWTSecret } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
@@ -23,7 +23,7 @@ const generateRSAPublicKeyFromPrivateKey = (privateKey) => {
 }
 
 
-const AddSecretModal = ({ handleSubmit, handleCancel }) => {
+const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
   const [form] = Form.useForm();
 
   const [isPrivateKeyLoading, setPrivateKeyLoading] = useState(false);
@@ -32,6 +32,14 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
     form.validateFields().then(values => {
       const { alg, privateKey } = values;
       values.publicKey = alg === "RS256" && privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : values.publicKey
+      if (!values.checkAudience) {
+        values.aud = undefined
+      }
+      if (!values.checkIssuer) {
+        values.iss = undefined
+      }
+      delete values["checkAudience"]
+      delete values["checkIssuer"]
       handleSubmit(values).then(() => handleCancel())
     });
   };
@@ -48,6 +56,19 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
     }
   }
 
+  const formInitialValues = {
+    alg: initialValues ? initialValues.alg : "HS256",
+    secret: initialValues ? initialValues.secret : generateJWTSecret(),
+    privateKey: initialValues ? initialValues.privateKey : "",
+    publicKey: initialValues ? initialValues.publicKey : "",
+    jwkUrl: initialValues ? initialValues.jwkUrl : "",
+    isPrimary: initialValues ? initialValues.isPrimary : true,
+    checkAudience: initialValues && initialValues.aud && initialValues.aud.length > 0 ? true : false,
+    checkIssuer: initialValues && initialValues.iss ? true : false,
+    aud: initialValues && initialValues.aud ? initialValues.aud : [""],
+    iss: initialValues && initialValues.iss ? initialValues.iss : [""]
+  }
+
   return (
     <Modal
       title="Add secret"
@@ -55,11 +76,12 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
       visible={true}
       onOk={handleSubmitClick}
       onCancel={handleCancel}
+      width={720}
     >
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ alg: "HS256", secret: generateJWTSecret(), isPrimary: true }}
+        initialValues={formInitialValues}
       >
         <FormItemLabel name="Algorithm" />
         <Form.Item name="alg">
@@ -87,8 +109,8 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           <Form.Item name="privateKey">
             {
               isPrivateKeyLoading ?
-              <span><Spin className='page-loading' spinning={true} size="large" /> Generating Private Key......</span> :
-              <Input.TextArea rows={4} placeholder="Private key" />
+                <span><Spin className='page-loading' spinning={true} size="large" /> Generating Private Key......</span> :
+                <Input.TextArea rows={4} placeholder="Private key" />
             }
           </Form.Item>
           <FormItemLabel name="Primary secret" />
@@ -97,7 +119,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "JWK_URL"}>
-          <FormItemLabel name="JWK URL"/>
+          <FormItemLabel name="JWK URL" />
           <Form.Item name="jwkUrl" rules={[{ required: true, message: 'Please provide an URL' }]}>
             <Input placeholder="JWK URL" />
           </Form.Item>
@@ -108,6 +130,114 @@ const AddSecretModal = ({ handleSubmit, handleCancel }) => {
             <Input.TextArea rows={4} placeholder="Public key" />
           </Form.Item>
         </ConditionalFormBlock>
+        <Collapse style={{ background: "white" }} bordered={false} >
+          <Collapse.Panel header="Advanced" key="advanced">
+            <FormItemLabel name='Check audience' />
+            <Form.Item name='checkAudience' valuePropName='checked'>
+              <Checkbox>
+                Check audience while verifying JWT token
+              </Checkbox>
+            </Form.Item>
+            <ConditionalFormBlock
+              dependency='checkAudience'
+              condition={() => form.getFieldValue('checkAudience') === true}
+            >
+              <FormItemLabel name="Specify audiences" description="The audience check will pass if the JWT matches any one of the specified audiences below" />
+              <Form.List name="aud">
+                {(fields, { add, remove }) => {
+                  return (
+                    <div>
+                      {fields.map((field) => (
+                        <Form.Item key={field.key} style={{ marginBottom: 8 }}>
+                          <Form.Item
+                            {...field}
+                            validateTrigger={['onChange', 'onBlur']}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please input a value",
+                              }
+                            ]}
+                            noStyle
+                          >
+                            <Input placeholder="Audience value" style={{ width: "90%" }} />
+                          </Form.Item>
+                          {fields.length > 1 ? <DeleteOutlined
+                            style={{ marginLeft: 16 }}
+                            onClick={() => {
+                              remove(field.name);
+                            }}
+                          /> : null}
+                        </Form.Item>
+                      ))}
+                      <Form.Item>
+                        <Button onClick={() => {
+                          form.validateFields(fields.map(obj => ["aud", obj.name]))
+                            .then(() => add())
+                            .catch(ex => console.log("Exception", ex))
+                        }}>
+                          <PlusOutlined /> Add
+                        </Button>
+                      </Form.Item>
+                    </div>
+                  );
+                }}
+              </Form.List>
+            </ConditionalFormBlock>
+            <FormItemLabel name='Check issuer' />
+            <Form.Item name='checkIssuer' valuePropName='checked'>
+              <Checkbox>
+                Check issuer while verifying JWT token
+              </Checkbox>
+            </Form.Item>
+            <ConditionalFormBlock
+              dependency='checkIssuer'
+              condition={() => form.getFieldValue('checkIssuer') === true}
+            >
+              <FormItemLabel name="Specify issuers" description="The issuer check will pass if the JWT matches any one of the specified issuers below" />
+              <Form.List name="iss">
+                {(fields, { add, remove }) => {
+                  return (
+                    <div>
+                      {fields.map((field) => (
+                        <Form.Item key={field.key} style={{ marginBottom: 8 }}>
+                          <Form.Item
+                            {...field}
+                            validateTrigger={['onChange', 'onBlur']}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please input a value",
+                              }
+                            ]}
+                            noStyle
+                          >
+                            <Input placeholder="Issuer value" style={{ width: "90%" }} />
+                          </Form.Item>
+                          {fields.length > 1 ? <DeleteOutlined
+                            style={{ marginLeft: 16 }}
+                            onClick={() => {
+                              remove(field.name);
+                            }}
+                          /> : null}
+                        </Form.Item>
+                      ))}
+                      <Form.Item>
+                        <Button onClick={() => {
+                          form.validateFields(fields.map(obj => ["iss", obj.name]))
+                            .then(() => add())
+                            .catch(ex => console.log("Exception", ex))
+                        }}>
+                          <PlusOutlined /> Add
+                        </Button>
+                      </Form.Item>
+                    </div>
+                  );
+                }}
+              </Form.List>
+            </ConditionalFormBlock>
+          </Collapse.Panel>
+        </Collapse>
       </Form>
     </Modal>
   )
@@ -154,18 +284,34 @@ const ViewSecretModal = ({ secretData, handleCancel }) => {
   )
 }
 
-const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecret, handleAddSecret }) => {
+const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecret, handleSaveSecret }) => {
 
   // For backword compatibility assume the `alg` as `HS256`
   const secretsData = secrets.map(obj => Object.assign({}, obj, { alg: obj.alg ? obj.alg : "HS256" }))
 
-  const [addSecretModalVisible, setAddSecretModalVisible] = useState(false);
+  const [secretModalVisible, setSecretModalVisible] = useState(false);
   const [viewSecretModalVisible, setViewSecretModalVisible] = useState(false);
-  const [secretData, setSecretData] = useState({});
+  const [secretClickedIndex, setSecretClickedIndex] = useState(undefined);
+  const secretClickedDetails = secretClickedIndex !== undefined ? secretsData[secretClickedIndex] : null
 
-  const handleViewClick = (values) => {
-    setSecretData(values);
-    setViewSecretModalVisible(true);
+  const handleViewClick = (index) => {
+    setSecretClickedIndex(index)
+    setViewSecretModalVisible(true)
+  }
+
+  const handleEditClick = (index) => {
+    setSecretClickedIndex(index)
+    setSecretModalVisible(true)
+  }
+
+  const handleCancel = () => {
+    setSecretModalVisible(false)
+    setSecretClickedIndex(undefined)
+  }
+
+  const handleCancelView = () => {
+    setViewSecretModalVisible(false)
+    setSecretClickedIndex(undefined)
   }
 
   const columns = [
@@ -190,7 +336,8 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
       render: (_, record, index) => {
         return (
           <span>
-            <a onClick={() => handleViewClick(record)}>View</a>
+            <a onClick={() => handleViewClick(index)}>View</a>
+            <a onClick={() => handleEditClick(index)}>Edit</a>
             <Popconfirm
               title={record.isPrimary ? "You are deleting primary secret. Any remaining secret will be randomly chosen as primary key." : "Tokens signed with this secret will stop getting verified"}
               onConfirm={() => handleRemoveSecret(index)}
@@ -207,7 +354,7 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h2 style={{ display: "inline-block" }}>JWT Secrets</h2>
-        <Button onClick={() => setAddSecretModalVisible(true)}>
+        <Button onClick={() => setSecretModalVisible(true)}>
           Add
         </Button>
       </div>
@@ -225,13 +372,13 @@ const SecretConfigure = ({ secrets, handleRemoveSecret, handleChangePrimarySecre
         pagination={false}
         rowKey="key"
       />
-      {addSecretModalVisible && <AddSecretModal
-        handleSubmit={handleAddSecret}
-        handleCancel={() => setAddSecretModalVisible(false)} />}
+      {secretModalVisible && <AddSecretModal
+        initialValues={secretClickedDetails}
+        handleSubmit={(values) => handleSaveSecret(values, secretClickedIndex)}
+        handleCancel={handleCancel} />}
       {viewSecretModalVisible && <ViewSecretModal
-        secretData={secretData}
-        handleCancel={() => setViewSecretModalVisible(false)}
-      />}
+        secretData={secretClickedDetails}
+        handleCancel={handleCancelView} />}
     </div>
   )
 }

@@ -210,6 +210,34 @@ export const deploymentStatuses = {
 
 export const actionQueuedMessage = "Action queued successfully"
 
+export const kedaTriggerTypes = [
+  { label: "ActiveMQ Artemis", value: "artemis-queue" },
+  { label: "Apache Kafka", value: "kafka" },
+  { label: "AWS Cloud Watch", value: "aws-cloudwatch" },
+  { label: "AWS Kinesis Stream", value: "aws-kinesis-stream" },
+  { label: "AWS SQS Queue", value: "aws-sqs-queue" },
+  { label: "Azure Blob Storage", value: "azure-blob" },
+  { label: "Azure Event Hubs", value: "azure-eventhub" },
+  { label: "Azure Log Analytics", value: "azure-log-analytics" },
+  { label: "Azure Monitor", value: "azure-monitor" },
+  { label: "Azure Service Bus", value: "azure-servicebus" },
+  { label: "Azure Storage Queue", value: "azure-queue" },
+  { label: "Cron", value: "cron" },
+  { label: "External", value: "external" },
+  { label: "External Push", value: "external-push" },
+  { label: "Google Cloud Platform ‎Pub/Sub", value: "gcp-pubsub" },
+  { label: "Huawei Cloudeye", value: "huawei-cloudeye" },
+  { label: "Liiklus Topic", value: "liiklus" },
+  { label: "Metrics API", value: "metric-api" },
+  { label: "MySQL", value: "mysql" },
+  { label: "NATS Streaming", value: "stan" },
+  { label: "PostgreSQL", value: "postgresql" },
+  { label: "Prometheus", value: "prometheus" },
+  { label: "RabbitMQ Queue", value: "rabbitmq" },
+  { label: "Redis Lists", value: "redis" },
+  { label: "Redis Streams", value: "redis-streams" }
+]
+
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {
     return productionURL
