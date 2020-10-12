@@ -17,7 +17,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
-import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -303,14 +303,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                         cb()
                       }
                     }]}>
-                      <AntCodeMirror options={{
-                        mode: { name: 'javascript', json: true },
-                        lineNumbers: true,
-                        styleActiveLine: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        tabSize: 2
-                      }} />
+                      <JSONCodeMirror />
                     </Form.Item>
                   </ConditionalFormBlock>
                   <ConditionalFormBlock

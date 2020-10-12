@@ -24,7 +24,7 @@ import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBl
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
-  const envSecrets = props.envSecrets;
+  const envSecrets = props.envSecrets ? props.envSecrets : [];
   const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO], loadFromSecret: false }
   const dbconfig = useSelector(state => getDbConfigs(state))
 
@@ -32,9 +32,9 @@ const CreateDatabase = (props) => {
 
   const handleOnFinish = ({ alias, dbType, conn, secret, dbName }) => {
     let connectionString;
-    if(secret){
+    if (secret) {
       connectionString = `secrets.${secret}`;
-    }else{
+    } else {
       connectionString = conn
     }
     props.handleSubmit(alias, connectionString, dbType, dbName)
@@ -82,10 +82,10 @@ const CreateDatabase = (props) => {
           </RadioCards>
         </Form.Item>
         <FormItemLabel name="Provide a connection string" description="Space Cloud requires a connection string to connect to your database" />
-        <Form.Item name='loadFromSecret'  valuePropName='checked'>
+        <Form.Item name='loadFromSecret' valuePropName='checked'>
           <Checkbox>Load connection string from a secret</Checkbox>
         </Form.Item>
-        <ConditionalFormBlock 
+        <ConditionalFormBlock
           dependency='loadFromSecret'
           condition={() => form.getFieldValue('loadFromSecret') === false}
         >
@@ -93,9 +93,9 @@ const CreateDatabase = (props) => {
             <Input.Password placeholder="eg: mongodb://localhost:27017" />
           </Form.Item>
           <Alert
-          message={alertMsg}
-          type="info"
-          showIcon />
+            message={alertMsg}
+            type="info"
+            showIcon />
           <br />
         </ConditionalFormBlock>
         <ConditionalFormBlock

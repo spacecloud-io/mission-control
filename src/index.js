@@ -7,8 +7,10 @@ import App from './App';
 import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
-
 import ReactGA from 'react-ga';
+const jsonlint = require("jsonlint-mod");
+window.jsonlint = jsonlint;
+
 if (process.env.NODE_ENV === "production") {
   ReactGA.initialize('UA-104521884-3');
 }

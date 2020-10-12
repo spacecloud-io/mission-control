@@ -89,7 +89,7 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
               styleActiveLine: true,
               matchBrackets: true,
               autoCloseBrackets: true,
-              tabSize: 2
+              tabSize: 2,
             }}
             onBeforeChange={(editor, data, value) => {
               setSchema(value)

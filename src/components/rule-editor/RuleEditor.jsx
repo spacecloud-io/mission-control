@@ -96,7 +96,7 @@ const RuleEditor = ({ rules = {}, emptyState, selectedRuleName = "", stringifyRu
                   matchBrackets: true,
                   autoCloseBrackets: true,
                   tabSize: 2,
-                  autofocus: true
+                  autofocus: true,
                 }}
                 onBeforeChange={(editor, data, value) => { setSelectedRule(value) }}
               />
