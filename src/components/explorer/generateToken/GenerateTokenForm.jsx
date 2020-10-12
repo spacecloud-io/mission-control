@@ -1,19 +1,10 @@
 import React, { useState } from "react"
-
-import { Controlled as CodeMirror } from 'react-codemirror2';
 import { Modal, Card, Form } from 'antd';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/active-line.js'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import 'codemirror/addon/lint/json-lint.js';
-import 'codemirror/addon/lint/lint.js';
 import jwt from 'jsonwebtoken';
 import { notify, generateToken } from "../../../utils";
 import { useSelector } from "react-redux";
+import JSONCodeMirror from "../../json-code-mirror/JSONCodeMirror";
 
 const GenerateTokenForm = (props) => {
   const [form] = Form.useForm();
@@ -45,23 +36,7 @@ const GenerateTokenForm = (props) => {
     >
       <Form form={form} layout="vertical">
         <FormItemLabel name="Token claims" />
-        <CodeMirror
-          value={data}
-          options={{
-            mode: { name: "javascript", json: true },
-            lineNumbers: true,
-            styleActiveLine: true,
-            matchBrackets: true,
-            autoCloseBrackets: true,
-            tabSize: 2,
-            autofocus: true,
-            gutters: ['CodeMirror-lint-markers'],
-            lint: true
-          }}
-          onBeforeChange={(editor, data, value) => {
-            setData(value)
-          }}
-        />
+        <JSONCodeMirror value={data} onChange={value => setData(value)} options={{ autofocus: true }} />
         <div style={{ paddingTop: 16 }}>
           <FormItemLabel name="Generated token" />
           <Card bodyStyle={{ backgroundColor: "#F2F2F2" }}>

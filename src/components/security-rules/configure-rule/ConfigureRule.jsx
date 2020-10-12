@@ -12,7 +12,6 @@ import {
   Col,
   AutoComplete,
 } from 'antd';
-import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { notify, isJson } from '../../../utils';

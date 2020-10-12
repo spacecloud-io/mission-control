@@ -17,7 +17,6 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
-import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const { Option } = Select;
