@@ -11,6 +11,7 @@ import FormItemLabel from "../../../components/form-item-label/FormItemLabel"
 import ConditionalFormBlock from "../../../components/conditional-form-block/ConditionalFormBlock";
 import { getDbConfigs, loadDbConfig, getTrackedCollections, loadDbRules, loadDbSchemas } from "../../../operations/database";
 import { notify, decrementPendingRequests, incrementPendingRequests } from "../../../utils";
+import { purgeCache } from "../../../operations/cache";
 
 const PurgeCache = () => {
 
@@ -44,7 +45,37 @@ const PurgeCache = () => {
     const dbList = Object.keys(dbConfigs)
 
     const handleFinish = (values) => {
-        console.log(values)
+        let data = {};
+        switch (values) {
+            case "all":
+                data = values;
+                break;
+            case "database":
+                data = {
+                    level: "database",
+                    options: {
+                        db: values.db,
+                        col: "*"
+                    }
+                }
+                break;
+            case "table":
+                data = {
+                    level: "database",
+                    options: {
+                        db: values.db,
+                        col: values.col
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        incrementPendingRequests()
+        purgeCache(projectID, data)
+        .then(() => notify("success", "Success", "Cache purged successfully"))
+        .catch(ex => notify("error", "Error", ex))
+        .finally(() => decrementPendingRequests())
     }
 
     const handleSelectDatabase = value => setSelectedDb(value)
@@ -86,9 +117,9 @@ const PurgeCache = () => {
                                     <FormItemLabel name="Database" />
                                     <Form.Item name="db" rules={[{ required: true, message: 'Please select a database!' }]}>
                                         <AutoComplete placeholder="Specify database alias" onChange={handleSelectDatabase} options={dbList.map(db => ({ value: db }))} />
-                                    </Form.Item>
+                                    </Form.Item>                                  
+                                    <FormItemLabel name="Table" />
                                     <Form.Item name="col">
-                                        <FormItemLabel name="Table" />
                                         <AutoComplete placeholder="Specify table/collection name" onSearch={handleSearch} >
                                             {
                                                 trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
@@ -100,7 +131,7 @@ const PurgeCache = () => {
                                         </AutoComplete>
                                     </Form.Item>
                                 </ConditionalFormBlock>
-                                <Button type="primary" block style={{ marginTop: 48, backgroundColor: "#FF4D4F" }}>Purge cache</Button>
+                                <Button type="primary" htmlType="submit" block style={{ marginTop: 48, backgroundColor: "#FF4D4F" }}>Purge cache</Button>
                             </Form>
                         </Card>
                     </Col>
