@@ -25,7 +25,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => 
 		})
 	}
 
-	const conn = initialValues.broker && initialValues.broker.conn ? initialValues.broker.conn : "rabbitmq.space-cloud.svc.cluster.local:6379"
+	const conn = initialValues.broker && initialValues.broker.conn ? initialValues.broker.conn : "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
 
 	if (!loading) {
 		form.setFieldsValue({ conn, ...initialValues })
