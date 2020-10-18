@@ -209,7 +209,7 @@ const Rules = () => {
 						</div>}
 						{connected && <React.Fragment>
 							<div style={{ margin: '32px 0 16px 0', display: "flex", justifyContent: "space-between" }}>
-								<h3 style={{ margin: 'auto 0' }}>Security Rules</h3>
+							<h3 style={{ margin: 'auto 0' }}>Security Rules {filteredRules.length ? `(${filteredRules.length})` : ''}</h3>
 								<div style={{ display: 'flex' }}>
 									<Input.Search placeholder='Search by rule name or prefix' style={{ minWidth: '320px' }} onChange={e => setSearchText(e.target.value)} allowClear={true} />
 									<Button style={{ marginLeft: '16px' }} onClick={() => setAddRuleModalVisible(true)} type="primary">Add</Button>

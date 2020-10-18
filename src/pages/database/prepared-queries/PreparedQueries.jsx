@@ -103,7 +103,7 @@ const PreparedQueries = () => {
               style={{ marginBottom: 16 }}
             />}
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-              <h3 style={{ margin: 'auto 0' }}>Prepared queries</h3>
+              <h3 style={{ margin: 'auto 0' }}>Prepared queries {filteredPreparedQueriesData.length ? `(${filteredPreparedQueriesData.length})` : ''}</h3>
               <div style={{ display: "flex" }}>
                 <Input.Search placeholder='Search by prepared query name' onChange={e => setSearchText(e.target.value)} allowClear={true} style={{ minWidth: '320px' }} />
                 <Button type="primary" style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>

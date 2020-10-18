@@ -143,7 +143,7 @@ const Secrets = () => {
         <Sidenav selectedItem={projectModules.SECRETS} />
         <div className="page-content">
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-            <h3 style={{ margin: 'auto 0' }}>Secrets </h3>
+            <h3 style={{ margin: 'auto 0' }}>Secrets {filteredSecrets.length ? `(${filteredSecrets.length})` : ''}</h3>
             <div style={{ display: 'flex' }}>
               <Input.Search placeholder='Search by secret name' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
               <Button style={{ marginLeft: '16px' }} onClick={() => setSecretModalVisible(true)} type="primary">Add</Button>

@@ -317,7 +317,7 @@ const Overview = () => {
             </div>}
             {connected && <React.Fragment>
               <div style={{ margin: '32px 0 16px 0', display: 'flex', justifyContent: 'space-between' }}>
-                <h3 style={{ margin: 'auto 0' }}>Tracked {label}s </h3>
+                <h3 style={{ margin: 'auto 0' }}>Tracked {label}s {filteredTrackedCollections.length ? `(${filteredTrackedCollections.length})` : ''} </h3>
                 <div style={{ display: 'flex' }}>
                   <Input.Search placeholder={`Search by ${label} name`} style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)}/>
                   <Button style={{ marginLeft:'16px' }} type="primary"
@@ -338,7 +338,7 @@ const Overview = () => {
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
                     <div style={{ marginTop: '32px' }}>
                       <span className='collections'>
-                        Untracked {label}s
+                        Untracked {label}s {unTrackedCollectionsInfo.length ? `(${unTrackedCollectionsInfo.length})` : ''}
                     </span>
                       <Button
                         style={{ float: "right" }} type="primary" ghost
