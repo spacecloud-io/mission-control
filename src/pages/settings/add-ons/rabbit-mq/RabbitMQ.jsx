@@ -16,7 +16,7 @@ const RabbitMQ = () => {
     const config = useSelector(state => state.addonsConfig.rabbitmq);
 
     const initialValues = config && config.enabled && {
-        cpu : config.resources.cpu,
+        cpu : config.resources.cpu / 1000,
         memory: config.resources.memory,
         highAvailability: config.options.highAvailability
     }
@@ -25,7 +25,7 @@ const RabbitMQ = () => {
         const config = {
             enabled: true,
             resources: {
-                cpu: Number(values.cpu),
+                cpu: Number(values.cpu) * 1000,
                 memory: Number(values.memory)
             },
             options: {
@@ -35,10 +35,10 @@ const RabbitMQ = () => {
         incrementPendingRequests()
         saveAddonConfig("rabbitmq", config)
         .then(() => {
-            notify("success", "Success", "RabbitMQ addon configured successfully")
+            notify("success", "Success", "Configured RabbitMQ add-on successfully")
             history.goBack()
         })
-        .catch(ex => notify("error", "Error", ex))
+        .catch(ex => notify("error", "Error configuring RabbitMQ add-on", ex))
         .finally(() => decrementPendingRequests())
     }
 
@@ -54,26 +54,39 @@ const RabbitMQ = () => {
                             <Form layout="vertical" form={form} initialValues={initialValues} onFinish={handleFinish}>
                                 <FormItemLabel name="Resources" />
                                 <Input.Group compact>
-                                    <Form.Item name="cpu" rules={[{
+                                    <Form.Item name="cpu" style={{ width: 160 }} rules={[{
+                                        required: true,
                                         validator: (_, value, cb) => {
-                                            if (isNaN(value)) {
-                                                cb(`CPU should be a number!`)
+                                            if (!value) {
+                                                cb(`CPU is required!`)
                                                 return
+                                            }
+                                            if (Number(value) < 0 || Number(value) > 1) {
+                                                cb(`CPU should be in the range of 0 and 1!`)
+                                                return
+                                            }
+                                            if (isNaN(value)) {
+                                                cb("Value should be number")
                                             }
                                             cb()
                                         }
-                                    }]} style={{ width: 160 }}>
+                                    }]}>
                                         <Input addonBefore="vCPUs" />
                                     </Form.Item>
-                                    <Form.Item name="memory" rules={[{
+                                    <Form.Item name="memory" style={{ width: 240, marginLeft: 32 }} rules={[{
+                                        required: true,
                                         validator: (_, value, cb) => {
+                                            if (!value) {
+                                                cb(`CPU is required!`)
+                                                return
+                                            }
                                             if (isNaN(value)) {
                                                 cb(`Memory should be a number!`)
                                                 return
                                             }
                                             cb()
                                         }
-                                    }]} style={{ width: 240, marginLeft: 32 }}>
+                                    }]}>
                                         <Input addonBefore="Memory (in MBs)" />
                                     </Form.Item>
                                 </Input.Group>

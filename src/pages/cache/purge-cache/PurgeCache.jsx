@@ -34,19 +34,19 @@ const PurgeCache = () => {
                 .catch(ex => notify("error", "Error fetching database rules", ex))
                 .finally(() => decrementPendingRequests())
         }
-    }, [])
+    }, [projectID])
 
     const [form] = Form.useForm();
-    const [selectedDb, setSelectedDb] = useState("");
-    const [value, setValue] = useState("");
+    const [db, setDb] = useState("");
+    const [col, setCol] = useState("");
     const dbConfigs = useSelector(state => getDbConfigs(state))
-    const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
+    const trackedCollections = useSelector(state => getTrackedCollections(state, db))
 
     const dbList = Object.keys(dbConfigs)
 
     const handleFinish = (values) => {
         let data = {};
-        switch (values) {
+        switch (values.level) {
             case "all":
                 data = values;
                 break;
@@ -73,13 +73,10 @@ const PurgeCache = () => {
         }
         incrementPendingRequests()
         purgeCache(projectID, data)
-        .then(() => notify("success", "Success", "Cache purged successfully"))
-        .catch(ex => notify("error", "Error", ex))
-        .finally(() => decrementPendingRequests())
+            .then(() => notify("success", "Success", "Purged cache successfully"))
+            .catch(ex => notify("error", "Error purging cache", ex))
+            .finally(() => decrementPendingRequests())
     }
-
-    const handleSelectDatabase = value => setSelectedDb(value)
-    const handleSearch = value => setValue(value);
 
     return (
         <React.Fragment>
@@ -110,19 +107,35 @@ const PurgeCache = () => {
                                 <ConditionalFormBlock dependency="level" condition={() => form.getFieldValue("level") === "database"}>
                                     <FormItemLabel name="Database" />
                                     <Form.Item name="db" rules={[{ required: true, message: 'Please select a database!' }]}>
-                                        <AutoComplete placeholder="Specify database alias" onChange={handleSelectDatabase} options={dbList.map(db => ({ value: db }))} />
+                                        <AutoComplete placeholder="Specify table/collection name" onSearch={(value) => setDb(value)} onSelect={(value) => setDb(value)}>
+                                            {
+                                                dbList.filter(data => (data.toLowerCase().indexOf(db.toLowerCase()) !== -1)).map(data => (
+                                                    <AutoComplete.Option key={data} value={data}>
+                                                        {data}
+                                                    </AutoComplete.Option>
+                                                ))
+                                            }
+                                        </AutoComplete>
                                     </Form.Item>
                                 </ConditionalFormBlock>
                                 <ConditionalFormBlock dependency="level" condition={() => form.getFieldValue("level") === "table"}>
                                     <FormItemLabel name="Database" />
                                     <Form.Item name="db" rules={[{ required: true, message: 'Please select a database!' }]}>
-                                        <AutoComplete placeholder="Specify database alias" onChange={handleSelectDatabase} options={dbList.map(db => ({ value: db }))} />
-                                    </Form.Item>                                  
+                                        <AutoComplete placeholder="Specify table/collection name" onSearch={(value) => setDb(value)} onSelect={(value) => setDb(value)}>
+                                            {
+                                                dbList.filter(data => (data.toLowerCase().indexOf(db.toLowerCase()) !== -1)).map(data => (
+                                                    <AutoComplete.Option key={data} value={data}>
+                                                        {data}
+                                                    </AutoComplete.Option>
+                                                ))
+                                            }
+                                        </AutoComplete>
+                                    </Form.Item>
                                     <FormItemLabel name="Table" />
                                     <Form.Item name="col">
-                                        <AutoComplete placeholder="Specify table/collection name" onSearch={handleSearch} >
+                                        <AutoComplete placeholder="Specify table/collection name" onSearch={(value) => setCol(value)} >
                                             {
-                                                trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                                                trackedCollections.filter(data => (data.toLowerCase().indexOf(col.toLowerCase()) !== -1)).map(data => (
                                                     <AutoComplete.Option key={data} value={data}>
                                                         {data}
                                                     </AutoComplete.Option>

@@ -21,7 +21,10 @@ const initialState = {
 	eventingRules: {},
 	secrets: [],
 	clusterConfig: {},
-	addonsConfig: {},
+	addonsConfig: {
+		rabbitmq: {},
+		redis: {}
+	},
 	addonsConnState: {},
 	serviceRoutes: {},
 	pendingRequests: 0,

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
@@ -15,7 +15,6 @@ import { projectModules, actionQueuedMessage } from "../../../constants";
 
 const ClusterSettings = () => {
   const { projectID } = useParams();
-  const history = useHistory();
 
   useEffect(() => {
     ReactGA.pageview("/projects/settings/cluster");

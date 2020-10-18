@@ -12,7 +12,7 @@ import { notify, incrementPendingRequests, decrementPendingRequests } from "../.
 import { Row, Col, Divider, Button, Badge, Popconfirm } from "antd";
 import { projectModules } from "../../../constants";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import { loadAddonConfig, saveAddonConfig } from "../../../operations/addons";
+import { loadAddonConfig, saveAddonConfig, loadAddonConnState } from "../../../operations/addons";
 
 const AddOns = () => {
 
@@ -20,28 +20,46 @@ const AddOns = () => {
     ReactGA.pageview("/projects/settings/add-ons");
   }, []);
 
-  useEffect(() => {
-    incrementPendingRequests()
-    Promise.all([
-      loadAddonConfig("rabbitmq"),
-      loadAddonConfig("redis")
-    ])
-    .catch(ex => notify("error", "Error", ex))
-    .finally(() => decrementPendingRequests())
-  }, [])
-
   const { projectID } = useParams();
   const history = useHistory();
 
   const { rabbitmq, redis } = useSelector(state => state.addonsConfig)
   const connState = useSelector(state => state.addonsConnState)
 
+  useEffect(() => {
+    incrementPendingRequests()
+    Promise.all([
+      loadAddonConfig("rabbitmq"),
+      loadAddonConfig("redis")
+    ])
+    .catch(ex => notify("error", "Error loading add-ons config", ex))
+    .finally(() => decrementPendingRequests())
+  }, [])
+
+  useEffect(() => {
+    if (rabbitmq.enabled) {
+      incrementPendingRequests()
+      loadAddonConnState("rabbitmq")
+      .catch(ex => notify("error", "Error loading RabbitMQ connection status", ex))
+      .finally(() => decrementPendingRequests())
+    }
+  }, [rabbitmq.enabled])
+
+  useEffect(() => {
+    if (redis.enabled) {
+      incrementPendingRequests()
+      loadAddonConnState("redis")
+      .catch(ex => notify("error", "Error loading Redis connection status", ex))
+      .finally(() => decrementPendingRequests())
+    }
+  }, [redis.enabled])
+
   // Handlers
   const handleDisableAddonConfig = (type) => {
     incrementPendingRequests()
     saveAddonConfig(type, { enabled: false })
-    .then(() => notify("success", "Success", "Addon disabled successfully"))
-    .catch(ex => notify("error", "Error", ex))
+    .then(() => notify("success", "Success", "Disabled add-on successfully"))
+    .catch(ex => notify("error", "Error disabling add-on", ex))
     .finally(() => decrementPendingRequests())
   }
 
@@ -64,7 +82,7 @@ const AddOns = () => {
                     <b style={{ marginRight: 8 }}>RAM:</b> {rabbitmq.resources.memory} GB <br />
                     <b style={{ marginRight: 8 }}>High availability:</b> {rabbitmq.options.highAvailability ? <span>On <CheckOutlined style={{ color: "green" }} /></span> : <span>Off <CloseOutlined style={{ color: "red " }}/></span>} <br />
                   </p>
-                  <Button style={{ marginRight: 16 }} onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/rabbit-mq/config`)}>Edit config</Button>
+                  <Button style={{ marginRight: 16 }} onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/configure/rabbit-mq`)}>Edit config</Button>
                   <Popconfirm
                    title="Are you sure you want to disable?"
                    onConfirm={() => handleDisableAddonConfig("rabbitmq")}
@@ -72,7 +90,7 @@ const AddOns = () => {
                     <Button className="disable-btn">Disable Rabbit MQ</Button>
                   </Popconfirm>
                 </div> :
-                <Button onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/rabbit-mq/config`)}>Enable Rabbit MQ</Button>
+                <Button onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/configure/rabbit-mq`)}>Enable Rabbit MQ</Button>
               }
               <Divider />
               <h2>Redis</h2>
@@ -84,7 +102,7 @@ const AddOns = () => {
                     <b style={{ marginRight: 8 }}>CPU:</b> {redis.resources.cpu} <br />
                     <b style={{ marginRight: 8 }}>RAM:</b> {redis.resources.memory} GB <br />
                   </p>
-                  <Button style={{ marginRight: 16 }} onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/redis/config`)}>Edit config</Button>
+                  <Button style={{ marginRight: 16 }} onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/configure/redis`)}>Edit config</Button>
                   <Popconfirm
                    title="Are you sure you want to disable?"
                    onConfirm={() => handleDisableAddonConfig("redis")}
@@ -92,7 +110,7 @@ const AddOns = () => {
                     <Button className="disable-btn">Disable Redis</Button>
                   </Popconfirm>
                 </div> :
-                <Button onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/redis/config`)}>Enable Redis</Button>}
+                <Button onClick={() => history.push(`/mission-control/projects/${projectID}/settings/add-ons/configure/redis`)}>Enable Redis</Button>}
             </Col>
           </Row>
         </Content>

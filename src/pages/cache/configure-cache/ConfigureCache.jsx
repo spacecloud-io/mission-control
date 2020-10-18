@@ -23,7 +23,7 @@ const ConfigureCache = () => {
         incrementPendingRequests()
         saveCacheConfig(projectID, config)
         .then(() => notify("success", "Success", "Configured cache successfully"))
-        .catch(ex => notify("error", "Error", ex))
+        .catch(ex => notify("error", "Error configuring cache", ex))
         .finally(() => {
             decrementPendingRequests()           
             history.goBack()

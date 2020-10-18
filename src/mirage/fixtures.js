@@ -825,7 +825,7 @@ export const addonsConfig = {
   rabbitmq : {
     "enabled": true,
     "resources": {
-      "cpu": 100,
+      "cpu": 1000,
       "memory": 100
     },
     "options": {
@@ -835,7 +835,7 @@ export const addonsConfig = {
   redis: {
     "enabled": true,
     "resources": {
-      "cpu": 100,
+      "cpu": 1000,
       "memory": 100
     }
   }

@@ -17,7 +17,7 @@ const ConfigureRedis = () => {
     const config = useSelector(state => state.addonsConfig.redis)
 
     const initialValues = config && config.enabled && {
-        cpu: config.resources.cpu / 100,
+        cpu: config.resources.cpu / 1000,
         memory: config.resources.memory
     }
 
@@ -25,14 +25,14 @@ const ConfigureRedis = () => {
         const config = {
             enabled: true,
             resources: {
-                cpu: Number(values.cpu) * 100,
+                cpu: Number(values.cpu) * 1000,
                 memory: Number(values.memory)
             }
         }
         incrementPendingRequests()
         saveAddonConfig("redis", config)
-        .then(() => notify("success", "Success", "Redis addon configured successfully"))
-        .catch(ex => notify("error", "Error", ex))
+        .then(() => notify("success", "Success", "Configured Redis add-on successfully"))
+        .catch(ex => notify("error", "Error configuring Redis add-on", ex))
         .finally(() => {
             history.goBack()
             decrementPendingRequests()
@@ -51,29 +51,44 @@ const ConfigureRedis = () => {
                             <Form layout="vertical" form={form} initialValues={initialValues} onFinish={handleFinish}>
                                 <FormItemLabel name="Resources" />
                                 <Input.Group compact>
-                                    <Form.Item name="cpu" rules={[{
+                                    <Form.Item name="cpu" style={{ width: 160 }} rules={[{
+                                        required: true,
                                         validator: (_, value, cb) => {
+                                            if (!value) {
+                                                cb(`CPU is required!`)
+                                                return
+                                            }
                                             if (Number(value) < 0 || Number(value) > 1) {
                                                 cb(`CPU should be in the range of 0 and 1!`)
                                                 return
                                             }
                                             if (isNaN(value)) {
                                                 cb("Value should be number")
+                                                return
                                             }
                                             cb()
                                         }
-                                    }]}>
-                                        <Input addonBefore="vCPUs" style={{ width: 160 }} />
+                                    }]}
+                                    >
+                                        <Input addonBefore="vCPUs" />
                                     </Form.Item>
-                                    <Form.Item name="memory" rules={[{
+                                    <Form.Item name="memory" style={{ width: 240, marginLeft: 32 }} rules={[{
+                                        required: true,
+                                        message: "RAM is required!",
                                         validator: (_, value, cb) => {
+                                            if (!value) {
+                                                cb(`CPU is required!`)
+                                                return
+                                            }
                                             if (isNaN(value)) {
                                                 cb("Value should be number")
+                                                return
                                             }
                                             cb()
                                         }
-                                    }]}>
-                                        <Input addonBefore="Memory (in MBs)" style={{ width: 240, marginLeft: 32 }} />
+                                    }]}
+                                    >
+                                        <Input addonBefore="Memory (in MBs)" />
                                     </Form.Item>
                                 </Input.Group>
                                 <Button size="large" block htmlType="submit" type="primary">Save</Button>

@@ -55,7 +55,7 @@ import IntegrationPermissions from '../pages/integrations/IntegrationPermissions
 import ConfigureCache from '../pages/cache/configure-cache/ConfigureCache';
 import CacheOverview from '../pages/cache/overview/Overview';
 import PurgeCache from "../pages/cache/purge-cache/PurgeCache";
-import RabbitMQ from "../pages/settings/add-ons/rabbit-mq/RabbitMQ";
+import ConfigureRabbitMQ from "../pages/settings/add-ons/rabbit-mq/RabbitMQ";
 import ConfigureRedis from "../pages/settings/add-ons/redis/ConfigureRedis";
 import AddOns from "../pages/settings/add-ons/AddOns";
 
@@ -91,8 +91,8 @@ function ProjectPages() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`} component={ClusterSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons`} component={AddOns} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/rabbit-mq/config`} component={RabbitMQ} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/redis/config`} component={ConfigureRedis} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/rabbit-mq`} component={ConfigureRabbitMQ} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/redis`} component={ConfigureRedis} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`} component={ApplyLicense} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}

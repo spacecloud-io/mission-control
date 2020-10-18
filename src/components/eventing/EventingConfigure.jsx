@@ -25,7 +25,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => 
 		})
 	}
 
-	const conn = initialValues.broker && initialValues.broker.conn ? initialValues.broker.conn : "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
+	const conn = initialValues && initialValues.broker && initialValues.broker.conn ? initialValues.broker.conn : "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
 
 	if (!loading) {
 		form.setFieldsValue({ conn, ...initialValues })
@@ -39,7 +39,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => 
         		</Checkbox>
 			</Form.Item>
 			<ConditionalFormBlock dependency="enabled" condition={() => form.getFieldValue("enabled")}>
-				<FormItemLabel name="Eventing DB" description="Alias name is used in your frontend queries to identify your database" />
+				<FormItemLabel name="Eventing DB" description="The database to store event invocation logs" />
 				<Form.Item name="dbAlias" rules={[{ required: true, message: 'Database is required!' }]}>
 					<AutoComplete placeholder="Choose an eventing database" style={{ width: 320 }} options={dbList.map(db => ({ value: db }))} />
 				</Form.Item>

@@ -11,7 +11,7 @@ class Cache {
               reject(data.error)
               return
             }
-            resolve()
+            resolve({ queued: status === 202 })
           })
           .catch(ex => reject(ex.toString()))
       })
