@@ -146,7 +146,7 @@ const EventingSchema = () => {
         <EventTabs activeKey="schema" projectID={projectID} />
         <div className="event-tab-content">
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-            <h3 style={{ margin: 'auto 0' }}>Schema </h3>
+          <h3 style={{ margin: 'auto 0' }}>Schema {filteredSchemasData.length ? `(${filteredSchemasData.length})` : ''}</h3>
             <div style={{ display: 'flex' }}>
               <Input.Search placeholder='Search by event type' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
               <Button style={{ marginLeft: '16px' }} onClick={() => setAddColModalVisible(true)} type="primary">Add</Button>

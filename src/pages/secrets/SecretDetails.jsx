@@ -230,7 +230,7 @@ const SecretDetails = () => {
                 </React.Fragment>
               )}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-                <h3 style={{ margin: 'auto 0' }}>{getLabelFromSecretType(secretType)} </h3>
+                <h3 style={{ margin: 'auto 0' }}>{getLabelFromSecretType(secretType)} {secretType !== 'docker' && filteredSecretKeys.length ? `(${filteredSecretKeys.length})` : ''}</h3>
                 <div style={{ display: 'flex' }}>
                   {secretType !== "docker" && (<React.Fragment>
                     <Input.Search placeholder={`Search by ${secretType} ${secretType === 'env' ? 'key' : 'name'}`} style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />

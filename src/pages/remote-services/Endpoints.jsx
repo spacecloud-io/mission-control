@@ -165,7 +165,7 @@ const RemoteService = () => {
           {noOfEndpoints > 0 && (
             <React.Fragment>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-                <h3 style={{ margin: 'auto 0' }}>Endpoints </h3>
+              <h3 style={{ margin: 'auto 0' }}>Endpoints {filteredEndpointsData.length ? `(${filteredEndpointsData.length})` : ''}</h3>
                 <div style={{ display: 'flex' }}>
                   <Input.Search placeholder='Search by endpoint name or path' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
                   <Button style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/remote-services/${serviceName}/endpoints/add`)} type="primary">Add</Button>
