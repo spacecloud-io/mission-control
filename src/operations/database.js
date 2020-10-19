@@ -370,16 +370,6 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
               .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
           }
         }
-
-        // If this is the first database, then auto configure it as the eventing database 
-        const hasPermissionToConfigureEventing = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_CONFIG], permissionVerbs.MODIFY)
-        if (isFirstDatabase && hasPermissionToConfigureEventing) {
-          saveEventingConfig(projectId, true, dbAliasName)
-            .then(() => resolve({ queued, enabledEventing: true }))
-            .catch(() => reject())
-          return
-        }
-        resolve({ queued, enabledEventing: false })
       })
       .catch(ex => reject(ex))
   })

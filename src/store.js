@@ -13,12 +13,19 @@ const initialState = {
 	dbConnState: {},
 	fileStoreConfig: {},
 	fileStoreRules: [],
+	cacheConfig: {},
+	cacheConnState: false,
 	eventingConfig: {},
 	eventingTriggers: {},
 	eventingSchemas: {},
 	eventingRules: {},
 	secrets: [],
 	clusterConfig: {},
+	addonsConfig: {
+		rabbitmq: {},
+		redis: {}
+	},
+	addonsConnState: {},
 	serviceRoutes: {},
 	pendingRequests: 0,
 	uiState: {

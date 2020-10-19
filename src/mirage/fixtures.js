@@ -119,7 +119,11 @@ export const dbPreparedQueries = [
 export const eventingConfig = [
   {
     "enabled": true,
-    "dbAlias": "mydb"
+    "dbAlias": "mydb",
+    "broker": {
+      "type": "rabbitmq",
+      "conn": "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
+    }
   }
 ]
 
@@ -833,3 +837,30 @@ export const eventLogs = [
     "status": "failed"
   }
 ]
+
+export const cacheConfig = [
+  {
+    "enabled": false,
+    "conn": "my-redis.space-cloud.svc.cluster.local:6379"
+  }
+]
+
+export const addonsConfig = {
+  rabbitmq : {
+    "enabled": true,
+    "resources": {
+      "cpu": 1000,
+      "memory": 100
+    },
+    "options": {
+      "highAvailability": true
+    }
+  },
+  redis: {
+    "enabled": true,
+    "resources": {
+      "cpu": 1000,
+      "memory": 100
+    }
+  }
+}

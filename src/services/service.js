@@ -5,6 +5,7 @@ import { createRESTClient, createGraphQLClient } from "./client";
 
 import Database from "./database"
 import FileStore from "./fileStore"
+import Cache from "./cache";
 import Eventing from "./eventing"
 import RemoteServices from "./remoteServices"
 import UserManagement from "./userManagement"
@@ -15,6 +16,7 @@ import LetsEncrypt from "./letsencrypt"
 import Secrets from "./secrets"
 import Cluster from "./cluster";
 import Integrations from "./integrations";
+import Addons from './addons';
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -27,6 +29,7 @@ class Service {
     this.spaceSiteClient = createRESTClient("https://api.spaceuptech.com", { credentials: "omit" })
     this.database = new Database(this.client)
     this.fileStore = new FileStore(this.client)
+    this.cache = new Cache(this.client)
     this.eventing = new Eventing(this.client)
     this.remoteServices = new RemoteServices(this.client)
     this.userManagement = new UserManagement(this.client)
@@ -37,6 +40,7 @@ class Service {
     this.secrets = new Secrets(this.client)
     this.cluster = new Cluster(this.client)
     this.integrations = new Integrations(this.client, this.spaceAPIClient)
+    this.addons = new Addons(this.client)
     if (token) this.client.setToken(token);
   }
 

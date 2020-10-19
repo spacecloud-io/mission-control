@@ -80,6 +80,9 @@ const Sidenav = (props) => {
               <Link to={`/mission-control/projects/${projectID}/${projectModules.FILESTORE}`} onClick={closeSidenav}>
                 <PanelItem name="File Store" active={props.selectedItem === projectModules.FILESTORE} />
               </Link>
+              <Link to={`/mission-control/projects/${projectID}/${projectModules.CACHE}`} onClick={closeSidenav}>
+                <PanelItem name="Cache" active={props.selectedItem === projectModules.CACHE} />
+              </Link>
             </Panel>
             <Panel header={<Header name="Microservices" icon="widgets" />} key="2">
               <Link to={`/mission-control/projects/${projectID}/${projectModules.REMOTE_SERVICES}`} onClick={closeSidenav}>

@@ -23,6 +23,13 @@ export default ({ activeKey, projectID }) => {
             }}
           />
         </TabPane>
+        <TabPane tab='Add-ons' key='add-ons'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/${projectModules.SETTINGS}/add-ons`
+            }}
+          />
+        </TabPane>
         <TabPane tab='License' key='license'>
           <Redirect
             to={{

@@ -143,9 +143,8 @@ export const deleteEventingSchema = (projectId, eventType) => {
   })
 }
 
-export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
+export const saveEventingConfig = (projectId, eventingConfig) => {
   return new Promise((resolve, reject) => {
-    const eventingConfig = { enabled, dbAlias: dbAliasName }
     client.eventing.setEventingConfig(projectId, eventingConfig)
       .then(({ queued }) => {
         if (!queued) {
@@ -155,7 +154,7 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
 
         // Set the default eventing rule in background
         const hasPermissionToSetEventingRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_RULES], permissionVerbs.READ)
-        if (enabled && hasPermissionToSetEventingRule) {
+        if (eventingConfig.enabled && hasPermissionToSetEventingRule) {
           const defaultEventingSecurityRule = get(store.getState(), "eventingRules.default", {})
           const defaultEventingSecurityRuleExists = Object.keys(defaultEventingSecurityRule).length > 0
           if (!defaultEventingSecurityRuleExists) {
