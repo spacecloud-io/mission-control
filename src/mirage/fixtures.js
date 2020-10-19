@@ -33,7 +33,8 @@ export const dbConfigs = [
       "type": 'postgres',
       "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
       "name": "public",
-      "enabled": true
+      "enabled": true,
+      "limitClause": 100
     }
   },
   {
