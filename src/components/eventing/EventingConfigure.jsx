@@ -44,7 +44,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading }) => 
 					<AutoComplete placeholder="Choose an eventing database" style={{ width: 320 }} options={dbList.map(db => ({ value: db }))} />
 				</Form.Item>
 				<FormItemLabel name="Rabbit MQ connection string" />
-				<Form.Item name="conn">
+				<Form.Item name="conn" rules={[{ required: true, message: "Rabbit MQ connection string is required!" }]}>
 					<Input placeholder="Provide connection string of Rabbit MQ" style={{ maxWidth: 800 }} />
 				</Form.Item>
 				<Alert

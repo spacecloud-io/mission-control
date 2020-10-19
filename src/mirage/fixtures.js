@@ -122,7 +122,7 @@ export const eventingConfig = [
     "dbAlias": "mydb",
     "broker": {
       "type": "rabbitmq",
-      "conn": "rabbitmq.space-cloud.svc.cluster.local:5672"
+      "conn": "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
     }
   }
 ]
@@ -816,8 +816,8 @@ export const eventLogs = [
 
 export const cacheConfig = [
   {
-    "enabled": true,
-    "conn": "redis.space-cloud.svc.cluster.local:6379"
+    "enabled": false,
+    "conn": "my-redis.space-cloud.svc.cluster.local:6379"
   }
 ]
 

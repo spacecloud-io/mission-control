@@ -8,8 +8,10 @@ export const saveAddonConfig = (type, config) => {
     client.addons.setAddonConfig(type, config)
       .then(() => {
         store.dispatch(setAddOnConfig(type, config))
-        loadAddonConnState(type)
-        .catch(ex => reject(ex))
+        if (config.enabled) {
+          loadAddonConnState(type)
+            .catch(ex => reject(ex))
+        }
         resolve()
       })
       .catch(ex => reject(ex))
@@ -19,23 +21,23 @@ export const saveAddonConfig = (type, config) => {
 export const loadAddonConfig = (type) => {
   return new Promise((resolve, reject) => {
     client.addons.getAddonConfig(type)
-    .then(result => {
-      store.dispatch(setAddOnConfig(type, result[0]))
-      resolve()
-    })
-    .catch(ex => reject(ex))
+      .then(result => {
+        store.dispatch(setAddOnConfig(type, result[0]))
+        resolve()
+      })
+      .catch(ex => reject(ex))
   })
 }
 
 export const loadAddonConnState = (type) => {
-    return new Promise((resolve, reject) => {
-        client.addons.getAddonConnStatus(type)
-        .then(result => {
-            store.dispatch(setAddonConnState(type, result))
-            resolve()
-        })
-        .catch(ex => reject(ex))
-    })
+  return new Promise((resolve, reject) => {
+    client.addons.getAddonConnStatus(type)
+      .then(result => {
+        store.dispatch(setAddonConnState(type, result))
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
 }
 
 //Getters

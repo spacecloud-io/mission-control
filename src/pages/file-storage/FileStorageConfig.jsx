@@ -142,8 +142,8 @@ const FileStorageConfig = () => {
                         </Button>
             <span style={{ marginLeft: "35%" }}>Configure file storage</span>
           </div>
-          <Col offset={6} style={{ marginTop: "2%" }}>
-            <Card className="Card-align" style={{ width: 706 }}>
+          <Col sm={{ span: 24, offset: 0 }} lg={{ span: 16, offset: 4 }} xl={{ span: 14, offset: 5 }}>
+            <Card>
               <Form layout="vertical" form={form}
                 initialValues={formInitialValues}
                 onFinish={handleFinish}>
