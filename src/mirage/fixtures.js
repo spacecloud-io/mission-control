@@ -33,7 +33,8 @@ export const dbConfigs = [
       "type": 'postgres',
       "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
       "name": "public",
-      "enabled": true
+      "enabled": true,
+      "limit": 100
     }
   },
   {
@@ -48,21 +49,23 @@ export const dbConfigs = [
 
 export const dbSchemas = [
   {
-    "mydb-users": {
-      schema: `type users {
-        id: ID! @primary
-        name: String!
-        age: Integer
-        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
-      }`
-    },
-    "mydb2-posts": {
-      schema: `type posts {
-        id: ID! @primary
-        title: String!
-        author_id: ID
-      }`
-    }
+    dbAlias: "mydb",
+    col: "users",
+    schema: `type users {
+  id: ID! @primary
+  name: String!
+  age: Integer
+  posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
+}`
+  },
+  {
+    dbAlias: "mydb2",
+    col: "posts",
+    schema: `type posts {
+  id: ID! @primary
+  title: String!
+  author_id: ID
+}`
   }
 ]
 
