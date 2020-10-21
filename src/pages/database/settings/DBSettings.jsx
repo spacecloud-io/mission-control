@@ -102,7 +102,7 @@ const Settings = () => {
 
   const handleChangeLimitClause = ({ limitClause }) => {
     incrementPendingRequests()
-    changeLimitClause(projectID, selectedDB, limitClause)
+    changeLimitClause(projectID, selectedDB, Number(limitClause))
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed default limit clause setting successfully`)
       })
@@ -115,7 +115,7 @@ const Settings = () => {
     removeDbConfig(projectID, selectedDB)
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
-          setLastUsedValues(projectID, { db: ""});
+          setLastUsedValues(projectID, { db: "" });
           history.push(`/mission-control/projects/${projectID}/database`)
           notify("success", "Success", "Successfully removed database config")
           if (disabledEventing) {
@@ -169,14 +169,14 @@ const Settings = () => {
               </React.Fragment>
             }
             <Divider style={{ margin: "16px 0px" }} />
-            <FormItemLabel name='Default limit clause (default: 1000)' description='The limit clause to be imposed when no limit clause is specified in db read operations.' />
-            <Form form={limitClauseForm} style={{ width: 160, marginTop: 16 }} onFinish={handleChangeLimitClause} initialValues={{ limitClause: limitClause ? limitClause : 1000}}>
-                <Form.Item name='limitClause' initialValue={limitClause} rules={[{ required: true, message: 'Please input default limit clause' }]}>
-                  <Input addonAfter='rows'/>
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType='submit'>Save</Button>
-                </Form.Item>
+            <FormItemLabel name="Default limit clause" hint="(default: 1000)" description="The limit clause to be imposed when no limit clause is specified in db read operations." />
+            <Form form={limitClauseForm} style={{ width: 160, marginTop: 16 }} onFinish={handleChangeLimitClause} initialValues={{ limitClause: limitClause ? limitClause : 1000 }}>
+              <Form.Item name="limitClause" initialValue={limitClause} rules={[{ required: true, message: 'Please input default limit clause' }]}>
+                <Input addonAfter='rows' />
+              </Form.Item>
+              <Form.Item>
+                <Button htmlType='submit'>Save</Button>
+              </Form.Item>
             </Form>
             <Divider style={{ margin: "16px 0px" }} />
             <FormItemLabel name="Reload schema" description="Refresh Space Cloud schema, typically required if you have changed the underlying database" />

@@ -41,12 +41,12 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => {
 
     client.database.fetchDbSchemas(projectId, dbAliasName, colName)
       .then((result = []) => {
-        let dbSchemas = Object.assign({}, getDbSchemas(store.getState()))
-        Object.entries(result[0]).forEach(([key, value]) => {
-          const [dbAliasName, colName] = key.split("-")
-          dbSchemas = dotProp.set(dbSchemas, `${dbAliasName}.${colName}`, value.schema)
-        })
-        setDbSchemas(dbSchemas)
+        const dbSchemas = Object.assign({}, getDbSchemas(store.getState()))
+        const newDbSchemas = result.reduce((prev, curr) => {
+          const { col, dbAlias, schema } = curr
+          return dotProp.set(prev, `${dbAlias}.${col}`, schema)
+        }, dbSchemas)
+        setDbSchemas(newDbSchemas)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -353,7 +353,7 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
     const state = store.getState()
     const dbConfigs = getDbConfigs(state)
     const isFirstDatabase = Object.keys(dbConfigs).length === 0
-    saveDbConfig(projectId, dbAliasName, { enabled: true, conn: conn, type: dbType, name: dbName, limitClause: 1000 })
+    saveDbConfig(projectId, dbAliasName, { enabled: true, conn: conn, type: dbType, name: dbName, limit: 1000 })
       .then(({ queued }) => {
         // Set default security rules for collections and prepared queries in the background
         const hasPermissionToSaveRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.MODIFY)
@@ -449,12 +449,12 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
   })
 }
 
-export const changeLimitClause = (projectId, dbAliasName, limitClause) => {
+export const changeLimitClause = (projectId, dbAliasName, limit) => {
   return new Promise((resolve, reject) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
-    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { limitClause: limitClause }))  
-    .then(({ queued }) => resolve({ queued }))
-    .catch(ex => reject(ex))
+    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { limit }))
+      .then(({ queued }) => resolve({ queued }))
+      .catch(ex => reject(ex))
   })
 }
 
@@ -462,7 +462,7 @@ export const changeLimitClause = (projectId, dbAliasName, limitClause) => {
 export const getDbConfigs = (state) => get(state, "dbConfigs", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfigs.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
-export const getLimitClause = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "limitClause")
+export const getLimitClause = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "limit")
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
