@@ -76,10 +76,14 @@ class Deployments {
     })
   }
 
-  async fetchDeploymentLogs(projectId, task, replica, token, onLogsAdded, onComplete) {
+  async fetchDeploymentLogs(projectId, task, replica, filters, token, onLogsAdded, onComplete) {
     const options = { headers: {} }
     if (token) options.headers.Authorization = `Bearer ${token}`
-    const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`
+    let filterUrlParams = "";
+    if (filters.since === "duration") filterUrlParams += `&since=${filters.time}${filters.unit}`
+    else if (filters.since === "time") filterUrlParams += `&since-time=${filters.date}`
+    if (filters.tail) filterUrlParams += `&tail=${filters.limit}`
+    const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true${filterUrlParams}`
     const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
     const response = await fetch(url, options)
     const body = response.body

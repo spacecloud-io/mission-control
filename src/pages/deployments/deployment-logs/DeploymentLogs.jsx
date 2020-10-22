@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react"
 import './deployment-logs.css';
 import { useParams } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 import client from "../../../client";
 import ReactGA from 'react-ga';
-import { Cascader, Alert, Input } from "antd";
+import { Cascader, Alert, Input, Button, Space, Badge } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
-import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getServices, loadServicesStatus, getServicesStatus } from "../../../operations/deployments";
 import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { projectModules } from "../../../constants";
 import { getToken } from "../../../operations/cluster";
 import Highlighter from 'react-highlight-words';
+import { FilterOutlined } from "@ant-design/icons";
+import FiltersModal from "../../../components/deployments/filters-modal/FiltersModal";
+import { set } from "automate-redux";
 
 const DeploymentLogs = (props) => {
   const { projectID } = useParams()
+  const dispatch = useDispatch()
   const [logs, setLogs] = useState([]);
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
@@ -24,13 +27,15 @@ const DeploymentLogs = (props) => {
   const [cascaderValue, setCascaderValue] = useState([id, version, replica, task])
   const [logsCompleted, setLogsCompleted] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const [filtersModal, setFiltersModal] = useState(false)
   const regex = new RegExp(searchText)
   const token = getToken()
   const filteredLogs = logs.filter(log => regex.test(log))
+  const filters = useSelector(state => state.uiState.deploymentLogsFilters)
 
-  const fetchLogs = (task, replica) => {
+  const fetchLogs = (task, replica, filters) => {
     let logs = []
-    const promise = client.deployments.fetchDeploymentLogs(projectID, task, replica, token, (newLogs) => {
+    const promise = client.deployments.fetchDeploymentLogs(projectID, task, replica, filters, token, (newLogs) => {
       logs = [...logs, ...newLogs]
       setLogs(logs);
     }, () => {
@@ -38,6 +43,13 @@ const DeploymentLogs = (props) => {
       setLogsCompleted(true)
     })
     return promise
+  }
+
+  const onFilterLogs = (filters) => {
+    dispatch(set("uiState.deploymentLogsFilters", filters))
+    fetchLogs(task, replica, filters)
+    .then((cancelFunction) => cancelFunction())
+    setFiltersModal(false)
   }
 
   useEffect(() => {
@@ -100,6 +112,38 @@ const DeploymentLogs = (props) => {
     )
   })
 
+  const getAlertMsg = () => {
+
+    const toTime = (unit) => {
+      switch (unit) {
+        case "s":
+          return "second"
+        case "m":
+          return "minute"
+        case "h":
+          return "hour"
+      }
+    }
+    
+    let alertMsg = "";
+    alertMsg += filters.tail ? `Showing last ${filters.limit} logs ` : `Showing all logs `;
+
+    switch (filters.since) {
+      case "duration":
+        alertMsg += `since last ${filters.time} ${toTime(filters.unit)}. To change the applied filters, click the filters button above.`;
+        break;
+
+      case "time":
+        alertMsg += `since ${filters.date.split(" ")[0]}. To change the applied filters, click the filters button above.`;
+        break;
+      
+      default:
+        alertMsg += `since the start. To apply filters, click the filters button above`
+    }
+
+    return alertMsg;
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -107,7 +151,7 @@ const DeploymentLogs = (props) => {
       <ProjectPageLayout>
         <InnerTopBar title="Deployment logs" />
         <Content style={{ display: "flex", flexDirection: "column" }}>
-        <h3>Select target</h3>
+          <h3>Select target</h3>
           <Cascader
             style={{ marginBottom: 24, width: 400 }}
             options={options}
@@ -115,12 +159,15 @@ const DeploymentLogs = (props) => {
             placeholder="Please select"
             value={cascaderValue}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: "center" }}>
-            <h3 style={{ margin: "auto 0px" }}>Logs</h3>
-            <Input.Search placeholder='Paste any regex pattern to search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+          <div style={{ display: 'flex', marginBottom: 16, alignItems: "center" }}>
+            <h3 style={{ margin: "auto 0px", flexGrow: 1 }}>Logs</h3>
+            <Space size="middle">
+              <Input.Search placeholder='Paste any regex pattern to search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+              <Button onClick={() => setFiltersModal(true)}>Filters {Object.keys(filters).length > 0 && filters.since !== "start" ? <Badge dot><FilterOutlined style={{ marginLeft: 8.75 }} /></Badge> : null}</Button>
+            </Space>
           </div>
           <Alert
-            message={logsCompleted ? "The logs stream is closed. Checkout the replica status to make sure the replica is still up." : "Logs are streamed here in realtime."}
+            message={getAlertMsg()}
             type="info"
             showIcon />
           {logs && < div className="terminal-wrapper" >
@@ -144,6 +191,12 @@ const DeploymentLogs = (props) => {
           }
         </Content>
       </ProjectPageLayout>
+      {filtersModal && (
+        <FiltersModal
+          onCancel={() => setFiltersModal(false)}
+          filterLogs={onFilterLogs}
+        />
+      )}
     </React.Fragment>
   )
 }
