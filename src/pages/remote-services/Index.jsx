@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from "react-redux"
-import ReactGA from 'react-ga';
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils"
 
 import { Button, Table, Popconfirm } from "antd"
@@ -17,10 +16,6 @@ const RemoteServices = () => {
   // Router params
   const { projectID } = useParams()
   const history = useHistory()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/remote-services");
-  }, [])
 
   // Global state
   const services = useSelector(state => getRemoteServices(state))

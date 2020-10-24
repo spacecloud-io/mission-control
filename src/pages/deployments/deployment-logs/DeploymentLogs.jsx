@@ -3,7 +3,6 @@ import './deployment-logs.css';
 import { useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import client from "../../../client";
-import ReactGA from 'react-ga';
 import { Cascader, Alert } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
@@ -57,10 +56,6 @@ const DeploymentLogs = (props) => {
     })
     return promise
   }
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/logs");
-  }, [])
 
   useEffect(() => {
     const replica = cascaderValue[2]

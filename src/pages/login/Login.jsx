@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
 import { Row, Col } from 'antd'
 
 import LoginForm from './LoginForm';
@@ -25,9 +24,7 @@ const Login = () => {
       .catch(ex => notify("error", "Error logging in", ex))
       .finally(() => decrementPendingRequests())
   }
-  useEffect(() => {
-    ReactGA.pageview("/login");
-  }, [])
+
   return (
     <div className="login">
       <div className="main-wrapper">

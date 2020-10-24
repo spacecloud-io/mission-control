@@ -4,7 +4,6 @@ import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
 import { LeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Form, Input, Card } from 'antd';
-import ReactGA from 'react-ga'
 import { useSelector } from 'react-redux';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel"
@@ -36,11 +35,6 @@ const AddPreparedQueries = () => {
       setSqlQuery(preparedQuery.sql)
     }
   }, [preparedQuery])
-
-  useEffect(() => {
-    ReactGA.pageview(`/projects/database/prepared-queries/${preparedQueryId ? "edit" : "add"}`);
-  }, [])
-
 
   const handleSubmit = formValues => {
     savePreparedQueryConfig(projectID, selectedDB, formValues.id, formValues.args, sqlQuery)

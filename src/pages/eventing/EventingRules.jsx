@@ -4,7 +4,6 @@ import Topbar from '../../components/topbar/Topbar';
 import { useParams } from "react-router-dom";
 import { Button, Table, Popconfirm } from "antd";
 import { useSelector } from 'react-redux';
-import ReactGA from 'react-ga';
 import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import EventSecurityRuleForm from '../../components/eventing/EventSecurityRuleForm';
@@ -14,10 +13,6 @@ import { securityRuleGroups, projectModules, actionQueuedMessage } from '../../c
 
 const EventingRules = () => {
   const { projectID } = useParams()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/eventing/rules");
-  }, [])
 
   useEffect(() => {
     if (projectID) {

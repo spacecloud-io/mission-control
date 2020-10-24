@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { useParams } from "react-router-dom";
-import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux'
 import { RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
@@ -19,10 +18,6 @@ const { Panel } = Collapse;
 const UserManagement = () => {
   // Router params
   const { projectID } = useParams()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/userman");
-  }, [])
 
   useEffect(() => {
     incrementPendingRequests()

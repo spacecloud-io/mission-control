@@ -8,11 +8,6 @@ import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
 
-import ReactGA from 'react-ga';
-if (process.env.NODE_ENV === "production") {
-  ReactGA.initialize('UA-104521884-3');
-}
-
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_MOCK) {
   makeServer();
 }

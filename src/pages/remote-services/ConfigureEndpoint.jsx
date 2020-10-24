@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
-import ReactGA from 'react-ga';
 import ProjectPageLayout, { Content, InnerTopBar } from "../../components/project-page-layout/ProjectPageLayout";
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
@@ -18,10 +17,6 @@ const ConfigureEndpoint = () => {
   // Global state
   const endpoints = useSelector(state => getRemoteServiceEndpoints(state, serviceName))
   const serviceURL = useSelector(state => getRemoteServiceURL(state, serviceName))
-
-  useEffect(() => {
-    ReactGA.pageview(`/projects/remote-services/endpoints/${endpointName ? "edit" : "add"}`);
-  }, []);
 
   const handleSaveEndpoint = (kind, name, method, path, rule, token, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout) => {
     const isEndpointPresent = endpoints[name] ? true : false

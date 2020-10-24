@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from "react-router-dom";
-import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
 import { Table, Button, Alert, Row, Col } from "antd"
 import '../../index.css';
@@ -20,10 +19,6 @@ import { projectModules, actionQueuedMessage } from '../../constants';
 const EventingOverview = () => {
 	// Router params
 	const { projectID } = useParams()
-
-	useEffect(() => {
-		ReactGA.pageview("/projects/eventing/overview");
-	}, [])
 
 	// Global state
 	const rules = useSelector(state => getEventingTriggerRules(state))

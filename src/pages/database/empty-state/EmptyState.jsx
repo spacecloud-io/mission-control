@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Redirect, useParams } from "react-router-dom";
 import { useSelector } from 'react-redux'
-import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav'
 import Topbar from '../../../components/topbar/Topbar'
 import DatabaseEmptyState from '../../../components/database-card/DatabaseEmptyState'
@@ -12,10 +11,6 @@ import { projectModules } from "../../../constants";
 function EmptyState() {
 
   const { projectID } = useParams()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database");
-  }, [])
 
   const dbConfig = useSelector(state => getDbConfigs(state))
   const dbAliasNames = Object.keys(dbConfig)
