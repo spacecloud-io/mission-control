@@ -1,13 +1,9 @@
-import React, { useEffect } from 'react'
-import ReactGA from 'react-ga';
+import React from 'react'
 import { Link } from "react-router-dom"
 import './welcome.css'
 import { Button } from 'antd'
 
 const Welcome = () => {
-  useEffect(() => {
-    ReactGA.pageview("/welcome");
-  }, [])
   return (
     <div className="welcome-page">
       <div className="outer-rectangle"></div>

@@ -3,7 +3,6 @@ import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
 import { Button } from "antd";
-import ReactGA from 'react-ga';
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
 import { notify, getEventSourceFromType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,10 +18,6 @@ const EventingSchema = () => {
   const { projectID } = useParams();
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/eventing/schema");
-  }, [])
 
   useEffect(() => {
     if (projectID) {

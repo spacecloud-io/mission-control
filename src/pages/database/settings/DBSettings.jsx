@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
-import ReactGA from 'react-ga'
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -20,9 +19,6 @@ const Settings = () => {
 
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/settings");
-  }, [])
   // Global state
   const eventingDB = useSelector(state => getEventingDbAliasName(state))
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))

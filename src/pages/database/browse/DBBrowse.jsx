@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
-import ReactGA from 'react-ga'
 
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -50,9 +49,6 @@ const Browse = () => {
   const db = api.DB(selectedDB);
   const colSchemaFields = generateSchemaAST(collectionSchemaString)[selectedCol];
   const uniqueKeys = getUniqueKeys(colSchemaFields)
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/browse");
-  }, [])
 
   // Auto select first collection if no collection is selected
   useEffect(() => {

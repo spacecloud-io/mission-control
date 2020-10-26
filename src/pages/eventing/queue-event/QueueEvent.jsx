@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
-import ReactGA from 'react-ga'
 import { useSelector } from 'react-redux';
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
@@ -26,10 +25,6 @@ const QueueEvent = () => {
 
   // Derived state
   const customEventTypes = Object.values(eventTriggerRules).filter(({ type }) => getEventSourceFromType(type) === "custom").map(obj => obj.type)
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/eventing/queue-event");
-  }, [])
 
   // Handlers
   const handleTriggerEvent = (type, payload, isSynchronous, token) => {

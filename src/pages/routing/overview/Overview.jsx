@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import ReactGA from 'react-ga';
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
@@ -34,10 +33,6 @@ const applyFilters = (data, projectId, filters = { services: [], requestUrls: []
 function RoutingOverview() {
   const { projectID } = useParams();
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/ingress-routes");
-  }, [])
 
   useEffect(() => {
     if (projectID) {

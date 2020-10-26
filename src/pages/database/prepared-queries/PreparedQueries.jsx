@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import ReactGA from 'react-ga';
 import { Button, Table, Popconfirm, Alert } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -25,10 +24,6 @@ const PreparedQueries = () => {
   if (Object.keys(defaultRule).length === 0) {
     defaultRule = defaultPreparedQueryRule
   }
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/prepared-queries");
-  }, [])
 
   // Handlers
   const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)

@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
-import ReactGA from 'react-ga';
+import { useSelector } from "react-redux"
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import { useParams } from "react-router-dom";
@@ -20,10 +19,6 @@ function RoutingSettings() {
   const loading = useSelector(state => state.pendingRequests > 0)
   const settings = useSelector(state => getIngressRoutesGlobalConfig(state))
   const { headers = [], resHeaders = [] } = settings
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/ingress-routes/settings");
-  }, [])
 
   useEffect(() => {
     if (projectID) {

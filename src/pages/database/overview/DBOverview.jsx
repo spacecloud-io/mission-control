@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
-import ReactGA from 'react-ga';
 
 import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
@@ -42,10 +41,6 @@ const Overview = () => {
   const { hostName, port } = parseDbConnString(connString);
   const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
   const clickedColDetails = trackedCollections.find(obj => obj.name === clickedCol)
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/overview");
-  }, [])
 
   useEffect(() => {
     if (projectID && selectedDB) {

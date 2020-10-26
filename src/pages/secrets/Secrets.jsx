@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { Button, Table, Popconfirm, Empty } from "antd";
-import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
 import { getSecretType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
@@ -23,10 +22,6 @@ const Secrets = () => {
   const [secretModalVisible, setSecretModalVisible] = useState(false);
   const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(false);
   const [secretIdClicked, setSecretIdClicked] = useState("");
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/secrets");
-  }, [])
 
   // Handlers
   const handleAddSecret = (secretConfig) => {

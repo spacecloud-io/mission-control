@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { addDatabase } from '../../../operations/database';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
-import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
@@ -14,10 +13,6 @@ import { projectModules, actionQueuedMessage } from '../../../constants';
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/add-db");
-  }, [])
 
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()

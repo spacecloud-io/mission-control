@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
 import client from '../../../client';
-import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -22,10 +21,6 @@ const Graphql = props => {
   const { projectID } = useParams();
 
   const [generateTokenModal, setGenerateTokenModal] = useState(false)
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/explorer/graphql");
-  }, [])
 
   const getToken = () => {
     return props.useInternalToken ? props.internalToken : props.userToken

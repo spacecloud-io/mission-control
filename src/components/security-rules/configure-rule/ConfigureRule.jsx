@@ -233,7 +233,8 @@ const ConfigureRule = (props) => {
 
   switch (props.ruleMetaData.ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:
-      const colSchemaFields = generateSchemaAST(collectionSchemaString)[props.ruleMetaData.id];
+      const schemaAST = generateSchemaAST(collectionSchemaString);
+      const colSchemaFields = schemaAST[props.ruleMetaData.id] ? schemaAST[props.ruleMetaData.id] : []
       const schemaFields = colSchemaFields.reduce((prev, curr) => Object.assign({}, prev, { [curr.name]: true }), {})
       switch (props.selectedNodeId) {
         case "create":

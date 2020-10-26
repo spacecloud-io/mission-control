@@ -501,7 +501,7 @@ export const getUntrackedCollections = (state, dbAliasName) => {
   const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = getCollections(state, dbAliasName)
-  return collections.filter(col => !schemas[col] && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
+  return collections.filter(col => !schemas[col] && schemas[col] !== "" && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
 }
 
 export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")
