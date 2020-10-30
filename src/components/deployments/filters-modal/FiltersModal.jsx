@@ -3,45 +3,34 @@ import { Form, Modal, Radio, Input, Select, InputNumber, Checkbox, DatePicker } 
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import RadioCards from "../../radio-cards/RadioCards";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
-import { useSelector } from "react-redux";
 import moment from "moment";
 
-const FiltersModal = (props) => {
+const FiltersModal = ({ initialValues = {}, handleCancel, handleSubmit }) => {
 
   const [form] = Form.useForm()
-  const initialFilters = useSelector(state => state.uiState.deploymentLogsFilters)
-
-  const initialValues = Object.keys(initialFilters).length > 0 ? 
-  {
-    ...initialFilters,
-    date: initialFilters.date ? moment(initialFilters.date) : undefined
-  }
-  : {
-    since: "duration",
-    time: 1,
-    unit: "h",
-    tail: false,
-    limit: 100
-  }
+  const formInitialValues = Object.assign({}, initialValues, {
+    date: initialValues.date ? moment(initialValues.date) : undefined,
+    limit: initialValues.limit ? initialValues.limit : 100
+  })
 
   const handleSubmitClick = () => {
     form.validateFields().then(values => {
       if (values.date) {
-        values.date = values.date.format('YYYY-MM-DD HH:mm:ss')
+        values.date = values.date.toISOString()
       }
-      props.filterLogs(values)
+      handleSubmit(values)
     })
   }
 
   return (
     <Modal
-      title="Filters log"
+      title="Filter logs"
       visible={true}
-      okText="Add"
-      onCancel={props.onCancel}
+      okText="Save filters"
+      onCancel={handleCancel}
       onOk={handleSubmitClick}
     >
-      <Form layout="vertical" form={form} initialValues={initialValues}>
+      <Form layout="vertical" form={form} initialValues={formInitialValues}>
         <FormItemLabel name="Show logs since" />
         <Form.Item name="since">
           <RadioCards>
@@ -53,11 +42,11 @@ const FiltersModal = (props) => {
         <ConditionalFormBlock dependency="since" condition={() => form.getFieldValue("since") === "duration"}>
           <FormItemLabel name="Select duration" />
           <Input.Group compact>
-            <Form.Item name="time" style={{ width: 120 }}>
-              <InputNumber />
+            <Form.Item name="time" rules={[{ required: true, message: 'Please select quantity!' }]}>
+              <InputNumber placeholder="Quantity" />
             </Form.Item>
-            <Form.Item name="unit" style={{ width: 120 }}>
-              <Select>
+            <Form.Item style={{ width: 200, marginLeft: 16 }} name="unit" rules={[{ required: true, message: 'Please select unit!' }]}>
+              <Select placeholder="Unit of time">
                 <Select.Option value="s">second</Select.Option>
                 <Select.Option value="m">minute</Select.Option>
                 <Select.Option value="h">hour</Select.Option>
@@ -77,8 +66,8 @@ const FiltersModal = (props) => {
         </Form.Item>
         <ConditionalFormBlock dependency="tail" condition={() => form.getFieldValue("tail")}>
           <FormItemLabel name="Specify limit" />
-          <Form.Item name="limit">
-            <InputNumber />
+          <Form.Item name="limit" rules={[{ required: true, message: 'Please select number of rows!' }]}>
+            <InputNumber style={{ width: 240 }} placeholder="Number of log rows" />
           </Form.Item>
         </ConditionalFormBlock>
       </Form>

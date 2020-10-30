@@ -45,8 +45,13 @@ const initialState = {
 		graphiql: {
 			query: '',
 			variables: ''
-    },
-    deploymentLogsFilters: {}
+		},
+		serviceLogsFilters: {
+			since: "duration",
+			time: 10,
+			unit: "m",
+			tail: false
+		}
 	},
 	eventLogs: [],
 	env: {
