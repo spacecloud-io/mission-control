@@ -76,29 +76,6 @@ class Deployments {
     })
   }
 
-  async fetchDeploymentLogs(projectId, task, replica, token, onLogsAdded, onComplete) {
-    const options = { headers: {} }
-    if (token) options.headers.Authorization = `Bearer ${token}`
-    const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`
-    const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
-    const response = await fetch(url, options)
-    const body = response.body
-    const readableStream = body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    readableStream.read().then(function processStream({ done, value }) {
-      if (done) {
-        onComplete()
-        return
-      }
-
-      const chunkValue = decoder.decode(value)
-      onLogsAdded(chunkValue.split("\n"))
-      return readableStream.read().then(processStream)
-    })
-
-    return () => readableStream.cancel()
-  }
-
   setDeploymentRoutes(projectId, serviceId, routes) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/service-routes/${serviceId}`, { routes: routes })
