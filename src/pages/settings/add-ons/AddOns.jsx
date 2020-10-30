@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
 import Sidenav from "../../../components/sidenav/Sidenav";
@@ -13,10 +12,6 @@ import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { loadAddonConfig, saveAddonConfig, loadAddonConnState } from "../../../operations/addons";
 
 const AddOns = () => {
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/settings/add-ons");
-  }, []);
 
   const { projectID } = useParams();
   const history = useHistory();
