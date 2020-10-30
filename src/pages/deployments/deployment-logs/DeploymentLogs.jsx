@@ -97,15 +97,23 @@ const DeploymentLogs = (props) => {
 
   const getAlertMsg = () => {
 
-    const toTime = (unit) => {
+    const getDuration = (time, unit) => {
+      let unitString = ""
       switch (unit) {
         case "s":
-          return "second"
+          unitString = "second"
+          break
         case "m":
-          return "minute"
+          unitString = "minute"
+          break
         case "h":
-          return "hour"
+          unitString = "hour"
+          break
       }
+      if (time > 1) {
+        unitString = unitString + "s"
+      }
+      return `${time} ${unitString}`
     }
 
     let alertMsg = "";
@@ -113,7 +121,7 @@ const DeploymentLogs = (props) => {
 
     switch (filters.since) {
       case "duration":
-        alertMsg += `since last ${filters.time} ${toTime(filters.unit)}. To change the applied filters, click the filters button above.`;
+        alertMsg += `since last ${getDuration(filters.time, filters.unit)}. To change the applied filters, click the filters button above.`;
         break;
 
       case "time":
