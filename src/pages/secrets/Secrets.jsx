@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { Button, Table, Popconfirm, Empty, Input } from "antd";
-import ReactGA from 'react-ga';
 import AddSecret from "../../components/secret/AddSecret";
 import UpdateDockerSecret from "../../components/secret/UpdateDockerSecret";
 import { getSecretType, incrementPendingRequests, decrementPendingRequests } from "../../utils";
@@ -26,10 +25,6 @@ const Secrets = () => {
   const [dockerSecretModalVisible, setDockerSecretModalVisible] = useState(false);
   const [secretIdClicked, setSecretIdClicked] = useState("");
   const [searchText, setSearchText] = useState('')
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/secrets");
-  }, [])
 
   const filteredSecrets = secrets.filter(secret => {
     return secret.id.toLowerCase().includes(searchText.toLowerCase())

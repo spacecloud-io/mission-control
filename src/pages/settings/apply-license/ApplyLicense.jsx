@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
-import ReactGA from 'react-ga';
 import { Row, Col } from "antd";
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
 import Topbar from '../../../components/topbar/Topbar';
@@ -13,10 +12,6 @@ import { projectModules } from '../../../constants';
 
 const ApplyLicense = () => {
   const history = useHistory()
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/settings/apply-license");
-  }, []);
 
   // Global state
   const { clusterName, licenseMode } = useSelector(state => getEnv(state))

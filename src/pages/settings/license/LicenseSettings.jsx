@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
 import License from "../../../components/settings/license/LicenseDetails";
@@ -17,10 +16,6 @@ import ClusterEnvironment from "../../../components/settings/license/ClusterEnvi
 const LicenseSettings = () => {
   const history = useHistory();
   const { projectID } = useParams();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/settings/cluster");
-  }, []);
 
   useEffect(() => {
     incrementPendingRequests()
@@ -52,7 +47,7 @@ const LicenseSettings = () => {
             <Col lg={{ span: 12 }}>
               <License clusterUpgraded={clusterUpgraded} handleApplyLicense={handleOpenApplyLicensePage} handleGetLicense={openBillingPortal} handleRemoveLicense={handleRemoveLicense} clusterName={clusterName} licenseKey={licenseKey} plan={plan} nextRenewal={nextRenewal} licenseMode={licenseMode} />
               <Divider />
-              <ClusterEnvironment licenseMode={licenseMode} sessionId={sessionId}/>
+              <ClusterEnvironment licenseMode={licenseMode} sessionId={sessionId} />
               <Divider />
               <ClusterQuotas clusterUpgraded={clusterUpgraded} handleGetLicense={openBillingPortal} quotas={quotas} />
             </Col>

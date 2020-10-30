@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import ReactGA from "react-ga";
 import { useSelector } from "react-redux";
 import SettingsTabs from "../../../components/settings/settings-tabs/SettingsTabs";
 import Sidenav from "../../../components/sidenav/Sidenav";
@@ -21,10 +20,6 @@ const SecretConfigure = lazyWithPreload(() => import("../../../components/settin
 const ProjectSettings = () => {
   // Router params
   const { projectID } = useParams();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/settings/project");
-  }, []);
 
   useEffect(() => {
     incrementPendingRequests()

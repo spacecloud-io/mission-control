@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useParams } from "react-router-dom";
-import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
@@ -32,11 +31,6 @@ const FileStorageConfig = () => {
       fileSecretsAutoCompleteOptions.push({ value: `secrets.${id}.${key}` })
     })
   })
-
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/file-storage/configure");
-  }, [])
 
   useEffect(() => {
     if (projectID) {

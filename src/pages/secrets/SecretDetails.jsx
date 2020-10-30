@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Table, Row, Col, Popconfirm, Card, Input, Empty } from "antd";
-import ReactGA from 'react-ga';
 import AddSecretKey from "../../components/secret/AddSecretKey";
 import UpdateRootPathModal from '../../components/secret/UpdateRootPathModal';
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../utils";
@@ -44,10 +43,6 @@ const SecretDetails = () => {
   if (!secret) secret = { data: {} };
   const secretType = secret.type;
   const secretKeysData = Object.keys(secret.data).map(key => ({ name: key }));
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/secrets/secretDetails");
-  }, [])
 
   const filteredSecretKeys = secretKeysData.filter(secret => {
     return secret.name.toLowerCase().includes(searchText.toLowerCase())

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react"
 import './deployment-logs.css';
 import { useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
-import ReactGA from 'react-ga';
 import { Cascader, Alert, Input, Button, Space, Badge } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
@@ -32,10 +31,6 @@ const DeploymentLogs = (props) => {
     setServiceLogsFilters(filters)
     setFiltersModalVisible(false)
   }
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/logs");
-  }, [])
 
   useEffect(() => {
     const replica = cascaderValue[2]

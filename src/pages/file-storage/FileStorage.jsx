@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
-import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
 import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
@@ -35,10 +34,6 @@ const Rules = () => {
 	// Derived state
 	const selectedRuleInfo = rules.find(obj => obj.id === selectedRuleName)
 	const selectedRulePrefix = selectedRuleInfo ? selectedRuleInfo.prefix : ""
-
-	useEffect(() => {
-		ReactGA.pageview("/projects/file-storage");
-	}, [])
 
 	// Derived state
 	const { enabled, ...connConfig } = config

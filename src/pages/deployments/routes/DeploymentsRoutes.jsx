@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import ReactGA from 'react-ga';
 import { RightOutlined } from '@ant-design/icons';
 import { Button, Table, Popconfirm, Collapse, Input } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
@@ -19,10 +18,6 @@ const { Panel } = Collapse;
 
 const DeploymentsRoutes = () => {
   const { projectID } = useParams();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/ingress-routes");
-  }, [])
 
   useEffect(() => {
     incrementPendingRequests()

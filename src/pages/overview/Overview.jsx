@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from "react-redux"
-import ReactGA from 'react-ga';
 import '../../index.css'
 import './overview.css'
 import Sidenav from '../../components/sidenav/Sidenav'
@@ -17,14 +16,9 @@ import { projectModules } from '../../constants';
 
 function Overview() {
   const { projectID } = useParams()
-  useEffect(() => {
-    ReactGA.pageview("/projects/overview");
-  }, [])
 
   // Global state
   const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
-  const protocol = window.location.protocol
-  const host = window.location.host
   return (
     <div className="overview">
       <Topbar showProjectSelector />

@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useSelector } from "react-redux";
-import ReactGA from 'react-ga';
-import { Link } from 'react-router-dom';
 import history from "../../history"
 import { notify, incrementPendingRequests, decrementPendingRequests, openProject } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
@@ -15,10 +13,6 @@ import { actionQueuedMessage } from '../../constants';
 
 const CreateProject = () => {
   const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    ReactGA.pageview("/create-project");
-  }, [])
 
   const { Step } = Steps;
   const [projectId, setProjectId] = useState("");

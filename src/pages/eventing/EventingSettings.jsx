@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import ReactGA from 'react-ga';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import Topbar from '../../components/topbar/Topbar';
 import Sidenav from '../../components/sidenav/Sidenav';
@@ -14,10 +13,6 @@ import { projectModules, actionQueuedMessage } from '../../constants';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/eventing/settings");
-  }, [])
 
   // Global state
   const loading = useSelector(state => state.pendingRequests > 0)

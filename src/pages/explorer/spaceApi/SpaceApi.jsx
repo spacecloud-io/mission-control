@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams } from "react-router-dom";
 import { connect } from 'react-redux';
 import { get, set } from 'automate-redux';
 import client from '../../../client';
 import * as templates from '../templates.js';
-import ReactGA from 'react-ga';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { Controlled as CodeMirror } from 'react-codemirror2';
@@ -31,10 +30,6 @@ const SpaceApi = props => {
   const [response, setResponse] = useState(null);
 
   const [generateTokenModal, setGenerateTokenModal] = useState(false)
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/explorer/spaceApi");
-  }, [])
 
   const getToken = () => {
     return props.useInternalToken ? props.internalToken : props.userToken

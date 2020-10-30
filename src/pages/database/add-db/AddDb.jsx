@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import { useParams, useHistory } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { addDatabase } from '../../../operations/database';
 import CreateDatabase from '../../../components/database/create-database/CreateDatabase'
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
-import ReactGA from 'react-ga'
 import '../database.css';
 import { notify, incrementPendingRequests, decrementPendingRequests, setLastUsedValues } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
@@ -17,11 +16,6 @@ const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
   const totalSecrets = useSelector(state => getSecrets(state))
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/add-db");
-  }, [])
-
   const envSecrets = totalSecrets
     .filter(obj => obj.type === "env")
     .map(obj => obj.id);
@@ -32,7 +26,7 @@ const AddDb = () => {
       .then(({ queued }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
-          setLastUsedValues(projectID, { db: alias})
+          setLastUsedValues(projectID, { db: alias })
           notify("success", "Success", "Successfully added database")
         } else {
           notify("success", "Success", actionQueuedMessage)
@@ -70,7 +64,7 @@ const AddDb = () => {
           <div>
             <Row>
               <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                <CreateDatabase projectId={projectID} handleSubmit={addDb} envSecrets={envSecrets}/>
+                <CreateDatabase projectId={projectID} handleSubmit={addDb} envSecrets={envSecrets} />
               </Col>
             </Row>
           </div>

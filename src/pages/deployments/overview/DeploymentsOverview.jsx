@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import ReactGA from "react-ga";
 import { Button, Table, Popconfirm, Tag, Input, Empty } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
@@ -19,10 +18,6 @@ const DeploymentsOverview = () => {
   const { projectID } = useParams();
   const history = useHistory();
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/deployments/overview");
-  }, []);
 
   useEffect(() => {
     if (projectID) {

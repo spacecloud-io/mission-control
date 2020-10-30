@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import ReactGA from 'react-ga';
 import { Button, Table, Popconfirm, Alert, Input, Empty } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
@@ -31,10 +30,6 @@ const PreparedQueries = () => {
   const filteredPreparedQueriesData = preparedQueriesData.filter(query => {
     return query.name.toLowerCase().includes(searchText.toLowerCase());
   })
-
-  useEffect(() => {
-    ReactGA.pageview("/projects/database/prepared-queries");
-  }, [])
 
   // Handlers
   const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)
