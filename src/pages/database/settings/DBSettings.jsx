@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
@@ -6,15 +6,16 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage, setLastUsedValues } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported, changeLimitClause, getLimitClause } from "../../../operations/database"
+import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported, changeLimitClause, getLimitClause, getDriverConfig, changeDriverConfig } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
+import DriverConfig from '../../../components/database/settings/driver-config/DriverConfig';
+import EditDriverConfigForm from '../../../components/database/settings/driver-config/EditDriverConfigForm';
 
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-
   const history = useHistory()
 
   const [dbNameForm] = Form.useForm();
@@ -26,6 +27,8 @@ const Settings = () => {
   const type = useSelector(state => getDbType(state, selectedDB))
   const preparedQueriesSupported = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
   const limitClause = useSelector(state => getLimitClause(state, selectedDB))
+  const driverConfig = useSelector(state => getDriverConfig(state, selectedDB))
+  const [editDriverConfigModalVisible, setEditDriverConfigModalVisible] = useState(false)
 
   // Derived state
   const canDisableDB = eventingDB !== selectedDB
@@ -106,6 +109,16 @@ const Settings = () => {
       .finally(() => decrementPendingRequests())
   }
 
+  const handleChangeDriverConfig = ( config ) => {
+    incrementPendingRequests()
+    changeDriverConfig(projectID, selectedDB, config)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `Changed driver config setting successfully`)
+      })
+      .catch(ex => notify("error", `Error changing driver config`, ex))
+      .finally(() => decrementPendingRequests())
+  }
+
   const handleRemoveDb = () => {
     incrementPendingRequests()
     removeDbConfig(projectID, selectedDB)
@@ -155,6 +168,12 @@ const Settings = () => {
               </Form.Item>
             </Form>
             <Divider style={{ margin: "16px 0px" }} />
+            <DriverConfig 
+              dbType={type}
+              config={driverConfig} 
+              handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)}
+            />
+            <Divider style={{ margin: "16px 0px" }} />
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&
@@ -200,6 +219,12 @@ const Settings = () => {
             >
               <Button type="danger">Remove</Button>
             </Popconfirm>
+            {editDriverConfigModalVisible && <EditDriverConfigForm
+              dbType={type} 
+              initialValue={driverConfig}
+              handleSubmit={handleChangeDriverConfig}
+              handleCancel={() => setEditDriverConfigModalVisible(false)}
+              />}
           </div>
         </div>
       </div>
