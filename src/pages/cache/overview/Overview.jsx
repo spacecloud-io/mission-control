@@ -7,11 +7,10 @@ import Topbar from '../../../components/topbar/Topbar'
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { projectModules } from "../../../constants";
 import ConfigCard from "../../../components/cache/config-card/ConfigCard";
-import { Row, Col } from "antd"
-import { ArrowRightOutlined } from "@ant-design/icons";
+import { Row, Col, Popconfirm } from "antd"
 import ConfigureCache from "../../../assets/cache.svg";
 import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
-import { loadCacheConnState, saveCacheConfig, getCacheConnState, getCacheConfig } from "../../../operations/cache";
+import { loadCacheConnState, saveCacheConfig, getCacheConnState, getCacheConfig, purgeCache } from "../../../operations/cache";
 
 const Overview = () => {
   const { projectID } = useParams()
@@ -41,6 +40,14 @@ const Overview = () => {
     history.push(`/mission-control/projects/${projectID}/cache/configure`)
   }
 
+  const handlePurgeCache = () => {
+    incrementPendingRequests()
+    purgeCache(projectID)
+      .then(() => notify("success", "Success", "Purged cache successfully"))
+      .catch(ex => notify("error", "Error purging cache", ex))
+      .finally(() => decrementPendingRequests())
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -56,9 +63,14 @@ const Overview = () => {
                 <Card bordered style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}>
                   <p style={{ marginBottom: 24, fontSize: 14 }}>
                     <b>Purge cache</b><br />
-                    <p>Purge cache of all or particular tables. You might want to purge  cache in dev environment especifically for debugging.</p>
+                    <p>Purge cache of all resources from this project. You might want to purge cache in dev environment especifically for debugging.</p>
                   </p>
-                  <Button danger onClick={() => history.push(`/mission-control/projects/${projectID}/cache/purge-cache`)}>Purge cache <ArrowRightOutlined /></Button>
+                  <Popconfirm
+                    title="Are you sure you want to purge all the cache?"
+                    onConfirm={handlePurgeCache}
+                  >
+                    <Button danger>Purge cache</Button>
+                  </Popconfirm>
                 </Card>
               </Col>
             </Row> :

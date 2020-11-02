@@ -52,9 +52,15 @@ export const loadCacheConnState = (projectId) => {
 	})
 }
 
-export const purgeCache = (projectId, data) => {
+export const purgeCache = (projectId) => {
 	return new Promise((resolve, reject) => {
-		client.cache.purgeCache(projectId, data)
+		const purgeOptions = {
+			resource: "*",
+			dbAlias: "*",
+			id: "*"
+		}
+
+		client.cache.purgeCache(projectId, purgeOptions)
 			.then(() => resolve())
 			.catch(ex => reject(ex))
 	})

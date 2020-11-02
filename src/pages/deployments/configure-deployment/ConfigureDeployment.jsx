@@ -543,7 +543,7 @@ const ConfigureDeployment = props => {
                         </Form.List>
                         <FormItemLabel
                           name="Upstreams"
-                          description="The upstream servces that you want to access"
+                          description="The upstream services that you want to access"
                         />
                         <Form.List name="upstreams" style={{ display: "inline-block" }}>
                           {(fields, { add, remove }) => {

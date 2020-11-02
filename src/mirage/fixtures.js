@@ -842,7 +842,8 @@ export const eventLogs = [
 export const cacheConfig = [
   {
     "enabled": false,
-    "conn": "my-redis.space-cloud.svc.cluster.local:6379"
+    "conn": "my-redis.space-cloud.svc.cluster.local:6379",
+    "defaultTTL": 2100
   }
 ]
 
