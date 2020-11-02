@@ -168,12 +168,13 @@ const Settings = () => {
               </Form.Item>
             </Form>
             <Divider style={{ margin: "16px 0px" }} />
-            <DriverConfig 
+            {type !== dbTypes.EMBEDDED && <React.Fragment>
+              <DriverConfig 
               dbType={type}
               config={driverConfig} 
-              handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)}
-            />
-            <Divider style={{ margin: "16px 0px" }} />
+              handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)} />
+              <Divider style={{ margin: "16px 0px" }} />
+            </React.Fragment>}
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&

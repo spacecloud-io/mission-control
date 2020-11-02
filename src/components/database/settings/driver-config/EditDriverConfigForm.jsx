@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input } from 'antd';
 import FormItemLabel from '../../../form-item-label/FormItemLabel';
+import { dbTypes } from '../../../../constants';
 
 const EditDriverConfigForm = ({ handleSubmit, handleCancel, dbType, initialValue }) => {
 
@@ -25,13 +26,13 @@ const EditDriverConfigForm = ({ handleSubmit, handleCancel, dbType, initialValue
         <Form.Item name='maxConn' rules={[{ required: true, message: 'Please input max connections' }]}>
           <Input placeholder='Max database connections' />
         </Form.Item>
-        {dbType === 'mongo' && <React.Fragment>
+        {dbType === dbTypes.MONGO && <React.Fragment>
           <FormItemLabel name='min connections (default: 10)' />
           <Form.Item name='minConn' rules={[{ required: true, message: 'Please input min connections' }]}>
             <Input placeholder='Min database connections' />
           </Form.Item>
         </React.Fragment>}
-        {dbType !== 'mongo' && <React.Fragment>
+        {dbType !== dbTypes.MONGO && <React.Fragment>
           <FormItemLabel name='Max idle connections (default: 50)' />
           <Form.Item name='maxIdleConn' rules={[{ required: true, message: 'Please input max idle connections' }]}>
             <Input placeholder='Max idle database connections' />
