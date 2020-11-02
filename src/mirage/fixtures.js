@@ -36,9 +36,9 @@ export const dbConfigs = [
       "enabled": true,
       "limit": 100,
       "driverConf": {
-        "maxConn":"46",
-        "maxIdleConn":"26",
-        "maxIdleTimeout":"7000"
+        "maxConn": 46,
+        "maxIdleConn": 26,
+        "maxIdleTimeout": 7000
       }
     }
   },

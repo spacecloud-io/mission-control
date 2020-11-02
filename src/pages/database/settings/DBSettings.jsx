@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
+import { Button, Divider, Popconfirm, Form, Input, Alert, Row, Col } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -168,13 +168,15 @@ const Settings = () => {
               </Form.Item>
             </Form>
             <Divider style={{ margin: "16px 0px" }} />
-            {type !== dbTypes.EMBEDDED && <React.Fragment>
-              <DriverConfig 
-              dbType={type}
-              config={driverConfig} 
-              handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)} />
-              <Divider style={{ margin: "16px 0px" }} />
-            </React.Fragment>}
+            {type !== dbTypes.EMBEDDED && <Row>
+              <Col span={12}>
+                <DriverConfig 
+                dbType={type}
+                config={driverConfig} 
+                handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)} />
+                <Divider style={{ margin: "16px 0px" }} />
+              </Col>
+            </Row>}
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&
@@ -222,7 +224,7 @@ const Settings = () => {
             </Popconfirm>
             {editDriverConfigModalVisible && <EditDriverConfigForm
               dbType={type} 
-              initialValue={driverConfig}
+              initialValues={driverConfig}
               handleSubmit={handleChangeDriverConfig}
               handleCancel={() => setEditDriverConfigModalVisible(false)}
               />}
