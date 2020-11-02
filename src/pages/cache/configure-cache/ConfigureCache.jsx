@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Form, Input, Card, Col, Alert, Button } from "antd"
+import { Form, Input, Card, Col, Alert, Button, InputNumber } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav'
 import Topbar from '../../../components/topbar/Topbar'
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout"
@@ -31,7 +31,8 @@ const ConfigureCache = () => {
   }
 
   const formInitialValues = {
-    conn: config && config.enabled ? config.conn : "redis.space-cloud.svc.cluster.local:6379"
+    conn: config && config.enabled ? config.conn : "redis.space-cloud.svc.cluster.local:6379",
+    defaultTTL: config && config.enabled ? config.defaultTTL : 1800
   }
 
   // This is used to bind the form initial values on page reload. 
@@ -63,10 +64,15 @@ const ConfigureCache = () => {
                   <Input placeholder="Provide connection string of Redis" />
                 </Form.Item>
                 <Alert
+                  style={{ marginBottom: 16 }}
                   message={alertMsg}
                   type="info"
                   showIcon
                 />
+                <FormItemLabel name="Default TTL" hint="(in seconds)" />
+                <Form.Item name="defaultTTL">
+                  <InputNumber style={{ width: "100%" }} placeholder="Provide default value of TTL to be used for cache" />
+                </Form.Item>
                 <Button block type="primary" htmlType="submit" style={{ marginTop: 48 }}>Save</Button>
               </Form>
             </Card>

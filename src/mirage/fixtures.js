@@ -29,32 +29,30 @@ export const projects = [
 
 export const dbConfigs = [
   {
-    "mydb": {
-      "type": 'postgres',
-      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
-      "name": "public",
-      "enabled": true,
-      "limit": 100,
-      "driverConf": {
-        "maxConn": 46,
-        "maxIdleConn": 26,
-        "maxIdleTimeout": 7000
-      }
+    "dbAlias": "mydb1",
+    "type": 'postgres',
+    "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+    "name": "public",
+    "enabled": true,
+    "limit": 100,
+    "driverConf": {
+      "maxConn": 400,
+      "maxIdleConn": 40,
+      "maxIdleTimeout": 400
     }
   },
   {
-    "mydb2": {
-      "type": 'postgres',
-      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
-      "name": "public",
-      "enabled": true
-    }
+    "dbAlias": "mydb2",
+    "type": 'postgres',
+    "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+    "name": "public",
+    "enabled": true
   }
 ]
 
 export const dbSchemas = [
   {
-    dbAlias: "mydb",
+    dbAlias: "mydb1",
     col: "users",
     schema: `type users {
   id: ID! @primary
@@ -76,23 +74,23 @@ export const dbSchemas = [
 
 export const dbRules = [
   {
-    "mydb-users": {
-      isRealtimeEnabled: true,
-      rules: {
-        "create": {
-          "rule": "and",
-          "clauses": [
-            {
-              "rule": "force"
-            }
-          ]
-        },
-        "read": {
-          "rule": "deny"
-        },
-        "update": {
-          "rule": "deny"
-        }
+    dbAlias: "mydb1",
+    col: "users",
+    isRealtimeEnabled: true,
+    rules: {
+      "create": {
+        "rule": "and",
+        "clauses": [
+          {
+            "rule": "force"
+          }
+        ]
+      },
+      "read": {
+        "rule": "deny"
+      },
+      "update": {
+        "rule": "deny"
       }
     }
   }
@@ -101,7 +99,7 @@ export const dbRules = [
 export const dbPreparedQueries = [
   {
     "id": "preparedQuery1",
-    "db": "mydb",
+    "dbAlias": "mydb1",
     "sql": "select * from users",
     "rule": {
       "rule": "and",
@@ -116,7 +114,7 @@ export const dbPreparedQueries = [
   },
   {
     "id": "default",
-    "db": "mydb",
+    "dbAlias": "mydb1",
     "sql": "select * from users",
     "rule": {
       "rule": "allow"
@@ -127,7 +125,7 @@ export const dbPreparedQueries = [
 export const eventingConfig = [
   {
     "enabled": true,
-    "dbAlias": "mydb",
+    "dbAlias": "mydb1",
     "broker": {
       "type": "rabbitmq",
       "conn": "amqp://guest:guest@rabbitmq.space-cloud.svc.cluster.local:5672/"
@@ -159,7 +157,7 @@ export const eventingTriggers = [
     "retries": 5,
     "timeout": 2000,
     "options": {
-      "db": "mydb",
+      "db": "mydb1",
       "col": "users"
     }
   },
@@ -170,7 +168,7 @@ export const eventingTriggers = [
     "retries": 5,
     "timeout": 2000,
     "options": {
-      "db": "mydb",
+      "db": "mydb1",
       "col": "users"
     }
   },
@@ -849,12 +847,13 @@ export const eventLogs = [
 export const cacheConfig = [
   {
     "enabled": false,
-    "conn": "my-redis.space-cloud.svc.cluster.local:6379"
+    "conn": "my-redis.space-cloud.svc.cluster.local:6379",
+    "defaultTTL": 2100
   }
 ]
 
 export const addonsConfig = {
-  rabbitmq : {
+  rabbitmq: {
     "enabled": true,
     "resources": {
       "cpu": 1000,

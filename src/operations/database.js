@@ -19,8 +19,8 @@ export const loadDbConfig = (projectId) => {
     client.database.fetchDbConfig(projectId)
       .then((result = []) => {
         const dbConfigs = result.reduce((prev, curr) => {
-          const [dbAliasName, config] = Object.entries(curr)[0]
-          return Object.assign({}, prev, { [dbAliasName]: config })
+          const dbAlias = curr.dbAlias ? curr.dbAlias : curr.type
+          return Object.assign({}, prev, { [dbAlias]: curr })
         }, {})
         setDbConfigs(dbConfigs)
         resolve()
@@ -65,20 +65,12 @@ export const loadDbRules = (projectId) => {
 
     client.database.fetchDbRules(projectId)
       .then((result = []) => {
-        const map = result[0]
-        const dbRules = Object.entries(map).reduce((prev, curr) => {
-          const [key, value] = curr
-          const [dbAliasName, colName] = key.split("-")
-          const dbRule = prev[dbAliasName]
-          if (dbRule) {
-            const newDbRule = Object.assign({}, dbRule)
-            newDbRule[colName] = value
-            return Object.assign({}, prev, { [dbAliasName]: newDbRule })
-          }
-
-          return Object.assign({}, prev, { [dbAliasName]: { [colName]: value } })
-        }, {})
-        setDbRules(dbRules)
+        const dbRules = Object.assign({}, getDbRules(store.getState()))
+        const newDbRules = result.reduce((prev, curr) => {
+          const { col, dbAlias, rules, isRealtimeEnabled } = curr
+          return dotProp.set(prev, `${dbAlias}.${col}`, { rules, isRealtimeEnabled })
+        }, dbRules)
+        setDbRules(newDbRules)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -98,19 +90,19 @@ export const loadDbPreparedQueries = (projectId) => {
     client.database.fetchDbPreparedueries(projectId)
       .then((result = []) => {
         const dbPreparedQueries = result.reduce((prev, curr) => {
-          const { id, db, ...preparedQueryConfig } = curr
+          const { id, dbAlias, ...preparedQueryConfig } = curr
 
           // Make sure that prepared query object has id in it
           const newPreparedQueryConfig = Object.assign({}, preparedQueryConfig, { id })
 
-          const dbPreparedQuery = prev[db]
+          const dbPreparedQuery = prev[dbAlias]
           if (dbPreparedQuery) {
             const newDbPreparedQuery = Object.assign({}, dbPreparedQuery)
             newDbPreparedQuery[id] = newPreparedQueryConfig
-            return Object.assign({}, prev, { [db]: newDbPreparedQuery })
+            return Object.assign({}, prev, { [dbAlias]: newDbPreparedQuery })
           }
 
-          return Object.assign({}, prev, { [db]: { [id]: newPreparedQueryConfig } })
+          return Object.assign({}, prev, { [dbAlias]: { [id]: newPreparedQueryConfig } })
         }, {})
         setDbPreparedQueries(dbPreparedQueries)
         resolve()
