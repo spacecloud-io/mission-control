@@ -34,7 +34,12 @@ export const dbConfigs = [
     "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
     "name": "public",
     "enabled": true,
-    "limit": 100
+    "limit": 100,
+    "driverConf": {
+      "maxConn": 400,
+      "maxIdleConn": 40,
+      "maxIdleTimeout": 400
+    }
   },
   {
     "dbAlias": "mydb2",

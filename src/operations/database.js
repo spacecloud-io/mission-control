@@ -440,11 +440,21 @@ export const changeLimitClause = (projectId, dbAliasName, limit) => {
   })
 }
 
+export const changeDriverConfig = (projectId, dbAliasName, driverConfig) => {
+  return new Promise((resolve, reject) => {
+    const dbConfig = getDbConfig(store.getState(), dbAliasName)
+    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { driverConf: driverConfig }))
+      .then(({ queued }) => resolve({ queued }))
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getDbConfigs = (state) => get(state, "dbConfigs", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfigs.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
 export const getLimitClause = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "limit")
+export const getDriverConfig = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "driverConf")
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")
