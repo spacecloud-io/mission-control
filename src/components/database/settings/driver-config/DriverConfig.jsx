@@ -15,7 +15,7 @@ const DriverConfig = ({ config, dbType, handleEditDriverConfig }) => {
       <Card style={{ border: '1px solid #F0F0F0', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
         <p style={{ marginBottom: 8 }}>Max connections: {maxConn}</p>
         {dbType === dbTypes.MONGO && <p style={{ marginBottom: 8 }}>Min connections: {minConn}</p>}
-        {dbType !== dbTypes.MONGO && <p style={{ marginBottom: 8 }}>max idle connections: {maxIdleConn}</p>}
+        {dbType !== dbTypes.MONGO && <p style={{ marginBottom: 8 }}>Max idle connections: {maxIdleConn}</p>}
         <p style={{ marginBottom: 24 }}>Max idle timeout: {maxIdleTimeout}</p>
         <Button onClick={handleEditDriverConfig}>Edit config</Button>
       </Card>
