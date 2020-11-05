@@ -167,8 +167,7 @@ export const saveEventingConfig = (projectId, eventingConfig) => {
   })
 }
 
-export const saveEventingTriggerRule = (projectId, triggerName, type, url, retries, timeout, options, requestTemplate, outputFormat) => {
-  const triggerRule = { type, url, retries, timeout, options, requestTemplate, outputFormat, template: "go" }
+export const saveEventingTriggerRule = (projectId, triggerName, triggerRule) => {
   return new Promise((resolve, reject) => {
     client.eventing.setTriggerRule(projectId, triggerName, triggerRule)
       .then(({ queued }) => {

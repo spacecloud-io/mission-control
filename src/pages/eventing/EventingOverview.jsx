@@ -73,11 +73,12 @@ const EventingOverview = () => {
 
 	const filteredRulesData = applyFilters(rulesTableData, filters);
 
-	const handleSetRule = (id, type, url, retries, timeout, options = {}, requestTemplate, outputFormat) => {
+	const handleSetRule = (triggerRule) => {
+		const id = triggerRule.id
 		const isRulePresent = rules[id] ? true : false
 		return new Promise((resolve, reject) => {
 			incrementPendingRequests()
-			saveEventingTriggerRule(projectID, id, type, url, retries, timeout, options, requestTemplate, outputFormat)
+			saveEventingTriggerRule(projectID, id, triggerRule)
 				.then(({ queued }) => {
 					notify("success", "Success", queued ? actionQueuedMessage : `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()
@@ -172,7 +173,7 @@ const EventingOverview = () => {
 					{noOfRules > 0 && (
 						<React.Fragment>
 							<div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
-							<h3 style={{ margin: 'auto 0' }}>Event Triggers {filteredRulesData.length ? `(${filteredRulesData.length})` : ''}</h3>
+								<h3 style={{ margin: 'auto 0' }}>Event Triggers {filteredRulesData.length ? `(${filteredRulesData.length})` : ''}</h3>
 								<div style={{ display: 'flex' }}>
 									<Input.Search placeholder='Search by trigger name' style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
 									<Button style={{ marginLeft: '16px' }} onClick={() => setFilterModalVisible(true)}>Filter <FilterOutlined /></Button>

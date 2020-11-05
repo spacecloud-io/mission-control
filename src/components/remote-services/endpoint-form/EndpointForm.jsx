@@ -1,23 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { notify, canGenerateToken, isJson } from '../../../utils';
+import { canGenerateToken } from '../../../utils';
 import { Row, Col, Button, Input, Select, Form, Collapse, Checkbox, Alert, Card, Radio, Tooltip, InputNumber } from 'antd';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import GenerateTokenForm from '../../explorer/generateToken/GenerateTokenForm';
-import { Controlled as CodeMirror } from 'react-codemirror2';
 import { defaultEndpointRule, endpointTypes } from "../../../constants";
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/mode/go/go';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
-import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
+import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -26,9 +18,9 @@ function AlertMsgApplyTransformations() {
   return (
     <div>
       <b>Info</b> <br />
-      Describe the transformed request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+      Describe the transformed claims/request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
         <b>Go templates</b>
-      </a>. Space Cloud will execute the specified template to generate the new request/response.
+      </a>. Space Cloud will execute the specified template to generate the new claims/request/response.
     </div>
   );
 }
@@ -49,9 +41,6 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
   const { projectID } = useParams();
 
   const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
-  const [requestTemplateData, setRequestTemplateData] = useState(requestTemplate);
-  const [responseTemplateData, setResponseTemplateData] = useState(responseTemplate);
-  const [graphTemplateData, setGraphTemplateData] = useState(graphTemplate);
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
@@ -62,56 +51,47 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     name: name,
     method: method ? method : "POST",
     path: path,
-    overrideToken: token || claims ? true : false,
-    overrideTokenMechanism: claims ? "claims" : (token ? "token" : "claims"),
+    timeout: timeout,
+    overrideToken: token ? true : false,
     token: token,
-    claims: claims ? JSON.stringify(claims, null, 2) : "",
     setHeaders: headers && headers.length > 0 ? true : false,
     headers: headers && headers.length > 0 ? headers.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
-    applyTransformations: (requestTemplate || responseTemplate) ? true : false,
+    applyTransformations: (requestTemplate || responseTemplate || claims) ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml",
-    timeout: timeout
+    claims: claims ? claims : undefined,
+    graphTemplate: graphTemplate ? graphTemplate : undefined,
+    requestTemplate: requestTemplate ? requestTemplate : undefined,
+    responseTemplate: responseTemplate ? responseTemplate : undefined
   }
 
   const handleFinish = (values) => {
+    const overrideToken = values.overrideToken
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, claims, applyTransformations, overrideToken, overrideTokenMechanism, outputFormat, headers, setHeaders, timeout } = values
-    try {
-      handleSubmit(
-        kind,
-        name,
-        method,
-        path,
-        rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
-        overrideToken && overrideTokenMechanism === "token" ? token : undefined,
-        overrideToken && overrideTokenMechanism === "claims" ? JSON.parse(claims) : undefined,
-        outputFormat,
-        (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplateData : "",
-        (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplateData : "",
-        kind === endpointTypes.PREPARED ? graphTemplateData : "",
-        setHeaders ? headers : undefined,
-        timeout
-      )
-    } catch (error) {
-      notify("error", "Error", error)
+    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate } = values
+
+    const result = {
+      kind,
+      name,
+      method,
+      path,
+      rule: rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
+      timeout,
+      token: overrideToken ? token : undefined,
+      headers: setHeaders ? headers : undefined,
+      template: "go",
+      outputFormat: outputFormat,
+      claims: claims ? claims : undefined,
+      requestTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplate : undefined,
+      responseTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplate : undefined,
+      graphTemplate: endpointTypes.PREPARED ? graphTemplate : undefined
     }
+
+    handleSubmit(result)
   };
 
   useEffect(() => {
     form.setFieldsValue(formInitialValues)
   }, [formInitialValues.kind, formInitialValues.path])
-
-  useEffect(() => {
-    setRequestTemplateData(requestTemplate)
-  }, [requestTemplate])
-
-  useEffect(() => {
-    setResponseTemplateData(responseTemplate)
-  }, [responseTemplate])
-
-  useEffect(() => {
-    setGraphTemplateData(graphTemplate)
-  }, [graphTemplate])
 
   return (
     <Row>
@@ -204,58 +184,26 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                 </Select>
               </Form.Item>
               <FormItemLabel name="GraphQL query template" description="Template to generate the GraphQL query of Space Cloud" />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={graphTemplateData}
-                  options={{
-                    mode: { name: 'go' },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: true,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setGraphTemplateData(value);
-                  }}
-                />
+              <Form.Item name="graphTemplate">
+                <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2
+                }} />
               </Form.Item>
               <FormItemLabel name="GraphQL variables template" hint="(Optional)" description="Template to generate the variables of GraphQL request" />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={requestTemplateData}
-                  options={{
-                    mode: { name: 'go' },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: false,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setRequestTemplateData(value);
-                  }}
-                />
-              </Form.Item>
-              <FormItemLabel name="Response template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
-              <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                <CodeMirror
-                  value={responseTemplateData}
-                  options={{
-                    mode: { name: 'go' },
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                    matchBrackets: true,
-                    autoCloseBrackets: true,
-                    tabSize: 2,
-                    autofocus: false,
-                  }}
-                  onBeforeChange={(editor, data, value) => {
-                    setResponseTemplateData(value);
-                  }}
-                />
+              <Form.Item name="requestTemplate">
+                <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2
+                }} />
               </Form.Item>
             </ConditionalFormBlock>
             <Collapse
@@ -273,56 +221,28 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                 <Form.Item name="timeout">
                   <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />
                 </Form.Item>
-                <FormItemLabel name='Override token' />
-                <Form.Item name='overrideToken' valuePropName='checked'>
-                  <Checkbox checked={token ? true : false}>
-                    Override the token in the request to remote endpoint
-              </Checkbox>
-                </Form.Item>
                 <ConditionalFormBlock
-                  dependency='overrideToken'
-                  condition={() => form.getFieldValue('overrideToken') === true}
+                  dependency="overrideToken"
+                  condition={() => form.getFieldValue("overrideToken") === true}
                 >
-                  <Form.Item name="overrideTokenMechanism">
-                    <Radio.Group>
-                      <Radio.Button value="claims">JSON claims (recommended)</Radio.Button>
-                      <Radio.Button value="token">Raw token</Radio.Button>
-                    </Radio.Group>
+                  <FormItemLabel name='Override token' />
+                  <Form.Item name='overrideToken' valuePropName='checked'>
+                    <Checkbox>
+                      Override the token in the request to remote endpoint
+                  </Checkbox>
                   </Form.Item>
-                  <ConditionalFormBlock
-                    dependency='overrideTokenMechanism'
-                    condition={() => form.getFieldValue('overrideTokenMechanism') === "claims"}
-                  >
-                    <Form.Item name='claims' rules={[{ required: true }, {
-                      validateTrigger: "onBlur",
-                      validator: (_, value, cb) => {
-                        if (value && !isJson(value)) {
-                          cb("Please provide a valid JSON object!")
-                          return
-                        }
-                        cb()
-                      }
-                    }]}>
-                      <JSONCodeMirror />
+                  <Input.Group compact style={{ display: "flex" }}>
+                    <Form.Item
+                      name="token"
+                      style={{ flexGrow: 1 }}
+                      rules={[{ required: true, message: 'Please provide a token!' }]}
+                    >
+                      <Input.Password placeholder="JWT Token" />
                     </Form.Item>
-                  </ConditionalFormBlock>
-                  <ConditionalFormBlock
-                    dependency='overrideTokenMechanism'
-                    condition={() => form.getFieldValue('overrideTokenMechanism') === "token"}
-                  >
-                    <Input.Group compact style={{ display: "flex" }}>
-                      <Form.Item
-                        name="token"
-                        style={{ flexGrow: 1 }}
-                        rules={[{ required: true, message: 'Please provide a token!' }]}
-                      >
-                        <Input.Password placeholder="JWT Token" />
-                      </Form.Item>
-                      <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
-                        <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
-                      </Tooltip>
-                    </Input.Group>
-                  </ConditionalFormBlock>
+                    <Tooltip title={generateTokenAllowed ? "" : "You are not allowed to perform this action. This action requires modify permissions on project config"}>
+                      <Button disabled={!generateTokenAllowed} onClick={() => setGenerateTokenModal(true)}>Generate Token</Button>
+                    </Tooltip>
+                  </Input.Group>
                 </ConditionalFormBlock>
                 <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
                   <FormItemLabel name='Modify request headers' />
@@ -333,8 +253,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                   </Form.Item>
                   <ConditionalFormBlock
                     dependency='setHeaders'
-                    condition={() => form.getFieldValue('setHeaders') === true}
-                  >
+                    condition={() => form.getFieldValue('setHeaders') === true}>
                     <FormItemLabel name='Specify request header modifications' />
                     <Form.List name="headers">
                       {(fields, { add, remove }) => {
@@ -413,66 +332,65 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                       }}
                     </Form.List>
                   </ConditionalFormBlock>
-                  <FormItemLabel name='Apply transformations' />
-                  <Form.Item name='applyTransformations' valuePropName='checked'>
-                    <Checkbox>
-                      Transform the request and/or response using templates
+                </ConditionalFormBlock>
+                <FormItemLabel name='Apply transformations' />
+                <Form.Item name='applyTransformations' valuePropName='checked'>
+                  <Checkbox>
+                    Transform the claims, request and response using templates
                   </Checkbox>
+                </Form.Item>
+                <ConditionalFormBlock
+                  dependency='applyTransformations'
+                  condition={() => form.getFieldValue('applyTransformations') === true}
+                >
+                  <Alert
+                    message={<AlertMsgApplyTransformations />}
+                    type='info'
+                    showIcon
+                    style={{ marginBottom: 21 }}
+                  />
+                  <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+                  <Form.Item name="outputFormat">
+                    <Select style={{ width: 96 }}>
+                      <Option value='yaml'>YAML</Option>
+                      <Option value='json'>JSON</Option>
+                    </Select>
                   </Form.Item>
-                  <ConditionalFormBlock
-                    dependency='applyTransformations'
-                    condition={() => form.getFieldValue('applyTransformations') === true}
-                  >
-                    <Alert
-                      message={<AlertMsgApplyTransformations />}
-                      type='info'
-                      showIcon
-                      style={{ marginBottom: 21 }}
-                    />
-                    <FormItemLabel name="Template output format" description="Format for parsing the template output" />
-                    <Form.Item name="outputFormat">
-                      <Select style={{ width: 96 }}>
-                        <Option value='yaml'>YAML</Option>
-                        <Option value='json'>JSON</Option>
-                      </Select>
-                    </Form.Item>
-                    <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
-                    <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                      <CodeMirror
-                        value={requestTemplateData}
-                        options={{
-                          mode: { name: 'go' },
-                          lineNumbers: true,
-                          styleActiveLine: true,
-                          matchBrackets: true,
-                          autoCloseBrackets: true,
-                          tabSize: 2,
-                          autofocus: true,
-                        }}
-                        onBeforeChange={(editor, data, value) => {
-                          setRequestTemplateData(value);
-                        }}
-                      />
-                    </Form.Item>
-                    <FormItemLabel name="Response template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
-                    <Form.Item style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }}>
-                      <CodeMirror
-                        value={responseTemplateData}
-                        options={{
-                          mode: { name: 'go' },
-                          lineNumbers: true,
-                          styleActiveLine: true,
-                          matchBrackets: true,
-                          autoCloseBrackets: true,
-                          tabSize: 2,
-                          autofocus: false,
-                        }}
-                        onBeforeChange={(editor, data, value) => {
-                          setResponseTemplateData(value);
-                        }}
-                      />
+                  <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed JWT claims of the request. Keep it empty to skip transforming the JWT claims." />
+                  <Form.Item name="claims">
+                    <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                      mode: { name: 'go' },
+                      lineNumbers: true,
+                      styleActiveLine: true,
+                      matchBrackets: true,
+                      autoCloseBrackets: true,
+                      tabSize: 2
+                    }} />
+                  </Form.Item>
+                  <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
+                    <FormItemLabel name="Request body template" hint="(Optional)" description="Template to generate the transformed request body. Keep it empty to skip transforming the request body." />
+                    <Form.Item name="requestTemplate" >
+                      <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                        mode: { name: 'go' },
+                        lineNumbers: true,
+                        styleActiveLine: true,
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        tabSize: 2
+                      }} />
                     </Form.Item>
                   </ConditionalFormBlock>
+                  <FormItemLabel name="Response body template" hint="(Optional)" description="Template to generate the transformed response body. Keep it empty to skip transforming the response body." />
+                  <Form.Item name="responseTemplate">
+                    <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                      mode: { name: 'go' },
+                      lineNumbers: true,
+                      styleActiveLine: true,
+                      matchBrackets: true,
+                      autoCloseBrackets: true,
+                      tabSize: 2
+                    }} />
+                  </Form.Item>
                 </ConditionalFormBlock>
               </Panel>
             </Collapse>

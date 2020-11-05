@@ -18,9 +18,9 @@ const ConfigureEndpoint = () => {
   const endpoints = useSelector(state => getRemoteServiceEndpoints(state, serviceName))
   const serviceURL = useSelector(state => getRemoteServiceURL(state, serviceName))
 
-  const handleSaveEndpoint = (kind, name, method, path, rule, token, claims, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout) => {
+  const handleSaveEndpoint = (endpointConfig) => {
+    const name = endpointConfig.name;
     const isEndpointPresent = endpoints[name] ? true : false
-    const endpointConfig = { kind, method, path, rule, token, claims, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout }
     incrementPendingRequests()
     saveRemoteServiceEndpoint(projectID, serviceName, name, endpointConfig)
       .then(({ queued }) => {

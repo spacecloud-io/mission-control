@@ -311,10 +311,12 @@ export const remoteServices = [
         "rule": {
           "rule": "allow"
         },
+        "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
         "headers": [
           { "key": "headerKey1", "value": "headerValue1", "op": "add" },
           { "key": "headerKey2", "value": "headerValue2", "op": "del" }
-        ]
+        ],
+        "timeout": 100
       },
       "externalEndpoint": {
         "method": "GET",
