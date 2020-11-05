@@ -344,9 +344,10 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
   return new Promise((resolve, reject) => {
     const state = store.getState()
     const dbConfigs = getDbConfigs(state)
-    const isFirstDatabase = Object.keys(dbConfigs).length === 0
     saveDbConfig(projectId, dbAliasName, { enabled: true, conn: conn, type: dbType, name: dbName, limit: 1000 })
       .then(({ queued }) => {
+        resolve({ queued })
+        
         // Set default security rules for collections and prepared queries in the background
         const hasPermissionToSaveRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.MODIFY)
         if (hasPermissionToSaveRule) {

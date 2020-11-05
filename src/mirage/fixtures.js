@@ -353,11 +353,13 @@ export const services = [
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
-      "triggers": [{
-        "name": "Scaler1",
-        "type": "cpu",
-        "metadata": { "target": 50 }
-      }]
+      "triggers": [
+        {
+          "name": "Scaler1",
+          "type": "cpu",
+          "metadata": { "target": "50" },
+        }
+      ]
     },
     "labels": {
       "diskType": "ssd",
@@ -554,8 +556,13 @@ export const services = [
       "triggers": [{
         "name": "Scaler1",
         "type": "azure-blob-storage",
-        "metadata": { "abc": "abc", "xyz": "xyz" },
-        "authRef": { "secretMapping": [{ "param": "abc", "key": "secrets.EnvSecret.foo" }] }
+        "metadata": { "k1": "v1", "k2": "v2" },
+        "authRef": {
+          "secretMapping": [
+            { "param": "abc", "key": "secrets.EnvSecret.foo" },
+            { "param": "xyz", "key": "secrets.EnvSecret.bar" }
+          ]
+        }
       }]
     },
     "labels": {
