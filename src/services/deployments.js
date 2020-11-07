@@ -89,6 +89,49 @@ class Deployments {
         .catch(ex => reject(ex.toString()))
     })
   }
+
+  setDeploymentRoles(projectId, serviceId, roleId, roleConfig) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/runner/${projectId}/service-roles/${serviceId}/${roleId}`, roleConfig)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve({ queued: status === 202 })
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchDeploymentRoles(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/runner/${projectId}/service-roles?project=*?roleId=*,serviceId=*`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  deleteDeploymentRoles(projectId, serviceId, roleId) {
+    return new Promise((resolve, reject) => {
+      this.client.delete(`/v1/runner/${projectId}/service-roles/${serviceId}/${roleId}`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve({ queued: status === 202 })
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
 }
 
 export default Deployments

@@ -113,6 +113,9 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/runner/:projectId/services/:serviceId/:version", () => respondOk());
       this.post("/runner/:projectId/service-routes/:serviceId", () => respondOk());
       this.delete("/runner/:projectId/services/:serviceId/:version", () => respondOk());
+      this.get("/runner/:projectId/service-roles?project=*?roleId=*,serviceId=*", () => respondOk({ result: fixtures.serviceRoles }));
+      this.post("/runner/:projectId/service-roles/:serviceId/:roleId", () => respondOk());
+      this.delete("/runner/:projectId/service-roles/:serviceId/:roleId", () => respondOk());
 
       // Secrets endpoint
       this.get("/runner/:projectId/secrets", () => respondOk({ result: fixtures.secrets }));
