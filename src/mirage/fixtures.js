@@ -359,7 +359,7 @@ export const services = [
         {
           "name": "Scaler1",
           "type": "cpu",
-          "metadata": { "target": "50" },
+          "metadata": { "type": "Utilization", "value": "50" },
         }
       ]
     },

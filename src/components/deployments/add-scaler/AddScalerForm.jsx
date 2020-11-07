@@ -1,10 +1,10 @@
 import React from 'react';
-import { Modal, Form, Radio, Input, Alert, Row, Col, Button, AutoComplete } from 'antd';
+import { Modal, Form, Radio, Input, Alert, Row, Col, Button, AutoComplete, Select } from 'antd';
 import RadioCards from '../../radio-cards/RadioCards';
 import FormItemLabel from '../../form-item-label/FormItemLabel';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { kedaTriggerTypes } from '../../../constants';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, SwapOutlined } from '@ant-design/icons';
 import ObjectAutoComplete from '../../object-autocomplete/ObjectAutoComplete';
 
 const AddScalerForm = (props) => {
@@ -20,8 +20,8 @@ const AddScalerForm = (props) => {
         return 'active-requests';
       case 'cpu':
         return 'cpu';
-      case 'ram':
-        return 'ram';
+      case 'memory':
+        return 'memory';
       default:
         return 'keda'
     }
@@ -32,8 +32,10 @@ const AddScalerForm = (props) => {
     type: initialValues && initialValues.type ? getSelectedType(initialValues.type) : 'requests-per-second',
     requestsPerSecondTarget: initialValues && initialValues.metadata && initialValues.type === 'requests-per-second' ? initialValues.metadata.target : '',
     activeRequestsTarget: initialValues && initialValues.metadata && initialValues.type === 'active-requests' ? initialValues.metadata.target : '',
-    cpuTarget: initialValues && initialValues.metadata && initialValues.type === 'cpu' ? initialValues.metadata.target : '',
-    ramTarget: initialValues && initialValues.metadata && initialValues.type === 'ram' ? initialValues.metadata.target : '',
+    cpuThresholdType: initialValues && initialValues.metadata && initialValues.type === 'cpu' ? initialValues.metadata.type : 'Utilization',
+    memoryThresholdType: initialValues && initialValues.metadata && initialValues.type === 'memory' ? initialValues.metadata.type : 'Utilization',
+    cpuValue: initialValues && initialValues.metadata && initialValues.type === 'cpu' ? initialValues.metadata.value : '',
+    memoryValue: initialValues && initialValues.metadata && initialValues.type === 'memory' ? initialValues.metadata.value : '',
     kedaType: initialValues && initialValues.type && getSelectedType(initialValues.type) === 'keda' ? initialValues.type : undefined,
     kedaTargets: initialValues && initialValues.metadata && getSelectedType(initialValues.type) === 'keda' ?
       Object.entries(initialValues.metadata).map(([key, value]) => ({ key: key, value: value })) : [],
@@ -63,14 +65,14 @@ const AddScalerForm = (props) => {
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: values.cpuTarget }
+            metadata: { type: values.cpuThresholdType, value: values.cpuValue }
           };
           break;
-        case 'ram':
+        case 'memory':
           triggersConfig = {
             name: values.name,
             type: values.type,
-            metadata: { target: values.ramTarget }
+            metadata: { type: values.memoryThresholdType, value: values.memoryValue }
           };
           break;
         default:
@@ -139,7 +141,7 @@ const AddScalerForm = (props) => {
             <Radio.Button value='requests-per-second'>Requests per second</Radio.Button>
             <Radio.Button value='active-requests'>Active requests</Radio.Button>
             <Radio.Button value='cpu'>CPU</Radio.Button>
-            <Radio.Button value='ram'>RAM</Radio.Button>
+            <Radio.Button value='memory'>Memory</Radio.Button>
             <Radio.Button value='keda'>Event driven (KEDA)</Radio.Button>
           </RadioCards>
         </Form.Item>
@@ -156,15 +158,81 @@ const AddScalerForm = (props) => {
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'cpu'}>
-          <FormItemLabel name='Percentage of CPU consumption' />
-          <Form.Item name='cpuTarget' rules={[{ required: true, message: 'Please input CPU consumption in percentage' }]}>
-            <Input placeholder='CPU consumption' style={{ width: '80%' }} />
+          <FormItemLabel name='Threshold type' />
+          <Form.Item name="cpuThresholdType" style={{ width: '80%' }} >
+            <Select placeholder='Type'>
+              <Select.Option value='Utilization'>Average utilization percentage</Select.Option>
+              <Select.Option value='AverageValue'>Average value</Select.Option>
+              <Select.Option value='Value'>Total value</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item shouldUpdate={(prev, curr) => prev.cpuThresholdType !== curr.cpuThresholdType}>
+            {
+              () => {
+                const cpuThresholdType = form.getFieldValue("cpuThresholdType")
+                let label = ""
+                switch (cpuThresholdType) {
+                  case "Utilization":
+                    label = "Average CPU utilization percentage"
+                    break;
+                  case "AverageValue":
+                    label = "Average CPU consumption"
+                    break;
+                  case "Value":
+                    label = "Total CPU consumption"
+                    break;
+                }
+                const errorMsg = `Please input ${label.toLowerCase()}`
+
+                return (
+                  <React.Fragment>
+                    <FormItemLabel name={label} />
+                    <Form.Item name='cpuValue' rules={[{ required: true, message: errorMsg }]}>
+                      <Input placeholder={label} style={{ width: '80%' }} />
+                    </Form.Item>
+                  </React.Fragment>
+                )
+              }
+            }
           </Form.Item>
         </ConditionalFormBlock>
-        <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'ram'}>
-          <FormItemLabel name='Percentage of RAM consumption' />
-          <Form.Item name='ramTarget' rules={[{ required: true, message: 'Please input RAM consumption in percentage' }]}>
-            <Input placeholder='RAM consumption' style={{ width: '80%' }} />
+        <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'memory'}>
+          <FormItemLabel name='Threshold type' />
+          <Form.Item name="memoryThresholdType">
+            <Select placeholder='Type' style={{ width: '80%' }} >
+              <Select.Option value='Utilization'>Average utilization percentage</Select.Option>
+              <Select.Option value='AverageValue'>Average value</Select.Option>
+              <Select.Option value='Value'>Total value</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item shouldUpdate={(prev, curr) => prev.memoryThresholdType !== curr.memoryThresholdType}>
+            {
+              () => {
+                const memoryThresholdType = form.getFieldValue("memoryThresholdType")
+                let label = ""
+                switch (memoryThresholdType) {
+                  case "Utilization":
+                    label = "Average memory utilization percentage"
+                    break;
+                  case "AverageValue":
+                    label = "Average memory consumption"
+                    break;
+                  case "Value":
+                    label = "Total memory consumption"
+                    break;
+                }
+                const errorMsg = `Please input ${label.toLowerCase()}`
+
+                return (
+                  <React.Fragment>
+                    <FormItemLabel name={label} />
+                    <Form.Item name='memoryValue' rules={[{ required: true, message: errorMsg }]}>
+                      <Input placeholder={label} style={{ width: '80%' }} />
+                    </Form.Item>
+                  </React.Fragment>
+                )
+              }
+            }
           </Form.Item>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'keda'}>

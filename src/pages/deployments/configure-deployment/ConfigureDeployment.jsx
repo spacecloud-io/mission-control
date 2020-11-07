@@ -295,8 +295,8 @@ const ConfigureDeployment = props => {
             return 'Active requests';
           case 'cpu':
             return 'CPU';
-          case 'ram':
-            return 'RAM';
+          case 'memory':
+            return 'Memory';
           default:
             const kedaType = kedaTriggerTypes.find(({ value }) => value === type)
             return `KEDA (${kedaType ? kedaType.value : type})`;
