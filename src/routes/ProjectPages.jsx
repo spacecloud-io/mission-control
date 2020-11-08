@@ -34,7 +34,7 @@ import DeploymentsIndex from "../pages/deployments/Index";
 import DeploymentsOverview from "../pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "../pages/deployments/routes/DeploymentsRoutes";
 import DeploymentsRoles from "../pages/deployments/roles/DeploymentsRoles"; 
-import RolesForm from "../pages/deployments/roles/RolesForm";
+import ServiceRoleForm from "../pages/deployments/roles/ServiceRoleForm";
 import DeploymentsLogs from "../pages/deployments/deployment-logs/DeploymentLogs";
 import ConfigureDeployment from "../pages/deployments/configure-deployment/ConfigureDeployment";
 import Graphql from "../pages/explorer/graphql/Graphql";
@@ -127,8 +127,8 @@ function ProjectPages() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles`} component={DeploymentsRoles} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/add`} component={RolesForm} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/:roleName/edit`} component={RolesForm} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/add`} component={ServiceRoleForm} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/:roleName/edit`} component={ServiceRoleForm} />
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={Secrets} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`} component={SecretDetails} />

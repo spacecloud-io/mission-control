@@ -106,7 +106,7 @@ class Deployments {
 
   fetchDeploymentRoles(projectId) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/runner/${projectId}/service-roles?project=*?roleId=*,serviceId=*`)
+      this.client.getJSON(`/v1/runner/${projectId}/service-roles?project=*&roleId=*&serviceId=*`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)

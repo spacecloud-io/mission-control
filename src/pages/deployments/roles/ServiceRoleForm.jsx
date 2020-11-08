@@ -13,7 +13,7 @@ import { QuestionCircleFilled } from '@ant-design/icons';
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { saveServiceRoles, getServiceRoles } from '../../../operations/deployments';
 
-const RolesForm = (props) => {
+const ServiceRoleForm = (props) => {
 
   const { projectID, roleName } = useParams();
   const history = useHistory();
@@ -25,34 +25,36 @@ const RolesForm = (props) => {
     }
   }, [])
 
-  
+
   const [ruleModalVisible, setRuleModalVisible] = useState(false);
-  const [selectedRuleInfo, setSelectedRuleInfo] = useState('');
+  const [selectedRuleIndex, setSelectedRuleIndex] = useState(-1);
   const [rules, setRules] = useState([]);
-  
+
+  const selectedRuleInfo = selectedRuleIndex === -1 ? undefined : rules.find((_, i) => i === selectedRuleIndex)
+
   const operation = props.location.state && props.location.state.roleClickedInfo ? "edit" : "add";
   const initialValues = operation === "edit" ? props.location.state.roleClickedInfo : undefined;
-  
+
   const formInitialValues = {
-    id: initialValues && initialValues.id ? initialValues.id: '',
+    id: initialValues && initialValues.id ? initialValues.id : '',
     type: initialValues && initialValues.type ? initialValues.type : 'project',
     project: initialValues && initialValues.project ? initialValues.project : '',
-    service: initialValues && initialValues.service ? initialValues.service : '' 
+    service: initialValues && initialValues.service ? initialValues.service : ''
   }
-  
+
   useEffect(() => {
     form.setFieldsValue(formInitialValues)
   }, [formInitialValues.id, formInitialValues.type])
 
   const serviceRoles = useSelector(state => getServiceRoles(state))
-  const serviceRolesName = serviceRoles.map(role => role.id) 
-  
+  const serviceRolesName = serviceRoles.map(role => role.id)
+
   const handleRuleSubmit = (values, operation) => {
     if (operation === 'add') {
       setRules([...rules, values])
     } else {
-      const newRuleArray = rules.map(val => {
-        if (values.name === val.name) {
+      const newRuleArray = rules.map((val, i) => {
+        if (i === selectedRuleIndex) {
           return values;
         }
         return val
@@ -61,8 +63,13 @@ const RolesForm = (props) => {
     }
   }
 
+  const handleRuleCancel = () => {
+    setRuleModalVisible(false)
+    setSelectedRuleIndex(-1)
+  }
+
   const onAddRuleClick = () => {
-    setSelectedRuleInfo(null)
+    setSelectedRuleIndex(-1)
     setRuleModalVisible(true)
   }
 
@@ -79,7 +86,7 @@ const RolesForm = (props) => {
       }
 
       let roleConfig = {}
-      if(values.type === 'project'){
+      if (values.type === 'project') {
         roleConfig = {
           id: values.id,
           type: values.type,
@@ -87,7 +94,7 @@ const RolesForm = (props) => {
           service: values.service,
           rules: rules
         };
-      }else {
+      } else {
         roleConfig = {
           id: values.id,
           type: values.type,
@@ -106,7 +113,7 @@ const RolesForm = (props) => {
         })
         .finally(() => decrementPendingRequests());
     })
-  }   
+  }
 
   const ruleColumn = [
     {
@@ -141,35 +148,36 @@ const RolesForm = (props) => {
       key: 'actions',
       className: 'column-actions',
       render: (_, record, index) => {
-        return(<span>
-         <a onClick={() => {
-           setSelectedRuleInfo(rules.find((val, roleIndex) => roleIndex === index));
-           setRuleModalVisible(true);
+        return (<span>
+          <a onClick={() => {
+            setSelectedRuleIndex(index)
+            setRuleModalVisible(true);
           }}>
-           Edit
+            Edit
          </a>
-         <Popconfirm
-           title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
-           onConfirm={() => removeRule(index)}
-           okText="Yes"
-           cancelText="No"
-         >
-           <a style={{ color: "red" }}>Delete</a>
-         </Popconfirm>
-       </span>
-       )}
+          <Popconfirm
+            title={`This will remove this deployment config and stop all running instances of it. Are you sure?`}
+            onConfirm={() => removeRule(index)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <a style={{ color: "red" }}>Delete</a>
+          </Popconfirm>
+        </span>
+        )
+      }
     },
   ]
 
-  return(
+  return (
     <React.Fragment>
-      <Topbar showProjectSelector/>
-      <Sidenav selectedItem={projectModules.DEPLOYMENTS}/>
+      <Topbar showProjectSelector />
+      <Sidenav selectedItem={projectModules.DEPLOYMENTS} />
       <ProjectPageLayout>
         <InnerTopBar title={roleName ? 'Edit service role' : 'Add service role'} />
         <Content>
           <Row>
-            <Col lg={{ span:18, offset:3 }} xl={{ span:16, offset:4 }}>
+            <Col lg={{ span: 18, offset: 3 }} xl={{ span: 16, offset: 4 }}>
               <Card>
                 <Form form={form} initialValues={formInitialValues} onFinish={onSubmitServiceRole}>
                   <FormItemLabel name='Role name' />
@@ -187,9 +195,9 @@ const RolesForm = (props) => {
                       cb()
                     }
                   }]}>
-                    <Input 
-                      placeholder='Unique name for your service role' 
-                      disabled={roleName ? true : false}/>
+                    <Input
+                      placeholder='Unique name for your service role'
+                      disabled={roleName ? true : false} />
                   </Form.Item>
                   <FormItemLabel name='Role type' />
                   <Form.Item name='type' rules={[{ required: true, message: 'Please select role type' }]}>
@@ -213,7 +221,7 @@ const RolesForm = (props) => {
                       <QuestionCircleFilled style={{ marginLeft: '8px', fontSize: '14px' }} />
                     </Tooltip>
                     <Button style={{ float: 'right' }} onClick={onAddRuleClick}>Add rule</Button>
-                    </React.Fragment>} />
+                  </React.Fragment>} />
                   <Table columns={ruleColumn} dataSource={rules} bordered pagination={false} />
                   <Button type='primary' style={{ width: '100%', marginTop: '24px' }} onClick={onSubmitServiceRole}>{roleName ? 'Save' : 'Add'}</Button>
                 </Form>
@@ -222,12 +230,12 @@ const RolesForm = (props) => {
           </Row>
         </Content>
       </ProjectPageLayout>
-      {ruleModalVisible && <AddRuleForm  
+      {ruleModalVisible && <AddRuleForm
         initialValues={selectedRuleInfo}
-        handleSubmit={handleRuleSubmit} 
-        handleCancel={() => setRuleModalVisible(false)} />}
+        handleSubmit={handleRuleSubmit}
+        handleCancel={handleRuleCancel} />}
     </React.Fragment>
   );
 }
 
-export default RolesForm;
+export default ServiceRoleForm;
