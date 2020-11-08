@@ -188,6 +188,55 @@ export const deleteServiceRoutes = (projectId, serviceId, port) => {
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
+export const loadServiceRoles = (projectId) => {
+  return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.SERVICE_ROlES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch service routes")
+      setServiceRoles([])
+      resolve()
+      return
+    }
+
+    client.deployments.fetchDeploymentRoles(projectId)
+      .then((res = []) => {
+        setServiceRoles(res)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const saveServiceRoles = (projectId, serviceId, roleId, roleConfig) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.setDeploymentRoles(projectId, serviceId, roleId, roleConfig)
+      .then(({ queued }) => {
+        if (!queued) {
+          const serviceRoles = get(store.getState(), "serviceRoles", [])
+          const newServiceRoles = upsertArray(serviceRoles, obj => obj.id === roleConfig.id, () => roleConfig)
+          setServiceRoles(newServiceRoles)
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const deleteServiceRoles = (projectId, serviceId, roleId) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.deleteDeploymentRoles(projectId, serviceId, roleId)
+      .then(({ queued }) => {
+        if (!queued) {
+          const serviceRoles = get(store.getState(), "serviceRoles", [])
+          const newServiceRoles = serviceRoles.filter(obj => obj.id !== roleId);
+          setServiceRoles(newServiceRoles)
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getServices = (state) => get(state, "services", [])
 export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
@@ -195,6 +244,7 @@ export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
 export const getServicesStatus = (state) => get(state, "servicesStatus", {})
 export const getServiceLogs = (state) => get(state, "serviceLogs", [])
 export const getServiceLogsFilters = (state) => get(state, "uiState.serviceLogsFilters", {})
+export const getServiceRoles = (state) => get(state, "serviceRoles", [])
 const getServiceLogsSubscriptionId = (state) => get(state, "serviceLogsSubscriptionId", "")
 
 const setServiceRoutes = (serviceRoutes) => store.dispatch(set("serviceRoutes", serviceRoutes))
@@ -203,4 +253,5 @@ const setServices = (services) => store.dispatch(set("services", services))
 const setServicesStatus = (servicesStatus) => store.dispatch(set("servicesStatus", servicesStatus))
 const setServiceLogs = (logs) => store.dispatch(set("serviceLogs", logs))
 const setServiceLogsSubscriptionId = (subscriptionId) => store.dispatch(set("serviceLogsSubscriptionId", subscriptionId))
+const setServiceRoles = (serviceRoles) => store.dispatch(set("serviceRoles", serviceRoles))
 export const setServiceLogsFilters = (filters) => store.dispatch(set("uiState.serviceLogsFilters", filters))

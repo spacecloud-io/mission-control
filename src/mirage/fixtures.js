@@ -667,6 +667,22 @@ export const deploymentsStatus = [
   }
 ]
 
+export const serviceRoles = [
+  {
+    "id": "Role1",
+    "type": "project",
+    "project": "MockProject1",
+    "service": "service1",
+    "rules": [
+      {
+        "apiGroups": ["group1","rbac.authorization.io"],
+        "verbs": ["get", "watch", "list"],
+        "resources": ["pods", "configmaps"]
+      }
+    ]
+  }
+]
+
 export const secrets = [
   {
     "id": "EnvSecret",
