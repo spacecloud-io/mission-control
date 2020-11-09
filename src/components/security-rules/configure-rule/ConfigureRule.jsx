@@ -4,6 +4,7 @@ import {
   Form,
   Select,
   Input,
+  InputNumber,
   Alert,
   Checkbox,
   Drawer,
@@ -163,7 +164,7 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -196,6 +197,15 @@ const ConfigureRule = (props) => {
           notify("error", "Error", ex.toString())
           return;
         }
+        if (values.cacheResponse) {
+          values.cache = {
+            ttl: values.cacheTTL,
+            instantInvalidate: values.cacheInstantInvalidate ? true: false
+          }
+        }
+        delete values["cacheResponse"]
+        delete values["cacheTTL"]
+        delete values["cacheInstantInvalidate"]
         break;
       case "webhook":
         if (values.setClaims) {
@@ -300,7 +310,10 @@ const ConfigureRule = (props) => {
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
     errorMsg: error ? true : false,
-    error
+    error,
+    cacheResponse: cache ? true : false,
+    cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
+    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined
   }
 
   if (formInitialValues.type === "object") {
@@ -326,15 +339,15 @@ const ConfigureRule = (props) => {
         <Form.Item name='rule'>
           <Select placeholder="Rule">
             {rules
-            .filter((val) => {
-              if (props.blockDepth === 1) return true
-              return !["allow", "deny", "authenticated"].includes(val)
-            })
-            .map((val) => (
-              <Select.Option key={val} value={val}>
-                {val}
-              </Select.Option>
-            ))}
+              .filter((val) => {
+                if (props.blockDepth === 1) return true
+                return !["allow", "deny", "authenticated"].includes(val)
+              })
+              .map((val) => (
+                <Select.Option key={val} value={val}>
+                  {val}
+                </Select.Option>
+              ))}
           </Select>
         </Form.Item>
         <ConditionalFormBlock
@@ -654,6 +667,30 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
+          <ConditionalFormBlock
+            shouldUpdate={true}
+            condition={() => props.isCachingEnabled}>
+            <FormItemLabel name="Caching" />
+            <Form.Item name='cacheResponse' valuePropName='checked'>
+              <Checkbox>
+                Cache the results
+              </Checkbox>
+            </Form.Item>
+            <ConditionalFormBlock
+              dependency='cacheResponse'
+              condition={() => form.getFieldValue('cacheResponse') === true}>
+              <FormItemLabel name="Cache TTL" hint="(in seconds)" />
+              <Form.Item name="cacheTTL">
+                <InputNumber placeholder="TTL in seconds" style={{ width: "100%" }} />
+              </Form.Item>
+              <FormItemLabel name="Cache invalidation" />
+              <Form.Item name="cacheInstantInvalidate" valuePropName='checked'>
+                <Checkbox>
+                  Enable instant invalidation of cached results
+                </Checkbox>
+              </Form.Item>
+            </ConditionalFormBlock>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Form, Input, Card, Col, Alert, Button, InputNumber } from "antd"
+import { Form, Input, Card, Col, Button, InputNumber } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav'
 import Topbar from '../../../components/topbar/Topbar'
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout"
@@ -11,8 +11,6 @@ import { decrementPendingRequests, incrementPendingRequests, notify } from "../.
 import { saveCacheConfig } from "../../../operations/cache";
 
 const ConfigureCache = () => {
-
-  const { projectID } = useParams()
   const history = useHistory()
   const [form] = Form.useForm();
 
@@ -21,7 +19,7 @@ const ConfigureCache = () => {
   const handleFinish = (values) => {
     const config = { enabled: true, ...values }
     incrementPendingRequests()
-    saveCacheConfig(projectID, config)
+    saveCacheConfig(config)
       .then(() => notify("success", "Success", "Configured cache successfully"))
       .catch(ex => notify("error", "Error configuring cache", ex))
       .finally(() => {
@@ -44,11 +42,6 @@ const ConfigureCache = () => {
     }
   }, [formInitialValues.conn])
 
-
-  const alertMsg = <div>
-    Space Cloud has a Redis add-on that you can use here. You can configure it from the <a href={`/mission-control/projects/${projectID}/settings/add-ons`} style={{ color: '#7EC6FF' }}>add-ons page</a>.
-  </div>
-
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -63,12 +56,6 @@ const ConfigureCache = () => {
                 <Form.Item name="conn">
                   <Input placeholder="Provide connection string of Redis" />
                 </Form.Item>
-                <Alert
-                  style={{ marginBottom: 16 }}
-                  message={alertMsg}
-                  type="info"
-                  showIcon
-                />
                 <FormItemLabel name="Default TTL" hint="(in seconds)" />
                 <Form.Item name="defaultTTL">
                   <InputNumber style={{ width: "100%" }} placeholder="Provide default value of TTL to be used for cache" />

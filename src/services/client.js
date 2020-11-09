@@ -47,8 +47,8 @@ class Client {
     return fetchJSON(this.origin, url, Object.assign({}, options, { method: 'POST', body: JSON.stringify(obj) }))
   }
 
-  delete(url) {
-    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'DELETE' }))
+  delete(url, obj = {}) {
+    return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'DELETE', body: JSON.stringify(obj) }))
   }
   putJSON(url, obj) {
     return fetchJSON(this.origin, url, Object.assign({}, this.options, { method: 'PUT', body: JSON.stringify(obj) }))

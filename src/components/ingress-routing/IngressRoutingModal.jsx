@@ -67,7 +67,9 @@ const IngressRoutingModal = props => {
     setResHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? true : false,
     resHeaders: (initialValues && initialValues.resHeaders && initialValues.resHeaders.length > 0) ? initialValues.resHeaders.map(obj => Object.assign({}, obj, { op: obj.op ? obj.op : "set" })) : [{ op: "set", key: "", value: "" }],
     applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
-    outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml"
+    outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml",
+    isRouteCacheable: initialValues ? initialValues.isRouteCacheable : false,
+    cacheHeaders: (initialValues && initialValues.cacheHeaders && initialValues.cacheHeaders.length > 0) ? initialValues.cacheHeaders : []
   }
 
   const handleSubmitClick = e => {
@@ -334,6 +336,62 @@ const IngressRoutingModal = props => {
               header='Advanced'
               key='1'
             >
+              <ConditionalFormBlock
+                shouldUpdate={true}
+                condition={() => props.isCachingEnabled}>
+                <FormItemLabel name='Enable caching' />
+                <Form.Item name='isRouteCacheable' valuePropName='checked'>
+                  <Checkbox>
+                    Enable caching for this route
+                  </Checkbox>
+                </Form.Item>
+                <ConditionalFormBlock
+                  dependency='isRouteCacheable'
+                  condition={() => form.getFieldValue('isRouteCacheable') === true}
+                >
+                  <FormItemLabel name='Cacheable headers' />
+                  <Form.List name="cacheHeaders">
+                    {(fields, { add, remove }) => {
+                      return (
+                        <div>
+                          {fields.map((field) => (
+                            <Form.Item key={field.key} style={{ marginBottom: 8 }}>
+                              <Form.Item
+                                {...field}
+                                validateTrigger={['onChange', 'onBlur']}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please input a value",
+                                  }
+                                ]}
+                                noStyle
+                              >
+                                <Input placeholder="Header Key" style={{ width: "90%" }} />
+                              </Form.Item>
+                              <DeleteOutlined
+                                style={{ marginLeft: 16 }}
+                                onClick={() => {
+                                  remove(field.name);
+                                }}
+                              />
+                            </Form.Item>
+                          ))}
+                          <Form.Item>
+                            <Button onClick={() => {
+                              form.validateFields(fields.map(obj => ["cacheHeaders", obj.name]))
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
+                            }}>
+                              <PlusOutlined /> Add
+                        </Button>
+                          </Form.Item>
+                        </div>
+                      );
+                    }}
+                  </Form.List>
+                </ConditionalFormBlock>
+              </ConditionalFormBlock>
               <FormItemLabel name='Modify request headers' />
               <Form.Item name='setHeaders' valuePropName='checked'>
                 <Checkbox>

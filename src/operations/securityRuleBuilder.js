@@ -4,9 +4,10 @@ import { loadEventingSecurityRules, getEventingSecurityRule, saveEventingSecurit
 import { loadFileStoreRules, getFileStoreSecurityRule, saveFileStoreSecurityRule } from "./fileStore"
 import { loadRemoteServices, getRemoteEndpointSecurityRule, saveRemoteServiceEndpointRule } from "./remoteServices"
 import { loadIngressRoutes, getIngressRouteSecurityRule, getIngressRouteURL, saveIngressRouteRule } from "./ingressRoutes"
+import { loadCacheConfig } from "./cache"
 
 export const loadSecurityRules = (projectId, ruleType) => {
-  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId)]
+  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId), loadCacheConfig()]
 
   switch (ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:

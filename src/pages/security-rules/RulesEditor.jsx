@@ -17,6 +17,7 @@ import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { getSecurityRuleInfo, loadSecurityRules, saveSecurityRule } from '../../operations/securityRuleBuilder';
 import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage } from '../../constants';
+import { getCacheConfig } from '../../operations/cache';
 
 const RulesEditor = () => {
   // Router params
@@ -28,6 +29,7 @@ const RulesEditor = () => {
   // Global state 
   const { rule: initialRule, name } = useSelector(state => getSecurityRuleInfo(state, ruleType, id, group))
   const tab = localStorage.getItem('rules:editor') ? localStorage.getItem('rules:editor') : 'builder';
+  const cacheConfig = useSelector(state => getCacheConfig(state))
 
   // Component state
   const [shortcutsDrawer, openShortcutsDrawer] = useState(false);
@@ -170,7 +172,7 @@ const RulesEditor = () => {
                     </span>
                   </div>
                   <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }}>
-                    <GraphEditor rule={rule} setRule={setRule} ruleName={name} ruleMetaData={ruleMetaData} />
+                    <GraphEditor rule={rule} setRule={setRule} ruleName={name} ruleMetaData={ruleMetaData} isCachingEnabled={cacheConfig.enabled} />
                   </div>
                   <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }} disabled={!rulesChanged}>Save</Button>
                 </div>

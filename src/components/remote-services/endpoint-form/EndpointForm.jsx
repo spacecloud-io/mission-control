@@ -36,11 +36,11 @@ function AlertMsgPreparedQueries() {
   );
 }
 
-const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
+const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnabled }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheHeaders = [] } = initialValues ? initialValues : {}
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
@@ -61,13 +61,14 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
     claims: claims ? claims : undefined,
     graphTemplate: graphTemplate ? graphTemplate : undefined,
     requestTemplate: requestTemplate ? requestTemplate : undefined,
-    responseTemplate: responseTemplate ? responseTemplate : undefined
+    responseTemplate: responseTemplate ? responseTemplate : undefined,
+    cacheHeaders: cacheHeaders && cacheHeaders.length > 0 ? cacheHeaders : []
   }
 
   const handleFinish = (values) => {
     const overrideToken = values.overrideToken
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate } = values
+    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheHeaders } = values
 
     const result = {
       kind,
@@ -83,7 +84,8 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
       claims: claims ? claims : undefined,
       requestTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplate : undefined,
       responseTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplate : undefined,
-      graphTemplate: endpointTypes.PREPARED ? graphTemplate : undefined
+      graphTemplate: endpointTypes.PREPARED ? graphTemplate : undefined,
+      cacheHeaders
     }
 
     handleSubmit(result)
@@ -217,6 +219,52 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL }) => {
                 header='Advanced'
                 key='1'
               >
+                <ConditionalFormBlock
+                  shouldUpdate={true}
+                  condition={() => isCachingEnabled}
+                >
+                  <FormItemLabel name='Cacheable headers' />
+                  <Form.List name="cacheHeaders">
+                    {(fields, { add, remove }) => {
+                      return (
+                        <div>
+                          {fields.map((field) => (
+                            <Form.Item key={field.key} style={{ marginBottom: 8 }}>
+                              <Form.Item
+                                {...field}
+                                validateTrigger={['onChange', 'onBlur']}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please input a value",
+                                  }
+                                ]}
+                                noStyle
+                              >
+                                <Input placeholder="Header Key" style={{ width: "90%" }} />
+                              </Form.Item>
+                              <DeleteOutlined
+                                style={{ marginLeft: 16 }}
+                                onClick={() => {
+                                  remove(field.name);
+                                }}
+                              />
+                            </Form.Item>
+                          ))}
+                          <Form.Item>
+                            <Button onClick={() => {
+                              form.validateFields(fields.map(obj => ["cacheHeaders", obj.name]))
+                                .then(() => add())
+                                .catch(ex => console.log("Exception", ex))
+                            }}>
+                              <PlusOutlined /> Add
+                        </Button>
+                          </Form.Item>
+                        </div>
+                      );
+                    }}
+                  </Form.List>
+                </ConditionalFormBlock>
                 <FormItemLabel name="Timeout" description="Applicable for REST endpoints only" hint="(default: 60)" />
                 <Form.Item name="timeout">
                   <InputNumber style={{ width: 200 }} placeholder="Timeout in seconds" />

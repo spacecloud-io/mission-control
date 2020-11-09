@@ -83,10 +83,10 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
 
       // Cache endpoints
-      this.get("/config/projects/:projectId/caching/config", () => respondOk({ result: fixtures.cacheConfig }))
-      this.get("/external/projects/:projectId/caching/connection-state", () => respondOk({ result: true }))
-      this.post("/config/projects/:projectId/caching/config/caching-config", () => respondOk());
-      this.post("/external/projects/:projectId/caching/purge-cache", () => respondOk())
+      this.get("/config/caching/config", () => respondOk({ result: fixtures.cacheConfig }))
+      this.get("/external/caching/connection-state", () => respondOk({ result: true }))
+      this.post("/config/caching/config/cache-config", () => respondOk());
+      this.delete("/external/projects/:projectId/caching/purge-cache", () => respondOk())
 
       // Eventing endpoints
       this.get("/config/projects/:projectId/eventing/config", () => respondOk({ result: fixtures.eventingConfig }))

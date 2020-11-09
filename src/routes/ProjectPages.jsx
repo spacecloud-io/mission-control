@@ -33,7 +33,7 @@ import UserManagement from "../pages/user-management/UserManagement";
 import DeploymentsIndex from "../pages/deployments/Index";
 import DeploymentsOverview from "../pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "../pages/deployments/routes/DeploymentsRoutes";
-import DeploymentsRoles from "../pages/deployments/roles/DeploymentsRoles"; 
+import DeploymentsRoles from "../pages/deployments/roles/DeploymentsRoles";
 import ServiceRoleForm from "../pages/deployments/roles/ServiceRoleForm";
 import DeploymentsLogs from "../pages/deployments/deployment-logs/DeploymentLogs";
 import ConfigureDeployment from "../pages/deployments/configure-deployment/ConfigureDeployment";
@@ -59,7 +59,7 @@ import CacheOverview from '../pages/cache/overview/Overview';
 import CacheIndex from '../pages/cache/Index';
 import ConfigureRabbitMQ from "../pages/settings/add-ons/rabbit-mq/RabbitMQ";
 import ConfigureRedis from "../pages/settings/add-ons/redis/ConfigureRedis";
-import AddOns from "../pages/settings/add-ons/AddOns";
+// import AddOns from "../pages/settings/add-ons/AddOns";
 
 
 function ProjectPages() {
@@ -92,7 +92,7 @@ function ProjectPages() {
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`} component={ClusterSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons`} component={AddOns} />
+      {/* <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons`} component={AddOns} /> */}
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/rabbit-mq`} component={ConfigureRabbitMQ} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/redis`} component={ConfigureRedis} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />

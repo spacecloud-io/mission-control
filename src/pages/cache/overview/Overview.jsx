@@ -19,18 +19,18 @@ const Overview = () => {
   const connected = useSelector(state => getCacheConnState(state))
 
   useEffect(() => {
-    if (projectID && config.enabled) {
+    if (config.enabled) {
       incrementPendingRequests()
-      loadCacheConnState(projectID)
+      loadCacheConnState()
         .catch(ex => notify("error", "Error loading cache connection status", ex))
         .finally(() => decrementPendingRequests())
     }
-  }, [projectID, config.enabled])
+  }, [config.enabled])
 
   const handleDisableCache = () => {
     const config = { enabled: false, conn: "" }
     incrementPendingRequests()
-    saveCacheConfig(projectID, config)
+    saveCacheConfig(config)
       .then(() => notify("success", "Success", "Disabled cache successfully"))
       .catch(ex => notify("error", "Error disabling cache", ex))
       .finally(() => decrementPendingRequests())

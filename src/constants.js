@@ -81,7 +81,7 @@ export const moduleResources = {
   [projectModules.OVERVIEW]: [],
   [projectModules.DATABASE]: [configResourceTypes.DB_CONFIG, configResourceTypes.DB_RULES, configResourceTypes.DB_SCHEMA, configResourceTypes.DB_PREPARED_QUERIES],
   [projectModules.FILESTORE]: [configResourceTypes.FILESTORE_CONFIG, configResourceTypes.FILESTORE_RULES],
-  [projectModules.CACHE]: [configResourceTypes.CACHE_CONFIG],
+  [projectModules.CACHE]: [],
   [projectModules.EVENTING]: [configResourceTypes.EVENTING_CONFIG, configResourceTypes.EVENTING_RULES, configResourceTypes.EVENTING_SCHEMA, configResourceTypes.EVENTING_TRIGGER],
   [projectModules.REMOTE_SERVICES]: [configResourceTypes.REMOTE_SERVICES],
   [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES, configResourceTypes.SERVICE_ROlES],

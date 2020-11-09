@@ -3,9 +3,9 @@ class Cache {
     this.client = client
   }
 
-  setCacheConfig(projectId, config) {
+  setCacheConfig(config) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/caching/config/caching-config`, config)
+      this.client.postJSON(`/v1/config/caching/config/cache-config`, config)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
@@ -17,9 +17,9 @@ class Cache {
     })
   }
 
-  getCacheConfig(projectId) {
+  getCacheConfig() {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/projects/${projectId}/caching/config`)
+      this.client.getJSON(`/v1/config/caching/config`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
@@ -31,9 +31,9 @@ class Cache {
     })
   }
 
-  getCacheConnStatus(projectId) {
+  getCacheConnStatus() {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/external/projects/${projectId}/caching/connection-state`)
+      this.client.getJSON(`/v1/external/caching/connection-state`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
@@ -47,7 +47,7 @@ class Cache {
 
   purgeCache(projectId, data) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/external/projects/${projectId}/caching/purge-cache`, data)
+      this.client.delete(`/v1/external/projects/${projectId}/caching/purge-cache`, data)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)

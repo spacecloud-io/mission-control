@@ -2,17 +2,15 @@ import { set } from "automate-redux";
 import { get } from "dot-prop-immutable";
 import client from "../client";
 import store from "../store";
-import { configResourceTypes, permissionVerbs } from "../constants";
-import { checkResourcePermissions } from "../utils";
 
-export const saveCacheConfig = (projectId, config) => {
+export const saveCacheConfig = (config) => {
 	return new Promise((resolve, reject) => {
-		client.cache.setCacheConfig(projectId, config)
+		client.cache.setCacheConfig(config)
 			.then(({ queued }) => {
 				if (!queued) {
 					store.dispatch(setCacheConfig(config))
 					if (config.enabled) {
-						loadCacheConnState(projectId)
+						loadCacheConnState()
 							.catch(ex => reject(ex))
 					}
 				}
@@ -22,17 +20,9 @@ export const saveCacheConfig = (projectId, config) => {
 	})
 }
 
-export const loadCacheConfig = (projectId) => {
+export const loadCacheConfig = () => {
 	return new Promise((resolve, reject) => {
-		const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.CACHE_CONFIG], permissionVerbs.READ)
-		if (!hasPermission) {
-			console.warn("No permission to fetch db config")
-			setCacheConfig({})
-			resolve()
-			return
-		}
-
-		client.cache.getCacheConfig(projectId)
+		client.cache.getCacheConfig()
 			.then(result => {
 				store.dispatch(setCacheConfig(result[0]))
 				resolve()
@@ -41,9 +31,9 @@ export const loadCacheConfig = (projectId) => {
 	})
 }
 
-export const loadCacheConnState = (projectId) => {
+export const loadCacheConnState = () => {
 	return new Promise((resolve, reject) => {
-		client.cache.getCacheConnStatus(projectId)
+		client.cache.getCacheConnStatus()
 			.then(result => {
 				store.dispatch(setCacheConnState(result))
 				resolve()

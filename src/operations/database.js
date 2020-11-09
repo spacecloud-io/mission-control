@@ -203,6 +203,21 @@ export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealti
   })
 }
 
+export const saveColCachingEnabled = (projectId, dbAliasName, colName, isCachingEnabled) => {
+  return new Promise((resolve, reject) => {
+    const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
+    const newCollectionRules = Object.assign({}, collectionRules, { isCachingEnabled })
+    client.database.setColRule(projectId, dbAliasName, colName, newCollectionRules)
+      .then(({ queued }) => {
+        if (!queued) {
+          store.dispatch(set(`dbRules.${dbAliasName}.${colName}.isCachingEnabled`, isCachingEnabled))
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRules) => {
   return new Promise((resolve, reject) => {
     const collectionRules = getCollectionRules(store.getState(), dbAliasName, colName)
