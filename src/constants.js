@@ -159,6 +159,7 @@ export const securityRuleGroups = {
   DB_PREPARED_QUERIES: "prepared-queries",
   FILESTORE: "file-store",
   EVENTING: "eventing",
+  EVENTING_FILTERS: "eventing-filters",
   REMOTE_SERVICES: "remote-services",
   INGRESS_ROUTES: "ingress-routes"
 }
@@ -191,6 +192,10 @@ export const defaultFileRule = {
 }
 
 export const defaultEventRule = {
+  rule: "allow"
+}
+
+export const defaultEventFilterRule = {
   rule: "allow"
 }
 

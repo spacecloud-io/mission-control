@@ -7,13 +7,13 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import Topbar from '../../components/topbar/Topbar';
 import RuleForm from "../../components/eventing/RuleForm";
 import EventTabs from "../../components/eventing/event-tabs/EventTabs";
-import { getEventSourceFromType, notify, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests } from '../../utils';
+import { getEventSourceFromType, notify, getEventSourceLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../utils';
 import eventingSvg from "../../assets/eventing.svg"
 import './event.css'
 import history from "../../history"
 import { deleteEventingTriggerRule, saveEventingTriggerRule, getEventingTriggerRules, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
-import { projectModules, actionQueuedMessage } from '../../constants';
+import { projectModules, actionQueuedMessage, securityRuleGroups } from '../../constants';
 import Highlighter from 'react-highlight-words';
 import { FilterOutlined } from '@ant-design/icons';
 import FilterEvents from '../../components/eventing/FilterEvents';
@@ -51,6 +51,8 @@ const EventingOverview = () => {
 		setRuleClicked(id)
 		setRuleModalVisibile(true)
 	}
+
+	const handleFilterRuleClick = (triggerId) => openSecurityRulesPage(projectID, securityRuleGroups.EVENTING_FILTERS, triggerId)
 
 	const handleTriggerRuleClick = (eventType) => {
 		history.push(`/mission-control/projects/${projectID}/eventing/queue-event`, { eventType })
@@ -125,6 +127,7 @@ const EventingOverview = () => {
 				return (
 					<span>
 						<a onClick={() => handleEditRuleClick(record.id)}>Edit</a>
+						<a onClick={() => handleFilterRuleClick(record.id)}>Filtering Rules</a>
 						{source === "custom" && <a onClick={() => handleTriggerRuleClick(record.type)}>Trigger</a>}
 						<a style={{ color: "red" }} onClick={() => handleDeleteRule(record.id)}>Delete</a>
 					</span>

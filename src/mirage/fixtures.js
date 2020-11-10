@@ -144,7 +144,14 @@ export const eventingTriggers = [
     "type": "MY_CUSTOM_EVENT",
     "url": "http://localhost:3000/v1/my-event",
     "retries": 3,
-    "timeout": 5000
+    "timeout": 5000,
+    "filter": {
+      "rule": "match",
+      "eval": "==",
+      "type": "string",
+      "f1": "args.data.doc.status",
+      "f2": "closed"
+    }
   },
   {
     "id": "UserAdded",

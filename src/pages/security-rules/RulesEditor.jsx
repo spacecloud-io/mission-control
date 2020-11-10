@@ -16,7 +16,7 @@ import GraphEditor from "../../components/security-rules/graph-editor/GraphEdito
 import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { getSecurityRuleInfo, loadSecurityRules, saveSecurityRule } from '../../operations/securityRuleBuilder';
-import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage } from '../../constants';
+import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage, defaultEventFilterRule } from '../../constants';
 import { getCacheConfig } from '../../operations/cache';
 
 const RulesEditor = () => {
@@ -54,8 +54,8 @@ const RulesEditor = () => {
   useDeepCompareEffect(() => {
     if (projectID) {
       incrementPendingRequests()
-      loadSecurityRules(projectID, ruleMetaData.ruleType)
-        .catch(ex => notify("error", "Error fetching security rule", ex))
+      loadSecurityRules(projectID, ruleMetaData.ruleType, ruleMetaData.id)
+        .catch(ex => notify("error", "Error fetching rule", ex))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID, ruleMetaData])
@@ -81,6 +81,9 @@ const RulesEditor = () => {
         break;
       case securityRuleGroups.EVENTING:
         setRule(defaultEventRule)
+        break;
+      case securityRuleGroups.EVENTING_FILTERS:
+        setRule(defaultEventFilterRule)
         break;
       case securityRuleGroups.FILESTORE:
         setRule(defaultFileRule)
@@ -164,7 +167,7 @@ const RulesEditor = () => {
               <React.Fragment>
                 <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                   <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-                    <span><b>Security rules</b> ({name})</span>
+                    <span><b>Rules</b> ({name})</span>
                     <span>
                       <UseDefaultRulesButton />
                       <Button onClick={() => openShortcutsDrawer(true)} style={{ marginRight: 16 }}>Shortcuts</Button>
@@ -181,7 +184,7 @@ const RulesEditor = () => {
             <Tabs.TabPane tab='JSON' key='JSON' >
               <React.Fragment>
                 <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-                  <span><b>Security rules</b> ({name})</span>
+                  <span><b>Rules</b> ({name})</span>
                   <span>
                     <UseDefaultRulesButton />
                     <Button style={{ marginRight: 16 }} onClick={prettify}>Prettify</Button>
@@ -199,13 +202,13 @@ const RulesEditor = () => {
         {!ruleExists && (
           <div style={{ padding: 32 }}>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between" }}>
-              <span><b>Security rules</b> ({name})</span>
+              <span><b>Rules</b> ({name})</span>
               <DocumentationButton />
             </div>
             <div className='rabbit'>
               <img src={rabbit} alt='rabbit.png' />
-              <p style={{ margin: '30px 0px' }}>No rules defined yet. {defaultRulesPossible ? "Default rules are being applied." : "Define rules to secure the resource."}</p>
-              <Button onClick={addDefaultSecurityRules} type='primary' size='large'>Add security rules</Button>
+              <p style={{ margin: '30px 0px' }}>No rules defined yet. {defaultRulesPossible ? "Default rules are being applied." : "Define rules for the resource."}</p>
+              <Button onClick={addDefaultSecurityRules} type='primary' size='large'>Add rules</Button>
             </div>
           </div>
         )}
