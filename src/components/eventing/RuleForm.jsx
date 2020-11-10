@@ -30,6 +30,10 @@ const RuleForm = (props) => {
 
   const [value, setValue] = useState("");
 
+  if (options && options.col !== undefined && options.col !== null && typeof options.col === "string") {
+    options.col = options.col ? options.col.split(",") : []
+  }
+
   const formInitialValues = {
     id: id,
     source: getEventSourceFromType(type, "database"),
@@ -51,6 +55,10 @@ const RuleForm = (props) => {
   const handleSubmit = () => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
+      if (values.options && values.options.col) {
+        values.options.col = values.options.col.join(",")
+      }
+
       if (values.options && !values.options.col) {
         delete values["options.col"]
       }
@@ -114,7 +122,7 @@ const RuleForm = (props) => {
               <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={props.dbList.map(db => ({ value: db }))} />
             </Form.Item>
             <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
-              <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
+              <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
                 {
                   trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
                     <Option key={data} value={data}>
@@ -122,7 +130,7 @@ const RuleForm = (props) => {
                     </Option>
                   ))
                 }
-              </AutoComplete>
+              </Select>
             </Form.Item>
           </Input.Group>
           <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
