@@ -67,16 +67,13 @@ const FileStorageConfig = () => {
   // Handlers
   const handleFinish = (values) => {
     values = Object.assign({}, formInitialValues, values)
-    delete values["credentials"]
     let newConfig = {};
     switch (values.storeType) {
       case fileStoreProviders.LOCAL:
         newConfig = {
           enabled: true,
-          conn: values.localConn,
-          ...values
+          conn: values.localConn
         }
-        delete newConfig["localConn"]
         break;
 
       case fileStoreProviders.AMAZON_S3:
@@ -84,19 +81,23 @@ const FileStorageConfig = () => {
           enabled: true,
           conn: values.s3Conn,
           bucket: values.s3Bucket,
-          ...values
+          endpoint: values.endpoint,
+          disableSSL: values.disableSSL,
+          forcePathStyle: values.forcePathStyle
         }
-        delete newConfig["s3Conn"]
-        delete newConfig["s3Bucket"]
+        if (values.credentials === "secret") {
+          newConfig.secret = values.secret
+        }
         break;
 
       case fileStoreProviders.GCP_STORAGE:
         newConfig = {
           enabled: true,
           bucket: values.gcpBucket,
-          ...values
         }
-        delete newConfig["gcpBucket"]
+        if (values.credentials === "secret") {
+          newConfig.secret = values.secret
+        }
         break;
 
       default:

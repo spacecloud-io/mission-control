@@ -211,11 +211,14 @@ export const eventingTriggers = [
 
 export const fileStoreConfig = [
   {
-    "enabled": false,
-    // "storeType": "amazon-s3",
-    // "bucket": "my-bucket",
-    // "conn": "us-east-1",
-    // "secret": "secrets.FileSecret.constants.json"
+    "enabled": true,
+    "storeType": "amazon-s3",
+    "bucket": "my-bucket",
+    "conn": "us-east-1",
+    "secret": "secrets.FileSecret.constants.json",
+    "endpoint": "https://nyc3.digitaloceanspaces.com",
+    "disableSSL": true,
+    "forcePathStyle": true
   }
 ]
 
