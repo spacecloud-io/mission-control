@@ -13,7 +13,8 @@ import InfiniteScrollingTable from "../../../components/utils/infinite-scrolling
 
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
-import { Button, Select, Icon, Popconfirm } from "antd";
+import { Button, Select, Popconfirm } from "antd";
+import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
@@ -362,8 +363,8 @@ const Browse = () => {
             </Select>
             {colSchemaFields && (
               <>
-                <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <Icon type="filter" /></Button>
-                <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><Icon type="plus" />Insert Row</Button>
+                <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <FilterOutlined /></Button>
+                <Button style={{ float: "right" }} type="primary" className="insert-row" ghost onClick={() => setInsertRowFormVisibility(true)}><PlusOutlined />Insert Row</Button>
               </>
             )}
             <InfiniteScrollingTable

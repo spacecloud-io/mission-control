@@ -62,7 +62,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
     privateKey: initialValues ? initialValues.privateKey : "",
     publicKey: initialValues ? initialValues.publicKey : "",
     jwkUrl: initialValues ? initialValues.jwkUrl : "",
-    isPrimary: initialValues ? initialValues.isPrimary : true,
+    isPrimary: initialValues ? initialValues.isPrimary : false,
     checkAudience: initialValues && initialValues.aud && initialValues.aud.length > 0 ? true : false,
     checkIssuer: initialValues && initialValues.iss ? true : false,
     aud: initialValues && initialValues.aud ? initialValues.aud : [""],
@@ -88,8 +88,8 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
           <Select onChange={onAlgorithmChange}>
             <Select.Option value="HS256">HS256</Select.Option>
             <Select.Option value="RS256">RS256</Select.Option>
-            <Select.Option value="JWK_URL">JWK URL</Select.Option>
             <Select.Option value="RS256_PUBLIC">RS256 PUBLIC</Select.Option>
+            <Select.Option value="JWK_URL">JWK URL</Select.Option>
           </Select>
         </Form.Item>
         <ConditionalFormBlock dependency="alg" condition={() => form.getFieldValue("alg") === "HS256"}>

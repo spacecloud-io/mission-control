@@ -158,7 +158,7 @@ function RoutingOverview() {
 
   const columns = [
     {
-      title: <b>{"Allowed Hosts"}</b>,
+      title: "Allowed Hosts",
       dataIndex: "allowedHosts",
       key: "allowedHosts",
       render: hosts => (
@@ -170,15 +170,15 @@ function RoutingOverview() {
       )
     },
     {
-      title: <b>{"Request URL"}</b>,
+      title: "Request URL",
       render: (_, { routeType, url }) => calculateRequestURL(routeType, url)
     },
     {
-      title: <b>{"Targets"}</b>,
+      title: "Targets",
       render: (_, { targets }) => (targets && targets.length) ? targets.length : 0
     },
     {
-      title: <b>{"Actions"}</b>,
+      title: "Actions",
       className: "column-actions",
       render: (_, record) => {
         return (
