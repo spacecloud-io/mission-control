@@ -77,6 +77,7 @@ export const dbRules = [
     dbAlias: "mydb1",
     col: "users",
     isRealtimeEnabled: true,
+    isCachingEnabled: true,
     rules: {
       "create": {
         "rule": "and",
