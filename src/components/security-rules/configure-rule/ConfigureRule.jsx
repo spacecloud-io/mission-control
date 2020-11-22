@@ -200,7 +200,7 @@ const ConfigureRule = (props) => {
         if (values.cacheResponse) {
           values.cache = {
             ttl: values.cacheTTL,
-            instantInvalidate: values.cacheInstantInvalidate ? true: false
+            instantInvalidate: values.cacheInstantInvalidate ? true : false
           }
         }
         delete values["cacheResponse"]
@@ -275,6 +275,9 @@ const ConfigureRule = (props) => {
     case securityRuleGroups.EVENTING:
     case securityRuleGroups.DB_PREPARED_QUERIES:
       autoCompleteOptions = { args: { auth: true, params: true, token: true } }
+      break;
+    case securityRuleGroups.EVENTING_FILTERS:
+      autoCompleteOptions = { args: { data: true } }
       break;
     case securityRuleGroups.INGRESS_ROUTES:
       const query = {

@@ -20,7 +20,7 @@ function graphQLAPIHandler(request, schema) {
   const field = getRootField(ast)
   switch (field) {
     case "event_logs":
-      return { data: { event_logs: schema.db.eventLogs } }
+      return { data: { event_logs: fixtures.eventLogs } }
     case "integrations":
       return { data: { integrations: fixtures.supportedInterations.map(obj => ({ config: obj })) } }
     default:

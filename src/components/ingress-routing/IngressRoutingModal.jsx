@@ -6,6 +6,7 @@ import { notify } from "../../utils";
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 import { defaultIngressRoutingRule } from '../../constants';
 import { Controlled as CodeMirror } from 'react-codemirror2';
+import ObjectAutoComplete from "../object-autocomplete/ObjectAutoComplete";
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript';
@@ -24,6 +25,15 @@ function AlertMsgApplyTransformations() {
       Describe the transformed request/response body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
         <b>Go templates</b>
       </a>. Space Cloud will execute the specified template to generate the new request/response.
+    </div>
+  );
+}
+
+function AlertMsgCacheOptions() {
+  return (
+    <div>
+      <b>Note:</b> <br />
+      URL will always be included in the caching key. Specify the other parameters (e.g. a token claim) below, that needs to be included in the caching key.
     </div>
   );
 }
@@ -52,6 +62,8 @@ const IngressRoutingModal = props => {
     }
   }
 
+  const cacheOptions = initialValues && initialValues.cacheOptions ? initialValues.cacheOptions : []
+  const initialCacheOptions = cacheOptions.filter(item => item !== "args.url")
   const formInitialValues = {
     routeType: initialValues ? initialValues.routeType : "prefix",
     url: initialValues ? initialValues.url : "",
@@ -69,7 +81,7 @@ const IngressRoutingModal = props => {
     applyTransformations: (initialValues && (initialValues.requestTemplate || initialValues.responseTemplate)) ? true : false,
     outputFormat: (initialValues && initialValues.outputFormat) ? initialValues.outputFormat : "yaml",
     isRouteCacheable: initialValues ? initialValues.isRouteCacheable : false,
-    cacheHeaders: (initialValues && initialValues.cacheHeaders && initialValues.cacheHeaders.length > 0) ? initialValues.cacheHeaders : []
+    cacheOptions: initialCacheOptions
   }
 
   const handleSubmitClick = e => {
@@ -84,6 +96,9 @@ const IngressRoutingModal = props => {
         if (values.applyTransformations) {
           values.requestTemplate = requestTemplateData
           values.responseTemplate = responseTemplateData
+        }
+        if (values.isRouteCacheable) {
+          values.cacheOptions = [...new Set([...values.cacheOptions, "args.url"])]
         }
         values.rule = defaultIngressRoutingRule
         values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
@@ -140,7 +155,7 @@ const IngressRoutingModal = props => {
           <Form.Item name="performRewrite" valuePropName="checked">
             <Checkbox>
               Rewrite incoming request URL to target service
-              </Checkbox>
+            </Checkbox>
           </Form.Item>
           <ConditionalFormBlock dependency="performRewrite" condition={() => form.getFieldValue("performRewrite")}>
             <FormItemLabel name="Rewrite URL" />
@@ -349,8 +364,14 @@ const IngressRoutingModal = props => {
                   dependency='isRouteCacheable'
                   condition={() => form.getFieldValue('isRouteCacheable') === true}
                 >
-                  <FormItemLabel name='Cacheable headers' />
-                  <Form.List name="cacheHeaders">
+                  <FormItemLabel name='Cache key parameters' />
+                  <Alert
+                    message={<AlertMsgCacheOptions />}
+                    type='info'
+                    showIcon
+                    style={{ marginBottom: 21 }}
+                  />
+                  <Form.List name="cacheOptions">
                     {(fields, { add, remove }) => {
                       return (
                         <div>
@@ -367,7 +388,11 @@ const IngressRoutingModal = props => {
                                 ]}
                                 noStyle
                               >
-                                <Input placeholder="Header Key" style={{ width: "90%" }} />
+                                <ObjectAutoComplete
+                                  placeholder="Key to cache (e.g. args.auth.id)"
+                                  options={{ args: { auth: true, token: true } }}
+                                  style={{ width: "90%" }}
+                                />
                               </Form.Item>
                               <DeleteOutlined
                                 style={{ marginLeft: 16 }}
@@ -379,7 +404,7 @@ const IngressRoutingModal = props => {
                           ))}
                           <Form.Item>
                             <Button onClick={() => {
-                              form.validateFields(fields.map(obj => ["cacheHeaders", obj.name]))
+                              form.validateFields(fields.map(obj => ["cacheOptions", obj.name]))
                                 .then(() => add())
                                 .catch(ex => console.log("Exception", ex))
                             }}>

@@ -6,19 +6,19 @@ import { defaultDbConnectionStrings } from "../../../constants";
 
 const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, envSecrets, selectedDBType }) => {
   const [form] = Form.useForm();
-  
+
   const formInitialValues = {
     loadFromSecret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? true : false,
     conn: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? defaultDbConnectionStrings[selectedDBType] : initialValues.conn,
     secret: initialValues && initialValues.conn && initialValues.conn.startsWith('secrets.') ? initialValues.conn.split('.')[1] : ''
-  } 
-  
+  }
+
   const handleOk = () => {
     form.validateFields().then(values => {
       let connectionString;
-      if(values.secret){
+      if (values.loadFromSecret) {
         connectionString = `secrets.${values.secret}`;
-      }else{
+      } else {
         connectionString = values.conn
       }
       handleSubmit(connectionString).then(() => handleCancel())
@@ -39,10 +39,10 @@ const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, envSecr
     >
       <Form form={form} layout="vertical" initialValues={formInitialValues}>
         <FormItemLabel name="Connection string" />
-        <Form.Item name='loadFromSecret'  valuePropName='checked'>
+        <Form.Item name='loadFromSecret' valuePropName='checked'>
           <Checkbox>Load connection string from a secret</Checkbox>
         </Form.Item>
-        <ConditionalFormBlock 
+        <ConditionalFormBlock
           dependency='loadFromSecret'
           condition={() => form.getFieldValue('loadFromSecret') === false}
         >
@@ -50,9 +50,9 @@ const EditConnectionForm = ({ handleSubmit, handleCancel, initialValues, envSecr
             <Input.Password placeholder="eg: mongodb://localhost:27017" />
           </Form.Item>
           <Alert message={alertMsg}
-          description=" "
-          type="info"
-          showIcon />
+            description=" "
+            type="info"
+            showIcon />
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency='loadFromSecret'

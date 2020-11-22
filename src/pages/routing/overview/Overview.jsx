@@ -70,7 +70,7 @@ function RoutingOverview() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Derived state
-  const data = routes.map(({ id, source, targets, rule, modify = {}, isRouteCacheable, cacheHeaders }) => ({
+  const data = routes.map(({ id, source, targets, rule, modify = {}, isRouteCacheable, cacheOptions }) => ({
     id: id,
     allowedHosts: source.hosts,
     url: source.url,
@@ -85,7 +85,7 @@ function RoutingOverview() {
     outputFormat: modify.outputFormat,
     rule: rule,
     isRouteCacheable,
-    cacheHeaders
+    cacheOptions
   }));
 
   const filteredData = applyFilters(data, projectID, filters)
@@ -118,7 +118,7 @@ function RoutingOverview() {
           outputFormat: values.outputFormat
         },
         isRouteCacheable: values.isRouteCacheable,
-        cacheHeaders: values.cacheHeaders
+        cacheOptions: values.cacheOptions
       };
       incrementPendingRequests()
       saveIngressRouteConfig(projectID, config.id, config)

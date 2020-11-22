@@ -10,6 +10,7 @@ import { defaultEndpointRule, endpointTypes } from "../../../constants";
 import { CaretRightOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import RadioCards from "../../radio-cards/RadioCards";
 import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
+import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -36,15 +37,26 @@ function AlertMsgPreparedQueries() {
   );
 }
 
+function AlertMsgCacheOptions() {
+  return (
+    <div>
+      <b>Note:</b> <br />
+      Service and endpoint id will always be included in the caching key. Specify the other parameters (e.g. a token claim) below, that needs to be included in the caching key.
+    </div>
+  );
+}
+
 const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnabled }) => {
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheHeaders = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheOptions = [] } = initialValues ? initialValues : {}
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
   const [form] = Form.useForm();
+
+  const initialCacheOptions = cacheOptions ? cacheOptions.filter(item => item !== "args.url") : []
 
   const formInitialValues = {
     kind: kind,
@@ -62,14 +74,13 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
     graphTemplate: graphTemplate ? graphTemplate : undefined,
     requestTemplate: requestTemplate ? requestTemplate : undefined,
     responseTemplate: responseTemplate ? responseTemplate : undefined,
-    cacheHeaders: cacheHeaders && cacheHeaders.length > 0 ? cacheHeaders : []
+    cacheOptions: initialCacheOptions
   }
 
   const handleFinish = (values) => {
     const overrideToken = values.overrideToken
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheHeaders } = values
-
+    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheOptions = [] } = values
     const result = {
       kind,
       name,
@@ -85,7 +96,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
       requestTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? requestTemplate : undefined,
       responseTemplate: (applyTransformations || kind === endpointTypes.PREPARED) ? responseTemplate : undefined,
       graphTemplate: endpointTypes.PREPARED ? graphTemplate : undefined,
-      cacheHeaders
+      cacheOptions: cacheOptions && cacheOptions.length > 0 ? [...new Set([...cacheOptions, "args.url"])] : ["args.url"]
     }
 
     handleSubmit(result)
@@ -223,8 +234,14 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
                   shouldUpdate={true}
                   condition={() => isCachingEnabled}
                 >
-                  <FormItemLabel name='Cacheable headers' />
-                  <Form.List name="cacheHeaders">
+                  <FormItemLabel name='Cache key parameters' />
+                  <Alert
+                    message={<AlertMsgCacheOptions />}
+                    type='info'
+                    showIcon
+                    style={{ marginBottom: 21 }}
+                  />
+                  <Form.List name="cacheOptions">
                     {(fields, { add, remove }) => {
                       return (
                         <div>
@@ -241,7 +258,11 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
                                 ]}
                                 noStyle
                               >
-                                <Input placeholder="Header Key" style={{ width: "90%" }} />
+                                <ObjectAutoComplete
+                                  placeholder="Key to cache (e.g. args.auth.id)"
+                                  options={{ args: { auth: true, token: true } }}
+                                  style={{ width: "90%" }}
+                                />
                               </Form.Item>
                               <DeleteOutlined
                                 style={{ marginLeft: 16 }}
@@ -253,7 +274,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
                           ))}
                           <Form.Item>
                             <Button onClick={() => {
-                              form.validateFields(fields.map(obj => ["cacheHeaders", obj.name]))
+                              form.validateFields(fields.map(obj => ["cacheOptions", obj.name]))
                                 .then(() => add())
                                 .catch(ex => console.log("Exception", ex))
                             }}>

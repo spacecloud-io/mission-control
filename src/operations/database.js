@@ -385,7 +385,7 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
 export const enableDb = (projectId, dbAliasName, conn) => {
   return new Promise((resolve, reject) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
-    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { enabled: true }))
+    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { enabled: true, conn }))
       .then(({ queued, connected }) => resolve({ queued, connected }))
       .catch(ex => reject(ex))
   })
