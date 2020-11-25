@@ -30,7 +30,7 @@ export const projects = [
 export const dbConfigs = [
   {
     "dbAlias": "mydb1",
-    "type": 'postgres',
+    "type": 'mongo',
     "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
     "name": "public",
     "enabled": true,
@@ -38,7 +38,7 @@ export const dbConfigs = [
     "driverConf": {
       "maxConn": 400,
       "maxIdleConn": 40,
-      "maxIdleTimeout": 400
+      "maxIdleTimeout": 600000
     }
   },
   {

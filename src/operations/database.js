@@ -43,7 +43,7 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => {
       .then((result = []) => {
         const dbSchemas = Object.assign({}, getDbSchemas(store.getState()))
         const newDbSchemas = result.reduce((prev, curr) => {
-          const { col, dbAlias, schema } = curr
+          const { col, dbAlias, schema = "" } = curr
           return dotProp.set(prev, `${dbAlias}.${col}`, schema)
         }, dbSchemas)
         setDbSchemas(newDbSchemas)
@@ -481,7 +481,13 @@ export const getDbPreparedQueries = (state, dbAliasName) => get(state, `dbPrepar
 export const getDbPreparedQuery = (state, dbAliasName, preparedQueryId) => get(state, `dbPreparedQueries.${dbAliasName}.${preparedQueryId}`, { id: preparedQueryId, sql: "", args: [], rule: {} })
 export const getDbDefaultPreparedQuerySecurityRule = (state, dbAliasName) => get(state, `dbPreparedQueries.${dbAliasName}.default.rule`, {})
 export const getDbDefaultCollectionSecurityRule = (state, dbAliasName) => get(state, `dbRules.${dbAliasName}.default.rules`, {})
-export const getCollections = (state, dbAliasName) => get(state, `dbCollections.${dbAliasName}`, [])
+export const getCollections = (state, dbAliasName) => {
+  const collections = get(state, `dbCollections.${dbAliasName}`, [])
+  const schemas = Object.keys(getDbSchema(state, dbAliasName))
+  const rules = Object.keys(getDbRules(state, dbAliasName))
+  const allCollections = [...new Set([...collections, ...schemas, ...rules])]
+  return allCollections
+}
 export const getTrackedCollectionsInfo = (state, dbAliasName) => {
   const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
@@ -518,7 +524,8 @@ export const getUntrackedCollections = (state, dbAliasName) => {
   const schemas = getDbSchema(state, dbAliasName)
   const rules = getDbRules(state, dbAliasName)
   const collections = getCollections(state, dbAliasName)
-  return collections.filter(col => !schemas[col] && schemas[col] !== "" && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
+  const untrackedCollections = collections.filter(col => !schemas[col] && schemas[col] !== "" && !rules[col] && col !== "default" && col !== "invocation_logs" && col !== "event_logs")
+  return untrackedCollections
 }
 
 export const getDbConnectionString = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "conn", "")

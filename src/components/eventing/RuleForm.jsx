@@ -25,20 +25,24 @@ const RuleForm = (props) => {
   const [form] = Form.useForm();
 
   const { id, type, url, retries, timeout, options, outputFormat, requestTemplate, claims } = props.initialValues ? props.initialValues : {}
-  const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
-  const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
+  const { db = "", col = "" } = options ? options : {}
+  const dbArray = db ? db.split(",") : []
+  const collArray = col ? col.split(",") : []
+
+  const [selectedDbs, setSelectedDbs] = useState(dbArray);
+  const trackedCollections = useSelector(state => {
+    const allTrackedCollections = selectedDbs.reduce((prev, curr) => [...prev, ...getTrackedCollections(state, curr)], [])
+    return [...new Set(allTrackedCollections)]
+  })
 
   const [value, setValue] = useState("");
-
-  if (options && options.col !== undefined && options.col !== null && typeof options.col === "string") {
-    options.col = options.col ? options.col.split(",") : []
-  }
 
   const formInitialValues = {
     id: id,
     source: getEventSourceFromType(type, "database"),
     type: type ? type : "DB_INSERT",
-    options: options ? options : {},
+    db: dbArray,
+    col: collArray,
     url: url,
     retries: retries ? retries : 3,
     timeout: timeout ? timeout : 5000,
@@ -49,18 +53,21 @@ const RuleForm = (props) => {
   }
 
   const handleSearch = value => setValue(value);
-  const handleSelectDatabase = value => setSelectedDb(value)
+  const handleSelectDatabases = values => setSelectedDbs(values)
   const handleSourceChange = () => form.setFieldsValue({ type: undefined })
 
   const handleSubmit = () => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
-      if (values.options && values.options.col) {
-        values.options.col = values.options.col.join(",")
+
+      values.options = {}
+
+      if (values.db && values.db.length > 0) {
+        values.options.db = values.db.join(",")
       }
 
-      if (values.options && !values.options.col) {
-        delete values["options.col"]
+      if (values.col && values.col.length > 0) {
+        values.options.col = values.col.join(",")
       }
 
       if (!values.applyTransformations) {
@@ -70,6 +77,9 @@ const RuleForm = (props) => {
 
       delete values["applyTransformations"]
       delete values["source"]
+      delete values["db"]
+      delete values["col"]
+
       values.template = "go"
       props.handleSubmit(values).then(() => {
         props.handleCancel();
@@ -117,11 +127,15 @@ const RuleForm = (props) => {
         <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
           <FormItemLabel name="Table/collection" />
           <Input.Group compact>
-            <Form.Item name={["options", "db"]} rules={[{ required: true, message: 'Please select a database!' }]}
+            <Form.Item name="db" rules={[{ required: true, message: 'Please select atleast one database!' }]}
               style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-              <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={props.dbList.map(db => ({ value: db }))} />
+              <Select mode="tags" placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
+                {
+                  props.dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
+                }
+              </Select>
             </Form.Item>
-            <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
+            <Form.Item name="col" style={{ flexGrow: 1, width: 200 }} >
               <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
                 {
                   trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm } from 'antd';
+import { Form, Input, Button, Modal, Col, Row, Select, InputNumber, DatePicker, AutoComplete, Popconfirm, TimePicker } from 'antd';
 import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { generateId, notify } from '../../../utils';
@@ -9,7 +9,7 @@ const InsertRowForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -127,6 +127,8 @@ const InsertRowForm = (props) => {
                             <Select.Option value='integer'>Integer</Select.Option>
                             <Select.Option value='float'>Float</Select.Option>
                             <Select.Option value='boolean'>Boolean</Select.Option>
+                            <Select.Option value='date'>Date</Select.Option>
+                            <Select.Option value='time'>Time</Select.Option>
                             <Select.Option value='datetime'>Datetime</Select.Option>
                             <Select.Option value='json'>JSON/Object</Select.Option>
                             <Select.Option value='array'>Array</Select.Option>
@@ -210,6 +212,34 @@ const InsertRowForm = (props) => {
                               <Select.Option value={true}>true</Select.Option>
                               <Select.Option value={false}>false</Select.Option>
                             </Select>
+                          </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "date"}>
+                        <Col span={10}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
+                          >
+                            <DatePicker style={{ width: '100%' }} />
+                          </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "time"}>
+                        <Col span={10}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              isFieldRequired(field.name)
+                            ]}
+                          >
+                            <Input placeholder="Value" style={{ width: '100%' }} />
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
@@ -303,6 +333,8 @@ const InsertRowForm = (props) => {
                                             <Select.Option value='integer'>Integer</Select.Option>
                                             <Select.Option value='float'>Float</Select.Option>
                                             <Select.Option value='boolean'>Boolean</Select.Option>
+                                            <Select.Option value='date'>Date</Select.Option>
+                                            <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
                                           </Select>
                                         </Form.Item>
@@ -391,6 +423,36 @@ const InsertRowForm = (props) => {
                                               <Select.Option value={true}>true</Select.Option>
                                               <Select.Option value={false}>false</Select.Option>
                                             </Select>
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "date"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <DatePicker />
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "time"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <TimePicker />
                                           </Form.Item>
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock

@@ -7,7 +7,7 @@ const DriverConfig = ({ config, dbType, handleEditDriverConfig }) => {
   const maxConn = config && config.maxConn ? config.maxConn : 100
   const minConn = config && dbType === dbTypes.MONGO && config.minConn ? config.minConn : 10
   const maxIdleConn = config && dbType !== dbTypes.MONGO && config.maxIdleConn ? config.maxIdleConn : 50
-  const maxIdleTimeout = config && config.maxIdleTimeout ? `${config.maxIdleTimeout}ms` : 300 + 'ms'
+  const maxIdleTimeout = config && config.maxIdleTimeout ? `${config.maxIdleTimeout/1000} seconds` : '300 seconds'
 
   return(
     <React.Fragment>

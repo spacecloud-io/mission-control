@@ -7,7 +7,7 @@ import dotprop from "dot-prop-immutable";
 
 const lorem = new LoremIpsum();
 
-const primitiveTypes = ["ID", "String", "Float", "Integer", "Boolean", "DateTime", "JSON"]
+const primitiveTypes = ["ID", "String", "Float", "Integer", "Boolean", "Date", "Time", "DateTime", "JSON"]
 const getDefType = (type, isArray, required) => {
   isArray = isArray ? true : type.kind === "ListType";
   required = required ? true : type.kind === "NonNullType";
@@ -175,6 +175,10 @@ const generateRandomValue = (type) => {
         return 4.5
       case "Boolean":
         return true
+      case "Date":
+        return "2017-11-13"
+      case "Time":
+        return "03:15:45.108"
       case "DateTime":
         return "2017-11-13T03:15:45.108Z"
       case "JSON":
@@ -194,6 +198,10 @@ const generateRandomValue = (type) => {
         return Number((Math.random() * 100).toFixed(2))
       case "Boolean":
         return true
+      case "Date":
+        return new Date().toISOString().split("T")[0]
+      case "Time":
+        return new Date().toISOString().split("T")[1].slice(0, -1)
       case "DateTime":
         return new Date().toISOString()
       case "JSON":
@@ -418,9 +426,11 @@ export const generateSampleQueryDBRead = (schemaASTs, schemaName, dbAliasName, a
       ID: 0,
       Integer: 1,
       Float: 2,
-      DateTime: 3
+      Date: 3,
+      Time: 4,
+      DateTime: 5
     }
-    const sortFields = fields.filter(field => !field.isPrimary && ["ID", "Integer", "Float", "DateTime"].includes(field.type) && !field.isArray)
+    const sortFields = fields.filter(field => !field.isPrimary && ["ID", "Integer", "Float", "Date", "Time", "DateTime"].includes(field.type) && !field.isArray)
       .sort((a, b) => sortWeight[a.type] - sortWeight[b.type])
       .slice(0, 2)
       .map(field => field.name)

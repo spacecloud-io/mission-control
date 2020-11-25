@@ -12,7 +12,7 @@ const FilterSorterForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
 
   const filters = useSelector(state => state.uiState.explorer.filters)
     .map(obj => Object.assign({}, obj, { value: obj.datatype === "json" ? JSON.stringify(obj.value, null, 2) : obj.value }))
@@ -151,6 +151,8 @@ const FilterSorterForm = (props) => {
                             <Select.Option value='integer'>Integer</Select.Option>
                             <Select.Option value='float'>Float</Select.Option>
                             <Select.Option value='boolean'>Boolean</Select.Option>
+                            <Select.Option value='date'>Date</Select.Option>
+                            <Select.Option value='time'>Time</Select.Option>
                             <Select.Option value='datetime'>Datetime</Select.Option>
                             <Select.Option value='json'>JSON/Object</Select.Option>
                             <Select.Option value='array'>Array</Select.Option>
@@ -238,6 +240,34 @@ const FilterSorterForm = (props) => {
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "date"}>
+                        <Col span={7}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              { required: true, message: 'Please enter value!' },
+                            ]}
+                          >
+                            <DatePicker />
+                          </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "time"}>
+                        <Col span={7}>
+                          <Form.Item
+                            name={[field.name, 'value']}
+                            key={[field.name, 'value']}
+                            style={{ display: 'inline-block', width: '100%' }}
+                            rules={[
+                              { required: true, message: 'Please enter value!' },
+                            ]}
+                          >
+                            <Input placeholder="Value" />
+                          </Form.Item>
+                        </Col>
+                      </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["filters", field.name, "datatype"]) === "datetime"}>
                         <Col span={7}>
                           <Form.Item
@@ -311,6 +341,8 @@ const FilterSorterForm = (props) => {
                                             <Select.Option value='integer'>Integer</Select.Option>
                                             <Select.Option value='float'>Float</Select.Option>
                                             <Select.Option value='boolean'>Boolean</Select.Option>
+                                            <Select.Option value='date'>Date</Select.Option>
+                                            <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
                                             <Select.Option value='json'>JSON/Object</Select.Option>
                                           </Select>
@@ -401,6 +433,36 @@ const FilterSorterForm = (props) => {
                                               <Select.Option value={true}>true</Select.Option>
                                               <Select.Option value={false}>false</Select.Option>
                                             </Select>
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["filters", field.name, "arrays", arrField.name, "datatype"]) === "date"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <DatePicker />
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["filters", field.name, "arrays", arrField.name, "datatype"]) === "time"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <Input placeholder="Value" />
                                           </Form.Item>
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock

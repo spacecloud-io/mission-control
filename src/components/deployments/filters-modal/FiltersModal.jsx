@@ -43,7 +43,7 @@ const FiltersModal = ({ initialValues = {}, handleCancel, handleSubmit }) => {
           <FormItemLabel name="Select duration" />
           <Input.Group compact>
             <Form.Item name="time" rules={[{ required: true, message: 'Please select quantity!' }]}>
-              <InputNumber placeholder="Quantity" />
+              <InputNumber placeholder="Quantity" min={0} />
             </Form.Item>
             <Form.Item style={{ width: 200, marginLeft: 16 }} name="unit" rules={[{ required: true, message: 'Please select unit!' }]}>
               <Select placeholder="Unit of time">
@@ -67,7 +67,7 @@ const FiltersModal = ({ initialValues = {}, handleCancel, handleSubmit }) => {
         <ConditionalFormBlock dependency="tail" condition={() => form.getFieldValue("tail")}>
           <FormItemLabel name="Specify limit" />
           <Form.Item name="limit" rules={[{ required: true, message: 'Please select number of rows!' }]}>
-            <InputNumber style={{ width: 240 }} placeholder="Number of log rows" />
+            <InputNumber style={{ width: 240 }} placeholder="Number of log rows" min={0} />
           </Form.Item>
         </ConditionalFormBlock>
       </Form>

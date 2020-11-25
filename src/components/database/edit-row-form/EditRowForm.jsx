@@ -11,7 +11,7 @@ const EditRowForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -40,7 +40,7 @@ const EditRowForm = (props) => {
       return {
         column: val.name,
         datatype: !primitives.includes(dataType) ? "json" : dataType,
-        value: val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+        value: (val.type === "DateTime" || val.type === "Date") ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
       }
     } else {
       if (props.data[val.name]) {
@@ -234,6 +234,8 @@ const EditRowForm = (props) => {
                                 <Select.Option value='integer'>Integer</Select.Option>
                                 <Select.Option value='float'>Float</Select.Option>
                                 <Select.Option value='boolean'>Boolean</Select.Option>
+                                <Select.Option value='date'>Date</Select.Option>
+                                <Select.Option value='time'>Time</Select.Option>
                                 <Select.Option value='datetime'>Datetime</Select.Option>
                                 <Select.Option value='json'>JSON/Object</Select.Option>
                                 <Select.Option value='array'>Array</Select.Option>
@@ -317,6 +319,34 @@ const EditRowForm = (props) => {
                                   <Select.Option value={true}>true</Select.Option>
                                   <Select.Option value={false}>false</Select.Option>
                                 </Select>
+                              </Form.Item>
+                            </Col>
+                          </ConditionalFormBlock>
+                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "date"}>
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <DatePicker />
+                              </Form.Item>
+                            </Col>
+                          </ConditionalFormBlock>
+                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "time"}>
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <Input placeholder="Value" />
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
@@ -412,6 +442,8 @@ const EditRowForm = (props) => {
                                             <Select.Option value='integer'>Integer</Select.Option>
                                             <Select.Option value='float'>Float</Select.Option>
                                             <Select.Option value='boolean'>Boolean</Select.Option>
+                                            <Select.Option value='date'>Date</Select.Option>
+                                            <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
                                           </Select>
                                         </Form.Item>
@@ -500,6 +532,36 @@ const EditRowForm = (props) => {
                                               <Select.Option value={true}>true</Select.Option>
                                               <Select.Option value={false}>false</Select.Option>
                                             </Select>
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "date"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <DatePicker />
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "time"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <Input placeholder="Value" />
                                           </Form.Item>
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
