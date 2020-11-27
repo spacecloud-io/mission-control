@@ -134,7 +134,7 @@ const EventingLogs = () => {
         {record.error_msg && (
           <React.Fragment>
             <Typography.Paragraph strong>Error message</Typography.Paragraph>
-            <JSONView data={record.error_msg} parse /><br /><br />
+            <Typography.Paragraph>{record.error_msg}</Typography.Paragraph><br /><br />
           </React.Fragment>
         )}
       </div>

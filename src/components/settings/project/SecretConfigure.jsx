@@ -6,6 +6,7 @@ import { generateJWTSecret } from '../../../utils';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import keypair from "keypair";
 import forge from "node-forge"
+import { generateId } from 'space-api/dist/lib/utils';
 
 const generateRSAPrivateKey = () => {
   return keypair().private
@@ -28,19 +29,49 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
 
   const [isPrivateKeyLoading, setPrivateKeyLoading] = useState(false);
 
+  const formInitialValues = {
+    alg: initialValues ? initialValues.alg : "HS256",
+    secret: initialValues ? initialValues.secret : generateJWTSecret(),
+    privateKey: initialValues ? initialValues.privateKey : undefined,
+    publicKey: initialValues ? initialValues.publicKey : undefined,
+    jwkUrl: initialValues ? initialValues.jwkUrl : undefined,
+    isPrimary: initialValues ? initialValues.isPrimary : false,
+    checkAudience: initialValues && initialValues.aud && initialValues.aud.length > 0 ? true : false,
+    checkIssuer: initialValues && initialValues.iss ? true : false,
+    aud: initialValues && initialValues.aud ? initialValues.aud : [""],
+    iss: initialValues && initialValues.iss ? initialValues.iss : [""],
+    kid: initialValues && initialValues.kid ? initialValues.kid : generateId()
+  }
+
   const handleSubmitClick = (e) => {
     form.validateFields().then(values => {
-      const { alg, privateKey } = values;
-      values.publicKey = alg === "RS256" && privateKey ? generateRSAPublicKeyFromPrivateKey(privateKey) : values.publicKey
-      if (!values.checkAudience) {
-        values.aud = undefined
+      values = Object.assign({}, formInitialValues, values)
+      let { alg, secret, privateKey, publicKey, jwkUrl, isPrimary, checkAudience, checkIssuer, aud, iss, kid } = values;
+      if (alg === "RS256" && privateKey) {
+        publicKey = generateRSAPublicKeyFromPrivateKey(privateKey)
       }
-      if (!values.checkIssuer) {
-        values.iss = undefined
+      if (!checkAudience) {
+        aud = undefined
       }
-      delete values["checkAudience"]
-      delete values["checkIssuer"]
-      handleSubmit(values).then(() => handleCancel())
+      if (!checkIssuer) {
+        iss = undefined
+      }
+      let obj = {}
+      switch (alg) {
+        case "HS256":
+          obj = { alg, secret, isPrimary, aud, iss, kid }
+          break
+        case "RS256":
+          obj = { alg, publicKey, privateKey, isPrimary, aud, iss, kid }
+          break
+        case "RS256_PUBLIC":
+          obj = { alg, publicKey, aud, iss, kid }
+          break
+        case "JWK_URL":
+          obj = { alg, jwkUrl, aud, iss }
+          break
+      }
+      handleSubmit(obj).then(() => handleCancel())
     });
   };
 
@@ -56,23 +87,10 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
     }
   }
 
-  const formInitialValues = {
-    alg: initialValues ? initialValues.alg : "HS256",
-    secret: initialValues ? initialValues.secret : generateJWTSecret(),
-    privateKey: initialValues ? initialValues.privateKey : "",
-    publicKey: initialValues ? initialValues.publicKey : "",
-    jwkUrl: initialValues ? initialValues.jwkUrl : "",
-    isPrimary: initialValues ? initialValues.isPrimary : false,
-    checkAudience: initialValues && initialValues.aud && initialValues.aud.length > 0 ? true : false,
-    checkIssuer: initialValues && initialValues.iss ? true : false,
-    aud: initialValues && initialValues.aud ? initialValues.aud : [""],
-    iss: initialValues && initialValues.iss ? initialValues.iss : [""]
-  }
-
   return (
     <Modal
       title="Add secret"
-      okText="Add"
+      okText={initialValues ? "Save" : "Add"}
       visible={true}
       onOk={handleSubmitClick}
       onCancel={handleCancel}
@@ -235,6 +253,14 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
                   );
                 }}
               </Form.List>
+            </ConditionalFormBlock>
+            <ConditionalFormBlock
+              dependency="alg"
+              condition={() => form.getFieldValue("alg") !== "JWK_URL"}>
+              <FormItemLabel name="kid" hint="(key ID)" />
+              <Form.Item name="kid" rules={[{ required: true, message: "Please input a value!" }]}>
+                <Input placeholder="kid" />
+              </Form.Item>
             </ConditionalFormBlock>
           </Collapse.Panel>
         </Collapse>
