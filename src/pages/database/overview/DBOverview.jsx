@@ -82,17 +82,17 @@ const Overview = () => {
       .finally(() => decrementPendingRequests())
   }
 
-  const handleCachingEnabled = (colName, isCachingEnabled) => {
+  const handleEnableCacheInvalidation = (colName, enableCacheInvalidation) => {
     incrementPendingRequests()
-    saveColCachingEnabled(projectID, selectedDB, colName, isCachingEnabled)
+    saveColCachingEnabled(projectID, selectedDB, colName, enableCacheInvalidation)
       .then(({ queued }) => {
         if (!queued) {
-          notify("success", "Success", `Successfully ${isCachingEnabled ? "enabled" : "disabled"} caching functionality`)
+          notify("success", "Success", `Successfully ${enableCacheInvalidation ? "enabled" : "disabled"} cache invalidation functionality`)
           return
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Successfully ${isCachingEnabled ? "enabled" : "disabled"} caching functionality`, ex))
+      .catch(ex => notify("error", `Successfully ${enableCacheInvalidation ? "enabled" : "disabled"} cache invalidation functionality`, ex))
       .finally(() => decrementPendingRequests())
   }
 
@@ -259,14 +259,14 @@ const Overview = () => {
 
   if (cacheConfig.enabled) {
     trackedTableColumns = [...trackedTableColumns, {
-      title: 'Cacheable',
-      dataIndex: 'isCachingEnabled',
-      key: 'isCachingEnabled',
-      render: (_, { name, isCachingEnabled }) => (
+      title: 'Cache Invalidation',
+      dataIndex: 'enableCacheInvalidation',
+      key: 'enableCacheInvalidation',
+      render: (_, { name, enableCacheInvalidation }) => (
         <Switch
-          checked={isCachingEnabled}
+          checked={enableCacheInvalidation}
           onChange={checked =>
-            handleCachingEnabled(name, checked)
+            handleEnableCacheInvalidation(name, checked)
           }
         />
       )
