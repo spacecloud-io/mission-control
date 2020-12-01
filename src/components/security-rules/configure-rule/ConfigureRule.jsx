@@ -23,6 +23,7 @@ import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
 import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
+import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 
 const { Option } = Select;
 
@@ -208,14 +209,10 @@ const ConfigureRule = (props) => {
         delete values["cacheInstantInvalidate"]
         break;
       case "webhook":
-        if (values.setClaims) {
-          values.claims = JSON.parse(values.claims)
-        }
         if (values["applyTransformations"]) {
           values.template = "go"
         }
 
-        delete values["setClaims"]
         delete values["applyTransformations"]
         break;
     }
@@ -304,9 +301,8 @@ const ConfigureRule = (props) => {
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
     store,
-    setClaims: claims ? true : false,
-    claims: claims ? JSON.stringify(claims, null, 2) : "",
-    applyTransformations: requestTemplate ? true : false,
+    claims: claims ? claims : "",
+    applyTransformations: requestTemplate || claims ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml",
     requestTemplate: requestTemplate ? requestTemplate : "",
     db: db,
@@ -567,30 +563,6 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
-          <FormItemLabel name='Override claims' />
-          <Form.Item name='setClaims' valuePropName='checked'>
-            <Checkbox>
-              Override the value of the JWT claims in the request
-          </Checkbox>
-          </Form.Item>
-          <ConditionalFormBlock
-            dependency='setClaims'
-            condition={() => form.getFieldValue('setClaims') === true}
-          >
-            <FormItemLabel name='Specify claims' />
-            <Form.Item name="claims" rules={[{ required: true }, {
-              validator: (_, value, cb) => {
-                if (value && !isJson(value)) {
-                  cb("Please provide a valid JSON object!")
-                  return
-                }
-                cb()
-              },
-              validateTrigger: "onBlur"
-            }]} >
-              <JSONCodeMirror />
-            </Form.Item>
-          </ConditionalFormBlock>
           <FormItemLabel name='Apply transformations' />
           <Form.Item name='applyTransformations' valuePropName='checked'>
             <Checkbox>
@@ -614,9 +586,27 @@ const ConfigureRule = (props) => {
                 <Option value='json'>JSON</Option>
               </Select>
             </Form.Item>
-            <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
-            <Form.Item name='requestTemplate' rules={[{ required: true }]}>
-              <JSONCodeMirror />
+            <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed claims of the webhook request" />
+            <Form.Item name="claims">
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2
+              }} />
+            </Form.Item>
+            <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
+            <Form.Item name='requestTemplate' >
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2
+              }} />
             </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>

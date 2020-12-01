@@ -122,6 +122,9 @@ const ServiceRoleForm = (props) => {
       key: 'apiGroups',
       width: '25%',
       render: (value) => {
+        if (value && value.length === 1 && value[0] === "") {
+          return <Tag>""</Tag>
+        }
         return value.map(val => <Tag>{val}</Tag>)
       }
     },

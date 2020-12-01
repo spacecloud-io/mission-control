@@ -148,7 +148,7 @@ const DeploymentLogs = (props) => {
           <div style={{ display: 'flex', marginBottom: 16, alignItems: "center" }}>
             <h3 style={{ margin: "auto 0px", flexGrow: 1 }}>Logs</h3>
             <Space size="middle">
-              <Input.Search placeholder='Paste any regex pattern to search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value.toLowerCase())} />
+              <Input.Search placeholder='Search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value.toLowerCase())} />
               <Button onClick={() => setFiltersModalVisible(true)}>Filters {Object.keys(filters).length > 0 && filters.since !== "start" ? <Badge dot><FilterOutlined style={{ marginLeft: 8.75 }} /></Badge> : null}</Button>
             </Space>
           </div>

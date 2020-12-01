@@ -142,7 +142,7 @@ const AddScalerForm = (props) => {
             <Radio.Button value='active-requests'>Active requests</Radio.Button>
             <Radio.Button value='cpu'>CPU</Radio.Button>
             <Radio.Button value='memory'>Memory</Radio.Button>
-            <Radio.Button value='keda'>Event driven (KEDA)</Radio.Button>
+            <Radio.Button value='keda'>KEDA Events</Radio.Button>
           </RadioCards>
         </Form.Item>
         <ConditionalFormBlock dependency='type' condition={() => form.getFieldValue('type') === 'requests-per-second'}>

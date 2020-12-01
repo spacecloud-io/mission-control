@@ -146,8 +146,8 @@ export function makeServer({ environment = "development" } = {}) {
       this.delete("/config/integrations/:integrationId", () => respondOk())
 
       // Addons
-      this.get("/config/add-ons/rabbitmq/rabbitmq", () => respondOk({ result: [ fixtures.addonsConfig.rabbitmq ] }))
-      this.get("/config/add-ons/redis/redis", () => respondOk({ result: [ fixtures.addonsConfig.redis ] }))
+      this.get("/config/add-ons/rabbitmq/rabbitmq", () => respondOk({ result: [fixtures.addonsConfig.rabbitmq] }))
+      this.get("/config/add-ons/redis/redis", () => respondOk({ result: [fixtures.addonsConfig.redis] }))
       this.get("/external/add-ons/:addOnType/:addOnName/connection-state", () => respondOk({ result: true }))
       this.post("/config/add-ons/:addOnType/:addOnName", () => respondOk())
 

@@ -102,7 +102,6 @@ export const loadServiceLogs = async (projectId, task, replica) => {
   if (filters.tail) filterUrlParams += `&tail=${filters.limit}`
   const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true${filterUrlParams}`
   const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
-  console.log("URL", JSON.stringify(url), filters)
   const response = await fetch(url, options)
   const body = response.body
   const readableStream = body.getReader()
@@ -243,6 +242,7 @@ export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
 export const getServicesStatus = (state) => get(state, "servicesStatus", {})
 export const getServiceLogs = (state) => get(state, "serviceLogs", [])
+
 export const getServiceLogsFilters = (state) => get(state, "uiState.serviceLogsFilters", {})
 export const getServiceRoles = (state) => get(state, "serviceRoles", [])
 const getServiceLogsSubscriptionId = (state) => get(state, "serviceLogsSubscriptionId", "")

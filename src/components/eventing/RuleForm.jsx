@@ -127,8 +127,7 @@ const RuleForm = (props) => {
         <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
           <FormItemLabel name="Table/collection" />
           <Input.Group compact>
-            <Form.Item name="db" rules={[{ required: true, message: 'Please select atleast one database!' }]}
-              style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
+            <Form.Item name="db" style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
               <Select mode="tags" placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
                 {
                   props.dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
