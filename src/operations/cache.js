@@ -24,7 +24,9 @@ export const loadCacheConfig = () => {
 	return new Promise((resolve, reject) => {
 		client.cache.getCacheConfig()
 			.then(result => {
-				store.dispatch(setCacheConfig(result[0]))
+				let cacheConfig = result[0]
+				if (!cacheConfig) cacheConfig = {}
+				store.dispatch(setCacheConfig(cacheConfig))
 				resolve()
 			})
 			.catch(ex => reject(ex))
