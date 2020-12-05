@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Button, Table, Popconfirm, Alert } from 'antd';
+import { Button, Table, Popconfirm, Alert, Input, Empty } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
@@ -10,11 +10,13 @@ import history from '../../../history';
 import { notify, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import { defaultPreparedQueryRule, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import { deletePreparedQuery, getDbDefaultPreparedQuerySecurityRule, getDbPreparedQueries } from '../../../operations/database'
+import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
 
 const PreparedQueries = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-
+  const [searchText, setSearchText] = useState('')
   // Global state
   const preparedQueries = useSelector(state => getDbPreparedQueries(state, selectedDB))
   let defaultRule = useSelector(state => getDbDefaultPreparedQuerySecurityRule(state, selectedDB))
@@ -24,6 +26,10 @@ const PreparedQueries = () => {
   if (Object.keys(defaultRule).length === 0) {
     defaultRule = defaultPreparedQueryRule
   }
+
+  const filteredPreparedQueriesData = preparedQueriesData.filter(query => {
+    return query.name.toLowerCase().includes(searchText.toLowerCase());
+  })
 
   // Handlers
   const handleSecureClick = (queryName) => openSecurityRulesPage(projectID, securityRuleGroups.DB_PREPARED_QUERIES, queryName, selectedDB)
@@ -46,7 +52,15 @@ const PreparedQueries = () => {
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      render: (value) => {
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
+      }
     },
 
     {
@@ -83,14 +97,21 @@ const PreparedQueries = () => {
               showIcon
               style={{ marginBottom: 16 }}
             />}
-            <h3 style={{ display: "flex", justifyContent: "space-between" }}>
-              Prepared queries
-                <Button type="primary" onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
-            </h3>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px' }}>
+              <h3 style={{ margin: 'auto 0' }}>Prepared queries {filteredPreparedQueriesData.length ? `(${filteredPreparedQueriesData.length})` : ''}</h3>
+              <div style={{ display: "flex" }}>
+                <Input.Search placeholder='Search by prepared query name' onChange={e => setSearchText(e.target.value)} allowClear={true} style={{ minWidth: '320px' }} />
+                <Button type="primary" style={{ marginLeft: '16px' }} onClick={() => history.push(`/mission-control/projects/${projectID}/database/${selectedDB}/prepared-queries/add`)}>Add</Button>
+              </div>
+            </div>
             <Table
               columns={preparedQueriesColumns}
-              dataSource={preparedQueriesData}
-            />
+              dataSource={filteredPreparedQueriesData}
+              locale={{
+                emptyText: preparedQueriesData.length !== 0 ?
+                  <EmptySearchResults searchText={searchText} /> :
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No prepared query created yet. Add a prepared query' />
+              }} />
           </div>
         </div>
       </div>

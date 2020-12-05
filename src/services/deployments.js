@@ -76,31 +76,52 @@ class Deployments {
     })
   }
 
-  async fetchDeploymentLogs(projectId, task, replica, token, onLogsAdded, onComplete) {
-    const options = { headers: {} }
-    if (token) options.headers.Authorization = `Bearer ${token}`
-    const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true`
-    const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
-    const response = await fetch(url, options)
-    const body = response.body
-    const readableStream = body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    readableStream.read().then(function processStrem({ done, value }) {
-      if (done) {
-        onComplete()
-        return
-      }
-
-      onLogsAdded(decoder.decode(value))
-      return readableStream.read().then(processStrem)
-    })
-
-    return () => readableStream.cancel()
-  }
-
   setDeploymentRoutes(projectId, serviceId, routes) {
     return new Promise((resolve, reject) => {
       this.client.postJSON(`/v1/runner/${projectId}/service-routes/${serviceId}`, { routes: routes })
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve({ queued: status === 202 })
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  setDeploymentRoles(projectId, serviceId, roleId, roleConfig) {
+    return new Promise((resolve, reject) => {
+      this.client.postJSON(`/v1/runner/${projectId}/service-roles/${serviceId}/${roleId}`, roleConfig)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+          resolve({ queued: status === 202 })
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  fetchDeploymentRoles(projectId) {
+    return new Promise((resolve, reject) => {
+      this.client.getJSON(`/v1/runner/${projectId}/service-roles?project=*&roleId=*&serviceId=*`)
+        .then(({ status, data }) => {
+          if (status < 200 || status >= 300) {
+            reject(data.error)
+            return
+          }
+
+          resolve(data.result ? data.result : [])
+        })
+        .catch(ex => reject(ex.toString()))
+    })
+  }
+
+  deleteDeploymentRoles(projectId, serviceId, roleId) {
+    return new Promise((resolve, reject) => {
+      this.client.delete(`/v1/runner/${projectId}/service-roles/${serviceId}/${roleId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)

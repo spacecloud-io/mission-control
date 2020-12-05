@@ -22,6 +22,7 @@ export const configResourceTypes = {
   DB_PREPARED_QUERIES: "db-prepared-query",
   FILESTORE_CONFIG: "filestore-config",
   FILESTORE_RULES: "filestore-rule",
+  CACHE_CONFIG: "cache-config",
   EVENTING_CONFIG: "eventing-config",
   EVENTING_TRIGGERS: "eventing-trigger",
   EVENTING_RULES: "eventing-rule",
@@ -30,6 +31,7 @@ export const configResourceTypes = {
   SERVICES: "service",
   SERVICE_LOGS: "service-logs",
   SERVICE_ROUTES: "service-route",
+  SERVICE_ROlES: "service-role",
   SECRETS: "secret",
   INGRESS_ROUTES: "ingress-route",
   INGRESS_GLOBAL: "ingress-global",
@@ -62,6 +64,7 @@ export const projectModules = {
   OVERVIEW: "overview",
   DATABASE: "database",
   FILESTORE: "file-storage",
+  CACHE: "cache",
   EVENTING: "eventing",
   REMOTE_SERVICES: "remote-services",
   DEPLOYMENTS: "deployments",
@@ -78,9 +81,10 @@ export const moduleResources = {
   [projectModules.OVERVIEW]: [],
   [projectModules.DATABASE]: [configResourceTypes.DB_CONFIG, configResourceTypes.DB_RULES, configResourceTypes.DB_SCHEMA, configResourceTypes.DB_PREPARED_QUERIES],
   [projectModules.FILESTORE]: [configResourceTypes.FILESTORE_CONFIG, configResourceTypes.FILESTORE_RULES],
+  [projectModules.CACHE]: [],
   [projectModules.EVENTING]: [configResourceTypes.EVENTING_CONFIG, configResourceTypes.EVENTING_RULES, configResourceTypes.EVENTING_SCHEMA, configResourceTypes.EVENTING_TRIGGER],
   [projectModules.REMOTE_SERVICES]: [configResourceTypes.REMOTE_SERVICES],
-  [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES],
+  [projectModules.DEPLOYMENTS]: [configResourceTypes.SERVICES, configResourceTypes.SERVICE_ROUTES, configResourceTypes.SERVICE_ROlES],
   [projectModules.SECRETS]: [configResourceTypes.SECRETS],
   [projectModules.INGRESS_ROUTES]: [configResourceTypes.INGRESS_ROUTES, configResourceTypes.INGRESS_GLOBAL],
   [projectModules.USER_MANAGEMENT]: [configResourceTypes.USER_MANAGEMENT],
@@ -97,6 +101,7 @@ export const configResourceTypeLabels = {
   [configResourceTypes.DB_PREPARED_QUERIES]: "Database prepared queries",
   [configResourceTypes.FILESTORE_CONFIG]: "Filestore config",
   [configResourceTypes.FILESTORE_RULES]: "Filestore rules",
+  [configResourceTypes.CACHE_CONFIG]: "Cache config",
   [configResourceTypes.EVENTING_CONFIG]: "Eventing config",
   [configResourceTypes.EVENTING_TRIGGERS]: "Eventing triggers",
   [configResourceTypes.EVENTING_SCHEMA]: "Eventing schema",
@@ -105,6 +110,7 @@ export const configResourceTypeLabels = {
   [configResourceTypes.SERVICES]: "Services",
   [configResourceTypes.SERVICE_LOGS]: "Service logs",
   [configResourceTypes.SERVICE_ROUTES]: "Service routes",
+  [configResourceTypes.SERVICE_ROlES]: "Service roles",
   [configResourceTypes.SECRETS]: "Secrets",
   [configResourceTypes.INGRESS_GLOBAL]: "Ingress global config",
   [configResourceTypes.INGRESS_ROUTES]: "Ingress routes",
@@ -144,7 +150,7 @@ export const defaultDbConnectionStrings = {
   [dbTypes.MONGO]: "mongodb://localhost:27017",
   [dbTypes.POSTGRESQL]: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable",
   [dbTypes.MYSQL]: "root:my-secret-pw@tcp(localhost:3306)/",
-  [dbTypes.SQLSERVER]: "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=yourStrong(!)Password;",
+  [dbTypes.SQLSERVER]: "sqlserver://username:passowrd@hostIp:1433/master",
   [dbTypes.EMBEDDED]: "embedded.db"
 }
 
@@ -153,6 +159,7 @@ export const securityRuleGroups = {
   DB_PREPARED_QUERIES: "prepared-queries",
   FILESTORE: "file-store",
   EVENTING: "eventing",
+  EVENTING_FILTERS: "eventing-filters",
   REMOTE_SERVICES: "remote-services",
   INGRESS_ROUTES: "ingress-routes"
 }
@@ -188,6 +195,10 @@ export const defaultEventRule = {
   rule: "allow"
 }
 
+export const defaultEventFilterRule = {
+  rule: "allow"
+}
+
 export const defaultEndpointRule = {
   rule: "allow"
 }
@@ -209,6 +220,34 @@ export const deploymentStatuses = {
 }
 
 export const actionQueuedMessage = "Action queued successfully"
+
+export const kedaTriggerTypes = [
+  { label: "ActiveMQ Artemis", value: "artemis-queue" },
+  { label: "Apache Kafka", value: "kafka" },
+  { label: "AWS Cloud Watch", value: "aws-cloudwatch" },
+  { label: "AWS Kinesis Stream", value: "aws-kinesis-stream" },
+  { label: "AWS SQS Queue", value: "aws-sqs-queue" },
+  { label: "Azure Blob Storage", value: "azure-blob" },
+  { label: "Azure Event Hubs", value: "azure-eventhub" },
+  { label: "Azure Log Analytics", value: "azure-log-analytics" },
+  { label: "Azure Monitor", value: "azure-monitor" },
+  { label: "Azure Service Bus", value: "azure-servicebus" },
+  { label: "Azure Storage Queue", value: "azure-queue" },
+  { label: "Cron", value: "cron" },
+  { label: "External", value: "external" },
+  { label: "External Push", value: "external-push" },
+  { label: "Google Cloud Platform ‎Pub/Sub", value: "gcp-pubsub" },
+  { label: "Huawei Cloudeye", value: "huawei-cloudeye" },
+  { label: "Liiklus Topic", value: "liiklus" },
+  { label: "Metrics API", value: "metric-api" },
+  { label: "MySQL", value: "mysql" },
+  { label: "NATS Streaming", value: "stan" },
+  { label: "PostgreSQL", value: "postgresql" },
+  { label: "Prometheus", value: "prometheus" },
+  { label: "RabbitMQ Queue", value: "rabbitmq" },
+  { label: "Redis Lists", value: "redis" },
+  { label: "Redis Streams", value: "redis-streams" }
+]
 
 const getURL = (productionURL, developmentURL, mockURL) => {
   if (process.env.NODE_ENV === "production") {

@@ -9,20 +9,22 @@ describe("generateSchemaAST method", () => {
       f3: Boolean
       f4: Float
       f5: Integer
-      f6: DateTime
-      f7: JSON
-      f8: [ID]
-      f9: [String]!
-      f10: ID! @unique
-      f11: Boolean @unique
-      f12: DateTime! @createdAt
-      f13: DateTime @updatedAt
-      f14: mytype2
-      f15: ID @foreign(table: mytype3, field: myfield)
-      f16: ID @foreign(table: mytype3, to: myfield)
-      f17: String @link(table: mytype4, from: id, to: somefield, field: goodfield)
-      f18: mytype5 @link(table: mytype5, from: id, to: nicefield)
-      f19: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
+      f6: Date
+      f7: Time
+      f8: DateTime
+      f9: JSON
+      f10: [ID]
+      f11: [String]!
+      f12: ID! @unique
+      f13: Boolean @unique
+      f14: DateTime! @createdAt
+      f15: DateTime @updatedAt
+      f16: mytype2
+      f17: ID @foreign(table: mytype3, field: myfield)
+      f18: ID @foreign(table: mytype3, to: myfield)
+      f19: String @link(table: mytype4, from: id, to: somefield, field: goodfield)
+      f20: mytype5 @link(table: mytype5, from: id, to: nicefield)
+      f21: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
     }
     `
     const expectedSchemaAST = {
@@ -94,7 +96,7 @@ describe("generateSchemaAST method", () => {
         },
         {
           name: "f6",
-          type: "DateTime",
+          type: "Date",
           isRequired: false,
           isPrimary: false,
           hasUniqueConstraint: false,
@@ -107,7 +109,7 @@ describe("generateSchemaAST method", () => {
         },
         {
           name: "f7",
-          type: "JSON",
+          type: "Time",
           isRequired: false,
           isPrimary: false,
           hasUniqueConstraint: false,
@@ -120,6 +122,32 @@ describe("generateSchemaAST method", () => {
         },
         {
           name: "f8",
+          type: "DateTime",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f9",
+          type: "JSON",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f10",
           type: "ID",
           isRequired: false,
           isPrimary: false,
@@ -132,7 +160,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f9",
+          name: "f11",
           type: "String",
           isRequired: true,
           isPrimary: false,
@@ -145,7 +173,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f10",
+          name: "f12",
           type: "ID",
           isRequired: true,
           isPrimary: false,
@@ -158,7 +186,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f11",
+          name: "f13",
           type: "Boolean",
           isRequired: false,
           isPrimary: false,
@@ -171,7 +199,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f12",
+          name: "f14",
           type: "DateTime",
           isRequired: true,
           isPrimary: false,
@@ -184,7 +212,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f13",
+          name: "f15",
           type: "DateTime",
           isRequired: false,
           isPrimary: false,
@@ -197,7 +225,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f14",
+          name: "f16",
           type: "mytype2",
           isRequired: false,
           isPrimary: false,
@@ -210,41 +238,41 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: true
         },
         {
-          name: "f15",
-          type: "ID",
-          isRequired: false,
-          isPrimary: false,
-          hasUniqueConstraint: false,
-          hasForeignConstraint: true,
-          foreign: {
-            table: "mytype3",
-            field: "myfield"
-          },
-          isLink: false,
-          isArray: false,
-          hasCreatedAtDirective: false,
-          hasUpdatedAtDirective: false,
-          hasNestedFields: false
-        },
-        {
-          name: "f16",
-          type: "ID",
-          isRequired: false,
-          isPrimary: false,
-          hasUniqueConstraint: false,
-          hasForeignConstraint: true,
-          foreign: {
-            table: "mytype3",
-            field: "myfield"
-          },
-          isLink: false,
-          isArray: false,
-          hasCreatedAtDirective: false,
-          hasUpdatedAtDirective: false,
-          hasNestedFields: false
-        },
-        {
           name: "f17",
+          type: "ID",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: true,
+          foreign: {
+            table: "mytype3",
+            field: "myfield"
+          },
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f18",
+          type: "ID",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: true,
+          foreign: {
+            table: "mytype3",
+            field: "myfield"
+          },
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f19",
           type: "String",
           isRequired: false,
           isPrimary: false,
@@ -262,7 +290,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: false
         },
         {
-          name: "f18",
+          name: "f20",
           type: "mytype5",
           isRequired: false,
           isPrimary: false,
@@ -280,7 +308,7 @@ describe("generateSchemaAST method", () => {
           hasNestedFields: true
         },
         {
-          name: "f19",
+          name: "f21",
           type: "mytype6",
           isRequired: true,
           isPrimary: false,
@@ -424,10 +452,18 @@ describe("generateRandomFieldValues method", () => {
       },
       {
         name: "k6",
-        type: "DateTime"
+        type: "Date"
       },
       {
         name: "k7",
+        type: "Time"
+      },
+      {
+        name: "k8",
+        type: "DateTime"
+      },
+      {
+        name: "k9",
         type: "JSON"
       },
     ]
@@ -437,8 +473,10 @@ describe("generateRandomFieldValues method", () => {
       k3: 25,
       k4: 4.5,
       k5: true,
-      k6: "2017-11-13T03:15:45.108Z",
-      k7: {
+      k6: "2017-11-13",
+      k7: "03:15:45.108",
+      k8: "2017-11-13T03:15:45.108Z",
+      k9: {
         foo: "bar"
       }
     }

@@ -8,6 +8,7 @@ import Sidenav from '../../components/sidenav/Sidenav';
 import EndpointForm from '../../components/remote-services/endpoint-form/EndpointForm';
 import { saveRemoteServiceEndpoint, getRemoteServiceEndpoints, getRemoteServiceURL } from '../../operations/remoteServices';
 import { projectModules, actionQueuedMessage } from '../../constants';
+import { getCacheConfig } from '../../operations/cache';
 
 const ConfigureEndpoint = () => {
   // Router params
@@ -17,10 +18,11 @@ const ConfigureEndpoint = () => {
   // Global state
   const endpoints = useSelector(state => getRemoteServiceEndpoints(state, serviceName))
   const serviceURL = useSelector(state => getRemoteServiceURL(state, serviceName))
+  const cacheConfig = useSelector(state => getCacheConfig(state))
 
-  const handleSaveEndpoint = (kind, name, method, path, rule, token, outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout) => {
+  const handleSaveEndpoint = (endpointConfig) => {
+    const name = endpointConfig.name;
     const isEndpointPresent = endpoints[name] ? true : false
-    const endpointConfig = { kind, method, path, rule, token, template: "go", outputFormat, requestTemplate, responseTemplate, graphTemplate, headers, timeout }
     incrementPendingRequests()
     saveRemoteServiceEndpoint(projectID, serviceName, name, endpointConfig)
       .then(({ queued }) => {
@@ -41,7 +43,8 @@ const ConfigureEndpoint = () => {
           <EndpointForm
             serviceURL={serviceURL}
             handleSubmit={handleSaveEndpoint}
-            initialValues={endpointName ? Object.assign({}, endpoints[endpointName], { name: endpointName }) : undefined} />
+            initialValues={endpointName ? Object.assign({}, endpoints[endpointName], { name: endpointName }) : undefined}
+            isCachingEnabled={cacheConfig.enabled} />
         </Content>
       </ProjectPageLayout>
     </React.Fragment>

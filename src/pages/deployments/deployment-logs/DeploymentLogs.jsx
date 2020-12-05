@@ -2,75 +2,52 @@ import React, { useEffect, useState } from "react"
 import './deployment-logs.css';
 import { useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
-import client from "../../../client";
-import { Cascader, Alert } from "antd";
+import { Cascader, Alert, Input, Button, Space, Badge } from "antd";
 import Topbar from "../../../components/topbar/Topbar";
 import Sidenav from "../../../components/sidenav/Sidenav"
 import ProjectPageLayout, { Content, InnerTopBar } from "../../../components/project-page-layout/ProjectPageLayout";
-import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
-import DOMPurify from 'dompurify';
-import { getServices, loadServicesStatus, getServicesStatus } from "../../../operations/deployments";
+import { getServices, loadServicesStatus, getServicesStatus, loadServiceLogs, getServiceLogs, getServiceLogsFilters, setServiceLogsFilters } from "../../../operations/deployments";
 import { incrementPendingRequests, decrementPendingRequests, notify } from "../../../utils";
 import { projectModules } from "../../../constants";
-import { getToken } from "../../../operations/cluster";
+import Highlighter from 'react-highlight-words';
+import { FilterOutlined } from "@ant-design/icons";
+import FiltersModal from "../../../components/deployments/filters-modal/FiltersModal";
+
+let logsStreamCanceller = null
 
 const DeploymentLogs = (props) => {
   const { projectID } = useParams()
-  const [logs, setLogs] = useState("");
+  const logs = useSelector(state => getServiceLogs(state))
   const deployments = useSelector(state => getServices(state))
   const deploymentStatus = useSelector(state => getServicesStatus(state));
   const { id, version, replica, task } = props.location.state ? props.location.state : {};
   const [cascaderValue, setCascaderValue] = useState([id, version, replica, task])
-  const [logsCompleted, setLogsCompleted] = useState(false)
-  const token = getToken()
+  const [searchText, setSearchText] = useState('')
+  const [filtersModalVisible, setFiltersModalVisible] = useState(false)
+  const filteredLogs = searchText ? logs.filter(log => log.toLowerCase().includes(searchText)) : logs
+  const filters = useSelector(state => getServiceLogsFilters(state))
 
-  const fetchLogs = (task, replica) => {
-    let result = '';
-    const promise = client.deployments.fetchDeploymentLogs(projectID, task, replica, token, (chunk) => {
-      const infoIndex = chunk.indexOf("INFO");
-      const errorIndex = chunk.indexOf("ERRO");
-      const warnIndex = chunk.indexOf("WARN");
-
-      if (infoIndex !== -1) {
-        const before = chunk.slice(0, infoIndex);
-        const after = chunk.slice(infoIndex + 4);
-        result += "<p>" + before + `<span class="info">INFO</span>` + after + "</p>";
-      }
-      if (errorIndex !== -1) {
-        const before = chunk.slice(0, errorIndex);
-        const after = chunk.slice(errorIndex + 4);
-        result += "<p>" + before + `<span class="error">ERRO</span>` + after + "</p>";
-      }
-      if (warnIndex !== -1) {
-        const before = chunk.slice(0, warnIndex);
-        const after = chunk.slice(warnIndex + 4);
-        result += "<p>" + before + `<span class="warn">WARN</span>` + after + "</p>";
-      }
-      if (infoIndex === -1 && errorIndex === -1 && warnIndex === -1) {
-        result += `<p>${chunk}</p>`;
-      }
-      setLogs(result);
-    }, () => {
-      notify("info", "Info", "Logs stream closed!")
-      setLogsCompleted(true)
-    })
-    return promise
+  const onFilterLogs = (filters) => {
+    setServiceLogsFilters(filters)
+    setFiltersModalVisible(false)
   }
 
   useEffect(() => {
     const replica = cascaderValue[2]
     const task = cascaderValue[3]
-    setLogsCompleted(false)
-    let promise = null
     if (task && replica) {
-      promise = fetchLogs(task, replica)
-    }
-    return () => {
-      if (promise) {
-        promise.then((cancelFunction) => cancelFunction())
+      loadServiceLogs(projectID, task, replica).then(cancel => {
+        logsStreamCanceller = cancel
+      })
+
+      return () => {
+        if (logsStreamCanceller) {
+          logsStreamCanceller()
+          logsStreamCanceller = null
+        }
       }
     }
-  }, cascaderValue)
+  }, [cascaderValue[2], cascaderValue[3], JSON.stringify(filters)])
 
   useEffect(() => {
     if (projectID) {
@@ -113,6 +90,46 @@ const DeploymentLogs = (props) => {
     )
   })
 
+  const getAlertMsg = () => {
+
+    const getDuration = (time, unit) => {
+      let unitString = ""
+      switch (unit) {
+        case "s":
+          unitString = "second"
+          break
+        case "m":
+          unitString = "minute"
+          break
+        case "h":
+          unitString = "hour"
+          break
+      }
+      if (time > 1) {
+        unitString = unitString + "s"
+      }
+      return `${time} ${unitString}`
+    }
+
+    let alertMsg = "";
+    alertMsg += filters.tail ? `Showing recent ${filters.limit} logs ` : `Showing all logs `;
+
+    switch (filters.since) {
+      case "duration":
+        alertMsg += `since last ${getDuration(filters.time, filters.unit)}. To change the applied filters, click the filters button above.`;
+        break;
+
+      case "time":
+        alertMsg += `since ${filters.date}. To change the applied filters, click the filters button above.`;
+        break;
+
+      default:
+        alertMsg += `since the start. To apply filters, click the filters button above`
+    }
+
+    return alertMsg;
+  }
+
   return (
     <React.Fragment>
       <Topbar showProjectSelector />
@@ -120,7 +137,7 @@ const DeploymentLogs = (props) => {
       <ProjectPageLayout>
         <InnerTopBar title="Deployment logs" />
         <Content style={{ display: "flex", flexDirection: "column" }}>
-          <FormItemLabel name="Select target" />
+          <h3>Select target</h3>
           <Cascader
             style={{ marginBottom: 24, width: 400 }}
             options={options}
@@ -128,12 +145,29 @@ const DeploymentLogs = (props) => {
             placeholder="Please select"
             value={cascaderValue}
           />
-          <FormItemLabel name="Logs" />
+          <div style={{ display: 'flex', marginBottom: 16, alignItems: "center" }}>
+            <h3 style={{ margin: "auto 0px", flexGrow: 1 }}>Logs</h3>
+            <Space size="middle">
+              <Input.Search placeholder='Search for logs' style={{ width: '360px' }} allowClear={true} onChange={e => setSearchText(e.target.value.toLowerCase())} />
+              <Button onClick={() => setFiltersModalVisible(true)}>Filters {Object.keys(filters).length > 0 && filters.since !== "start" ? <Badge dot><FilterOutlined style={{ marginLeft: 8.75 }} /></Badge> : null}</Button>
+            </Space>
+          </div>
           <Alert
-            message={logsCompleted ? "The logs stream is closed. Checkout the replica status to make sure the replica is still up." : "Logs are streamed here in realtime."}
+            message={getAlertMsg()}
             type="info"
             showIcon />
-          {logs && < div className="terminal-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(logs) }} ></div>}
+          {logs && < div className="terminal-wrapper" >
+            {
+              filteredLogs.map(log => (
+                <p>
+                  <Highlighter highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                    searchWords={[searchText]}
+                    textToHighlight={log}
+                    autoEscape />
+                </p>
+              ))
+            }
+          </div>}
           {!logs &&
             (
               <div className="terminal-wrapper" >
@@ -143,6 +177,13 @@ const DeploymentLogs = (props) => {
           }
         </Content>
       </ProjectPageLayout>
+      {filtersModalVisible && (
+        <FiltersModal
+          initialValues={filters}
+          handleCancel={() => setFiltersModalVisible(false)}
+          handleSubmit={onFilterLogs}
+        />
+      )}
     </React.Fragment>
   )
 }

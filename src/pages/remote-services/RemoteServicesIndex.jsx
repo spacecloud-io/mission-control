@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../utils';
 import { loadRemoteServices } from '../../operations/remoteServices';
+import { loadCacheConfig } from "../../operations/cache";
 
 const RemoteServicesIndex = () => {
   const { projectID } = useParams()
@@ -15,6 +16,12 @@ const RemoteServicesIndex = () => {
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
+
+  useEffect(() => {
+    incrementPendingRequests()
+    loadCacheConfig()
+      .finally(() => decrementPendingRequests())
+  }, [])
 
   return (
     null

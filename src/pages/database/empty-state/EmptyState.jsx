@@ -7,6 +7,7 @@ import DatabaseEmptyState from '../../../components/database-card/DatabaseEmptyS
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { getDbConfigs } from "../../../operations/database";
 import { projectModules } from "../../../constants";
+import { getLastUsedValues, setLastUsedValues } from "../../../utils";
 
 function EmptyState() {
 
@@ -14,15 +15,21 @@ function EmptyState() {
 
   const dbConfig = useSelector(state => getDbConfigs(state))
   const dbAliasNames = Object.keys(dbConfig)
-  const activeDB = dbAliasNames.find(dbAliasName => {
-    return dbConfig[dbAliasName].enabled
-  })
 
-  if (activeDB) {
-    return <Redirect to={`/mission-control/projects/${projectID}/database/${activeDB}/overview`} />;
+  const activeDB = dbAliasNames.find(dbAliasName => dbConfig[dbAliasName].enabled)
+  const lastUsedDb = getLastUsedValues(projectID).db;
+
+  // If last used db is still present in the config, then open that first
+  if (dbAliasNames.findIndex(db => db === lastUsedDb) !== -1) {
+    return <Redirect to={`/mission-control/projects/${projectID}/database/${lastUsedDb}/overview`} />
+  }
+
+  if (activeDB) {	
+    return <Redirect to={`/mission-control/projects/${projectID}/database/${activeDB}/overview`} />;	
   }
 
   if (dbAliasNames.length > 0) {
+    setLastUsedValues(projectID, { db: dbAliasNames[0] })
     return <Redirect to={`/mission-control/projects/${projectID}/database/${dbAliasNames[0]}`} />;
   }
 

@@ -30,6 +30,7 @@ const ObjectAutoComplete = (props) => {
       onSearch={handleSearch}
       onSelect={handleSelect}
       value={value}
+      style={props.style}
     >
       {filteredOptions
         .filter(

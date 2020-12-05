@@ -175,6 +175,7 @@ export const generateProjectConfig = (projectId, name) => ({
   contextTimeGraphQL: 5
 })
 
+notification.config({ placement: "topRight", top: 80 });
 export const notify = (type, title, msg, duration) => {
   notification[type]({ message: title, description: String(msg), duration: duration });
 }
@@ -261,6 +262,7 @@ export const openProject = (projectId) => {
     notify("info", "Info", "Opened another existing project as the requested project does not exist")
   }
 
+  localStorage.setItem("lastOpenedProject", projectId);
   const currentURL = window.location.pathname
   const projectURL = `/mission-control/projects/${projectId}/`
 
@@ -323,7 +325,7 @@ export function performActionsOnAuthenticated() {
         // Decide which project to open
         let projectToBeOpened = getProjectToBeOpened()
         if (!projectToBeOpened) {
-          projectToBeOpened = projects[0].id
+          projectToBeOpened = localStorage.getItem("lastOpenedProject") ? localStorage.getItem("lastOpenedProject") : projects[0].id
         }
 
         openProject(projectToBeOpened)
@@ -609,6 +611,18 @@ export const dbIcons = (selectedDb) => {
       svg = postgresSvg
   }
   return svg;
+}
+
+export const setLastUsedValues = (projectId, newValue) => {
+
+  const lastUsedValues = getLastUsedValues(projectId)
+  const newLastUsedValues = { ...lastUsedValues, ...newValue }
+  localStorage.setItem(`lastUsedValues:${projectId}`, JSON.stringify(newLastUsedValues))
+}
+
+export const getLastUsedValues = (projectId) => {
+  const valueString = localStorage.getItem(`lastUsedValues:${projectId}`)
+  return valueString ? JSON.parse(valueString) : {}
 }
 
 export const parseJSONSafely = (str) => {

@@ -15,6 +15,7 @@ import FilterForm from "../../../components/ingress-routing/FilterForm";
 import { set } from "automate-redux";
 import { getUniqueServiceIDs, loadServices } from "../../../operations/deployments";
 import { securityRuleGroups, projectModules, actionQueuedMessage } from "../../../constants";
+import { getCacheConfig, loadCacheConfig } from "../../../operations/cache";
 
 const calculateRequestURL = (routeType, url) => {
   return routeType === "prefix" ? url + "*" : url;
@@ -51,9 +52,16 @@ function RoutingOverview() {
     }
   }, [projectID])
 
+  useEffect(() => {
+    incrementPendingRequests()
+    loadCacheConfig()
+      .finally(() => decrementPendingRequests())
+  }, [])
+
   // Global state
   let routes = useSelector(state => getIngressRoutes(state))
   const serviceNames = useSelector(state => getUniqueServiceIDs(state))
+  const cacheConfig = useSelector(state => getCacheConfig(state))
 
   // Component state
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,7 +70,7 @@ function RoutingOverview() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Derived state
-  const data = routes.map(({ id, source, targets, rule, modify = {} }) => ({
+  const data = routes.map(({ id, source, targets, rule, modify = {}, isRouteCacheable, cacheOptions }) => ({
     id: id,
     allowedHosts: source.hosts,
     url: source.url,
@@ -75,7 +83,9 @@ function RoutingOverview() {
     requestTemplate: modify.requestTemplate,
     responseTemplate: modify.responseTemplate,
     outputFormat: modify.outputFormat,
-    rule: rule
+    rule: rule,
+    isRouteCacheable,
+    cacheOptions
   }));
 
   const filteredData = applyFilters(data, projectID, filters)
@@ -106,7 +116,9 @@ function RoutingOverview() {
           requestTemplate: values.requestTemplate,
           responseTemplate: values.responseTemplate,
           outputFormat: values.outputFormat
-        }
+        },
+        isRouteCacheable: values.isRouteCacheable,
+        cacheOptions: values.cacheOptions
       };
       incrementPendingRequests()
       saveIngressRouteConfig(projectID, config.id, config)
@@ -146,7 +158,7 @@ function RoutingOverview() {
 
   const columns = [
     {
-      title: <b>{"Allowed Hosts"}</b>,
+      title: "Allowed Hosts",
       dataIndex: "allowedHosts",
       key: "allowedHosts",
       render: hosts => (
@@ -158,15 +170,15 @@ function RoutingOverview() {
       )
     },
     {
-      title: <b>{"Request URL"}</b>,
+      title: "Request URL",
       render: (_, { routeType, url }) => calculateRequestURL(routeType, url)
     },
     {
-      title: <b>{"Targets"}</b>,
+      title: "Targets",
       render: (_, { targets }) => (targets && targets.length) ? targets.length : 0
     },
     {
-      title: <b>{"Actions"}</b>,
+      title: "Actions",
       className: "column-actions",
       render: (_, record) => {
         return (
@@ -239,6 +251,7 @@ function RoutingOverview() {
               handleSubmit={(values) => handleSubmit(routeClicked, values)}
               initialValues={routeClickedInfo}
               handleCancel={handleModalCancel}
+              isCachingEnabled={cacheConfig.enabled}
             />
           )}
           {filterModalVisible && <FilterForm

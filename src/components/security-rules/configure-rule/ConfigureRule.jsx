@@ -4,6 +4,7 @@ import {
   Form,
   Select,
   Input,
+  InputNumber,
   Alert,
   Checkbox,
   Drawer,
@@ -12,7 +13,6 @@ import {
   Col,
   AutoComplete,
 } from 'antd';
-import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { notify, isJson } from '../../../utils';
@@ -22,6 +22,8 @@ import FormItem from 'antd/lib/form/FormItem';
 import ObjectAutoComplete from "../../object-autocomplete/ObjectAutoComplete";
 import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../../operations/database';
 import { securityRuleGroups } from '../../../constants';
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
+import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
 
 const { Option } = Select;
 
@@ -163,7 +165,7 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -196,16 +198,21 @@ const ConfigureRule = (props) => {
           notify("error", "Error", ex.toString())
           return;
         }
+        if (values.cacheResponse) {
+          values.cache = {
+            ttl: values.cacheTTL,
+            instantInvalidate: values.cacheInstantInvalidate ? true : false
+          }
+        }
+        delete values["cacheResponse"]
+        delete values["cacheTTL"]
+        delete values["cacheInstantInvalidate"]
         break;
       case "webhook":
-        if (values.setClaims) {
-          values.claims = JSON.parse(values.claims)
-        }
         if (values["applyTransformations"]) {
           values.template = "go"
         }
 
-        delete values["setClaims"]
         delete values["applyTransformations"]
         break;
     }
@@ -266,6 +273,9 @@ const ConfigureRule = (props) => {
     case securityRuleGroups.DB_PREPARED_QUERIES:
       autoCompleteOptions = { args: { auth: true, params: true, token: true } }
       break;
+    case securityRuleGroups.EVENTING_FILTERS:
+      autoCompleteOptions = { args: { data: true } }
+      break;
     case securityRuleGroups.INGRESS_ROUTES:
       const query = {
         path: true,
@@ -291,16 +301,18 @@ const ConfigureRule = (props) => {
     value: getInputValueFromActualValue(value, inheritedDataType),
     url,
     store,
-    setClaims: claims ? true : false,
-    claims: claims ? JSON.stringify(claims, null, 2) : "",
-    applyTransformations: requestTemplate ? true : false,
+    claims: claims ? claims : "",
+    applyTransformations: requestTemplate || claims ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml",
     requestTemplate: requestTemplate ? requestTemplate : "",
     db: db,
     col: props.selectedRule.col,
     find: JSON.stringify(props.selectedRule.find, null, 2),
     errorMsg: error ? true : false,
-    error
+    error,
+    cacheResponse: cache ? true : false,
+    cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
+    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined
   }
 
   if (formInitialValues.type === "object") {
@@ -325,11 +337,16 @@ const ConfigureRule = (props) => {
         <FormItemLabel name='Rule Type' />
         <Form.Item name='rule'>
           <Select placeholder="Rule">
-            {rules.map((val) => (
-              <Select.Option key={val} value={val}>
-                {val}
-              </Select.Option>
-            ))}
+            {rules
+              .filter((val) => {
+                if (props.blockDepth === 1) return true
+                return !["allow", "deny", "authenticated"].includes(val)
+              })
+              .map((val) => (
+                <Select.Option key={val} value={val}>
+                  {val}
+                </Select.Option>
+              ))}
           </Select>
         </Form.Item>
         <ConditionalFormBlock
@@ -527,14 +544,7 @@ const ConfigureRule = (props) => {
                         cb()
                       }
                     }]}>
-                      <AntCodeMirror options={{
-                        mode: { name: 'javascript', json: true },
-                        lineNumbers: true,
-                        styleActiveLine: true,
-                        matchBrackets: true,
-                        autoCloseBrackets: true,
-                        tabSize: 2
-                      }} />
+                      <JSONCodeMirror />
                     </Form.Item>
                   )
                 }
@@ -553,39 +563,6 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the webhook response. For example: args.res" />
           </FormItem>
-          <FormItemLabel name='Override claims' />
-          <Form.Item name='setClaims' valuePropName='checked'>
-            <Checkbox>
-              Override the value of the JWT claims in the request
-          </Checkbox>
-          </Form.Item>
-          <ConditionalFormBlock
-            dependency='setClaims'
-            condition={() => form.getFieldValue('setClaims') === true}
-          >
-            <FormItemLabel name='Specify claims' />
-            <Form.Item name="claims" rules={[{ required: true }, {
-              validator: (_, value, cb) => {
-                if (value && !isJson(value)) {
-                  cb("Please provide a valid JSON object!")
-                  return
-                }
-                cb()
-              },
-              validateTrigger: "onBlur"
-            }]} >
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
-              />
-            </Form.Item>
-          </ConditionalFormBlock>
           <FormItemLabel name='Apply transformations' />
           <Form.Item name='applyTransformations' valuePropName='checked'>
             <Checkbox>
@@ -609,18 +586,27 @@ const ConfigureRule = (props) => {
                 <Option value='json'>JSON</Option>
               </Select>
             </Form.Item>
-            <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
-            <Form.Item name='requestTemplate' rules={[{ required: true }]}>
-              <AntCodeMirror options={{
-                mode: { name: 'javascript', json: true },
+            <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed claims of the webhook request" />
+            <Form.Item name="claims">
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
                 lineNumbers: true,
                 styleActiveLine: true,
                 matchBrackets: true,
                 autoCloseBrackets: true,
-                tabSize: 2,
-                autofocus: true,
-              }}
-              />
+                tabSize: 2
+              }} />
+            </Form.Item>
+            <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
+            <Form.Item name='requestTemplate' >
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2
+              }} />
             </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>
@@ -668,19 +654,36 @@ const ConfigureRule = (props) => {
               cb()
             }
           }]}>
-            <AntCodeMirror options={{
-              mode: { name: 'javascript', json: true },
-              lineNumbers: true,
-              styleActiveLine: true,
-              matchBrackets: true,
-              autoCloseBrackets: true,
-              tabSize: 2
-            }} />
+            <JSONCodeMirror />
           </Form.Item>
           <FormItemLabel name="Store" hint="(Optional)" />
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
+          <ConditionalFormBlock
+            shouldUpdate={true}
+            condition={() => props.isCachingEnabled}>
+            <FormItemLabel name="Caching" />
+            <Form.Item name='cacheResponse' valuePropName='checked'>
+              <Checkbox>
+                Cache the results
+              </Checkbox>
+            </Form.Item>
+            <ConditionalFormBlock
+              dependency='cacheResponse'
+              condition={() => form.getFieldValue('cacheResponse') === true}>
+              <FormItemLabel name="Cache TTL" hint="(in seconds)" />
+              <Form.Item name="cacheTTL">
+                <InputNumber placeholder="TTL in seconds" style={{ width: "100%" }} />
+              </Form.Item>
+              <FormItemLabel name="Cache invalidation" />
+              <Form.Item name="cacheInstantInvalidate" valuePropName='checked'>
+                <Checkbox>
+                  Enable instant invalidation of cached results
+                </Checkbox>
+              </Form.Item>
+            </ConditionalFormBlock>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>

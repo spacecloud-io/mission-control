@@ -3,6 +3,7 @@ import client from "../client";
 import store from "../store";
 import { defaultEventRule, configResourceTypes, permissionVerbs } from "../constants";
 import { checkResourcePermissions } from "../utils";
+import dotProp from "dot-prop-immutable";
 
 export const loadEventingConfig = (projectId) => {
   return new Promise((resolve, reject) => {
@@ -69,7 +70,7 @@ export const loadEventingSchemas = (projectId) => {
   })
 }
 
-export const loadEventingTriggers = (projectId) => {
+export const loadEventingTriggers = (projectId, triggerId = "*") => {
   return new Promise((resolve, reject) => {
     const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_TRIGGERS], permissionVerbs.READ)
     if (!hasPermission) {
@@ -79,12 +80,13 @@ export const loadEventingTriggers = (projectId) => {
       return
     }
 
-    client.eventing.fetchEventingTriggers(projectId)
+    client.eventing.fetchEventingTriggers(projectId, triggerId)
       .then((result = []) => {
-        const eventingTriggers = result.reduce((prev, curr) => {
-          return Object.assign({}, prev, { [curr.id]: curr })
-        }, {})
-        setEventingTriggers(eventingTriggers)
+        const eventingTriggers = getEventingTriggerRules(store.getState())
+        const newEventingTriggers = result.reduce((prev, curr) => {
+          return dotProp.set(prev, curr.id, curr)
+        }, eventingTriggers)
+        setEventingTriggers(newEventingTriggers)
         resolve()
       })
       .catch(ex => reject(ex))
@@ -143,9 +145,8 @@ export const deleteEventingSchema = (projectId, eventType) => {
   })
 }
 
-export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
+export const saveEventingConfig = (projectId, eventingConfig) => {
   return new Promise((resolve, reject) => {
-    const eventingConfig = { enabled, dbAlias: dbAliasName }
     client.eventing.setEventingConfig(projectId, eventingConfig)
       .then(({ queued }) => {
         if (!queued) {
@@ -155,7 +156,7 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
 
         // Set the default eventing rule in background
         const hasPermissionToSetEventingRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.EVENTING_RULES], permissionVerbs.READ)
-        if (enabled && hasPermissionToSetEventingRule) {
+        if (eventingConfig.enabled && hasPermissionToSetEventingRule) {
           const defaultEventingSecurityRule = get(store.getState(), "eventingRules.default", {})
           const defaultEventingSecurityRuleExists = Object.keys(defaultEventingSecurityRule).length > 0
           if (!defaultEventingSecurityRuleExists) {
@@ -168,13 +169,14 @@ export const saveEventingConfig = (projectId, enabled, dbAliasName) => {
   })
 }
 
-export const saveEventingTriggerRule = (projectId, triggerName, type, url, retries, timeout, options, requestTemplate, outputFormat) => {
-  const triggerRule = { type, url, retries, timeout, options, requestTemplate, outputFormat, template: "go" }
+export const saveEventingTriggerRule = (projectId, triggerName, triggerRule) => {
   return new Promise((resolve, reject) => {
-    client.eventing.setTriggerRule(projectId, triggerName, triggerRule)
+    const eventingTriggerRule = getEventingTriggerRule(store.getState(), triggerName)
+    const newEventingTriggerRule = Object.assign({}, eventingTriggerRule, triggerRule)
+    client.eventing.setTriggerRule(projectId, triggerName, newEventingTriggerRule)
       .then(({ queued }) => {
         if (!queued) {
-          store.dispatch(set(`eventingTriggers.${triggerName}`, triggerRule))
+          store.dispatch(set(`eventingTriggers.${triggerName}`, newEventingTriggerRule))
         }
         resolve({ queued })
       })
@@ -210,6 +212,8 @@ export const triggerCustomEvent = (projectId, type, payload, isSynchronous, toke
 export const getEventingConfig = (state) => get(state, "eventingConfig", { enabled: false, dbAlias: "" })
 export const getEventingDbAliasName = (state) => get(state, "eventingConfig.dbAlias", "")
 export const getEventingTriggerRules = (state) => get(state, "eventingTriggers", {})
+export const getEventingTriggerRule = (state, triggerId) => get(state, `eventingTriggers.${triggerId}`, {})
+export const getEventingTriggerFilterRules = (state, triggerId) => get(state, `eventingTriggers.${triggerId}.filter`, {})
 export const getEventingSchemas = (state) => get(state, "eventingSchemas", {})
 export const getEventingSecurityRule = (state, eventType) => get(state, `eventingRules.${eventType}`, {})
 export const getEventingSecurityRules = (state) => get(state, "eventingRules", {})

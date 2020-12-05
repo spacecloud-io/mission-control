@@ -8,7 +8,7 @@ import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import ProjectPageLayout, { Content } from "../../../components/project-page-layout/ProjectPageLayout"
 import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
-import { Row, Col, Divider } from "antd";
+import { Row, Col, Divider, Badge } from "antd";
 import { loadClusterSettings, saveClusterSetting } from "../../../operations/cluster";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 

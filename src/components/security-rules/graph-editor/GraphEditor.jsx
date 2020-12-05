@@ -19,7 +19,7 @@ const getDoubleClickedRuleObject = (rule, ruleKey) => {
   return dotProp.get(rule, getStrippedKey(ruleKey), {})
 }
 
-function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
+function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }) {
   const { ruleType } = ruleMetaData
 
   // Component state
@@ -239,6 +239,8 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData }) {
           ruleMetaData={ruleMetaData}
           onSubmit={onSubmit}
           selectedNodeId={getStrippedKey(doubleClickedNodeId).split(".")[0]}
+          blockDepth={doubleClickedNodeId.split(".").length}
+          isCachingEnabled={isCachingEnabled}
         />
       )}
     </React.Fragment>

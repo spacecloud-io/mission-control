@@ -36,13 +36,10 @@ const CreateProject = () => {
   const handleAddDatabase = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
     addDatabase(projectId, alias, dbType, dbName, connectionString)
-      .then(({ queued, enabledEventing}) => {
+      .then(({ queued }) => {
         if (!queued) {
           openProject(projectId)
           notify("success", "Success", "Successfully added database")
-          if (enabledEventing) {
-            notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
-          }
         } else {
           notify("success", "Success", actionQueuedMessage)
         }

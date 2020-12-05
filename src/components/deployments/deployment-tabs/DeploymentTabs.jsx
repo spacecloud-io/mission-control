@@ -23,6 +23,13 @@ export default ({ activeKey, projectID }) => {
             }}
           />
         </TabPane>
+        <TabPane tab='Roles' key='roles'>
+          <Redirect
+            to={{
+              pathname: `/mission-control/projects/${projectID}/${projectModules.DEPLOYMENTS}/roles`
+            }}
+          />
+        </TabPane>
       </Tabs>
     </div>
   )

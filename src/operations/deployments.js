@@ -1,8 +1,10 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
-import { upsertArray, checkResourcePermissions } from "../utils";
-import { configResourceTypes, permissionVerbs } from "../constants";
+import { upsertArray, checkResourcePermissions, notify } from "../utils";
+import { configResourceTypes, permissionVerbs, spaceCloudClusterOrigin } from "../constants";
+import { getToken } from "./cluster";
+import { generateId } from "space-api/dist/lib/utils";
 
 export const loadServiceRoutes = (projectId) => {
   return new Promise((resolve, reject) => {
@@ -80,6 +82,54 @@ export const loadServicesStatus = (projectId) => {
   })
 }
 
+export const loadServiceLogs = async (projectId, task, replica) => {
+  const filters = getServiceLogsFilters(store.getState())
+
+  // Create a new subscription
+  const subscriptionId = generateId()
+  setServiceLogsSubscriptionId(subscriptionId)
+
+  // Flush the existing logs
+  setServiceLogs([])
+
+  // Start the new subscription
+  const token = getToken()
+  const options = { headers: {} }
+  if (token) options.headers.Authorization = `Bearer ${token}`
+  let filterUrlParams = "";
+  if (filters.since === "duration") filterUrlParams += `&since=${filters.time}${filters.unit}`
+  else if (filters.since === "time") filterUrlParams += `&since-time=${filters.date.toString()}`
+  if (filters.tail) filterUrlParams += `&tail=${filters.limit}`
+  const logsEndpoint = `/v1/runner/${projectId}/services/logs?replicaId=${replica}&taskId=${task}&follow=true${filterUrlParams}`
+  const url = spaceCloudClusterOrigin ? spaceCloudClusterOrigin + logsEndpoint : logsEndpoint
+  const response = await fetch(url, options)
+  const body = response.body
+  const readableStream = body.getReader()
+  const decoder = new TextDecoder('utf-8')
+
+  readableStream.read().then(function processStream({ done, value }) {
+    const state = store.getState()
+    const currentSubscriptionId = getServiceLogsSubscriptionId(state)
+    if (done) {
+      if (currentSubscriptionId === subscriptionId) {
+        notify("info", "Info", "Log stream closed")
+      }
+      return
+    }
+
+    const chunkValue = decoder.decode(value)
+    const newLogs = chunkValue.split("\n")
+
+    const logs = getServiceLogs(state)
+    const updatedLogs = [...logs, ...newLogs]
+    setServiceLogs(updatedLogs)
+
+    return readableStream.read().then(processStream)
+  })
+
+  return () => readableStream.cancel()
+}
+
 export const saveService = (projectId, serviceId, version, serviceConfig) => {
   return new Promise((resolve, reject) => {
     client.deployments.setDeploymentConfig(projectId, serviceId, version, serviceConfig)
@@ -137,12 +187,71 @@ export const deleteServiceRoutes = (projectId, serviceId, port) => {
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
+export const loadServiceRoles = (projectId) => {
+  return new Promise((resolve, reject) => {
+    const hasPermission = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.SERVICE_ROlES], permissionVerbs.READ)
+    if (!hasPermission) {
+      console.warn("No permission to fetch service routes")
+      setServiceRoles([])
+      resolve()
+      return
+    }
+
+    client.deployments.fetchDeploymentRoles(projectId)
+      .then((res = []) => {
+        setServiceRoles(res)
+        resolve()
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const saveServiceRoles = (projectId, serviceId, roleId, roleConfig) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.setDeploymentRoles(projectId, serviceId, roleId, roleConfig)
+      .then(({ queued }) => {
+        if (!queued) {
+          const serviceRoles = get(store.getState(), "serviceRoles", [])
+          const newServiceRoles = upsertArray(serviceRoles, obj => obj.id === roleConfig.id, () => roleConfig)
+          setServiceRoles(newServiceRoles)
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
+export const deleteServiceRoles = (projectId, serviceId, roleId) => {
+  return new Promise((resolve, reject) => {
+    client.deployments.deleteDeploymentRoles(projectId, serviceId, roleId)
+      .then(({ queued }) => {
+        if (!queued) {
+          const serviceRoles = get(store.getState(), "serviceRoles", [])
+          const newServiceRoles = serviceRoles.filter(obj => obj.id !== roleId);
+          setServiceRoles(newServiceRoles)
+        }
+        resolve({ queued })
+      })
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getServices = (state) => get(state, "services", [])
 export const getUniqueServiceIDs = (state) => [...new Set(getServices(state).map(obj => obj.id))]
 export const getServiceRoutes = (state) => get(state, "serviceRoutes", {})
 export const getServicesStatus = (state) => get(state, "servicesStatus", {})
+export const getServiceLogs = (state) => get(state, "serviceLogs", [])
+
+export const getServiceLogsFilters = (state) => get(state, "uiState.serviceLogsFilters", {})
+export const getServiceRoles = (state) => get(state, "serviceRoles", [])
+const getServiceLogsSubscriptionId = (state) => get(state, "serviceLogsSubscriptionId", "")
+
 const setServiceRoutes = (serviceRoutes) => store.dispatch(set("serviceRoutes", serviceRoutes))
 const setServiceRoute = (serviceId, routes) => store.dispatch(set(`serviceRoutes.${serviceId}`, routes))
 const setServices = (services) => store.dispatch(set("services", services))
 const setServicesStatus = (servicesStatus) => store.dispatch(set("servicesStatus", servicesStatus))
+const setServiceLogs = (logs) => store.dispatch(set("serviceLogs", logs))
+const setServiceLogsSubscriptionId = (subscriptionId) => store.dispatch(set("serviceLogsSubscriptionId", subscriptionId))
+const setServiceRoles = (serviceRoles) => store.dispatch(set("serviceRoles", serviceRoles))
+export const setServiceLogsFilters = (filters) => store.dispatch(set("uiState.serviceLogsFilters", filters))

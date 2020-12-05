@@ -22,9 +22,9 @@ const EventingSettings = () => {
   // Derived state
   const dbList = Object.keys(dbConfigs)
 
-  const handleEventingConfig = ({ enabled, dbAlias }) => {
+  const handleEventingConfig = (config) => {
     incrementPendingRequests()
-    saveEventingConfig(projectID, enabled, dbAlias)
+    saveEventingConfig(projectID, config)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved eventing config successfully"))
       .catch(ex => notify("error", "Error saving eventing config", ex))
       .finally(() => decrementPendingRequests());

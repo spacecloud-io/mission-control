@@ -7,23 +7,27 @@ import CreateDatabase from '../../../components/database/create-database/CreateD
 import { LeftOutlined } from '@ant-design/icons';
 import { Row, Col, Button } from 'antd';
 import '../database.css';
-import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
+import { notify, incrementPendingRequests, decrementPendingRequests, setLastUsedValues } from '../../../utils';
 import { projectModules, actionQueuedMessage } from '../../../constants';
+import { getSecrets } from "../../../operations/secrets";
+import { useSelector } from 'react-redux';
 
 const AddDb = () => {
   const { projectID } = useParams()
   const history = useHistory()
+  const totalSecrets = useSelector(state => getSecrets(state))
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.id);
 
   const addDb = (alias, connectionString, dbType, dbName) => {
     incrementPendingRequests()
     addDatabase(projectID, alias, dbType, dbName, connectionString)
-      .then(({ queued, enabledEventing }) => {
+      .then(({ queued }) => {
         if (!queued) {
           history.push(`/mission-control/projects/${projectID}/database/${alias}/overview`)
+          setLastUsedValues(projectID, { db: alias })
           notify("success", "Success", "Successfully added database")
-          if (enabledEventing) {
-            notify("info", "Enabled eventing module", "Configured this database to store event logs. Check out the settings in eventing section to change it")
-          }
         } else {
           notify("success", "Success", actionQueuedMessage)
         }
@@ -60,7 +64,7 @@ const AddDb = () => {
           <div>
             <Row>
               <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} >
-                <CreateDatabase projectId={projectID} handleSubmit={addDb} />
+                <CreateDatabase projectId={projectID} handleSubmit={addDb} envSecrets={envSecrets} />
               </Col>
             </Row>
           </div>

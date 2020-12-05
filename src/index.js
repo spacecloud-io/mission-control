@@ -8,6 +8,9 @@ import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
 import './index.css'
 
+const jsonlint = require("jsonlint-mod");
+window.jsonlint = jsonlint;
+
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_MOCK) {
   makeServer();
 }

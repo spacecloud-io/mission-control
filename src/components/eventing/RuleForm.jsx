@@ -14,9 +14,9 @@ function AlertMsgApplyTransformations() {
   return (
     <div>
       <b>Info</b> <br />
-      Describe the transformed webhook request body using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
+      Describe the transformed webhook request body and claims using <a href='https://golang.org/pkg/text/template/' style={{ color: '#7EC6FF' }}>
         <b>Go templates</b>
-      </a>. Space Cloud will execute the specified template to generate the new webhook request body.
+      </a>. Space Cloud will execute the specified template to generate the new webhook request body and claims.
     </div>
   );
 }
@@ -24,9 +24,16 @@ function AlertMsgApplyTransformations() {
 const RuleForm = (props) => {
   const [form] = Form.useForm();
 
-  const { id, type, url, retries, timeout, options, outputFormat, requestTemplate } = props.initialValues ? props.initialValues : {}
-  const [selectedDb, setSelectedDb] = useState(options && options.db ? options.db : "");
-  const trackedCollections = useSelector(state => getTrackedCollections(state, selectedDb))
+  const { id, type, url, retries, timeout, options, outputFormat, requestTemplate, claims } = props.initialValues ? props.initialValues : {}
+  const { db = "", col = "" } = options ? options : {}
+  const dbArray = db ? db.split(",") : []
+  const collArray = col ? col.split(",") : []
+
+  const [selectedDbs, setSelectedDbs] = useState(dbArray);
+  const trackedCollections = useSelector(state => {
+    const allTrackedCollections = selectedDbs.reduce((prev, curr) => [...prev, ...getTrackedCollections(state, curr)], [])
+    return [...new Set(allTrackedCollections)]
+  })
 
   const [value, setValue] = useState("");
 
@@ -34,33 +41,47 @@ const RuleForm = (props) => {
     id: id,
     source: getEventSourceFromType(type, "database"),
     type: type ? type : "DB_INSERT",
-    options: options ? options : {},
+    db: dbArray,
+    col: collArray,
     url: url,
     retries: retries ? retries : 3,
     timeout: timeout ? timeout : 5000,
-    applyTransformations: requestTemplate ? true : false,
+    applyTransformations: requestTemplate || claims ? true : false,
     outputFormat: outputFormat ? outputFormat : "yaml",
-    requestTemplate: requestTemplate ? requestTemplate : ""
+    requestTemplate: requestTemplate ? requestTemplate : undefined,
+    claims: claims ? claims : undefined
   }
 
   const handleSearch = value => setValue(value);
-  const handleSelectDatabase = value => setSelectedDb(value)
+  const handleSelectDatabases = values => setSelectedDbs(values)
   const handleSourceChange = () => form.setFieldsValue({ type: undefined })
 
-  const handleSubmit = e => {
+  const handleSubmit = () => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
-      let options = values.options
-      if (options && !options.col) {
-        delete options["col"]
+
+      values.options = {}
+
+      if (values.db && values.db.length > 0) {
+        values.options.db = values.db.join(",")
+      }
+
+      if (values.col && values.col.length > 0) {
+        values.options.col = values.col.join(",")
       }
 
       if (!values.applyTransformations) {
         delete values["requestTemplate"]
+        delete values["claims"]
       }
 
       delete values["applyTransformations"]
-      props.handleSubmit(values.id, values.type, values.url, values.retries, values.timeout, options, values.requestTemplate, values.outputFormat).then(() => {
+      delete values["source"]
+      delete values["db"]
+      delete values["col"]
+
+      values.template = "go"
+      props.handleSubmit(values).then(() => {
         props.handleCancel();
         form.resetFields();
       })
@@ -106,12 +127,15 @@ const RuleForm = (props) => {
         <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
           <FormItemLabel name="Table/collection" />
           <Input.Group compact>
-            <Form.Item name={["options", "db"]} rules={[{ required: true, message: 'Please select a database!' }]}
-              style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-              <AutoComplete placeholder="Select a database" onChange={handleSelectDatabase} options={props.dbList.map(db => ({ value: db }))} />
+            <Form.Item name="db" style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
+              <Select mode="tags" placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
+                {
+                  props.dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
+                }
+              </Select>
             </Form.Item>
-            <Form.Item name={["options", "col"]} style={{ flexGrow: 1, width: 200 }} >
-              <AutoComplete placeholder="Collection / Table name" onSearch={handleSearch} >
+            <Form.Item name="col" style={{ flexGrow: 1, width: 200 }} >
+              <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
                 {
                   trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
                     <Option key={data} value={data}>
@@ -119,20 +143,22 @@ const RuleForm = (props) => {
                     </Option>
                   ))
                 }
-              </AutoComplete>
+              </Select>
             </Form.Item>
           </Input.Group>
-          <FormItemLabel name="Trigger operation" />
-          <Form.Item
-            name="type"
-            dependencies={["source"]}
-            rules={[{ required: true, message: 'Please select a type!' }]}>
-            <RadioCards defaultValue="DB_INSERT">
-              <Radio.Button value="DB_INSERT">Insert</Radio.Button>
-              <Radio.Button value="DB_UPDATE">Update</Radio.Button>
-              <Radio.Button value="DB_DELETE">Delete</Radio.Button>
-            </RadioCards>
-          </Form.Item>
+          <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "database"}>
+            <FormItemLabel name="Trigger operation" />
+            <Form.Item
+              name="type"
+              dependencies={["source"]}
+              rules={[{ required: true, message: 'Please select a type!' }]}>
+              <RadioCards defaultValue="DB_INSERT">
+                <Radio.Button value="DB_INSERT">Insert</Radio.Button>
+                <Radio.Button value="DB_UPDATE">Update</Radio.Button>
+                <Radio.Button value="DB_DELETE">Delete</Radio.Button>
+              </RadioCards>
+            </Form.Item>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock dependency="source" condition={() => form.getFieldValue("source") === "file storage"}>
           <FormItemLabel name="Trigger operation" />
@@ -186,7 +212,7 @@ const RuleForm = (props) => {
             <FormItemLabel name='Apply transformations' />
             <Form.Item name='applyTransformations' valuePropName='checked'>
               <Checkbox>
-                Transform the webhook request body using templates
+                Transform the claims and request using templates
               </Checkbox>
             </Form.Item>
             <ConditionalFormBlock
@@ -206,9 +232,20 @@ const RuleForm = (props) => {
                   <Option value='json'>JSON</Option>
                 </Select>
               </Form.Item>
-              <FormItemLabel name="Template" description="Template to generate the transformed webhook request body." />
-              <Form.Item name="requestTemplate" rules={[{ required: true, message: "Please provide a template!" }]}>
-                <AntCodeMirror style={{ border: "1px solid #D9D9D9", maxWidth: "600px" }} options={{
+              <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed claims of the webhook request." />
+              <Form.Item name="claims">
+                <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                  mode: { name: 'go' },
+                  lineNumbers: true,
+                  styleActiveLine: true,
+                  matchBrackets: true,
+                  autoCloseBrackets: true,
+                  tabSize: 2
+                }} />
+              </Form.Item>
+              <FormItemLabel name="Request body template" hint="(Optional)" description="Template to generate the transformed webhook request body." />
+              <Form.Item name="requestTemplate">
+                <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
                   mode: { name: 'go' },
                   lineNumbers: true,
                   styleActiveLine: true,

@@ -50,9 +50,9 @@ class Eventing {
     })
   }
 
-  fetchEventingTriggers(projectId) {
+  fetchEventingTriggers(projectId, triggerId) {
     return new Promise((resolve, reject) => {
-      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers`)
+      this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers?id=${triggerId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)
@@ -79,9 +79,10 @@ class Eventing {
             limit: 100,
             where: {
               status: {_in: $status}
-              ${showName ? "rule_name: {_in: $name, _regex: $regexForInternalEventLogs}" : "rule_name: {_regex: $regexForInternalEventLogs}"}
+              ${showName ? "rule_name: {_in: $name" : ""}
               ${showDate ? "event_ts: {_gte: $startDate, _lte: $endDate}" : ""}
               event_ts: {_lte: $lastEventDate}
+              trigger_type: {_ne: "internal"}
             }
           ) @${dbType} {
             _id
@@ -101,7 +102,7 @@ class Eventing {
           }
         }
       `,
-        variables: { status, name, startDate, endDate, lastEventDate, regexForInternalEventLogs: `^(?!realtime-${dbType}-).*` }
+        variables: { status, name, startDate, endDate, lastEventDate }
       }).then(res => {
         const { data, errors } = res
         if (errors && errors.length > 0) {
@@ -145,7 +146,7 @@ class Eventing {
 
   setTriggerRule(projectId, triggerName, triggerRule) {
     return new Promise((resolve, reject) => {
-      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, { id: triggerName, ...triggerRule })
+      this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, triggerRule)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
             reject(data.error)

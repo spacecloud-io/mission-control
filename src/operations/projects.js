@@ -48,6 +48,8 @@ export const deleteProject = (projectId) => {
         const newProjects = projects.filter(obj => obj.id !== projectId)
         if (!queued) {
           store.dispatch(set("projects", newProjects))
+          localStorage.removeItem("lastOpenedProject")
+          localStorage.removeItem(`lastUsedValues:${projectId}`)
         }
         resolve({ queued, newProjects })
       })
@@ -82,9 +84,8 @@ export const saveSecret = (projectId, values, index) => {
   const { isPrimary, alg } = values;
   const secrets = store.getState().projects.find(obj => obj.id === projectId).secrets
   const oldSecrets = isPrimary ? secrets.map(obj => Object.assign({}, obj, { isPrimary: false })) : secrets
-  const kid = alg !== "JWK_URL" ? generateId() : undefined;
-  const newSecret = { ...values, kid }
-  const newSecrets = index !== undefined ? oldSecrets.map((obj, i) => i === index ? Object.assign({}, values, { kid: obj.kid }) : obj) : [...oldSecrets, newSecret]
+  const newSecret = { ...values }
+  const newSecrets = index !== undefined ? oldSecrets.map((obj, i) => i === index ? Object.assign({}, values) : obj) : [...oldSecrets, newSecret]
   return saveProjectSetting(projectId, "secrets", newSecrets)
 }
 

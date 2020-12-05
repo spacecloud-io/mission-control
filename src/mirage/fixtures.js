@@ -29,62 +29,69 @@ export const projects = [
 
 export const dbConfigs = [
   {
-    "mydb": {
-      "type": 'postgres',
-      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
-      "name": "public",
-      "enabled": true
+    "dbAlias": "mydb1",
+    "type": 'mongo',
+    "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+    "name": "public",
+    "enabled": true,
+    "limit": 100,
+    "driverConf": {
+      "maxConn": 400,
+      "maxIdleConn": 40,
+      "maxIdleTimeout": 600000
     }
   },
   {
-    "mydb2": {
-      "type": 'postgres',
-      "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
-      "name": "public",
-      "enabled": true
-    }
+    "dbAlias": "mydb2",
+    "type": 'postgres',
+    "conn": 'postgres://postgres:mysecretpassword@postgres.db.svc.cluster.local:5432/postgres?sslmode=disable',
+    "name": "public",
+    "enabled": true
   }
 ]
 
 export const dbSchemas = [
   {
-    "mydb-users": {
-      schema: `type users {
-        id: ID! @primary
-        name: String!
-        age: Integer
-        posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
-      }`
-    },
-    "mydb2-posts": {
-      schema: `type posts {
-        id: ID! @primary
-        title: String!
-        author_id: ID
-      }`
-    }
+    dbAlias: "mydb1",
+    col: "users",
+    schema: `type users {
+  id: ID! @primary
+  name: String!
+  age: Integer
+  posts: [posts] @link(table: posts, from: id, to: author_id, db: mydb2)
+}`
+  },
+  {
+    dbAlias: "mydb2",
+    col: "posts",
+    schema: `type posts {
+  id: ID! @primary
+  title: String!
+  author_id: ID
+}`
   }
 ]
 
 export const dbRules = [
   {
-    "mydb-users": {
-      isRealtimeEnabled: true,
-      rules: {
-        "create": {
-          "rule": "and",
-          "clauses": [
-            {
-              "rule": "force"
-            }
-          ]
-        },
-        "read": {
-          "rule": "deny"
-        },
-        "update": {
-          "rule": "deny"
-        }
+    dbAlias: "mydb1",
+    col: "users",
+    isRealtimeEnabled: true,
+    enableCacheInvalidation: true,
+    rules: {
+      "create": {
+        "rule": "and",
+        "clauses": [
+          {
+            "rule": "force"
+          }
+        ]
+      },
+      "read": {
+        "rule": "deny"
+      },
+      "update": {
+        "rule": "deny"
       }
     }
   }
@@ -93,7 +100,7 @@ export const dbRules = [
 export const dbPreparedQueries = [
   {
     "id": "preparedQuery1",
-    "db": "mydb",
+    "dbAlias": "mydb1",
     "sql": "select * from users",
     "rule": {
       "rule": "and",
@@ -108,7 +115,7 @@ export const dbPreparedQueries = [
   },
   {
     "id": "default",
-    "db": "mydb",
+    "dbAlias": "mydb1",
     "sql": "select * from users",
     "rule": {
       "rule": "allow"
@@ -119,7 +126,7 @@ export const dbPreparedQueries = [
 export const eventingConfig = [
   {
     "enabled": true,
-    "dbAlias": "mydb"
+    "dbAlias": "mydb1"
   }
 ]
 
@@ -138,17 +145,81 @@ export const eventingTriggers = [
     "type": "MY_CUSTOM_EVENT",
     "url": "http://localhost:3000/v1/my-event",
     "retries": 3,
-    "timeout": 5000
+    "timeout": 5000,
+    "filter": {
+      "rule": "match",
+      "eval": "==",
+      "type": "string",
+      "f1": "args.data.doc.status",
+      "f2": "closed"
+    }
+  },
+  {
+    "id": "UserAdded",
+    "type": "DB_INSERT",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb1",
+      "col": "users"
+    }
+  },
+  {
+    "id": "UserDeleted",
+    "type": "DB_DELETE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb1",
+      "col": "users"
+    }
+  },
+  {
+    "id": "PostAdded",
+    "type": "DB_INSERT",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000,
+    "options": {
+      "db": "mydb2",
+      "col": "posts"
+    }
+  },
+  {
+    "id": "FileAdded",
+    "type": "FILE_CREATE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
+  },
+  {
+    "id": "FileDeleted",
+    "type": "FILE_DELETE",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
+  },
+  {
+    "id": "Trigger2",
+    "type": "MY_CUSTOM_EVENT2",
+    "url": "https://httpbin.org/post",
+    "retries": 5,
+    "timeout": 2000
   }
 ]
 
 export const fileStoreConfig = [
   {
-    "enabled": false,
-    // "storeType": "amazon-s3",
-    // "bucket": "my-bucket",
-    // "conn": "us-east-1",
-    // "secret": "secrets.FileSecret.constants.json"
+    "enabled": true,
+    "storeType": "amazon-s3",
+    "bucket": "my-bucket",
+    "conn": "us-east-1",
+    "secret": "secrets.FileSecret.constants.json",
+    "endpoint": "https://nyc3.digitaloceanspaces.com",
+    "disableSSL": true,
+    "forcePathStyle": true
   }
 ]
 
@@ -243,13 +314,16 @@ export const remoteServices = [
       "login": {
         "method": "POST",
         "path": "/v1/login",
+        "kind": "internal",
         "rule": {
           "rule": "allow"
         },
+        "token": "eyJhbGciOiJIUzI1NiJ9.ewogICJyb2xlIjogInVzZXIiCn0.BSQNTIL1Ktox0H_qyj7UHYBGlz9PiF06kEqDZptFJFA",
         "headers": [
           { "key": "headerKey1", "value": "headerValue1", "op": "add" },
           { "key": "headerKey2", "value": "headerValue2", "op": "del" }
-        ]
+        ],
+        "timeout": 100
       },
       "externalEndpoint": {
         "method": "GET",
@@ -282,12 +356,223 @@ export const services = [
     "id": "service1",
     "version": "v1",
     "projectId": "todoapp",
-    "scale": {
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDownInterval": 120,
       "replicas": 0,
       "minReplicas": 0,
       "maxReplicas": 10,
-      "concurrency": 50,
-      "mode": "per-second"
+      "triggers": [
+        {
+          "name": "Scaler1",
+          "type": "cpu",
+          "metadata": { "type": "Utilization", "value": "50" },
+        }
+      ]
+    },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
+    "tasks": [
+      {
+        "id": "task1",
+        "ports": [
+          {
+            "protocol": "http",
+            "port": 8080,
+            "name": "http"
+          },
+          {
+            "protocol": "http",
+            "port": 8081,
+            "name": "http"
+          }
+        ],
+        "resources": {
+          "cpu": 200,
+          "memory": 200,
+          "gpu": {
+            "type": "amd",
+            "value": 25
+          }
+        },
+        "docker": {
+          "cmd": ["node ./index.js"],
+          "image": "asd",
+          "secret": "DockerHubSecret",
+          "imagePullPolicy": "always"
+        },
+        "secrets": [
+          "EnvSecret"
+        ],
+        "env": {
+          "f00": "bar",
+          "key1": "val1"
+        },
+        "runtime": "image"
+      }
+    ],
+    "affinity": [
+      {
+        "id": "123",
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpressions": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
+    "whitelists": [
+      {
+        "projectId": "todoapp",
+        "service": "s1"
+      },
+      {
+        "projectId": "todoapp",
+        "service": "s2"
+      }
+    ],
+    "upstreams": [
+      {
+        "projectId": "todoapp",
+        "service": "s3"
+      },
+      {
+        "projectId": "myapp",
+        "service": "s4"
+      }
+    ],
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
+  },
+  {
+    "id": "service1",
+    "version": "v2",
+    "projectId": "todoapp",
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDownInterval": 120,
+      "replicas": 0,
+      "minReplicas": 0,
+      "maxReplicas": 100,
+      "triggers": [{
+        "name": "Scaler1",
+        "type": "requests-per-second",
+        "metadata": { "target": 50 }
+      }]
+    },
+    "labels": {
+      "diskType": "ssd",
+      "attrs": "label"
+    },
+    "tasks": [
+      {
+        "id": "task1",
+        "ports": [
+          {
+            "protocol": "http",
+            "port": 8080,
+            "name": "http"
+          },
+          {
+            "protocol": "http",
+            "port": 8081,
+            "name": "http"
+          }
+        ],
+        "resources": {
+          "cpu": 200,
+          "memory": 200,
+          "gpu": {
+            "type": "amd",
+            "value": 25
+          }
+        },
+        "docker": {
+          "cmd": ["node ./index.js"],
+          "image": "asd",
+          "secret": "DockerHubSecret",
+          "imagePullPolicy": "always"
+        },
+        "secrets": [
+          "EnvSecret"
+        ],
+        "env": {
+          "f00": "bar",
+          "key1": "val1"
+        },
+        "runtime": "image"
+      }
+    ],
+    "affinity": [
+      {
+        "id": "123",
+        "type": "node",
+        "weight": 50,
+        "operator": "preferred",
+        "topologyKey": "kubernets.io/hostname",
+        "projects": ["project1"],
+        "matchExpressions": [
+          {
+            "key": "diskType",
+            "attribute": "label",
+            "operator": "In",
+            "values": ["ssd"]
+          }
+        ]
+      }
+    ],
+    "whitelists": [
+      {
+        "projectId": "todoapp",
+        "service": "s1"
+      },
+      {
+        "projectId": "todoapp",
+        "service": "s2"
+      }
+    ],
+    "upstreams": [
+      {
+        "projectId": "todoapp",
+        "service": "s3"
+      },
+      {
+        "projectId": "myapp",
+        "service": "s4"
+      }
+    ],
+    "statsInclusionPrefixes": "http.inbound,cluster_manager"
+  },
+  {
+    "id": "service2",
+    "version": "v1",
+    "projectId": "todoapp",
+    "autoScale": {
+      "pollingInterval": 15,
+      "coolDownInterval": 120,
+      "replicas": 0,
+      "minReplicas": 0,
+      "maxReplicas": 10,
+      "triggers": [{
+        "name": "Scaler1",
+        "type": "azure-blob-storage",
+        "metadata": { "k1": "v1", "k2": "v2" },
+        "authRef": {
+          "secretMapping": [
+            { "param": "abc", "key": "secrets.EnvSecret.foo" },
+            { "param": "xyz", "key": "secrets.EnvSecret.bar" }
+          ]
+        }
+      }]
     },
     "labels": {
       "diskType": "ssd",
@@ -389,6 +674,22 @@ export const deploymentsStatus = [
   }
 ]
 
+export const serviceRoles = [
+  {
+    "id": "Role1",
+    "type": "project",
+    "project": "MockProject1",
+    "service": "service1",
+    "rules": [
+      {
+        "apiGroups": ["group1","rbac.authorization.io"],
+        "verbs": ["get", "watch", "list"],
+        "resources": ["pods", "configmaps"]
+      }
+    ]
+  }
+]
+
 export const secrets = [
   {
     "id": "EnvSecret",
@@ -412,6 +713,14 @@ export const secrets = [
       "username": "user1",
       "password": "123",
       "url": "http://localhost:5000"
+    }
+  },
+  {
+    "id": "Secret1",
+    "type": "env",
+    "data": {
+      "abc": "abc",
+      "xyz": "xyz"
     }
   }
 ]
@@ -566,3 +875,31 @@ export const eventLogs = [
     "status": "failed"
   }
 ]
+
+export const cacheConfig = [
+  {
+    "enabled": true,
+    "conn": "my-redis.space-cloud.svc.cluster.local:6379",
+    "defaultTTL": 2100
+  }
+]
+
+export const addonsConfig = {
+  rabbitmq: {
+    "enabled": true,
+    "resources": {
+      "cpu": 1000,
+      "memory": 100
+    },
+    "options": {
+      "highAvailability": true
+    }
+  },
+  redis: {
+    "enabled": true,
+    "resources": {
+      "cpu": 1000,
+      "memory": 100
+    }
+  }
+}

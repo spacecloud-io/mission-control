@@ -33,6 +33,8 @@ import UserManagement from "../pages/user-management/UserManagement";
 import DeploymentsIndex from "../pages/deployments/Index";
 import DeploymentsOverview from "../pages/deployments/overview/DeploymentsOverview";
 import DeploymentsRoutes from "../pages/deployments/routes/DeploymentsRoutes";
+import DeploymentsRoles from "../pages/deployments/roles/DeploymentsRoles";
+import ServiceRoleForm from "../pages/deployments/roles/ServiceRoleForm";
 import DeploymentsLogs from "../pages/deployments/deployment-logs/DeploymentLogs";
 import ConfigureDeployment from "../pages/deployments/configure-deployment/ConfigureDeployment";
 import Graphql from "../pages/explorer/graphql/Graphql";
@@ -52,6 +54,12 @@ import InstalledIntegrations from '../pages/integrations/InstalledIntegrations';
 import InstallIntegration from '../pages/integrations/InstallIntegration';
 import IntegrationDetails from '../pages/integrations/IntegrationDetails';
 import IntegrationPermissions from '../pages/integrations/IntegrationPermissions';
+import ConfigureCache from '../pages/cache/configure-cache/ConfigureCache';
+import CacheOverview from '../pages/cache/overview/Overview';
+import CacheIndex from '../pages/cache/Index';
+import ConfigureRabbitMQ from "../pages/settings/add-ons/rabbit-mq/RabbitMQ";
+import ConfigureRedis from "../pages/settings/add-ons/redis/ConfigureRedis";
+// import AddOns from "../pages/settings/add-ons/AddOns";
 
 
 function ProjectPages() {
@@ -77,10 +85,16 @@ function ProjectPages() {
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorageIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}`} component={FileStorage} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.FILESTORE}/configure`} component={FileStorageConfig} />
+      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.CACHE}`} component={CacheIndex} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}`} component={CacheOverview} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.CACHE}/configure`} component={ConfigureCache} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}`}
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/settings/project`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/project`} component={ProjectSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/cluster`} component={ClusterSettings} />
+      {/* <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons`} component={AddOns} /> */}
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/rabbit-mq`} component={ConfigureRabbitMQ} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/redis`} component={ConfigureRedis} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`} component={ApplyLicense} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}
@@ -112,6 +126,9 @@ function ProjectPages() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/configure`} component={ConfigureDeployment} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/routes`} component={DeploymentsRoutes} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/logs`} component={DeploymentsLogs} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles`} component={DeploymentsRoles} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/add`} component={ServiceRoleForm} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.DEPLOYMENTS}/roles/:roleName/edit`} component={ServiceRoleForm} />
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={Secrets} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`} component={SecretDetails} />

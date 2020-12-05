@@ -16,7 +16,7 @@ const QueryBlock = ({ value, theme }) => {
             styleActiveLine: true,
             matchBrackets: true,
             autoCloseBrackets: true,
-            tabSize: 2
+            tabSize: 2,
           }}
         />
       </div>

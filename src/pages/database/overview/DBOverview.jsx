@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { set } from 'automate-redux';
 
-import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty } from 'antd';
+import { Col, Row, Button, Table, Switch, Descriptions, Badge, Popconfirm, Typography, Empty, Input } from 'antd';
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import AddCollectionForm from '../../../components/database/add-collection-form/AddCollectionForm';
@@ -14,9 +14,12 @@ import disconnectedImg from '../../../assets/disconnected.jpg';
 
 import { notify, parseDbConnString, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
 import history from '../../../history';
-import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections } from "../../../operations/database"
+import { saveColSchema, inspectColSchema, untrackCollection, deleteCollection, loadDBConnState, enableDb, saveColRealtimeEnabled, getDbType, getDbConnState, getDbConnectionString, getTrackedCollectionsInfo, getUntrackedCollections, saveColCachingEnabled } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
-
+import { getSecrets } from '../../../operations/secrets';
+import Highlighter from 'react-highlight-words';
+import EmptySearchResults from "../../../components/utils/empty-search-results/EmptySearchResults";
+import { getCacheConfig, loadCacheConfig } from '../../../operations/cache';
 
 const Overview = () => {
   // Router params
@@ -30,17 +33,26 @@ const Overview = () => {
   const unTrackedCollections = useSelector(state => getUntrackedCollections(state, selectedDB))
   const unTrackedCollectionsInfo = unTrackedCollections.map(colName => ({ name: colName }))
   const trackedCollections = useSelector(state => getTrackedCollectionsInfo(state, selectedDB))
+  const totalSecrets = useSelector(state => getSecrets(state))
+  const cacheConfig = useSelector(state => getCacheConfig(state))
 
   // Component state
   const [addColModalVisible, setAddColModalVisible] = useState(false);
   const [addColFormInEditMode, setAddColFormInEditMode] = useState(false);
   const [editConnModalVisible, setEditConnModalVisible] = useState(false);
   const [clickedCol, setClickedCol] = useState("");
+  const [searchText, setSearchText] = useState('');
 
   // Derived state
   const { hostName, port } = parseDbConnString(connString);
   const hostString = connString.includes("secrets.") ? connString : (hostName ? `${hostName}:${port}` : "")
   const clickedColDetails = trackedCollections.find(obj => obj.name === clickedCol)
+
+  useEffect(() => {
+    incrementPendingRequests()
+    loadCacheConfig()
+      .finally(() => decrementPendingRequests())
+  }, [])
 
   useEffect(() => {
     if (projectID && selectedDB) {
@@ -50,6 +62,10 @@ const Overview = () => {
         .finally(() => decrementPendingRequests())
     }
   }, [projectID, selectedDB])
+
+  const envSecrets = totalSecrets
+    .filter(obj => obj.type === "env")
+    .map(obj => obj.id);
 
   // Handlers
   const handleRealtimeEnabled = (colName, isRealtimeEnabled) => {
@@ -63,6 +79,20 @@ const Overview = () => {
         notify("success", "Success", actionQueuedMessage)
       })
       .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`, ex))
+      .finally(() => decrementPendingRequests())
+  }
+
+  const handleEnableCacheInvalidation = (colName, enableCacheInvalidation) => {
+    incrementPendingRequests()
+    saveColCachingEnabled(projectID, selectedDB, colName, enableCacheInvalidation)
+      .then(({ queued }) => {
+        if (!queued) {
+          notify("success", "Success", `Successfully ${enableCacheInvalidation ? "enabled" : "disabled"} cache invalidation functionality`)
+          return
+        }
+        notify("success", "Success", actionQueuedMessage)
+      })
+      .catch(ex => notify("error", `Successfully ${enableCacheInvalidation ? "enabled" : "disabled"} cache invalidation functionality`, ex))
       .finally(() => decrementPendingRequests())
   }
 
@@ -193,11 +223,24 @@ const Overview = () => {
     })
   }
   const label = selectedDBType === dbTypes.MONGO || selectedDBType === dbTypes.EMBEDDED ? 'collection' : 'table'
-  const trackedTableColumns = [
+
+  const filteredTrackedCollections = trackedCollections.filter(collection => {
+    return collection.name.toLowerCase().includes(searchText.toLowerCase());
+  })
+
+  let trackedTableColumns = [
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      render: (value) => {
+        return <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={value ? value.toString() : ''}
+        />
+      }
     },
     {
       title: 'Realtime',
@@ -211,26 +254,43 @@ const Overview = () => {
           }
         />
       )
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      className: 'column-actions',
-      render: (_, { name }) => (
-        <span>
-          <a onClick={() => handleEditClick(name)}>Edit</a>
-          <a onClick={() => handleSecureClick(name)}>Secure</a>
-          <a onClick={() => handleBrowseClick(name)}>Browse</a>
-          <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
-          <a onClick={() => handleReloadSchema(name)}>Reload schema</a>
-          <a onClick={() => handleUntrackClick(name)}>Untrack</a>
-          <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
-            <a style={{ color: "red" }}>Delete</a>
-          </Popconfirm>
-        </span>
-      )
     }
   ]
+
+  if (cacheConfig.enabled) {
+    trackedTableColumns = [...trackedTableColumns, {
+      title: 'Cache Invalidation',
+      dataIndex: 'enableCacheInvalidation',
+      key: 'enableCacheInvalidation',
+      render: (_, { name, enableCacheInvalidation }) => (
+        <Switch
+          checked={enableCacheInvalidation}
+          onChange={checked =>
+            handleEnableCacheInvalidation(name, checked)
+          }
+        />
+      )
+    }]
+  }
+
+  trackedTableColumns = [...trackedTableColumns, {
+    title: 'Actions',
+    key: 'actions',
+    className: 'column-actions',
+    render: (_, { name }) => (
+      <span>
+        <a onClick={() => handleEditClick(name)}>Edit</a>
+        <a onClick={() => handleSecureClick(name)}>Secure</a>
+        <a onClick={() => handleBrowseClick(name)}>Browse</a>
+        <a onClick={() => handleViewQueriesClick(name)}>View Sample Queries</a>
+        <a onClick={() => handleReloadSchema(name)}>Reload schema</a>
+        <a onClick={() => handleUntrackClick(name)}>Untrack</a>
+        <Popconfirm title={`This will delete all the data from ${name}. Are you sure?`} onConfirm={() => handleDelete(name)}>
+          <a style={{ color: "red" }}>Delete</a>
+        </Popconfirm>
+      </span>
+    )
+  }]
 
   const untrackedTableColumns = [
     {
@@ -290,27 +350,32 @@ const Overview = () => {
               </div>
             </div>}
             {connected && <React.Fragment>
-              <div>
-                <div style={{ marginTop: '32px' }}>
-                  <span className='collections'>
-                    Tracked {label}s
-                    </span>
-                  <Button style={{ float: "right" }} type="primary"
+              <div style={{ margin: '32px 0 16px 0', display: 'flex', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 'auto 0' }}>Tracked {label}s {filteredTrackedCollections.length ? `(${filteredTrackedCollections.length})` : ''} </h3>
+                <div style={{ display: 'flex' }}>
+                  <Input.Search placeholder={`Search by ${label} name`} style={{ minWidth: '320px' }} allowClear={true} onChange={e => setSearchText(e.target.value)} />
+                  <Button style={{ marginLeft: '16px' }} type="primary"
                     onClick={handleAddClick}>
                     Add {label}
                   </Button>
                 </div>
-                <div style={{ marginTop: '32px' }}>
-                  <Table columns={trackedTableColumns} dataSource={trackedCollections} bordered locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked tables. Add a table' /> }} />
-                </div>
               </div>
+              <Table
+                columns={trackedTableColumns}
+                dataSource={filteredTrackedCollections}
+                bordered
+                locale={{
+                  emptyText: trackedCollections.length !== 0 ?
+                    <EmptySearchResults searchText={searchText} /> :
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='No tracked table created yet. Add a table' />
+                }} />
               {unTrackedCollections.length > 0 && (
                 <Row>
                   <Col xl={{ span: 8 }} lg={{ span: 12 }} xs={{ span: 24 }}>
                     <div style={{ marginTop: '32px' }}>
                       <span className='collections'>
-                        Untracked {label}s
-                    </span>
+                        Untracked {label}s {unTrackedCollectionsInfo.length ? `(${unTrackedCollectionsInfo.length})` : ''}
+                      </span>
                       <Button
                         style={{ float: "right" }} type="primary" ghost
                         onClick={() => handleTrackCollections(unTrackedCollections)}>
@@ -333,8 +398,10 @@ const Overview = () => {
             />}
             {editConnModalVisible && <EditConnectionForm
               initialValues={{ conn: connString }}
+              selectedDBType={selectedDBType}
               handleCancel={() => setEditConnModalVisible(false)}
-              handleSubmit={handleEditConnString} />}
+              handleSubmit={handleEditConnString}
+              envSecrets={envSecrets} />}
           </div>
         </div>
       </div>

@@ -4,32 +4,14 @@ import { MinusCircleOutlined } from '@ant-design/icons';
 import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 import { generateId, notify } from '../../../utils';
 import moment from 'moment';
-import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/theme/material.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/selection/active-line.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
-import { useEffect } from 'react';
 import { dbTypes } from '../../../constants';
+import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 
 const EditRowForm = (props) => {
   const [form] = Form.useForm();
-  const [json, setJson] = useState({});
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "datetime", "json", "array"]
-
-  useEffect(() => {
-    let doc = {};
-    props.schema.forEach((val, index) => {
-      if (val.type === "JSON" || !primitives.includes(val.type.toLowerCase())) {
-        doc = Object.assign(doc, { [index]: props.data[val.name] })
-      }
-    })
-    setJson(Object.assign({}, doc));
-  }, [])
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -39,7 +21,7 @@ const EditRowForm = (props) => {
             values.rows[index].value = val.arrays ? val.arrays.map(el => el.value) : [];
           }
           if (val.datatype === "json" || !primitives.includes(val.datatype)) {
-            values.rows[index].value = !json[index] ? undefined : JSON.parse(json[index]);
+            values.rows[index].value = JSON.parse(values.rows[index].value);
           }
           if (val.datatype === "boolean" && typeof val.value === "string") {
             val.value = val.value === "true" ? true : false
@@ -58,7 +40,7 @@ const EditRowForm = (props) => {
       return {
         column: val.name,
         datatype: !primitives.includes(dataType) ? "json" : dataType,
-        value: val.type === "DateTime" ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+        value: (val.type === "DateTime" || val.type === "Date") ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
       }
     } else {
       if (props.data[val.name]) {
@@ -116,7 +98,7 @@ const EditRowForm = (props) => {
           {(fields, { add, remove }) => {
             return (
               <div>
-                {fields.map((field, index) => (
+                {fields.map((field) => (
                   <>
                     <Row key={field.key} gutter={10}>
                       <Col span={5}>
@@ -252,6 +234,8 @@ const EditRowForm = (props) => {
                                 <Select.Option value='integer'>Integer</Select.Option>
                                 <Select.Option value='float'>Float</Select.Option>
                                 <Select.Option value='boolean'>Boolean</Select.Option>
+                                <Select.Option value='date'>Date</Select.Option>
+                                <Select.Option value='time'>Time</Select.Option>
                                 <Select.Option value='datetime'>Datetime</Select.Option>
                                 <Select.Option value='json'>JSON/Object</Select.Option>
                                 <Select.Option value='array'>Array</Select.Option>
@@ -338,6 +322,34 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
+                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "date"}>
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <DatePicker />
+                              </Form.Item>
+                            </Col>
+                          </ConditionalFormBlock>
+                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "time"}>
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <Input placeholder="Value" />
+                              </Form.Item>
+                            </Col>
+                          </ConditionalFormBlock>
                           <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "datetime"}>
                             <Col span={7}>
                               <Form.Item
@@ -353,42 +365,34 @@ const EditRowForm = (props) => {
                             </Col>
                           </ConditionalFormBlock>
                           <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "json"}>
-                            <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                              <CodeMirror
-                                value={json[field.name] ? json[field.name] : ""}
-                                options={{
-                                  mode: { name: 'javascript', json: true },
-                                  lineNumbers: true,
-                                  styleActiveLine: true,
-                                  matchBrackets: true,
-                                  autoCloseBrackets: true,
-                                  tabSize: 2
-                                }}
-                                onBeforeChange={(editor, data, value) => {
-                                  setJson(Object.assign({}, json, { [field.name]: value }))
-                                }}
-                              />
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
+                              </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
                           <ConditionalFormBlock
                             shouldUpdate={true}
                             condition={() => !primitives.includes(form.getFieldValue(["rows", field.name, "datatype"]))}
                           >
-                            <Col span={7} style={{ border: '1px solid #D9D9D9', marginBottom: 15 }}>
-                              <CodeMirror
-                                value={json[field.name] ? json[field.name] : ""}
-                                options={{
-                                  mode: { name: 'javascript', json: true },
-                                  lineNumbers: true,
-                                  styleActiveLine: true,
-                                  matchBrackets: true,
-                                  autoCloseBrackets: true,
-                                  tabSize: 2
-                                }}
-                                onBeforeChange={(editor, data, value) => {
-                                  setJson(Object.assign({}, json, { [field.name]: value }))
-                                }}
-                              />
+                            <Col span={7}>
+                              <Form.Item
+                                name={[field.name, 'value']}
+                                key={[field.name, 'value']}
+                                style={{ display: 'inline-block', width: '100%' }}
+                                rules={[
+                                  isFieldRequired(field.name)
+                                ]}
+                              >
+                                <JSONCodeMirror style={{ border: '1px solid #D9D9D9' }} />
+                              </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
                         </>
@@ -438,6 +442,8 @@ const EditRowForm = (props) => {
                                             <Select.Option value='integer'>Integer</Select.Option>
                                             <Select.Option value='float'>Float</Select.Option>
                                             <Select.Option value='boolean'>Boolean</Select.Option>
+                                            <Select.Option value='date'>Date</Select.Option>
+                                            <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
                                           </Select>
                                         </Form.Item>
@@ -526,6 +532,36 @@ const EditRowForm = (props) => {
                                               <Select.Option value={true}>true</Select.Option>
                                               <Select.Option value={false}>false</Select.Option>
                                             </Select>
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "date"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <DatePicker />
+                                          </Form.Item>
+                                        </ConditionalFormBlock>
+                                        <ConditionalFormBlock
+                                          shouldUpdate={true}
+                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "time"}
+                                        >
+                                          <Form.Item
+                                            name={[arrField.name, 'value']}
+                                            key={[arrField.name, 'value']}
+                                            style={{ display: 'inline-block', width: '100%' }}
+                                            rules={[
+                                              { required: true, message: 'Please enter value!' },
+                                            ]}
+                                          >
+                                            <Input placeholder="Value" />
                                           </Form.Item>
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock

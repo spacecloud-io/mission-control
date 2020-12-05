@@ -1,29 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
-import { Button, Divider, Popconfirm, Form, Input, Alert } from "antd"
+import { Button, Divider, Popconfirm, Form, Input, Alert, Row, Col } from "antd"
 import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
-import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported } from "../../../operations/database"
+import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage, setLastUsedValues } from '../../../utils';
+import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported, changeLimitClause, getLimitClause, getDriverConfig, changeDriverConfig } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
+import DriverConfig from '../../../components/database/settings/driver-config/DriverConfig';
+import EditDriverConfigForm from '../../../components/database/settings/driver-config/EditDriverConfigForm';
 
 const Settings = () => {
   // Router params
   const { projectID, selectedDB } = useParams()
-
   const history = useHistory()
 
-  const [form] = Form.useForm();
+  const [dbNameForm] = Form.useForm();
+  const [limitClauseForm] = Form.useForm();
 
   // Global state
   const eventingDB = useSelector(state => getEventingDbAliasName(state))
   const dbName = useSelector(state => getDbName(state, projectID, selectedDB))
   const type = useSelector(state => getDbType(state, selectedDB))
   const preparedQueriesSupported = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
+  const limitClause = useSelector(state => getLimitClause(state, selectedDB))
+  const driverConfig = useSelector(state => getDriverConfig(state, selectedDB))
+  const [editDriverConfigModalVisible, setEditDriverConfigModalVisible] = useState(false)
 
   // Derived state
   const canDisableDB = eventingDB !== selectedDB
@@ -40,7 +45,7 @@ const Settings = () => {
   // Hence as soon as redux gets the desired value, we set the form values   
   useEffect(() => {
     if (dbName) {
-      form.setFieldsValue({ dbName: dbName })
+      dbNameForm.setFieldsValue({ dbName: dbName })
     }
   }, [dbName])
 
@@ -94,11 +99,32 @@ const Settings = () => {
       .finally(() => decrementPendingRequests())
   }
 
+  const handleChangeLimitClause = ({ limitClause }) => {
+    incrementPendingRequests()
+    changeLimitClause(projectID, selectedDB, Number(limitClause))
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `Changed default limit clause setting successfully`)
+      })
+      .catch(ex => notify("error", `Error changing  default limit clause`, ex))
+      .finally(() => decrementPendingRequests())
+  }
+
+  const handleChangeDriverConfig = ( config ) => {
+    incrementPendingRequests()
+    changeDriverConfig(projectID, selectedDB, config)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `Changed driver config setting successfully`)
+      })
+      .catch(ex => notify("error", `Error changing driver config`, ex))
+      .finally(() => decrementPendingRequests())
+  }
+
   const handleRemoveDb = () => {
     incrementPendingRequests()
     removeDbConfig(projectID, selectedDB)
       .then(({ queued, disabledEventing }) => {
         if (!queued) {
+          setLastUsedValues(projectID, { db: "" });
           history.push(`/mission-control/projects/${projectID}/database`)
           notify("success", "Success", "Successfully removed database config")
           if (disabledEventing) {
@@ -133,7 +159,7 @@ const Settings = () => {
               message={<div><b>Note:</b> Changing this won't migrate any existing data from the old database/schema into the new one.</div>}
               type="info"
               showIcon />
-            <Form layout="vertical" form={form} onFinish={handleChangeDBName} style={{ width: 300, marginTop: 16 }} initialValues={{ dbName: dbName }}>
+            <Form layout="vertical" form={dbNameForm} onFinish={handleChangeDBName} style={{ width: 300, marginTop: 16 }} initialValues={{ dbName: dbName }}>
               <Form.Item name="dbName" initialValue={dbName} rules={[{ required: true, message: 'Please provide database/schema name' }]}>
                 <Input placeholder="" />
               </Form.Item>
@@ -142,6 +168,15 @@ const Settings = () => {
               </Form.Item>
             </Form>
             <Divider style={{ margin: "16px 0px" }} />
+            {type !== dbTypes.EMBEDDED && <Row>
+              <Col span={12}>
+                <DriverConfig 
+                dbType={type}
+                config={driverConfig} 
+                handleEditDriverConfig={() => setEditDriverConfigModalVisible(true)} />
+                <Divider style={{ margin: "16px 0px" }} />
+              </Col>
+            </Row>}
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&
@@ -151,6 +186,16 @@ const Settings = () => {
                 <Button onClick={handleConfigureDefaultPreparedQueriesRule}>Configure</Button>
               </React.Fragment>
             }
+            <Divider style={{ margin: "16px 0px" }} />
+            <FormItemLabel name="Default limit clause" hint="(default: 1000)" description="The limit clause to be imposed when no limit clause is specified in db read operations." />
+            <Form form={limitClauseForm} style={{ width: 160, marginTop: 16 }} onFinish={handleChangeLimitClause} initialValues={{ limitClause: limitClause ? limitClause : 1000 }}>
+              <Form.Item name="limitClause" initialValue={limitClause} rules={[{ required: true, message: 'Please input default limit clause' }]}>
+                <Input addonAfter='rows' />
+              </Form.Item>
+              <Form.Item>
+                <Button htmlType='submit'>Save</Button>
+              </Form.Item>
+            </Form>
             <Divider style={{ margin: "16px 0px" }} />
             <FormItemLabel name="Reload schema" description="Refresh Space Cloud schema, typically required if you have changed the underlying database" />
             <Button onClick={handleReloadDB}>Reload</Button>
@@ -177,6 +222,12 @@ const Settings = () => {
             >
               <Button type="danger">Remove</Button>
             </Popconfirm>
+            {editDriverConfigModalVisible && <EditDriverConfigForm
+              dbType={type} 
+              initialValues={driverConfig}
+              handleSubmit={handleChangeDriverConfig}
+              handleCancel={() => setEditDriverConfigModalVisible(false)}
+              />}
           </div>
         </div>
       </div>

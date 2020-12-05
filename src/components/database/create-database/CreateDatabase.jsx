@@ -1,6 +1,6 @@
 import React from 'react';
 import { dbTypes, defaultDbConnectionStrings } from '../../../constants';
-import { Card, Input, Button, Alert, Radio, Form } from 'antd';
+import { Card, Input, Button, Alert, Radio, Form, Checkbox, AutoComplete } from 'antd';
 import postgresIcon from '../../../assets/postgresIcon.svg'
 import mysqlIcon from '../../../assets/mysqlIcon.svg'
 import mongoIcon from '../../../assets/mongoIcon.svg'
@@ -20,16 +20,24 @@ import 'codemirror/addon/edit/matchbrackets.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import gqlPrettier from 'graphql-prettier';
 import { getDbConfigs } from '../../../operations/database';
+import ConditionalFormBlock from '../../conditional-form-block/ConditionalFormBlock';
 
 const CreateDatabase = (props) => {
   const [form] = Form.useForm();
-  const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO] }
+  const envSecrets = props.envSecrets ? props.envSecrets : [];
+  const formInitialValues = { alias: dbTypes.MONGO, dbType: dbTypes.MONGO, conn: defaultDbConnectionStrings[dbTypes.MONGO], loadFromSecret: false }
   const dbconfig = useSelector(state => getDbConfigs(state))
 
   const dbAliasNames = dbconfig ? Object.keys(dbconfig) : [];
 
-  const handleOnFinish = ({ alias, dbType, conn, dbName }) => {
-    props.handleSubmit(alias, conn, dbType, dbName)
+  const handleOnFinish = ({ alias, dbType, conn, secret, dbName }) => {
+    let connectionString;
+    if (secret) {
+      connectionString = `secrets.${secret}`;
+    } else {
+      connectionString = conn
+    }
+    props.handleSubmit(alias, connectionString, dbType, dbName)
   }
 
   const handleValuesChange = (changedValues) => {
@@ -74,14 +82,30 @@ const CreateDatabase = (props) => {
           </RadioCards>
         </Form.Item>
         <FormItemLabel name="Provide a connection string" description="Space Cloud requires a connection string to connect to your database" />
-        <Form.Item name="conn" rules={[{ required: true, message: 'Please input a connection string' }]}>
-          <Input.Password placeholder="eg: mongodb://localhost:27017" />
+        <Form.Item name='loadFromSecret' valuePropName='checked'>
+          <Checkbox>Load connection string from a secret</Checkbox>
         </Form.Item>
-        <Alert
-          message={alertMsg}
-          type="info"
-          showIcon />
-        <br />
+        <ConditionalFormBlock
+          dependency='loadFromSecret'
+          condition={() => form.getFieldValue('loadFromSecret') === false}
+        >
+          <Form.Item name="conn" rules={[{ required: true, message: 'Please input a connection string' }]}>
+            <Input.Password placeholder="eg: mongodb://localhost:27017" />
+          </Form.Item>
+          <Alert
+            message={alertMsg}
+            type="info"
+            showIcon />
+          <br />
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency='loadFromSecret'
+          condition={() => form.getFieldValue('loadFromSecret') === true}
+        >
+          <Form.Item name="secret" rules={[{ required: true, message: 'Please input a secret name' }]}>
+            <AutoComplete placeholder="secret name" options={envSecrets.map(secret => ({ value: secret }))} />
+          </Form.Item>
+        </ConditionalFormBlock>
         <Form.Item noStyle shouldUpdate={(prev, curr) => prev.dbType != curr.dbType} dependencies={["dbType"]}>
           {() => {
             const dbType = form.getFieldValue("dbType")

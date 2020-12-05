@@ -20,7 +20,7 @@ function graphQLAPIHandler(request, schema) {
   const field = getRootField(ast)
   switch (field) {
     case "event_logs":
-      return { data: { event_logs: schema.db.eventLogs } }
+      return { data: { event_logs: fixtures.eventLogs } }
     case "integrations":
       return { data: { integrations: fixtures.supportedInterations.map(obj => ({ config: obj })) } }
     default:
@@ -31,7 +31,6 @@ function graphQLAPIHandler(request, schema) {
 export function makeServer({ environment = "development" } = {}) {
   let server = new Server({
     environment,
-    fixtures: fixtures,
 
     routes() {
       this.namespace = "v1";
@@ -83,6 +82,12 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
       this.delete("/config/projects/:projectId/file-storage/rules/:ruleName", () => respondOk());
 
+      // Cache endpoints
+      this.get("/config/caching/config", () => respondOk({ result: fixtures.cacheConfig }))
+      this.get("/external/caching/connection-state", () => respondOk({ result: true }))
+      this.post("/config/caching/config/cache-config", () => respondOk());
+      this.delete("/external/projects/:projectId/caching/purge-cache", () => respondOk())
+
       // Eventing endpoints
       this.get("/config/projects/:projectId/eventing/config", () => respondOk({ result: fixtures.eventingConfig }))
       this.get("/config/projects/:projectId/eventing/schema", () => respondOk({ result: fixtures.eventingSchemas }))
@@ -108,6 +113,9 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/runner/:projectId/services/:serviceId/:version", () => respondOk());
       this.post("/runner/:projectId/service-routes/:serviceId", () => respondOk());
       this.delete("/runner/:projectId/services/:serviceId/:version", () => respondOk());
+      this.get("/runner/:projectId/service-roles", () => respondOk({ result: fixtures.serviceRoles }));
+      this.post("/runner/:projectId/service-roles/:serviceId/:roleId", () => respondOk());
+      this.delete("/runner/:projectId/service-roles/:serviceId/:roleId", () => respondOk());
 
       // Secrets endpoint
       this.get("/runner/:projectId/secrets", () => respondOk({ result: fixtures.secrets }));
@@ -136,6 +144,12 @@ export function makeServer({ environment = "development" } = {}) {
       this.get("/config/integrations", () => respondOk({ result: fixtures.installedIntegrations }));
       this.post("/config/integrations", () => respondOk())
       this.delete("/config/integrations/:integrationId", () => respondOk())
+
+      // Addons
+      this.get("/config/add-ons/rabbitmq/rabbitmq", () => respondOk({ result: [fixtures.addonsConfig.rabbitmq] }))
+      this.get("/config/add-ons/redis/redis", () => respondOk({ result: [fixtures.addonsConfig.redis] }))
+      this.get("/external/add-ons/:addOnType/:addOnName/connection-state", () => respondOk({ result: true }))
+      this.post("/config/add-ons/:addOnType/:addOnName", () => respondOk())
 
       // API endpoints 
       this.post("/api/:projectId/graphql", (schema, request) => graphQLAPIHandler(request, schema));
