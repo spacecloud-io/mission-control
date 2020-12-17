@@ -180,10 +180,10 @@ export const saveServiceRoutes = (projectId, serviceId, routeConfig) => {
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
-export const deleteServiceRoutes = (projectId, serviceId, port) => {
+export const deleteServiceRoutes = (projectId, serviceId, protocol, port) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  const newServiceRoutes = serviceRoute.filter(obj => obj.source.port !== port)
+  const newServiceRoutes = serviceRoute.filter(obj => obj.source.port !== port && obj.source.protocol !== protocol)
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 

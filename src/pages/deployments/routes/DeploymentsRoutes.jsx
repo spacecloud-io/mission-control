@@ -49,6 +49,14 @@ const DeploymentsRoutes = () => {
 
   const tableColumns = [
     {
+      title: "Protocol",
+      dataIndex: "protocol",
+      key: "protocol",
+      render: (value) => {
+        return value.toUpperCase();
+      }
+    },
+    {
       title: "Port",
       dataIndex: "port",
       key: "port"
@@ -62,12 +70,12 @@ const DeploymentsRoutes = () => {
       title: "Actions",
       key: "actions",
       className: "column-actions",
-      render: (_, { serviceId, port }) => (
+      render: (_, { serviceId, protocol, port }) => (
         <span>
-          <a onClick={() => handleEditClick(serviceId, port)}>Edit</a>
+          <a onClick={() => handleEditClick(serviceId, protocol, port)}>Edit</a>
           <Popconfirm
             title={`All traffic to this port will be stopped. Are you sure?`}
-            onConfirm={() => handleDelete(serviceId, port)}
+            onConfirm={() => handleDelete(serviceId, protocol, port)}
           >
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
@@ -76,19 +84,29 @@ const DeploymentsRoutes = () => {
     }
   ];
 
-  const handleEditClick = (serviceId, port) => {
+  const handleEditClick = (serviceId, protocol, port) => {
     const routeConfig = serviceRoutes[serviceId].find(obj => obj.source.port === port)
-    setRouteClicked({ serviceId: serviceId, routeConfig: { port: port, targets: routeConfig.targets } });
+    setRouteClicked({ serviceId: serviceId, routeConfig: { protocol: protocol, port: port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
     setModalVisible(true);
   };
 
   const handleSubmit = (serviceId, values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      const { port, targets } = values
-      const routeConfig = {
-        source: { port },
-        targets
+      const { protocol, port, requestRetries, requestTimeout, targets } = values
+      let routeConfig = {};
+      if(protocol === "http"){
+        routeConfig = {
+          source: { protocol, port },
+          requestRetries: requestRetries,
+          requestTimeout: requestTimeout,
+          targets
+        }
+      }else {
+        routeConfig = {
+          source: { protocol, port },
+          targets
+        }
       }
       saveServiceRoutes(projectID, serviceId, routeConfig)
         .then(({ queued }) => {
@@ -103,9 +121,9 @@ const DeploymentsRoutes = () => {
     });
   };
 
-  const handleDelete = (serviceId, port) => {
+  const handleDelete = (serviceId, protocol, port) => {
     incrementPendingRequests()
-    deleteServiceRoutes(projectID, serviceId, port)
+    deleteServiceRoutes(projectID, serviceId, protocol, port)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted service route successfully"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());
@@ -130,8 +148,6 @@ const DeploymentsRoutes = () => {
       </React.Fragment>
     )
   }
-
-  console.log("Service Routes", serviceRoutes)
 
   return (
     <React.Fragment>
@@ -166,11 +182,11 @@ const DeploymentsRoutes = () => {
                         Add
                     </Button>
                     </div>
-                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
+                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, protocol: obj.source.protocol, port: obj.source.port, targets: obj.targets.length }))} />
                   </div>
                 </Panel>))}
               </Collapse>
-              {Object.keys(serviceRoutes).length !== 0 &&
+              {Object.keys(serviceRoutes).length !== 0 && searchText &&
                 <div style={{ paddingTop: 24 }}>
                   <EmptySearchResults searchText={searchText} />
                 </div>
