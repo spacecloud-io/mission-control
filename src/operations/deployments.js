@@ -176,14 +176,14 @@ const saveServiceRoutesConfig = (projectId, serviceId, serviceRoutes) => {
 export const saveServiceRoutes = (projectId, serviceId, routeConfig) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  const newServiceRoutes = [...serviceRoute.filter(obj => obj.source.port !== routeConfig.source.port), routeConfig]
+  const newServiceRoutes = [...serviceRoute.filter(obj => obj.id !== routeConfig.id), routeConfig]
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
-export const deleteServiceRoutes = (projectId, serviceId, protocol, port) => {
+export const deleteServiceRoutes = (projectId, serviceId, id) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  const newServiceRoutes = serviceRoute.filter(obj => obj.source.port !== port && obj.source.protocol !== protocol)
+  const newServiceRoutes = serviceRoute.filter(obj => obj.id !== id)
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 

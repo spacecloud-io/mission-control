@@ -2,13 +2,14 @@ import React from "react";
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Modal, Input, Select, Row, Col, Button, message, Form } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
-import { notify } from "../../../utils";
+import { notify, generateId } from "../../../utils";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 const { Option } = Select;
 
 const RoutingRule = props => {
   const [form] = Form.useForm();
   const initialValues = props.initialValues;
+  const mode = initialValues ? 'edit' : 'add';
   const handleSubmitClick = e => {
     form.validateFields().then(values => {
       values.targets = values.targets.map(o => Object.assign({}, o, { weight: Number(o.weight), port: Number(o.port) }))
@@ -22,7 +23,13 @@ const RoutingRule = props => {
         values.requestRetries = Number(values.requestRetries);
         values.requestTimeout = Number(values.requestTimeout); 
       }
-      props.handleSubmit(values).then(() => props.handleCancel());
+      let id = '';
+      if(mode === 'add'){
+        id = generateId();
+      }else{
+        id = initialValues.id;
+      }
+      props.handleSubmit(id, values).then(() => props.handleCancel());
     });
   };
 
@@ -104,7 +111,7 @@ const RoutingRule = props => {
                           </Form.Item>
                         </Col>
                         <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "version"}>
-                          <Col span={4}>
+                          <Col span={6}>
                             <Form.Item
                               validateTrigger={["onChange", "onBlur"]}
                               rules={[
@@ -124,7 +131,7 @@ const RoutingRule = props => {
                           </Col>
                         </ConditionalFormBlock>
                         <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["targets", field.name, "type"]) === "external"}>
-                          <Col span={8}>
+                          <Col span={6}>
                             <Form.Item
                               validateTrigger={["onChange", "onBlur"]}
                               rules={[

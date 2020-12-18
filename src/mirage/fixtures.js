@@ -749,8 +749,11 @@ export const serviceRoutes = [
   {
     "id": "service1",
     "source": {
+      "protocol": "tcp",
       "port": 8080
     },
+    "requestRetries": 7,
+    "requestTimeout": 450,
     "targets": [
       {
         "type": "version",
