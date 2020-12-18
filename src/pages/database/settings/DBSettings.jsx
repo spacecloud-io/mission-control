@@ -177,6 +177,7 @@ const Settings = () => {
                 <Divider style={{ margin: "16px 0px" }} />
               </Col>
             </Row>}
+            
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&
