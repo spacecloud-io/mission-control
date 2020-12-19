@@ -39,7 +39,9 @@ export const dbConfigs = [
       "maxConn": 400,
       "maxIdleConn": 40,
       "maxIdleTimeout": 600000
-    }
+    },
+    "batchRecords": 456,
+    "batchTime": 159
   },
   {
     "dbAlias": "mydb2",

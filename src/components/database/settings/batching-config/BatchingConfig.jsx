@@ -1,18 +1,18 @@
 import React from 'react';
+import { Card, Button } from 'antd';
+import FormItemLabel from '../../../form-item-label/FormItemLabel';
 
-const BatchingConfig = () => {
-  const maxConn = config && config.maxConn ? config.maxConn : 100
-  const minConn = config && dbType === dbTypes.MONGO && config.minConn ? config.minConn : 10
+const BatchingConfig = ({ config, handleEditBatchingConfig }) => {
+  const batchTime = config && config.batchTime ? config.batchTime : 200;
+  const batchRecords = config && config.batchRecords ? config.batchRecords : 200;
   
   return(
     <React.Fragment>
-      <FormItemLabel name="Driver config" description="The config of the underlying database driver" />
+      <FormItemLabel name="Batch config" description="The config of the underlying database batching config" />
       <Card style={{ border: '1px solid #F0F0F0', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
-        <p style={{ marginBottom: 8 }}>Max connections: {maxConn}</p>
-        {dbType === dbTypes.MONGO && <p style={{ marginBottom: 8 }}>Min connections: {minConn}</p>}
-        {dbType !== dbTypes.MONGO && <p style={{ marginBottom: 8 }}>Max idle connections: {maxIdleConn}</p>}
-        <p style={{ marginBottom: 24 }}>Max idle timeout: {maxIdleTimeout}</p>
-        <Button onClick={handleEditDriverConfig}>Edit config</Button>
+        <p style={{ marginBottom: 8 }}>Batch time: {batchTime}ms</p>
+        <p style={{ marginBottom: 24 }}>Batch records: {batchRecords}</p>
+        <Button onClick={handleEditBatchingConfig}>Edit config</Button>
       </Card>
     </React.Fragment>
   );
