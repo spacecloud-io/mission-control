@@ -23,13 +23,13 @@ const RoutingRule = props => {
         values.requestRetries = Number(values.requestRetries);
         values.requestTimeout = Number(values.requestTimeout); 
       }
-      let id = '';
+      let uid = '';
       if(mode === 'add'){
-        id = generateId();
+        uid = generateId();
       }else{
-        id = initialValues.id;
+        uid = initialValues.uid;
       }
-      props.handleSubmit(id, values).then(() => props.handleCancel());
+      props.handleSubmit(uid, values).then(() => props.handleCancel());
     });
   };
 

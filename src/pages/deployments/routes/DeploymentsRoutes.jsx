@@ -41,7 +41,7 @@ const DeploymentsRoutes = () => {
     }
 
     serviceRoutes[obj.id].forEach(route => {
-      if (!route.id) route.id = generateId();
+      if (!route.uid) route.uid = generateId();
       if (!route.source.protocol) route.source.protocol = 'http'
       if (!route.requestRetries) route.requestRetries = 3
       if (!route.requestTimeout) route.requestTimeout = 180
@@ -77,12 +77,12 @@ const DeploymentsRoutes = () => {
       title: "Actions",
       key: "actions",
       className: "column-actions",
-      render: (_, { serviceId, id }) => (
+      render: (_, { serviceId, uid }) => (
         <span>
-          <a onClick={() => handleEditClick(serviceId, id)}>Edit</a>
+          <a onClick={() => handleEditClick(serviceId, uid)}>Edit</a>
           <Popconfirm
             title={`All traffic to this port will be stopped. Are you sure?`}
-            onConfirm={() => handleDelete(serviceId, id)}
+            onConfirm={() => handleDelete(serviceId, uid)}
           >
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
@@ -91,20 +91,21 @@ const DeploymentsRoutes = () => {
     }
   ];
 
-  const handleEditClick = (serviceId, id) => {
-    const routeConfig = serviceRoutes[serviceId].find(obj => obj.id === id)
-    setRouteClicked({ serviceId: serviceId, routeConfig: { id: id, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
+  const handleEditClick = (serviceId, uid) => {
+    const routeConfig = serviceRoutes[serviceId].find(obj => obj.uid === uid)
+    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
     setModalVisible(true);
   };
 
-  const handleSubmit = (serviceId, id, values) => {
+  const handleSubmit = (serviceId, uid, values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
       const { protocol, port, requestRetries, requestTimeout, targets } = values
       let routeConfig = {};
       if(protocol === "http"){
         routeConfig = {
-          id: id,
+          uid: uid,
+          id: serviceId,
           source: { protocol, port },
           requestRetries: requestRetries,
           requestTimeout: requestTimeout,
@@ -112,7 +113,8 @@ const DeploymentsRoutes = () => {
         }
       }else {
         routeConfig = {
-          id: id,
+          uid: uid,
+          id: serviceId,
           source: { protocol, port },
           targets
         }
@@ -130,9 +132,9 @@ const DeploymentsRoutes = () => {
     });
   };
 
-  const handleDelete = (serviceId, id) => {
+  const handleDelete = (serviceId, uid) => {
     incrementPendingRequests()
-    deleteServiceRoutes(projectID, serviceId, id)
+    deleteServiceRoutes(projectID, serviceId, uid)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted service route successfully"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());
@@ -191,7 +193,7 @@ const DeploymentsRoutes = () => {
                         Add
                     </Button>
                     </div>
-                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, id: obj.id, protocol: obj.source.protocol, port: obj.source.port, targets: obj.targets.length }))} />
+                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, uid: obj.uid, protocol: obj.source.protocol, port: obj.source.port, targets: obj.targets.length }))} />
                   </div>
                 </Panel>))}
               </Collapse>
@@ -208,7 +210,7 @@ const DeploymentsRoutes = () => {
         <RoutingModal
           initialValues={routeClicked.routeConfig}
           handleCancel={handleCancel}
-          handleSubmit={(id, values) => handleSubmit(routeClicked.serviceId, id, values)}
+          handleSubmit={(uid, values) => handleSubmit(routeClicked.serviceId, uid, values)}
         />
       )}
     </React.Fragment>

@@ -774,6 +774,62 @@ export const serviceRoutes = [
         "weight": 20
       }
     ]
+  },
+  {
+    "id": "service1",
+    "source": {
+      "protocol": "tcp",
+      "port": 3000
+    },
+    "targets": [
+      {
+        "type": "version",
+        "version": "v1",
+        "port": 8080,
+        "weight": 70
+      },
+      {
+        "type": "external",
+        "host": "example.com",
+        "port": 443,
+        "weight": 10
+      },
+      {
+        "type": "version",
+        "version": "v2",
+        "port": 8080,
+        "weight": 20
+      }
+    ]
+  },
+  {
+    "id": "service2",
+    "source": {
+      "protocol": "http",
+      "port": 8080
+    },
+    "requestRetries": 3,
+    "requestTimeout": 180,
+    "targets": [
+      {
+        "type": "version",
+        "version": "v1",
+        "port": 8080,
+        "weight": 70
+      },
+      {
+        "type": "external",
+        "host": "example.com",
+        "port": 443,
+        "weight": 10
+      },
+      {
+        "type": "version",
+        "version": "v2",
+        "port": 8080,
+        "weight": 20
+      }
+    ]
   }
 ]
 
