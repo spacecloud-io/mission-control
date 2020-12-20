@@ -41,7 +41,7 @@ const DeploymentsRoutes = () => {
     }
 
     serviceRoutes[obj.id].forEach(route => {
-      if(!route.id) route.id = generateId();
+      if (!route.id) route.id = generateId();
       if (!route.source.protocol) route.source.protocol = 'http'
       if (!route.requestRetries) route.requestRetries = 3
       if (!route.requestTimeout) route.requestTimeout = 180

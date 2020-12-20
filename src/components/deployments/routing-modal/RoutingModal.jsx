@@ -70,7 +70,7 @@ const RoutingRule = props => {
                       return
                     }
                     if (!Number.isInteger(Number(value))) {
-                      cb("Not a valid port value")
+                      cb("Port number should be a valid Integer")
                       return
                     }
                     cb()
