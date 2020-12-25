@@ -176,13 +176,11 @@ const saveServiceRoutesConfig = (projectId, serviceId, serviceRoutes) => {
 export const saveServiceRoutes = (projectId, serviceId, routeConfig) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  let newServiceRoutes = [];
-  serviceRoute.map(obj => {
+  const newServiceRoutes = serviceRoute.map(obj => {
     if(obj.uid === routeConfig.uid){
-      newServiceRoutes.push(routeConfig)
-    }else{
-      newServiceRoutes.push(obj)
+      return routeConfig;
     }
+    return obj;
   })
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
