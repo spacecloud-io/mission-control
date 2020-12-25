@@ -465,12 +465,22 @@ export const changeDriverConfig = (projectId, dbAliasName, driverConfig) => {
   })
 }
 
+export const changeBatchingConfig = (projectId, dbAliasName, batchTime, batchRecords) => {
+  return new Promise((resolve, reject) => {
+    const dbConfig = getDbConfig(store.getState(), dbAliasName)
+    saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { batchTime: batchTime, batchRecords: batchRecords }))
+      .then(({ queued }) => resolve({ queued }))
+      .catch(ex => reject(ex))
+  })
+}
+
 // Getters
 export const getDbConfigs = (state) => get(state, "dbConfigs", {})
 export const getDbConfig = (state, dbAliasName) => get(state, `dbConfigs.${dbAliasName}`, {})
 export const getDbName = (state, projectId, dbAliasName) => get(getDbConfig(state, dbAliasName), "name", projectId)
 export const getLimitClause = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "limit")
 export const getDriverConfig = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "driverConf")
+export const getBatchingConfig = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), { batchTime: "batchTime", batchRecords: "batchRecords" })
 export const getDbType = (state, dbAliasName) => get(getDbConfig(state, dbAliasName), "type", dbAliasName)
 export const getDbConnState = (state, dbAliasName) => get(state, `dbConnState.${dbAliasName}`, false)
 export const getCollectionSchema = (state, dbAliasName, colName) => get(state, `dbSchemas.${dbAliasName}.${colName}`, "")

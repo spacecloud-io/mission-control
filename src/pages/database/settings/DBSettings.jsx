@@ -6,12 +6,14 @@ import Sidenav from '../../../components/sidenav/Sidenav';
 import Topbar from '../../../components/topbar/Topbar';
 import DBTabs from '../../../components/database/db-tabs/DbTabs';
 import { notify, getDatabaseLabelFromType, incrementPendingRequests, decrementPendingRequests, openSecurityRulesPage, setLastUsedValues } from '../../../utils';
-import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported, changeLimitClause, getLimitClause, getDriverConfig, changeDriverConfig } from "../../../operations/database"
+import { modifyDbSchema, reloadDbSchema, changeDbName, removeDbConfig, disableDb, getDbName, getDbType, isPreparedQueriesSupported, changeLimitClause, getLimitClause, getDriverConfig, changeDriverConfig, changeBatchingConfig, getBatchingConfig } from "../../../operations/database"
 import { dbTypes, securityRuleGroups, projectModules, actionQueuedMessage } from '../../../constants';
 import FormItemLabel from "../../../components/form-item-label/FormItemLabel";
 import { getEventingDbAliasName } from '../../../operations/eventing';
 import DriverConfig from '../../../components/database/settings/driver-config/DriverConfig';
 import EditDriverConfigForm from '../../../components/database/settings/driver-config/EditDriverConfigForm';
+import BatchingConfig from '../../../components/database/settings/batching-config/BatchingConfig';
+import EditBatchingConfigForm from '../../../components/database/settings/batching-config/EditBatchingConfigForm';
 
 const Settings = () => {
   // Router params
@@ -28,7 +30,9 @@ const Settings = () => {
   const preparedQueriesSupported = useSelector(state => isPreparedQueriesSupported(state, selectedDB))
   const limitClause = useSelector(state => getLimitClause(state, selectedDB))
   const driverConfig = useSelector(state => getDriverConfig(state, selectedDB))
+  const batchingConfig = useSelector(state => getBatchingConfig(state, selectedDB))
   const [editDriverConfigModalVisible, setEditDriverConfigModalVisible] = useState(false)
+  const [editBatchingConfigModalVisible, setEditBatchingConfigModalVisible] = useState(false)
 
   // Derived state
   const canDisableDB = eventingDB !== selectedDB
@@ -119,6 +123,16 @@ const Settings = () => {
       .finally(() => decrementPendingRequests())
   }
 
+  const handleChangeBatchingConfig = ( batchTime, batchRecords ) => {
+    incrementPendingRequests()
+    changeBatchingConfig(projectID, selectedDB, batchTime, batchRecords)
+      .then(({ queued }) => {
+        notify("success", "Success", queued ? actionQueuedMessage : `Changed batching config setting successfully`)
+      })
+      .catch(ex => notify("error", `Error changing batching config`, ex))
+      .finally(() => decrementPendingRequests())
+  }
+
   const handleRemoveDb = () => {
     incrementPendingRequests()
     removeDbConfig(projectID, selectedDB)
@@ -177,6 +191,12 @@ const Settings = () => {
                 <Divider style={{ margin: "16px 0px" }} />
               </Col>
             </Row>}
+            <Row>
+              <Col span={12}>
+                <BatchingConfig config={batchingConfig} handleEditBatchingConfig={() => setEditBatchingConfigModalVisible(true)} />
+                <Divider style={{ margin: "16px 0px" }} />
+              </Col>
+            </Row>
             <FormItemLabel name="Default rules for tables/collections" description="Used when a table/collection doesn’t have a rule specified." />
             <Button onClick={handleConfigureDefaultTableRule}>Configure</Button>
             {preparedQueriesSupported &&
@@ -227,6 +247,11 @@ const Settings = () => {
               initialValues={driverConfig}
               handleSubmit={handleChangeDriverConfig}
               handleCancel={() => setEditDriverConfigModalVisible(false)}
+              />}
+            {editBatchingConfigModalVisible && <EditBatchingConfigForm
+              initialValues={batchingConfig}
+              handleSubmit={handleChangeBatchingConfig}
+              handleCancel={() => setEditBatchingConfigModalVisible(false)}
               />}
           </div>
         </div>
