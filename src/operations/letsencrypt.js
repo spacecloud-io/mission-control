@@ -9,7 +9,7 @@ export const loadLetsEncryptConfig = (projectId) => {
         store.dispatch(set("letsencryptConfig", letsencryptConfig))
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -22,7 +22,7 @@ export const saveWhiteListedDomains = (projectId, domains) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

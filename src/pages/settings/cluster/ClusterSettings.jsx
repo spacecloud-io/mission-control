@@ -18,7 +18,7 @@ const ClusterSettings = () => {
   useEffect(() => {
     incrementPendingRequests()
     loadClusterSettings()
-      .catch(ex => notify("error", "Error fetching cluster settings", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get cluster" : error.msg))
       .finally(() => decrementPendingRequests())
   }, []);
 
@@ -31,7 +31,7 @@ const ClusterSettings = () => {
     incrementPendingRequests()
     saveClusterSetting("letsencryptEmail", newEmail)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed letsencrypt email successfully"))
-      .catch(ex => notify("error", "Error changing letsencrypt email", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cluster" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 
@@ -39,7 +39,7 @@ const ClusterSettings = () => {
     incrementPendingRequests()
     saveClusterSetting("enableTelemetry", newTelemetry)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : `${newTelemetry ? "Enabled" : "Disabled"} telemetry successfully`))
-      .catch(ex => notify("error", `Error ${newTelemetry ? "enabling" : "disabling"} telemetry`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cluster" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 

@@ -19,7 +19,7 @@ export const loadIngressRoutes = (projectId) => {
         setIngressRoutes(ingressRoutes)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -38,7 +38,7 @@ export const loadIngressRoutesGlobalConfig = (projectId) => {
         setIngressRoutesGlobalConfig(ingressRoutesGlobalConfig)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -55,7 +55,7 @@ export const saveIngressRouteConfig = (projectId, routeId, config) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -70,7 +70,7 @@ export const saveIngressRouteRule = (projectId, routeId, rule) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -85,7 +85,7 @@ export const deleteIngressRoute = (projectId, routeId) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -100,7 +100,7 @@ export const saveIngressGlobalRequestHeaders = (projectId, headers) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -115,7 +115,7 @@ export const saveIngressGlobalResponseHeaders = (projectId, headers) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

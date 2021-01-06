@@ -20,7 +20,7 @@ const EventingRules = () => {
     if (projectID) {
       incrementPendingRequests()
       loadEventingSecurityRules(projectID)
-        .catch(ex => notify("error", "Error fetching eventing rules", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get eventing-rule" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
@@ -52,8 +52,8 @@ const EventingRules = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Added eventing security rule successfully")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error adding eventing security rule", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set eventing-rule" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())
@@ -69,8 +69,8 @@ const EventingRules = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Deleted eventing security rule successfully")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error deleting eventing security rule", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to delete eventing-rule" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())

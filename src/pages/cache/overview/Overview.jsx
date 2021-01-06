@@ -22,7 +22,7 @@ const Overview = () => {
     if (config.enabled) {
       incrementPendingRequests()
       loadCacheConnState()
-        .catch(ex => notify("error", "Error loading cache connection status", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get cache connection status" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [config.enabled])
@@ -32,7 +32,7 @@ const Overview = () => {
     incrementPendingRequests()
     saveCacheConfig(config)
       .then(() => notify("success", "Success", "Disabled cache successfully"))
-      .catch(ex => notify("error", "Error disabling cache", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cache-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -44,7 +44,7 @@ const Overview = () => {
     incrementPendingRequests()
     purgeCache(projectID)
       .then(() => notify("success", "Success", "Purged cache successfully"))
-      .catch(ex => notify("error", "Error purging cache", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete cache" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

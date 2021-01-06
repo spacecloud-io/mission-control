@@ -29,7 +29,7 @@ const CreateProject = () => {
           setCurrent(current + 1);
         }
         notify("success", "Success", queued ? actionQueuedMessage : "Project created successfully with suitable defaults")
-      }).catch(ex => notify("error", "Error creating project", ex))
+      }).catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests())
   };
 
@@ -44,7 +44,7 @@ const CreateProject = () => {
           notify("success", "Success", actionQueuedMessage)
         }
       })
-      .catch(ex => notify("error", "Error adding database", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

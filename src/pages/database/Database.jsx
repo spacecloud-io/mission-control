@@ -40,8 +40,8 @@ const Database = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Successfully enabled database")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error enabling database", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set db-rule" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())

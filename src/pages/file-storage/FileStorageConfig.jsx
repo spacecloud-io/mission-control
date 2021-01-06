@@ -110,7 +110,7 @@ const FileStorageConfig = () => {
         form.resetFields();
         history.goBack();
       })
-      .catch(ex => notify("error", "Error configuring file storage", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set filestore-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

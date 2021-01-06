@@ -68,7 +68,7 @@ const Settings = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", "Error disabling database", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -79,7 +79,7 @@ const Settings = () => {
     incrementPendingRequests()
     reloadDbSchema(projectID, selectedDB)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded database schema successfully"))
-      .catch(ex => notify("error", "Error reloading database schema", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-schema" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -87,7 +87,7 @@ const Settings = () => {
     incrementPendingRequests()
     modifyDbSchema(projectID, selectedDB)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Modified database schema successfully"))
-      .catch(ex => notify("error", "Error modifying database schema", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-schema" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -99,7 +99,7 @@ const Settings = () => {
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed ${msg} setting successfully`)
       })
-      .catch(ex => notify("error", `Error changing  ${msg}`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -109,7 +109,7 @@ const Settings = () => {
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed default limit clause setting successfully`)
       })
-      .catch(ex => notify("error", `Error changing  default limit clause`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -119,7 +119,7 @@ const Settings = () => {
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed driver config setting successfully`)
       })
-      .catch(ex => notify("error", `Error changing driver config`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -129,7 +129,7 @@ const Settings = () => {
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : `Changed batching config setting successfully`)
       })
-      .catch(ex => notify("error", `Error changing batching config`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-rule" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -148,7 +148,7 @@ const Settings = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", "Error removing database config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

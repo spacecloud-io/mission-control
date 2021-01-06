@@ -24,7 +24,7 @@ const ProjectSettings = () => {
   useEffect(() => {
     incrementPendingRequests()
     loadLetsEncryptConfig(projectID)
-      .catch(ex => notify("error", "Error fetching letsencrypt config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get letsencrypt" : error.msg))
       .finally(() => decrementPendingRequests())
   }, [projectID]);
 
@@ -51,8 +51,8 @@ const ProjectSettings = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Saved secret successfully")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error saving secret", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests());
@@ -63,7 +63,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     changePrimarySecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed primary secret successfully"))
-      .catch(ex => notify("error", "Error changing primary secret", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests());
   }
 
@@ -71,7 +71,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     removeSecret(projectID, index)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed secret successfully"))
-      .catch(ex => notify("error", "Error removing secret", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests());
   }
 
@@ -79,7 +79,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     saveAesKey(projectID, aesKey)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed AES key successfully"))
-      .catch(ex => notify("error", "Error changing AES key", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 
@@ -87,7 +87,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     saveDockerRegistry(projectID, dockerRegistry)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed docker registry successfully"))
-      .catch(ex => notify("error", "Error changing docker registry", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 
@@ -95,7 +95,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     saveContextTimeGraphQL(projectID, contextTimeGraphQL)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Changed context time successfully"))
-      .catch(ex => notify("error", "Error changing context time", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 
@@ -114,7 +114,7 @@ const ProjectSettings = () => {
         }
         notify("success", "Success", actionQueuedMessage);
       })
-      .catch(ex => notify("error", "Error removing project config", ex.toString()))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete project" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 
@@ -123,7 +123,7 @@ const ProjectSettings = () => {
     incrementPendingRequests()
     saveWhiteListedDomains(projectID, domains)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved whitelisted domains successfully"))
-      .catch(ex => notify("error", "Error saving domains", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set letsencrypt" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 

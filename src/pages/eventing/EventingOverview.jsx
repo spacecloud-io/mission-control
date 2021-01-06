@@ -85,8 +85,8 @@ const EventingOverview = () => {
 					notify("success", "Success", queued ? actionQueuedMessage : `${isRulePresent ? "Modified" : "Added"} trigger rule successfully`)
 					resolve()
 				})
-				.catch(ex => {
-					notify("error", `Error ${isRulePresent ? "Modifying" : "Adding"} trigger rule`, ex)
+				.catch(error => { 
+					notify("error", error.title, error.msg.length === 0 ? "Failed to set eventing-trigger" : error.msg)
 					reject()
 				})
 				.finally(() => decrementPendingRequests())
@@ -97,7 +97,7 @@ const EventingOverview = () => {
 		incrementPendingRequests()
 		deleteEventingTriggerRule(projectID, id)
 			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted trigger rule successfully"))
-			.catch(ex => notify("error", "Error deleting trigger rule", ex))
+			.catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete eventing-trigger" : error.msg))
 			.finally(() => decrementPendingRequests())
 	}
 

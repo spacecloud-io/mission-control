@@ -14,22 +14,22 @@ const Database = () => {
     if (projectID) {
       incrementPendingRequests()
       loadDbConfig(projectID)
-        .catch(ex => notify("error", "Error fetching database config", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get db-config" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadDbSchemas(projectID)
-        .catch(ex => notify("error", "Error fetching database schemas", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get db-schema" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadDbRules(projectID)
-        .catch(ex => notify("error", "Error fetching database rules", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get db-rule" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadDbPreparedQueries(projectID)
-        .catch(ex => notify("error", "Error fetching prepared queries", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-prepared-query" : error.msg))
         .finally(() => decrementPendingRequests())
       
       incrementPendingRequests()

@@ -13,27 +13,27 @@ const EventingIndex = () => {
     if (projectID) {
       incrementPendingRequests()
       loadDbConfig(projectID)
-        .catch(ex => notify("error", "Error fetching database config", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get db-config" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadDbSchemas(projectID)
-        .catch(ex => notify("error", "Error fetching database schemas", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get db-schema" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadDbRules(projectID)
-        .catch(ex => notify("error", "Error fetching database rules", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to db-rule" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadEventingConfig(projectID)
-        .catch(ex => notify("error", "Error fetching eventing config", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get eventing-config" : error.msg))
         .finally(() => decrementPendingRequests())
 
       incrementPendingRequests()
       loadEventingTriggers(projectID)
-        .catch(ex => notify("error", "Error fetching event triggers", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get eventing-trigger" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
