@@ -21,7 +21,7 @@ const Login = () => {
         // This fetches projects and either opens a project or redirects to welcome page accordingly
         performActionsOnAuthenticated()
       })
-      .catch(ex => notify("error", "Error logging in", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to login" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

@@ -11,7 +11,7 @@ export const loadFileStoreConnState = (projectId) => {
         store.dispatch(setFileStoreConnState(connected))
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -30,7 +30,7 @@ export const loadFileStoreConfig = (projectId) => {
         setFileStoreConfig(fileStoreConfig)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -49,7 +49,7 @@ export const loadFileStoreRules = (projectId) => {
         setFileStoreRules(fileStoreRules)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -63,13 +63,13 @@ export const saveFileStoreConfig = (projectId, config) => {
           if (getFileStoreRules(store.getState()).length === 0) {
             saveFileStoreRule(projectId, "DefaultRule", { prefix: "/", rule: defaultFileRule })
               .then(({ queued }) => resolve({ queued }))
-              .catch(ex => reject(ex))
+              .catch(error => reject(error))
             return;
           }
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -85,7 +85,7 @@ export const saveFileStoreRule = (projectId, ruleName, rule) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -112,7 +112,7 @@ export const deleteFileStoreRule = (projectId, ruleName) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

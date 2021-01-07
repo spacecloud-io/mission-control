@@ -11,12 +11,12 @@ export const saveCacheConfig = (config) => {
 					store.dispatch(setCacheConfig(config))
 					if (config.enabled) {
 						loadCacheConnState()
-							.catch(ex => reject(ex))
+							.catch(error => reject(error))
 					}
 				}
 				resolve({ queued })
 			})
-			.catch(ex => reject(ex))
+			.catch(error => reject(error))
 	})
 }
 
@@ -29,7 +29,7 @@ export const loadCacheConfig = () => {
 				store.dispatch(setCacheConfig(cacheConfig))
 				resolve()
 			})
-			.catch(ex => reject(ex))
+			.catch((error) => reject(error))
 	})
 }
 
@@ -40,7 +40,7 @@ export const loadCacheConnState = () => {
 				store.dispatch(setCacheConnState(result))
 				resolve()
 			})
-			.catch(ex => reject(ex))
+			.catch(error => reject(error))
 	})
 }
 
@@ -54,7 +54,7 @@ export const purgeCache = (projectId) => {
 
 		client.cache.purgeCache(projectId, purgeOptions)
 			.then(() => resolve())
-			.catch(ex => reject(ex))
+			.catch(error => reject(error))
 	})
 }
 

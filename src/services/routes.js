@@ -8,12 +8,12 @@ class Routes {
       this.client.getJSON(`/v1/config/projects/${projectId}/routing/ingress`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result: [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get ingress-route", msg: ex.message}))
     })
   }
 
@@ -22,14 +22,14 @@ class Routes {
       this.client.getJSON(`/v1/config/projects/${projectId}/routing/ingress/global`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
 
           const ingressGlobalConfig = data.result && data.result[0] ? data.result[0]: {}
           resolve(ingressGlobalConfig)
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get ingress-global", msg: ex.message}))
     })
   }
 
@@ -38,12 +38,12 @@ class Routes {
       this.client.postJSON(`/v1/config/projects/${projectId}/routing/ingress/${routeId}`, { ...config })
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set ingress-route", msg: ex.message}))
     })
   }
 
@@ -52,12 +52,12 @@ class Routes {
       this.client.postJSON(`/v1/config/projects/${projectId}/routing/ingress/global`, config)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set ingress-global", msg: ex.message}))
     })
   }
 
@@ -66,12 +66,12 @@ class Routes {
       this.client.delete(`/v1/config/projects/${projectId}/routing/ingress/${routeId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete ingress-route", msg: ex.message}))
     })
   }
 }

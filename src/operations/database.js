@@ -25,7 +25,7 @@ export const loadDbConfig = (projectId) => {
         setDbConfigs(dbConfigs)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -49,7 +49,7 @@ export const loadDbSchemas = (projectId, dbAliasName = "*", colName = "*") => {
         setDbSchemas(newDbSchemas)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -73,7 +73,7 @@ export const loadDbRules = (projectId) => {
         setDbRules(newDbRules)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -107,7 +107,7 @@ export const loadDbPreparedQueries = (projectId) => {
         setDbPreparedQueries(dbPreparedQueries)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -118,7 +118,7 @@ const loadCollections = (projectId, dbAliasName) => {
         setDbCollections(dbAliasName, collections)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -130,12 +130,12 @@ export const loadDBConnState = (projectId, dbAliasName) => {
         if (connected) {
           loadCollections(projectId, dbAliasName)
             .then(() => resolve(connected))
-            .catch(ex => reject(ex))
+            .catch(error => reject(error))
           return
         }
         resolve(connected)
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -146,13 +146,13 @@ export const inspectColSchema = (projectId, dbAliasName, colName) => {
         if (!queued) {
           loadDbSchemas(projectId, dbAliasName, colName)
             .then(() => resolve({ queued }))
-            .catch(ex => reject(ex))
+            .catch(error => reject(error))
           return
         }
 
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -170,7 +170,7 @@ export const saveColSchema = (projectId, dbAliasName, colName, schema) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -184,7 +184,7 @@ export const saveColRule = (projectId, dbAliasName, colName, securityRules, isRe
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -199,7 +199,7 @@ export const saveColRealtimeEnabled = (projectId, dbAliasName, colName, isRealti
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -214,7 +214,7 @@ export const saveColCachingEnabled = (projectId, dbAliasName, colName, enableCac
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -229,7 +229,7 @@ export const saveColSecurityRules = (projectId, dbAliasName, colName, securityRu
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -243,7 +243,7 @@ export const untrackCollection = (projectId, dbAliasName, colName) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -261,7 +261,7 @@ export const deleteCollection = (projectId, dbAliasName, colName) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -276,7 +276,7 @@ export const savePreparedQueryConfig = (projectId, dbAliasName, id, args, sql) =
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -291,7 +291,7 @@ export const savePreparedQuerySecurityRule = (projectId, dbAliasName, id, rule) 
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -304,7 +304,7 @@ export const deletePreparedQuery = (projectId, dbAliasName, id) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -315,13 +315,13 @@ export const reloadDbSchema = (projectId, dbAliasName) => {
         if (!queued) {
           loadDbSchemas(projectId, dbAliasName)
             .then(() => resolve({ queued }))
-            .catch(ex => reject(ex))
+            .catch(error => reject(error))
           return
         }
 
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -334,7 +334,7 @@ export const modifyDbSchema = (projectId, dbAliasName) => {
     }, {})
     client.database.modifySchema(projectId, dbAliasName, dbSchemaRequest)
       .then(({ queued }) => resolve({ queued }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -346,12 +346,12 @@ const saveDbConfig = (projectId, dbAliasName, dbConfig) => {
           store.dispatch(set(`dbConfigs.${dbAliasName}`, dbConfig))
           loadDBConnState(projectId, dbAliasName)
             .then(connected => resolve({ connected }))
-            .catch(ex => reject(ex))
+            .catch(error => reject(error))
         } else {
           resolve({ queued: true })
         }
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -367,18 +367,18 @@ export const addDatabase = (projectId, dbAliasName, dbType, dbName, conn) => {
         const hasPermissionToSaveRule = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_RULES], permissionVerbs.MODIFY)
         if (hasPermissionToSaveRule) {
           saveColRule(projectId, dbAliasName, "default", defaultDBRules, false)
-            .catch(ex => console.error("Error setting default collection rule" + ex.toString()))
+            .catch(error => reject(error))
         }
 
         const hasPermissionToCreatePrepareduery = checkResourcePermissions(store.getState(), projectId, [configResourceTypes.DB_PREPARED_QUERIES], permissionVerbs.MODIFY)
         if (hasPermissionToCreatePrepareduery) {
           if (isPreparedQueriesSupportedForDbType(dbType)) {
             savePreparedQuerySecurityRule(projectId, dbAliasName, "default", defaultPreparedQueryRule)
-              .catch(ex => console.error("Error setting default prepared query rule" + ex.toString()))
+              .catch(error => reject(error))
           }
         }
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -387,7 +387,7 @@ export const enableDb = (projectId, dbAliasName, conn) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { enabled: true, conn }))
       .then(({ queued, connected }) => resolve({ queued, connected }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -396,7 +396,7 @@ export const disableDb = (projectId, dbAliasName) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { enabled: false }))
       .then(({ queued }) => resolve({ queued }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -419,13 +419,13 @@ export const removeDbConfig = (projectId, dbAliasName) => {
           if (dbAliasName === eventingDB) {
             saveEventingConfig(projectId, false, "")
               .then(({ queued }) => resolve({ queued, disabledEventing: true }))
-              .catch(ex => reject(ex))
+              .catch(error => reject(error))
             return
           }
         }
         resolve({ queued, disabledEventing: false })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -441,9 +441,9 @@ export const changeDbName = (projectId, dbAliasName, dbName) => {
         }
         modifyDbSchema(projectId, dbAliasName)
           .then(({ queued }) => resolve({ queued }))
-          .catch(ex => reject(ex))
+          .catch(error => reject(error))
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -452,7 +452,7 @@ export const changeLimitClause = (projectId, dbAliasName, limit) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { limit }))
       .then(({ queued }) => resolve({ queued }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -461,7 +461,7 @@ export const changeDriverConfig = (projectId, dbAliasName, driverConfig) => {
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { driverConf: driverConfig }))
       .then(({ queued }) => resolve({ queued }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -470,7 +470,7 @@ export const changeBatchingConfig = (projectId, dbAliasName, batchTime, batchRec
     const dbConfig = getDbConfig(store.getState(), dbAliasName)
     saveDbConfig(projectId, dbAliasName, Object.assign({}, dbConfig, { batchTime: batchTime, batchRecords: batchRecords }))
       .then(({ queued }) => resolve({ queued }))
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

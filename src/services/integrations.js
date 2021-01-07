@@ -30,12 +30,12 @@ class Integrations {
       this.spaceCloudClient.getJSON(`/v1/config/integrations`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex))
+        .catch(ex => reject({title: "Failed to get integration", msg: ex.message}))
     })
   }
 
@@ -44,12 +44,12 @@ class Integrations {
       this.spaceCloudClient.postJSON(`/v1/config/integrations`, integrationConfig)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex))
+        .catch(ex => reject({title: "Failed to set integration", msg: ex.message}))
     })
   }
 
@@ -67,7 +67,7 @@ class Integrations {
           }
           resolve({ ack: false, retry: false, error: data.error })
         })
-        .catch(ex => reject(ex))
+        .catch(ex => reject({title: "Failed to get integration status", msg: ex.message}))
     })
   }
 
@@ -76,12 +76,12 @@ class Integrations {
       this.spaceCloudClient.delete(`/v1/config/integrations/${integrationId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex))
+        .catch(ex => reject({title: "Failed to delete integration", msg: ex.message}))
     })
   }
 }

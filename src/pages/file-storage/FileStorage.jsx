@@ -48,7 +48,7 @@ const Rules = () => {
 		incrementPendingRequests()
 		saveFileStoreConfig(projectID, newConfig)
 			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Configured file storage successfully"))
-			.catch(ex => notify("error", "Error configuring file storage", ex))
+			.catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set filestore-config" : error.msg))
 			.finally(() => decrementPendingRequests())
 	}
 
@@ -60,9 +60,9 @@ const Rules = () => {
 					notify("success", "Success", queued ? actionQueuedMessage : "Added rule successfully")
 					resolve()
 				})
-				.catch(ex => {
-					notify("error", "Error adding rule", ex)
-					reject(ex)
+				.catch(error => {
+					notify("error", error.title, error.msg.length === 0 ? "Failed to set filestore-rule" : error.msg)
+					reject(error)
 				})
 				.finally(() => decrementPendingRequests())
 		})
@@ -72,7 +72,7 @@ const Rules = () => {
 		incrementPendingRequests()
 		deleteFileStoreRule(projectID, ruleName)
 			.then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
-			.catch(ex => notify("error", "Error deleting rule", ex))
+			.catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete filestore-rule" : error.msg))
 			.finally(() => decrementPendingRequests())
 	}
 
@@ -96,9 +96,9 @@ const Rules = () => {
 					notify("success", "Success", queued ? actionQueuedMessage : "Saved prefix successfully")
 					resolve()
 				})
-				.catch(ex => {
-					notify("error", "Error saving prefix", ex)
-					reject(ex)
+				.catch(error => {
+					notify("error", error.title, error.msg.length === 0 ? "Failed to set filestore-rule" : error.msg)
+					reject(error)
 				})
 				.finally(() => decrementPendingRequests())
 		})
@@ -107,14 +107,14 @@ const Rules = () => {
 	useEffect(() => {
 		incrementPendingRequests()
 		loadFileStoreConnState(projectID)
-			.catch(ex => notify("error", "Error fetching connection status", ex))
+			.catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get filestore connection state" : error.msg))
 			.finally(() => decrementPendingRequests())
 	}, [])
 
 	useEffect(() => {
 		incrementPendingRequests()
 		loadFileStoreRules(projectID)
-			.catch(ex => notify("error", "Error fetching file storage rules", ex))
+			.catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get filestore-rule" : error.msg))
 			.finally(() => decrementPendingRequests())
 	}, [])
 

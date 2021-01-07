@@ -60,8 +60,8 @@ const RemoteServices = () => {
           notify("success", "Success", queued ? actionQueuedMessage : `${serviceConfig ? "Modified" : "Added"} remote service successfully`)
           resolve()
         })
-        .catch((ex) => {
-          notify("error", `Error ${serviceConfig ? "modifying" : "adding"} remote service`, ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set remote-service" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())
@@ -76,7 +76,7 @@ const RemoteServices = () => {
     incrementPendingRequests()
     deleteRemoteService(projectID, name)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed remote service successfully"))
-      .catch(ex => notify("error", "Error removing remote service", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete remote-service" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

@@ -8,12 +8,12 @@ class UserManagement {
       this.client.getJSON(`/v1/config/projects/${projectId}/user-management/provider`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get auth-provider", msg: ex.message}))
     })
   }
   setUserManConfig(projectId, provider, config) {
@@ -21,12 +21,12 @@ class UserManagement {
       this.client.postJSON(`/v1/config/projects/${projectId}/user-management/provider/${provider}`, { id: provider, ...config })
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set auth-provider", msg: ex.message}))
     })
   }
 }

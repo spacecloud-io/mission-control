@@ -20,7 +20,7 @@ export const loadRemoteServices = (projectId) => {
         setRemoteServices(remoteServices)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -33,7 +33,7 @@ export const saveRemoteService = (projectId, serviceId, config) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -46,7 +46,7 @@ export const deleteRemoteService = (projectId, serviceId) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

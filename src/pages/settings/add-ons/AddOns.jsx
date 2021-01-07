@@ -25,7 +25,7 @@ const AddOns = () => {
       loadAddonConfig("rabbitmq"),
       loadAddonConfig("redis")
     ])
-      .catch(ex => notify("error", "Error loading add-ons config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get addon" : error.msg))
       .finally(() => decrementPendingRequests())
   }, [])
 
@@ -33,7 +33,7 @@ const AddOns = () => {
     if (rabbitmq.enabled) {
       incrementPendingRequests()
       loadAddonConnState("rabbitmq")
-        .catch(ex => notify("error", "Error loading RabbitMQ connection status", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get addon connection state" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [rabbitmq.enabled])
@@ -42,7 +42,7 @@ const AddOns = () => {
     if (redis.enabled) {
       incrementPendingRequests()
       loadAddonConnState("redis")
-        .catch(ex => notify("error", "Error loading Redis connection status", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get addon connection state" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [redis.enabled])
@@ -52,7 +52,7 @@ const AddOns = () => {
     incrementPendingRequests()
     saveAddonConfig(type, { enabled: false })
       .then(() => notify("success", "Success", "Disabled add-on successfully"))
-      .catch(ex => notify("error", "Error disabling add-on", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set addon" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

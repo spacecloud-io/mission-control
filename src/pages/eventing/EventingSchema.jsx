@@ -21,7 +21,7 @@ const EventingSchema = () => {
     if (projectID) {
       incrementPendingRequests()
       loadEventingSchemas(projectID)
-        .catch(ex => notify("error", "Error fetching eventing schemas", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get eventing-schema" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
@@ -59,8 +59,8 @@ const EventingSchema = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Removed event schema successfully")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error removing event schema", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to delete eventing-schema" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())
@@ -75,8 +75,8 @@ const EventingSchema = () => {
           notify("success", "Success", queued ? actionQueuedMessage : "Saved event schema successfully")
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error saving event schema", ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set eventing-schema" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())
