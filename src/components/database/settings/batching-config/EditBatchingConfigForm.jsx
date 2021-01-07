@@ -14,7 +14,7 @@ const EditBatchingConfigForm = ({ handleSubmit, handleCancel, initialValues }) =
 
   const handleSubmitClick = () => {
     form.validateFields().then(values => {
-      handleSubmit(values.batchTime, values.batchRecords)
+      handleSubmit(Number(values.batchTime), Number(values.batchRecords))
       handleCancel()
     })
   }
