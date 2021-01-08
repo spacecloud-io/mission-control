@@ -150,7 +150,7 @@ export const defaultDbConnectionStrings = {
   [dbTypes.MONGO]: "mongodb://localhost:27017",
   [dbTypes.POSTGRESQL]: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable",
   [dbTypes.MYSQL]: "root:my-secret-pw@tcp(localhost:3306)/",
-  [dbTypes.SQLSERVER]: "sqlserver://username:passowrd@hostIp:1433/master",
+  [dbTypes.SQLSERVER]: "sqlserver://username:password@hostIP:1433?database=master",
   [dbTypes.EMBEDDED]: "embedded.db"
 }
 
