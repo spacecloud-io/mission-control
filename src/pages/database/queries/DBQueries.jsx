@@ -140,7 +140,14 @@ const Queries = () => {
           <div className="db-tab-content">
             {trackedCollectionNames.length === 0 && <NoTableEmptyState />}
             {trackedCollectionNames.length > 0 && <React.Fragment>
-              <Select value={selectedCol} style={{ minWidth: 160 }} onChange={handleSelect}>
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                value={selectedCol}
+                style={{ minWidth: 160 }}
+                onChange={handleSelect}>
                 {trackedCollectionNames.map(colName => <Select.Option value={colName} >{colName}</Select.Option>)}
               </Select>
               {!schema && <NoSchemaEmptyState />}
