@@ -144,7 +144,10 @@ const Queries = () => {
                 showSearch
                 filterOption={(input, option) =>
                   option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } value={selectedCol} style={{ minWidth: 160 }} onChange={handleSelect}>
+                }
+                value={selectedCol}
+                style={{ minWidth: 160 }}
+                onChange={handleSelect}>
                 {trackedCollectionNames.map(colName => <Select.Option value={colName} >{colName}</Select.Option>)}
               </Select>
               {!schema && <NoSchemaEmptyState />}
