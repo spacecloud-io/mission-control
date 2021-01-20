@@ -7,7 +7,7 @@ import dotprop from "dot-prop-immutable";
 
 const lorem = new LoremIpsum();
 
-const primitiveTypes = ["ID", "String", "Float", "Integer", "Boolean", "Date", "Time", "DateTime", "JSON"]
+const primitiveTypes = ["ID", "String", "Float", "Integer", "Boolean", "Date", "Time", "DateTime", "JSON", "SmallInteger", "BigInteger", "Decimal", "Char", "Varchar"]
 const getDefType = (type, isArray, required) => {
   isArray = isArray ? true : type.kind === "ListType";
   required = required ? true : type.kind === "NonNullType";
@@ -183,6 +183,16 @@ const generateRandomValue = (type) => {
         return "2017-11-13T03:15:45.108Z"
       case "JSON":
         return { foo: "bar" }
+      case "SmallInteger":
+        return 12
+      case "BigInteger":
+        return 4323
+      case "Decimal":
+        return 23.84
+      case "Char":
+        return "F919mV2W1ifQy9wlNyYnoOoqUM1"
+      case "Varchar":
+        return "7mr8VjGnCCerZUyzC9YDCn8Oxku"
       default:
         return type
     }
@@ -206,6 +216,16 @@ const generateRandomValue = (type) => {
         return new Date().toISOString()
       case "JSON":
         return { foo: "bar" }
+      case "SmallInteger":
+        return Math.ceil(Math.random() * 100)
+      case "BigInteger":
+        return Math.ceil(Math.random() * 10000)
+      case "Decimal":
+        return Number((Math.random() * 100).toFixed(2))
+      case "Char":
+        return generateId(6)
+      case "Varchar":
+        return generateId(6)
       default:
         return type
     }

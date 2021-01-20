@@ -25,6 +25,11 @@ describe("generateSchemaAST method", () => {
       f19: String @link(table: mytype4, from: id, to: somefield, field: goodfield)
       f20: mytype5 @link(table: mytype5, from: id, to: nicefield)
       f21: [mytype6]! @link(table: mytype6, from: id, to: goodfield)
+      f22: SmallInteger
+      f23: BigInteger
+      f24: Decimal
+      f25: Char
+      f26: Varchar
     }
     `
     const expectedSchemaAST = {
@@ -324,6 +329,71 @@ describe("generateSchemaAST method", () => {
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
           hasNestedFields: true
+        },
+        {
+          name: "f22",
+          type: "SmallInteger",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f23",
+          type: "BigInteger",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f24",
+          type: "Decimal",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f25",
+          type: "Char",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
+        },
+        {
+          name: "f26",
+          type: "Varchar",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
         }
       ]
     }
@@ -466,6 +536,26 @@ describe("generateRandomFieldValues method", () => {
         name: "k9",
         type: "JSON"
       },
+      {
+        name: "k10",
+        type: "SmallInteger"
+      },
+      {
+        name: "k11",
+        type: "BigInteger"
+      },
+      {
+        name: "k12",
+        type: "Decimal"
+      },
+      {
+        name: "k13",
+        type: "Char"
+      },
+      {
+        name: "k14",
+        type: "Varchar"
+      }
     ]
     const result = {
       k1: "0ujsszwN8NRY24YaXiTIE2VWDTS",
@@ -478,7 +568,12 @@ describe("generateRandomFieldValues method", () => {
       k8: "2017-11-13T03:15:45.108Z",
       k9: {
         foo: "bar"
-      }
+      },
+      k10: 12,
+      k11: 4323,
+      k12: 23.84,
+      k13: "F919mV2W1ifQy9wlNyYnoOoqUM1",
+      k14: "7mr8VjGnCCerZUyzC9YDCn8Oxku"
     }
     expect(generateRandomFieldValues(fields)).toEqual(result)
   })
