@@ -30,6 +30,7 @@ describe("generateSchemaAST method", () => {
       f24: Decimal
       f25: Char
       f26: Varchar
+      f27: DateTimeWithZone
     }
     `
     const expectedSchemaAST = {
@@ -394,6 +395,19 @@ describe("generateSchemaAST method", () => {
           hasCreatedAtDirective: false,
           hasUpdatedAtDirective: false,
           hasNestedFields: false
+        },
+        {
+          name: "f27",
+          type: "DateTimeWithZone",
+          isRequired: false,
+          isPrimary: false,
+          hasUniqueConstraint: false,
+          hasForeignConstraint: false,
+          isLink: false,
+          isArray: false,
+          hasCreatedAtDirective: false,
+          hasUpdatedAtDirective: false,
+          hasNestedFields: false
         }
       ]
     }
@@ -555,6 +569,10 @@ describe("generateRandomFieldValues method", () => {
       {
         name: "k14",
         type: "Varchar"
+      },
+      {
+        name: "k15",
+        type: "DateTimeWithZone"
       }
     ]
     const result = {
@@ -573,7 +591,8 @@ describe("generateRandomFieldValues method", () => {
       k11: 4323,
       k12: 23.84,
       k13: "F919mV2W1ifQy9wlNyYnoOoqUM1",
-      k14: "7mr8VjGnCCerZUyzC9YDCn8Oxku"
+      k14: "7mr8VjGnCCerZUyzC9YDCn8Oxku",
+      k15: "2021-11-22T03:15:45.108"
     }
     expect(generateRandomFieldValues(fields)).toEqual(result)
   })
