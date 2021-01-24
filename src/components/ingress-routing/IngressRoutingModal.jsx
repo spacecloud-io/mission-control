@@ -88,6 +88,7 @@ const IngressRoutingModal = props => {
     form.validateFields().then(values => {
       values = Object.assign({}, formInitialValues, values)
       try {
+        values.url = values.url.trim()
         if (!values.allowSpecificHosts) values.allowedHosts = ["*"]
         if (!values.allowSpecificMethods) values.allowedMethods = ["*"]
         if (!values.performRewrite) values.rewrite = undefined

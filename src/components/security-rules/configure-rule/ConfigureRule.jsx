@@ -144,18 +144,11 @@ const parseNumber = (value) => {
   return !isNaN(value) ? Number(value) : value
 }
 
-const parseArray = (value, type) => {
-  if (!value.includes(",")) {
-    return value
-  }
-  return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
-}
-
 const isTypeOfFieldsString = (fields) => {
   return typeof fields === "string"
 }
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
+const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash', 'graphql', 'transform'];
 
 const ConfigureRule = (props) => {
   // form
@@ -181,7 +174,8 @@ const ConfigureRule = (props) => {
     switch (values.rule) {
       case "match":
         if (values.eval === 'in' || values.eval === 'notIn') {
-          values.f2 = parseArray(values.f2, values.type)
+          values.f2 = values.multipleInputFields
+          delete values["multipleInputFields"]
         } else {
           values.f1 = parseValue(values.f1, values.type)
           values.f2 = parseValue(values.f2, values.type)
@@ -215,6 +209,15 @@ const ConfigureRule = (props) => {
 
         delete values["applyTransformations"]
         break;
+      case "graphql":
+        break;
+      case "transform":
+        if (values["applyTransformations"]) {
+          values.template = "go"
+        }
+
+        delete values["applyTransformations"]
+        break;
     }
 
     delete values.errorMsg;
@@ -223,7 +226,7 @@ const ConfigureRule = (props) => {
       if (!props.selectedRule.clauses) values.clauses = [];
       else values.clauses = props.selectedRule.clauses
     }
-    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
+    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash" || values.rule === "graphql" || values.rule === "transform") {
       values.clause = props.selectedRule.clause
       values.fields = values.loadVar ? values.singleInputFields : values.multipleInputFields
       delete values["loadVar"]
@@ -393,9 +396,64 @@ const ConfigureRule = (props) => {
               () => {
                 const type = form.getFieldValue("type")
                 return (
-                  <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
-                    <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
-                  </Form.Item>
+                  <>
+                    <ConditionalFormBlock
+                      dependency='eval'
+                      condition={() => form.getFieldValue('eval') !== 'in' && form.getFieldValue('eval') !== 'notIn'}
+                    >
+                      <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
+                        <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
+                      </Form.Item>
+                    </ConditionalFormBlock>
+                    <ConditionalFormBlock
+                      dependency='eval'
+                      condition={() => form.getFieldValue('eval') === 'in' || form.getFieldValue('eval') === 'notIn'}
+                    >
+                      <Form.List name='multipleInputFields'>
+                        {(fields, { add, remove }) => {
+                          return (
+                            <>
+                              {fields.map((field, index) => (
+                                <Row key={field.key}>
+                                  <Col span={14}>
+                                    <Form.Item
+                                      name={[field.name]}
+                                      key={[field.name]}
+                                      rules={[
+                                        { required: true },
+                                        { validator: createValueAndTypeValidator(type, true) }
+                                      ]}
+                                    >
+                                      <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={2}>
+                                    <CloseOutlined
+                                      style={{ margin: '0 8px' }}
+                                      onClick={() => {
+                                        remove(field.name);
+                                      }}
+                                    />
+                                  </Col>
+                                </Row>
+                              ))}
+                              <Form.Item>
+                                <Button
+                                  type='dashed'
+                                  onClick={() => {
+                                    add();
+                                  }}
+                                  style={{ width: '40%' }}
+                                >
+                                  <PlusOutlined /> Add field
+                                </Button>
+                              </Form.Item>
+                            </>
+                          );
+                        }}
+                      </Form.List>
+                    </ConditionalFormBlock>
+                  </>
                 )
               }
             }
@@ -683,6 +741,77 @@ const ConfigureRule = (props) => {
                 </Checkbox>
               </Form.Item>
             </ConditionalFormBlock>
+          </ConditionalFormBlock>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency='rule'
+          condition={() => form.getFieldValue('rule') === 'graphql'}
+        >
+          <FormItemLabel name='Query' style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="graphqlQuery" rules={[{ required: true }]}>
+            <JSONCodeMirror />
+          </Form.Item>
+          <FormItemLabel name='Variables' style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="graphqlVariables" rules={[{ required: true }]}>
+            <JSONCodeMirror />
+          </Form.Item>
+          <FormItemLabel name="Store" hint="(Optional)" />
+          <FormItem name="store" rules={[{ required: false }]}>
+            <Input placeholder="The variable to store the query response. For example: args.res" />
+          </FormItem>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency="rule"
+          condition={() => form.getFieldValue('rule') === "transform"} >
+          <FormItemLabel name="Store" hint="(Optional)" />
+          <FormItem name="store" rules={[{ required: false }]}>
+            <Input placeholder="The variable to store the transform response. For example: args.res" />
+          </FormItem>
+          <FormItemLabel name='Apply transformations' />
+          <Form.Item name='applyTransformations' valuePropName='checked'>
+            <Checkbox>
+              Transform the request body using templates
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='applyTransformations'
+            condition={() => form.getFieldValue('applyTransformations') === true}
+          >
+            <Alert
+              message={<AlertMsgApplyTransformations />}
+              type='info'
+              showIcon
+              style={{ marginBottom: 21 }}
+            />
+            <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+            <Form.Item name="outputFormat">
+              <Select style={{ width: 96 }}>
+                <Option value='yaml'>YAML</Option>
+                <Option value='json'>JSON</Option>
+              </Select>
+            </Form.Item>
+            <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed claims of the request" />
+            <Form.Item name="claims">
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2
+              }} />
+            </Form.Item>
+            <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
+            <Form.Item name='requestTemplate' >
+              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+                mode: { name: 'go' },
+                lineNumbers: true,
+                styleActiveLine: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                tabSize: 2
+              }} />
+            </Form.Item>
           </ConditionalFormBlock>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />

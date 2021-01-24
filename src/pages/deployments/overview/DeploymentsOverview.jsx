@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { Button, Table, Popconfirm, Tag, Input, Empty } from "antd";
+import { Button, Table, Popconfirm, Tag, Input, Empty, Typography } from "antd";
 import Sidenav from "../../../components/sidenav/Sidenav";
 import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs";
@@ -177,7 +177,7 @@ const DeploymentsOverview = () => {
     {
       title: "Private URL",
       key: "url",
-      render: (_, record) => `${record.id}.${projectID}.svc.cluster.local`
+      render: (_, record) => <Typography.Paragraph copyable={true}>{`${record.id}.${projectID}.svc.cluster.local`}</Typography.Paragraph>
     },
     {
       title: "Status",

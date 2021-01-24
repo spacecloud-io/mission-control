@@ -14,7 +14,7 @@ import InfiniteScrollingTable from "../../../components/utils/infinite-scrolling
 import { notify, incrementPendingRequests, decrementPendingRequests } from '../../../utils';
 import { generateSchemaAST } from "../../../graphql";
 import { Button, Select, Popconfirm } from "antd";
-import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
+import { FilterOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { API, cond } from "space-api";
 import { spaceCloudClusterOrigin, projectModules } from "../../../constants"
 import { getCollectionSchema, getDbType, getTrackedCollections } from '../../../operations/database';
@@ -337,6 +337,14 @@ const Browse = () => {
     })
   }
 
+  const refreshTableData = () => {
+    if (selectedCol) {
+      getTableData();
+    } else {
+      notify("error", "Error", "No column selected");
+    }
+  }
+
   const tableColumns = getColumnNames(colSchemaFields, tableData)
   return (
     <React.Fragment>
@@ -365,6 +373,7 @@ const Browse = () => {
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}
             </Select>
+            <Button onClick={refreshTableData} style={{ marginRight: 24 }}>Refresh <ReloadOutlined /></Button>
             {colSchemaFields && (
               <>
                 <Button onClick={() => setFilterSorterFormVisibility(true)}>Filters & Sorters <FilterOutlined /></Button>
