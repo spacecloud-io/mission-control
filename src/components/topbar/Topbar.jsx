@@ -13,7 +13,7 @@ import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
-import logo from '../../assets/logo-black.svg';
+import logo from '../../assets/logo-blue.svg';
 import upLogo from '../../logo.png';
 import crownSvg from "../../assets/crown.svg";
 import { isClusterUpgraded, isProdMode } from '../../operations/cluster';
