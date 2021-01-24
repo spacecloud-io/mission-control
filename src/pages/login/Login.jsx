@@ -6,7 +6,7 @@ import LoginForm from './LoginForm';
 import { notify, incrementPendingRequests, decrementPendingRequests, performActionsOnAuthenticated } from "../../utils"
 
 import './login.css'
-import logo from '../../assets/logo-black.svg'
+import logo from '../../assets/logo-blue.svg'
 import loginBg from '../../assets/login.svg'
 import { login } from '../../operations/cluster';
 
