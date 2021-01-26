@@ -39,7 +39,7 @@ const ConfigureRedis = () => {
     incrementPendingRequests()
     saveAddonConfig("redis", config)
       .then(() => notify("success", "Success", "Configured Redis add-on successfully"))
-      .catch(ex => notify("error", "Error configuring Redis add-on", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set addon" : error.msg))
       .finally(() => {
         history.goBack()
         decrementPendingRequests()

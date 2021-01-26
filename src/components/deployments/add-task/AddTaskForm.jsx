@@ -148,6 +148,7 @@ const AddTaskForm = props => {
                                 rules={[{ required: true, message: "Please enter protocol!" }]}>
                                 <Select style={{ width: 120 }}>
                                   <Option value="http">HTTP</Option>
+                                  <Option value="tcp">TCP</Option>
                                 </Select>
                               </Form.Item>
                             </Col>

@@ -12,13 +12,13 @@ class Eventing {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/config`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           const eventingConfig = data.result && data.result[0] ? data.result[0] : {}
           resolve(eventingConfig)
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get eventing-config", msg: ex.message}))
     })
   }
 
@@ -27,12 +27,12 @@ class Eventing {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/schema`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get eventing-schema", msg: ex.message}))
     })
   }
 
@@ -41,12 +41,12 @@ class Eventing {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/rules`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get eventing-rule", msg: ex.message}))
     })
   }
 
@@ -55,12 +55,12 @@ class Eventing {
       this.client.getJSON(`/v1/config/projects/${projectId}/eventing/triggers?id=${triggerId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get eventing-trigger", msg: ex.message}))
     })
   }
 
@@ -120,12 +120,12 @@ class Eventing {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/config/eventing-config`, config)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set eventing-config", msg: ex.message}))
     })
   }
 
@@ -149,12 +149,12 @@ class Eventing {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`, triggerRule)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set eventing-trigger", msg: ex.message}))
     })
   }
 
@@ -163,12 +163,12 @@ class Eventing {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/triggers/${triggerName}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete eventing-trigger", msg: ex.message}))
     })
   }
 
@@ -177,12 +177,12 @@ class Eventing {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/rules/${type}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete eventing-rule", msg: ex.message}))
     })
   }
 
@@ -191,12 +191,12 @@ class Eventing {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/rules/${type}`, { ...rule, id: type })
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set eventing-rule", msg: ex.message}))
     })
   }
 
@@ -205,12 +205,12 @@ class Eventing {
       this.client.postJSON(`/v1/config/projects/${projectId}/eventing/schema/${type}`, { id: type, schema: schema })
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set eventing-schema", msg: ex.message}))
     })
   }
 
@@ -219,12 +219,12 @@ class Eventing {
       this.client.delete(`/v1/config/projects/${projectId}/eventing/schema/${type}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete eventing-schema", msg: ex.message}))
     })
   }
 }

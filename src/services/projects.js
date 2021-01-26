@@ -8,12 +8,12 @@ class Projects {
       this.client.getJSON("/v1/config/projects/*")
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get project", msg: ex.message}))
     })
   }
 
@@ -22,12 +22,12 @@ class Projects {
       this.client.postJSON(`/v1/config/projects/${projectId}/generate-internal-token`, {})
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result)
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get project API token", msg: ex.message}))
     })
   }
 
@@ -36,12 +36,12 @@ class Projects {
       this.client.postJSON(`/v1/config/projects/${projectId}`, config)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set project", msg: ex.message}))
     })
   }
 
@@ -50,12 +50,12 @@ class Projects {
       this.client.delete(`/v1/config/projects/${projectId}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete project", msg: ex.message}))
     })
   }
 }

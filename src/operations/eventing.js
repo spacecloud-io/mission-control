@@ -20,7 +20,7 @@ export const loadEventingConfig = (projectId) => {
         setEventingConfig(eventingConfig)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -43,7 +43,7 @@ export const loadEventingSecurityRules = (projectId) => {
         setEventingRules(eventingRules)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -66,7 +66,7 @@ export const loadEventingSchemas = (projectId) => {
         setEventingSchemas(eventingSchemas)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -89,7 +89,7 @@ export const loadEventingTriggers = (projectId, triggerId = "*") => {
         setEventingTriggers(newEventingTriggers)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -102,7 +102,7 @@ export const saveEventingSecurityRule = (projectId, eventType, securityRule) => 
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -115,7 +115,7 @@ export const deleteEventingSecurityRule = (projectId, eventType) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -128,7 +128,7 @@ export const saveEventingSchema = (projectId, eventType, schema) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -141,7 +141,7 @@ export const deleteEventingSchema = (projectId, eventType) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -165,7 +165,7 @@ export const saveEventingConfig = (projectId, eventingConfig) => {
           }
         }
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -180,7 +180,7 @@ export const saveEventingTriggerRule = (projectId, triggerName, triggerRule) => 
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -193,7 +193,7 @@ export const deleteEventingTriggerRule = (projectId, triggerName) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

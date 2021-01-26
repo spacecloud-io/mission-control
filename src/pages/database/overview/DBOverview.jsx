@@ -58,7 +58,7 @@ const Overview = () => {
     if (projectID && selectedDB) {
       incrementPendingRequests()
       loadDBConnState(projectID, selectedDB)
-        .catch(ex => notify("error", "Error fetching database connection state", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get database connection state" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID, selectedDB])
@@ -78,7 +78,7 @@ const Overview = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Successfully ${isRealtimeEnabled ? "enabled" : "disabled"} realtime functionality`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-rule" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -92,7 +92,7 @@ const Overview = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Successfully ${enableCacheInvalidation ? "enabled" : "disabled"} cache invalidation functionality`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-rule" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -133,7 +133,7 @@ const Overview = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", "Error deleting table", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete database collection/table" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -151,14 +151,14 @@ const Overview = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Error untracking ${colName} collection`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to untrack database collection" : error.msg))
   }
 
   const handleReloadSchema = (colName) => {
     incrementPendingRequests()
     inspectColSchema(projectID, selectedDB, colName)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Reloaded schema successfully"))
-      .catch((ex) => notify("error", "Error reloading schema of table", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-schema" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -172,7 +172,7 @@ const Overview = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Error tracking ${collections.length > 1 ? "collections" : "collection"}`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-schema" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -189,8 +189,8 @@ const Overview = () => {
           }
           resolve()
         })
-        .catch(ex => {
-          notify("error", `Error ${editMode ? "modifying" : "adding"} ${colName}`, ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set db-schema" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())
@@ -215,8 +215,8 @@ const Overview = () => {
           notify("success", "Connection successful", actionQueuedMessage)
           resolve()
         })
-        .catch(() => {
-          notify("error", "Connection failed", ` Unable to connect to database. Make sure your connection string is correct.`)
+        .catch(error => { 
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg)
           reject()
         })
         .finally(() => decrementPendingRequests())

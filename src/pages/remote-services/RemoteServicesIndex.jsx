@@ -12,7 +12,7 @@ const RemoteServicesIndex = () => {
     if (projectID) {
       incrementPendingRequests()
       loadRemoteServices(projectID)
-        .catch(ex => notify("error", "Error fetching remote services", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get remote-service" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])

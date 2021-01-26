@@ -7,7 +7,7 @@ const CacheIndex = () => {
   useEffect(() => {
     incrementPendingRequests()
     loadCacheConfig()
-      .catch(ex => notify("error", "Error loading cache config", ex))
+      .catch((error) => notify("error", error.title, error.msg.length === 0 ? "Failed to get cache-config": error.msg))
       .finally(() => decrementPendingRequests())
   }, [])
 

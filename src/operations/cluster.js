@@ -9,7 +9,7 @@ export function loadClusterSettings() {
         setClusterConfig(clusterConfig)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -20,7 +20,7 @@ export function loadPermissions() {
         setPermissions(permissions)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -35,7 +35,7 @@ export function saveClusterSetting(key, value) {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -46,7 +46,7 @@ export function loadClusterEnv() {
         setEnv(env)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -57,7 +57,7 @@ export function login(user, key) {
         setToken(token)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -93,7 +93,7 @@ export function applyClusterLicense(clusterName, licenseKey, licenseValue) {
         loadClusterEnv()
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -104,7 +104,7 @@ export function applyOfflineClusterLicense(licenseKey) {
         loadClusterEnv()
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -115,7 +115,7 @@ export function removeClusterLicense() {
         loadClusterEnv()
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

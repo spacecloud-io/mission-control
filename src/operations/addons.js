@@ -10,11 +10,11 @@ export const saveAddonConfig = (type, config) => {
         store.dispatch(setAddOnConfig(type, config))
         if (config.enabled) {
           loadAddonConnState(type)
-            .catch(ex => reject(ex))
+            .catch(error => reject(error))
         }
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -25,7 +25,7 @@ export const loadAddonConfig = (type) => {
         store.dispatch(setAddOnConfig(type, result[0]))
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -36,7 +36,7 @@ export const loadAddonConnState = (type) => {
         store.dispatch(setAddonConnState(type, result))
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

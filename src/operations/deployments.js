@@ -176,14 +176,19 @@ const saveServiceRoutesConfig = (projectId, serviceId, serviceRoutes) => {
 export const saveServiceRoutes = (projectId, serviceId, routeConfig) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  const newServiceRoutes = [...serviceRoute.filter(obj => obj.source.port !== routeConfig.source.port), routeConfig]
+  const newServiceRoutes = serviceRoute.map(obj => {
+    if(obj.uid === routeConfig.uid){
+      return routeConfig;
+    }
+    return obj;
+  })
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 
-export const deleteServiceRoutes = (projectId, serviceId, port) => {
+export const deleteServiceRoutes = (projectId, serviceId, uid) => {
   const serviceRoutes = getServiceRoutes(store.getState())
   const serviceRoute = get(serviceRoutes, serviceId, [])
-  const newServiceRoutes = serviceRoute.filter(obj => obj.source.port !== port)
+  const newServiceRoutes = serviceRoute.filter(obj => obj.uid !== uid)
   return saveServiceRoutesConfig(projectId, serviceId, newServiceRoutes)
 }
 

@@ -48,7 +48,7 @@ const RabbitMQ = () => {
         notify("success", "Success", "Configured RabbitMQ add-on successfully")
         history.goBack()
       })
-      .catch(ex => notify("error", "Error configuring RabbitMQ add-on", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set addon" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

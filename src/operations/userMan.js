@@ -20,7 +20,7 @@ export const loadUserManConfig = (projectId) => {
         setUserManConfig(userMan)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -33,7 +33,7 @@ export const saveUserManConfig = (projectId, providerId, config) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
