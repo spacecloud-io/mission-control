@@ -158,7 +158,8 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
+  const { rule, type, f1, f2, error, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
+  let { fields } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -174,7 +175,9 @@ const ConfigureRule = (props) => {
     switch (values.rule) {
       case "match":
         if (values.eval === 'in' || values.eval === 'notIn') {
-          values.f2 = values.multipleInputFields
+          values.f2 = values.loadVar ? values.singleInputFields : values.multipleInputFields
+          delete values["loadVar"]
+          delete values["singleInputFields"]
           delete values["multipleInputFields"]
         } else {
           values.f1 = parseValue(values.f1, values.type)
@@ -290,6 +293,7 @@ const ConfigureRule = (props) => {
   }
 
   const inheritedDataType = getTypeFromValue(value)
+  fields = rule === "match" ? f2 : fields
   const formInitialValues = {
     rule,
     type: (rule === "force") ? inheritedDataType : type,
@@ -409,49 +413,65 @@ const ConfigureRule = (props) => {
                       dependency='eval'
                       condition={() => form.getFieldValue('eval') === 'in' || form.getFieldValue('eval') === 'notIn'}
                     >
-                      <Form.List name='multipleInputFields'>
-                        {(fields, { add, remove }) => {
-                          return (
-                            <>
-                              {fields.map((field, index) => (
-                                <Row key={field.key}>
-                                  <Col span={14}>
-                                    <Form.Item
-                                      name={[field.name]}
-                                      key={[field.name]}
-                                      rules={[
-                                        { required: true },
-                                        { validator: createValueAndTypeValidator(type, true) }
-                                      ]}
-                                    >
-                                      <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={2}>
-                                    <CloseOutlined
-                                      style={{ margin: '0 8px' }}
-                                      onClick={() => {
-                                        remove(field.name);
-                                      }}
-                                    />
-                                  </Col>
-                                </Row>
-                              ))}
-                              <Form.Item>
-                                <Button
-                                  type='dashed'
-                                  onClick={() => {
-                                    add();
-                                  }}
-                                  style={{ width: '40%' }}
-                                >
-                                  <PlusOutlined /> Add field
-                                </Button>
-                              </Form.Item>
-                            </>
-                          );
-                        }}
-                      </Form.List>
+                      <Form.Item name="loadVar" valuePropName="checked">
+                        <Checkbox>
+                          Load fields from a variable
+                        </Checkbox>
+                      </Form.Item>
+                      <ConditionalFormBlock dependency='loadVar' condition={() => form.getFieldValue('loadVar')}>
+                        <Row>
+                          <Col span={14}>
+                            <Form.Item name="singleInputFields">
+                              <Input placeholder="Variable to load fields from" />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock dependency='loadVar' condition={() => !form.getFieldValue('loadVar')}>
+                        <Form.List name='multipleInputFields'>
+                          {(fields, { add, remove }) => {
+                            return (
+                              <>
+                                {fields.map((field, index) => (
+                                  <Row key={field.key}>
+                                    <Col span={14}>
+                                      <Form.Item
+                                        name={[field.name]}
+                                        key={[field.name]}
+                                        rules={[
+                                          { required: true },
+                                          { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
+                                        ]}
+                                      >
+                                        <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
+                                      </Form.Item>
+                                    </Col>
+                                    <Col span={2}>
+                                      <CloseOutlined
+                                        style={{ margin: '0 8px' }}
+                                        onClick={() => {
+                                          remove(field.name);
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                ))}
+                                <Form.Item>
+                                  <Button
+                                    type='dashed'
+                                    onClick={() => {
+                                      add();
+                                    }}
+                                    style={{ width: '40%' }}
+                                  >
+                                    <PlusOutlined /> Add field
+                                  </Button>
+                                </Form.Item>
+                              </>
+                            );
+                          }}
+                        </Form.List>
+                      </ConditionalFormBlock>
                     </ConditionalFormBlock>
                   </>
                 )
