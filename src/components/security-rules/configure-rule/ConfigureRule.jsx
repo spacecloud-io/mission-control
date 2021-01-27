@@ -158,7 +158,7 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
+  const { rule, type, f1, f2, error, field, value, url, store, outputFormat, claims, requestTemplate, db, cache, graphqlQuery, graphqlVariables } = props.selectedRule;
   let { fields } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
@@ -319,7 +319,9 @@ const ConfigureRule = (props) => {
     error,
     cacheResponse: cache ? true : false,
     cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
-    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined
+    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined,
+    graphqlQuery,
+    graphqlVariables
   }
 
   if (formInitialValues.type === "object") {
