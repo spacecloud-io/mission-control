@@ -213,13 +213,19 @@ const ConfigureRule = (props) => {
         delete values["applyTransformations"]
         break;
       case "graphql":
+        try {
+          values.graphqlVariables = JSON.parse(values.graphqlVariables);
+          if (values.generateToken) {
+            values.claims = JSON.parse(values.claims)
+          }
+          delete values["generateToken"]
+        } catch (ex) {
+          notify("error", "Error", ex.toString())
+          return;
+        }
         break;
       case "transform":
-        if (values["applyTransformations"]) {
           values.template = "go"
-        }
-
-        delete values["applyTransformations"]
         break;
     }
 
@@ -229,7 +235,7 @@ const ConfigureRule = (props) => {
       if (!props.selectedRule.clauses) values.clauses = [];
       else values.clauses = props.selectedRule.clauses
     }
-    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash" || values.rule === "graphql" || values.rule === "transform") {
+    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash" || values.rule === "transform") {
       values.clause = props.selectedRule.clause
       values.fields = values.loadVar ? values.singleInputFields : values.multipleInputFields
       delete values["loadVar"]
@@ -781,6 +787,20 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the query response. For example: args.res" />
           </FormItem>
+          <Form.Item name='generateToken' valuePropName='checked'>
+            <Checkbox>
+              Generate token
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='generateToken'
+            condition={() => form.getFieldValue('generateToken') === true}
+          >
+            <FormItemLabel name="JWT claims" />
+            <Form.Item name="claims">
+              <JSONCodeMirror />
+            </Form.Item>
+          </ConditionalFormBlock>
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency="rule"
@@ -789,52 +809,30 @@ const ConfigureRule = (props) => {
           <FormItem name="store" rules={[{ required: false }]}>
             <Input placeholder="The variable to store the transform response. For example: args.res" />
           </FormItem>
-          <FormItemLabel name='Apply transformations' />
-          <Form.Item name='applyTransformations' valuePropName='checked'>
-            <Checkbox>
-              Transform the request body using templates
-          </Checkbox>
+          <Alert
+            message={<AlertMsgApplyTransformations />}
+            type='info'
+            showIcon
+            style={{ marginBottom: 21 }}
+          />
+          <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+          <Form.Item name="outputFormat">
+            <Select style={{ width: 96 }}>
+              <Option value='yaml'>YAML</Option>
+              <Option value='json'>JSON</Option>
+            </Select>
           </Form.Item>
-          <ConditionalFormBlock
-            dependency='applyTransformations'
-            condition={() => form.getFieldValue('applyTransformations') === true}
-          >
-            <Alert
-              message={<AlertMsgApplyTransformations />}
-              type='info'
-              showIcon
-              style={{ marginBottom: 21 }}
-            />
-            <FormItemLabel name="Template output format" description="Format for parsing the template output" />
-            <Form.Item name="outputFormat">
-              <Select style={{ width: 96 }}>
-                <Option value='yaml'>YAML</Option>
-                <Option value='json'>JSON</Option>
-              </Select>
-            </Form.Item>
-            <FormItemLabel name="JWT claims template" hint="(Optional)" description="Template to generate the transformed claims of the request" />
-            <Form.Item name="claims">
-              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
-                mode: { name: 'go' },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2
-              }} />
-            </Form.Item>
-            <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
-            <Form.Item name='requestTemplate' >
-              <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
-                mode: { name: 'go' },
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                tabSize: 2
-              }} />
-            </Form.Item>
-          </ConditionalFormBlock>
+          <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
+          <Form.Item name='requestTemplate' >
+            <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+              mode: { name: 'go' },
+              lineNumbers: true,
+              styleActiveLine: true,
+              matchBrackets: true,
+              autoCloseBrackets: true,
+              tabSize: 2
+            }} />
+          </Form.Item>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>
