@@ -196,7 +196,7 @@ export const defaultEventRule = {
 }
 
 export const defaultEventFilterRule = {
-  rule: "allow"
+  rule: "match"
 }
 
 export const defaultEndpointRule = {

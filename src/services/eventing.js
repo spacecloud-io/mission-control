@@ -227,6 +227,46 @@ class Eventing {
         .catch(ex => reject({title: "Failed to delete eventing-schema", msg: ex.message}))
     })
   }
+
+  deleteEventLogs(projectId, dbAlias, timestamp, getToken) {
+    let uri = `/v1/api/${projectId}/graphql`
+    if (spaceCloudClusterOrigin) {
+      uri = spaceCloudClusterOrigin + uri;
+    }
+    const graphqlClient = createGraphQLClient(uri, getToken)
+    return new Promise((resolve, reject) => {
+      graphqlClient.mutate({
+        mutation: gql`
+        mutation {
+          delete_invocation_logs(
+            where: {
+              invocation_time: {
+                _lte: $timestamp
+              }
+            }
+          ) @${dbAlias}
+        
+          delete_event_logs(
+            where: {
+              event_ts: {
+                _lte: $timestamp
+              }
+            }
+          ) @${dbAlias}
+        }
+        `,
+        variables: { timestamp }
+      }).then(res => {
+        const { data, errors } = res
+        if (errors && errors.length > 0) {
+          reject(errors[0].message)
+          return
+        }
+
+        resolve()
+      }).catch(ex => reject(ex.toString()))
+    })
+  }
 }
 
 export default Eventing
