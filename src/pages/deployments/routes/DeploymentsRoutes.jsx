@@ -100,7 +100,7 @@ const DeploymentsRoutes = () => {
   const handleSubmit = (serviceId, uid, values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      const { protocol, port, requestRetries, requestTimeout, targets } = values
+      const { protocol, port, requestRetries, requestTimeout, targets, matchers } = values
       let routeConfig = {};
       if(protocol === "http"){
         routeConfig = {
@@ -109,6 +109,7 @@ const DeploymentsRoutes = () => {
           source: { protocol, port },
           requestRetries: requestRetries,
           requestTimeout: requestTimeout,
+          matchers,
           targets
         }
       }else {

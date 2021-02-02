@@ -1,10 +1,11 @@
 import React from "react";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Row, Col, Button, message, Form } from "antd";
+import { DeleteOutlined, MinusCircleFilled, PlusOutlined } from '@ant-design/icons';
+import { Modal, Input, Select, Row, Col, Button, message, Form, Collapse, Checkbox } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify, generateId } from "../../../utils";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const RoutingRule = props => {
   const [form] = Form.useForm();
@@ -19,14 +20,14 @@ const RoutingRule = props => {
         return
       }
       values.port = Number(values.port);
-      if(values.protocol === "http"){
+      if (values.protocol === "http") {
         values.requestRetries = Number(values.requestRetries);
-        values.requestTimeout = Number(values.requestTimeout); 
+        values.requestTimeout = Number(values.requestTimeout);
       }
       let uid = '';
-      if(mode === 'add'){
+      if (mode === 'add') {
         uid = generateId();
-      }else{
+      } else {
         uid = initialValues.uid;
       }
       props.handleSubmit(uid, values).then(() => props.handleCancel());
@@ -45,11 +46,12 @@ const RoutingRule = props => {
       >
         <Form layout="vertical" form={form}
           initialValues={{
-            protocol: initialValues ? initialValues.protocol: "http",
+            protocol: initialValues ? initialValues.protocol : "http",
             port: initialValues ? initialValues.port : "",
             requestRetries: initialValues ? initialValues.requestRetries : 3,
             requestTimeout: initialValues ? initialValues.requestTimeout : 180,
-            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }]
+            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }],
+            matchers: initialValues ? initialValues.matchers : []
           }}>
           <FormItemLabel name="Port" />
           <Row gutter={24}>
@@ -81,7 +83,7 @@ const RoutingRule = props => {
               </Form.Item>
             </Col>
           </Row>
-          <ConditionalFormBlock dependency='protocol' condition={() => form.getFieldValue("protocol") === 'http' }>
+          <ConditionalFormBlock dependency='protocol' condition={() => form.getFieldValue("protocol") === 'http'}>
             <FormItemLabel name="Retries" />
             <Form.Item name="requestRetries" rules={[{ required: true, message: "Please input number of retries" }]}>
               <Input placeholder="Request retries" style={{ width: '30%' }} />
@@ -90,6 +92,110 @@ const RoutingRule = props => {
             <Form.Item name="requestTimeout" rules={[{ required: true, message: "Please input timeout in seconds" }]}>
               <Input placeholder="Request Timeout" style={{ width: '30%' }} />
             </Form.Item>
+            <FormItemLabel name="Matchers" />
+            <Form.List name="matchers">
+              {(fields, { add, remove }) => {
+                return (
+                  <React.Fragment>
+                    {fields.length !== 0 &&
+                      <Collapse style={{ marginBottom: "1em" }}>
+                        {fields.map((field, index) => (
+                          <Panel key={`${index}`} header={`Matcher ${index + 1}`} extra={<DeleteOutlined onClick={() => remove(field.name)} />}>
+                            <FormItemLabel name="URL" />
+                            <Row gutter={24}>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'type']}
+                                  fieldKey={[field.fieldKey, 'url', 'type']}
+                                >
+                                  <Select placeholder="Type" style={{ width: 300 }}>
+                                    <Select.Option value="exact">Exact</Select.Option>
+                                    <Select.Option value="prefix">Prefix</Select.Option>
+                                    <Select.Option value="regex">Regex</Select.Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'value']}
+                                  fieldKey={[field.fieldKey, 'url', 'value']}
+                                >
+                                  <Input placeholder="Value" style={{ width: 300 }} />
+                                </Form.Item>
+                              </Col>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'ignoreCase']}
+                                  fieldKey={[field.fieldKey, 'url', 'ignoreCase']}
+                                  valuePropName='checked'
+                                >
+                                  <Checkbox>Ignore case</Checkbox>
+                                </Form.Item>
+                              </Col>
+                            </Row>
+                            <FormItemLabel name="Headers" />
+                            <Form.List name={[field.name, "headers"]}>
+                              {(fields, { add, remove }) => {
+                                return (
+                                  <React.Fragment>
+                                    {fields.map((fieldHeaders, index) => (
+                                      <Row gutter={24}>
+                                        <Col>
+                                          <Form.Item
+                                            {...fieldHeaders}
+                                            name={[fieldHeaders.name, 'type']}
+                                            fieldKey={[fieldHeaders.name, 'type']}
+                                          >
+                                            <Select placeholder="Type" style={{ width: 300 }}>
+                                              <Select.Option value="exact">Exact</Select.Option>
+                                              <Select.Option value="prefix">Prefix</Select.Option>
+                                              <Select.Option value="regex">Regex</Select.Option>
+                                              <Select.Option value="checkPresence">Check presence</Select.Option>
+                                            </Select>
+                                          </Form.Item>
+                                        </Col>
+                                        <Col>
+                                          <Form.Item
+                                            {...fieldHeaders}
+                                            name={[fieldHeaders.name, 'key']}
+                                            fieldKey={[fieldHeaders.name, 'key']}
+                                          >
+                                            <Input placeholder="Key" style={{ width: 300 }} />
+                                          </Form.Item>
+                                        </Col>
+                                        <Col>
+                                          <Form.Item
+                                            {...fieldHeaders}
+                                            name={[fieldHeaders.name, 'value']}
+                                            fieldKey={[fieldHeaders.name, 'value']}
+                                          >
+                                            <Input placeholder="Value" style={{ width: 300 }} />
+                                          </Form.Item>
+                                        </Col>
+                                        <Col>
+                                          <MinusCircleFilled onClick={() => remove(field.name)} style={{ fontSize: 20, marginTop: 5 }} />
+                                        </Col>
+                                      </Row>
+                                    ))
+                                    }
+                                    <Button onClick={() => add()}><PlusOutlined /> Add another header</Button>
+                                  </React.Fragment>
+                                )
+                              }}
+                            </Form.List>
+                          </Panel>
+                        ))}
+                      </Collapse>
+                    }
+                    <Button style={{ marginBottom: "1em" }} onClick={() => add()}><PlusOutlined /> Add another matcher</Button>
+                  </React.Fragment>
+                )
+              }
+              }
+            </Form.List>
           </ConditionalFormBlock>
           <FormItemLabel name="Targets" />
           <React.Fragment>
