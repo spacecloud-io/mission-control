@@ -9,7 +9,7 @@ const InsertRowForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array", "smallInteger", "bigInteger", "decimal", "char", "varchar", "dateTimeWithZone"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -132,6 +132,12 @@ const InsertRowForm = (props) => {
                             <Select.Option value='datetime'>Datetime</Select.Option>
                             <Select.Option value='json'>JSON/Object</Select.Option>
                             <Select.Option value='array'>Array</Select.Option>
+                            <Select.Option value='smallInteger'>Small Integer</Select.Option>
+                            <Select.Option value='bigInteger'>Big Integer</Select.Option>
+                            <Select.Option value='decimal'>Decimal</Select.Option>
+                            <Select.Option value='char'>Char</Select.Option>
+                            <Select.Option value='varchar'>Varchar</Select.Option>
+                            <Select.Option value='dateTimeWithZone'>DateTimeWithZone</Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
@@ -156,7 +162,13 @@ const InsertRowForm = (props) => {
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
-                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "string"}>
+                      <ConditionalFormBlock shouldUpdate={true}
+                        condition={() => 
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "string" ||
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "char" ||
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "varchar"
+                        }
+                      >
                         <Col span={10}>
                           <Form.Item
                             name={[field.name, 'value']}
@@ -170,7 +182,11 @@ const InsertRowForm = (props) => {
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
-                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "integer"}>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() =>
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "integer" ||
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "smallInteger" ||
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "bigInteger"
+                      }>
                         <Col span={10}>
                           <Form.Item
                             name={[field.name, 'value']}
@@ -184,7 +200,10 @@ const InsertRowForm = (props) => {
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
-                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "float"}>
+                      <ConditionalFormBlock shouldUpdate={true} condition={() => 
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "float" ||
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "decimal"
+                      }>
                         <Col span={10}>
                           <Form.Item
                             name={[field.name, 'value']}
@@ -243,7 +262,12 @@ const InsertRowForm = (props) => {
                           </Form.Item>
                         </Col>
                       </ConditionalFormBlock>
-                      <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "datetime"}>
+                      <ConditionalFormBlock shouldUpdate={true}
+                        condition={() => 
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "datetime" ||
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "dateTimeWithZone"
+                        }
+                      >
                         <Col span={10}>
                           <Form.Item
                             name={[field.name, 'value']}
@@ -336,6 +360,12 @@ const InsertRowForm = (props) => {
                                             <Select.Option value='date'>Date</Select.Option>
                                             <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
+                                            <Select.Option value='smallInteger'>Small Integer</Select.Option>
+                                            <Select.Option value='bigInteger'>Big Integer</Select.Option>
+                                            <Select.Option value='decimal'>Decimal</Select.Option>
+                                            <Select.Option value='char'>Char</Select.Option>
+                                            <Select.Option value='varchar'>Varchar</Select.Option>
+                                            <Select.Option value='dateTimeWithZone'>DateTimeWithZone</Select.Option>
                                           </Select>
                                         </Form.Item>
                                       </Col>
@@ -364,7 +394,11 @@ const InsertRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "string"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "string" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "char" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "varchar"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -379,7 +413,11 @@ const InsertRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer"}
+                                          condition={() =>
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "smallInteger" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "bigInteger"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -394,7 +432,10 @@ const InsertRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "decimal"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -457,7 +498,10 @@ const InsertRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "dateTimeWithZone"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
