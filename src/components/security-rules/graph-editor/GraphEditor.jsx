@@ -152,7 +152,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }
               }
               return
             }
-            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove" || selectedRuleObj.rule === "encrypt" || selectedRuleObj.rule === "decrypt" || selectedRuleObj.rule === "hash") {
+            if (selectedRuleObj.rule === "query" || selectedRuleObj.rule === "force" || selectedRuleObj.rule === "remove" || selectedRuleObj.rule === "encrypt" || selectedRuleObj.rule === "decrypt" || selectedRuleObj.rule === "hash" || selectedRuleObj.rule === "graphql" || selectedRuleObj.rule === "transform") {
               if (strippedKey === "root") {
                 setRule(dotProp.set(rule, "clause", copiedRule))
               } else {

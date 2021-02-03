@@ -327,7 +327,7 @@ const ConfigureRule = (props) => {
     cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
     cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined,
     graphqlQuery,
-    graphqlVariables
+    graphqlVariables : JSON.stringify(graphqlVariables, null, 2)
   }
 
   if (formInitialValues.type === "object") {
