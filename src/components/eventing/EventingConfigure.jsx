@@ -4,6 +4,7 @@ import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock
 import FormItemLabel from "../form-item-label/FormItemLabel";
 import { useSelector } from 'react-redux';
 import { getTrackedCollections } from '../../operations/database';
+import { MinusCircleFilled, PlusOutlined } from '@ant-design/icons';
 
 const { Option } = AutoComplete;
 
@@ -12,45 +13,41 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
 
   const [value, setValue] = useState("");
   const [selectedDbs, setSelectedDbs] = useState([]);
-  const trackedCollections = useSelector(state => {
-    const allTrackedCollections = selectedDbs.reduce((prev, curr) => [...prev, ...getTrackedCollections(state, curr)], [])
-    return [...new Set(allTrackedCollections)]
-  })
+  const state = useSelector(state => state)
 
   const handleSearch = value => setValue(value);
-  const handleSelectDatabases = values => setSelectedDbs(values)
+  const handleSelectDatabases = values => setSelectedDbs([values])
 
   const handleTruncateEventLogs = () => {
     form.validateFields(["truncateSince"]).then(values => {
       values.truncateSince = values.truncateSince.unix()
-      
+
       onDeleteEventingLogs(values.truncateSince)
     })
   }
+
+  const getCollections = (db) => getTrackedCollections(state, db)
+
   const handleSubmitClick = e => {
-    form.validateFields(["dbAlias", "db", "col"]).then(values => {
+    form.validateFields(["enabled", "dbAlias", "dbTables"]).then(values => {
       values = Object.assign({}, initialValues, values)
 
       if (values.enabled) {
         values.dbTablesInclusionMap = {}
-        if (!values.db) {
+        if (values.dbTables.length === 0) {
           values.dbTablesInclusionMap["*"] = "*";
         }
         else {
-          values.db.forEach(item => {
-            if (item == values.dbAlias) {
-              values.dbTablesInclusionMap[item] = values.col ? values.col : "*";
-              return;
+          values.dbTables.forEach(item => {
+            if (item) {
+              values.dbTablesInclusionMap[item.db] = item.col.length > 0 ? item.col : "*"
             }
-            values.dbTablesInclusionMap[item] = values.col ? [] : "*";
           })
         }
       }
 
-      delete values["db"]
-      delete values["col"]
-      // handleSubmit(values)
-      console.log(values)
+      delete values["dbTables"]
+      handleSubmit(values)
     })
   }
 
@@ -71,26 +68,49 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
           <AutoComplete placeholder="Choose an eventing database" style={{ width: 320 }} options={dbList.map(db => ({ value: db }))} />
         </Form.Item>
         <FormItemLabel name="Disabling eventing" description="Select the database & table on which the eventing has to be disabled" />
-        <Input.Group compact>
-          <Form.Item name="db" style={{ flexGrow: 1, width: 200, marginRight: 10 }}>
-            <Select mode="tags" placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
-              {
-                dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
-              }
-            </Select>
-          </Form.Item>
-          <Form.Item name="col" style={{ flexGrow: 1, width: 200 }} >
-            <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
-              {
-                trackedCollections.filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
-                  <Option key={data} value={data}>
-                    {data}
-                  </Option>
-                ))
-              }
-            </Select>
-          </Form.Item>
-        </Input.Group>
+        <Form.List name="dbTables">
+          {(fields, { add, remove }) => {
+            return (
+              <div>
+                {fields.map((field) => (
+                  <Input.Group compact>
+                    <Form.Item
+                      name={[field.name, 'db']}
+                      key={[field.name, 'db']}
+                      style={{ flexGrow: 1, width: 200, marginRight: 10 }}
+                    >
+                      <Select showSearch placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
+                        {
+                          dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
+                        }
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      name={[field.name, 'col']}
+                      key={[field.name, 'col']}
+                      style={{ flexGrow: 1, width: 200, marginRight: 10 }}
+                      shouldUpdate
+                    >
+                      <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
+                        {
+                          getCollections(form.getFieldValue(["dbTables", field.name, 'db'])).filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
+                            <Option key={data} value={data}>
+                              {data}
+                            </Option>
+                          ))
+                        }
+                      </Select>
+                    </Form.Item>
+                    <Form.Item>
+                      <MinusCircleFilled onClick={() => remove(field.name)} style={{ fontSize: 20, cursor: "pointer" }} />
+                    </Form.Item>
+                  </Input.Group>
+                ))}
+                <Button style={{ marginBottom: "1em" }} onClick={() => add()}><PlusOutlined /> Add database</Button>
+              </div>
+            )
+          }}
+        </Form.List>
       </ConditionalFormBlock>
       <Form.Item>
         <Button onClick={handleSubmitClick} >
