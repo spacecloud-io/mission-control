@@ -33,7 +33,7 @@ const convertRuleToGraph = (rule, id, parentId) => {
     graph.nodes.push({ id: `${id}.clauses.${len}`, label: "+ Add clause", group: "add_rule" })
     graph.edges.push({ from: id, to: `${id}.clauses.${len}` })
   }
-  if (rule.rule === "query" || rule.rule === "force" || rule.rule === "remove" || rule.rule === "encrypt" || rule.rule === "decrypt" || rule.rule === "hash" || rule.rule === "graphql" || rule.rule === "transform") {
+  if (rule.rule === "query" || rule.rule === "force" || rule.rule === "remove" || rule.rule === "encrypt" || rule.rule === "decrypt" || rule.rule === "hash") {
     if (rule.clause && rule.clause.rule) {
       graph = mergeGraph(graph, convertRuleToGraph(rule.clause, `${id}.clause`, id))
     } else {
