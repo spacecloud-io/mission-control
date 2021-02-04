@@ -17,6 +17,7 @@ import Secrets from "./secrets"
 import Cluster from "./cluster";
 import Integrations from "./integrations";
 import Addons from './addons';
+import SecurityFunctions from "./securityFunctions";
 
 const API = SpaceAPI.API
 const cond = SpaceAPI.cond
@@ -41,6 +42,7 @@ class Service {
     this.cluster = new Cluster(this.client)
     this.integrations = new Integrations(this.client, this.spaceAPIClient)
     this.addons = new Addons(this.client)
+    this.securityFunctions = new SecurityFunctions(this.client)
     if (token) this.client.setToken(token);
   }
 

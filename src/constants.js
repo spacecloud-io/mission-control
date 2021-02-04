@@ -74,7 +74,8 @@ export const projectModules = {
   INTEGRATIONS: "integrations",
   EXPLORER: "explorer",
   SETTINGS: "settings",
-  SECURITY_RULES: "security-rules"
+  SECURITY_RULES: "security-rules",
+  SECURITY_FUNCTIONS: "security-functions"
 }
 
 export const moduleResources = {

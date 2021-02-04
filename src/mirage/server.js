@@ -145,6 +145,11 @@ export function makeServer({ environment = "development" } = {}) {
       this.post("/config/integrations", () => respondOk())
       this.delete("/config/integrations/:integrationId", () => respondOk())
 
+      // SecurityFunctions endpoints
+      this.get("/config/projects/:projectId/security/function", () => respondOk({ result: fixtures.securityFunctions }))
+      this.post("/config/projects/:projectId/security/function/:id", () => respondOk())
+      this.delete("/config/projects/:projectId/security/function/:id", () => respondOk())
+
       // Addons
       this.get("/config/add-ons/rabbitmq/rabbitmq", () => respondOk({ result: [fixtures.addonsConfig.rabbitmq] }))
       this.get("/config/add-ons/redis/redis", () => respondOk({ result: [fixtures.addonsConfig.redis] }))

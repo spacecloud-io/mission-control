@@ -105,6 +105,9 @@ const Sidenav = (props) => {
           <Link to={`/mission-control/projects/${projectID}/${projectModules.USER_MANAGEMENT}`} onClick={closeSidenav}>
             <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === projectModules.USER_MANAGEMENT} />
           </Link>
+          <Link to={`/mission-control/projects/${projectID}/${projectModules.SECURITY_FUNCTIONS}`} onClick={closeSidenav}>
+            <SidenavItem name="Security" icon="extension" active={props.selectedItem === projectModules.SECURITY_FUNCTIONS} />
+          </Link>
           <Link to={`/mission-control/projects/${projectID}/${projectModules.INTEGRATIONS}`} onClick={closeSidenav}>
             <SidenavItem name="Integrations" icon="extension" active={props.selectedItem === projectModules.INTEGRATIONS} />
           </Link>
