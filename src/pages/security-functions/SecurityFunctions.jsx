@@ -3,10 +3,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Sidenav from "../../components/sidenav/Sidenav";
 import Topbar from "../../components/topbar/Topbar";
-import { projectModules, actionQueuedMessage } from "../../constants";
+import { projectModules, actionQueuedMessage, securityRuleGroups } from "../../constants";
 import Highlighter from "react-highlight-words";
 import EmptySearchResults from "../../components/utils/empty-search-results/EmptySearchResults";
-import { decrementPendingRequests, incrementPendingRequests, notify } from "../../utils";
+import { decrementPendingRequests, incrementPendingRequests, notify, openSecurityRulesPage } from "../../utils";
 import { deleteSecurityFunction, getSecurityFunctions, loadSecurityFunctions, saveSecurityFunction } from "../../operations/securityFunctions";
 import { useSelector } from "react-redux";
 import FunctionForm from "../../components/security-functions/function-form/FunctionForm";
@@ -38,8 +38,8 @@ const SecurityFunctions = () => {
   }, [projectID])
 
   // Handlers
-  const handleViewClick = (name) => {
-    console.log(name)
+  const handleViewClick = (id) => {
+    openSecurityRulesPage(projectID, securityRuleGroups.SECURITY_FUNCTIONS, id)
   }
 
   const handleEditClick = (config) => {
@@ -60,7 +60,7 @@ const SecurityFunctions = () => {
       incrementPendingRequests()
       saveSecurityFunction(projectID, values)
         .then(({ queued }) => {
-          notify("success", "Success", queued ? actionQueuedMessage : `Added security function successfully`)
+          notify("success", "Success", queued ? actionQueuedMessage : `Saved security function successfully`)
           resolve()
         })
         .catch(error => {
@@ -130,7 +130,7 @@ const SecurityFunctions = () => {
           <Table
             columns={tableColumns}
             dataSource={filteredSecurityFunctions}
-            onRow={(record) => { return { onClick: event => { handleViewClick(record.name) } } }}
+            onRow={(record) => { return { onClick: event => { handleViewClick(record.id) } } }}
             locale={{
               emptyText: securityFunctions.length !== 0 ?
                 <EmptySearchResults searchText={searchText} /> :
@@ -143,7 +143,7 @@ const SecurityFunctions = () => {
         <FunctionForm
           initialValues={selectedFunctionConfig}
           handleSubmit={handleSubmit}
-          handleCancel={() => setModalVisible(false)}
+          handleCancel={() => {setModalVisible(false);setSelectedFunctionConfig()}}
         />
       )}
     </React.Fragment>

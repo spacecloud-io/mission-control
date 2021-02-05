@@ -4,8 +4,12 @@ import dotProp from 'dot-prop-immutable';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import ConfigureRule from '../configure-rule/ConfigureRule';
 import SecurityRulesGraph from "../security-rules-graph/SecurityRulesGraph";
-import { saveObjectToLocalStorage, getObjectFromLocalStorage } from "../../../utils";
+import { saveObjectToLocalStorage, getObjectFromLocalStorage, incrementPendingRequests, notify, decrementPendingRequests } from "../../../utils";
 import generateGraph from "./generateGraph";
+import { securityRuleGroups, actionQueuedMessage } from "../../../constants";
+import FunctionForm from "../../security-functions/function-form/FunctionForm";
+import { useSelector } from "react-redux";
+import { getSecurityFunction, saveSecurityFunction } from "../../../operations/securityFunctions";
 
 const LOCAL_STORAGE_RULE_KEY = "securityRuleBuilder:copiedRule"
 
@@ -19,13 +23,17 @@ const getDoubleClickedRuleObject = (rule, ruleKey) => {
   return dotProp.get(rule, getStrippedKey(ruleKey), {})
 }
 
-function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }) {
+function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled, projectId }) {
   const { ruleType } = ruleMetaData
+
+  // Global state
+  const securityFunctionConfig = useSelector(state => getSecurityFunction(state, ruleName))
 
   // Component state
   const [selectedNodeId, setselectedNodeId] = useState();
   const [doubleClickedNodeId, setDoubleClickedNodeId] = useState("");
   const [network, setNetwork] = useState();
+  const [securityFunctionModal, setSecurityFunctionModal] = useState(false);
 
   useEffect(() => {
     function handleResize() {
@@ -69,6 +77,10 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
+      if (ruleType === securityRuleGroups.SECURITY_FUNCTIONS) {
+        setSecurityFunctionModal(true);
+        return;
+      }
       if (nodeId && nodeId.startsWith("root")) {
         message.error("Operation not allowed. Only rule blocks (blue ones) can be double clicked to configure them")
         return
@@ -185,6 +197,23 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }
     setRule(dotProp.set(rule, getStrippedKey(doubleClickedNodeId), values));
   };
 
+  // On security function submit
+  const handleSecurityFunctionSubmit = (values) => {
+    return new Promise((resolve, reject) => {
+      incrementPendingRequests()
+      saveSecurityFunction(projectId, values)
+        .then(({ queued }) => {
+          notify("success", "Success", queued ? actionQueuedMessage : `Modified security function successfully`)
+          resolve()
+        })
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set security function" : error.msg)
+          reject()
+        })
+        .finally(() => decrementPendingRequests())
+    })
+  }
+
   const menu = (
     <Menu onClick={({ key }) => shortcutsHandler(key)}>
       <Menu.Item key='ctrl+c'>Copy</Menu.Item>
@@ -241,6 +270,13 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled }
           selectedNodeId={getStrippedKey(doubleClickedNodeId).split(".")[0]}
           blockDepth={doubleClickedNodeId.split(".").length}
           isCachingEnabled={isCachingEnabled}
+        />
+      )}
+      {securityFunctionModal && (
+        <FunctionForm 
+          initialValues={securityFunctionConfig}
+          handleSubmit={handleSecurityFunctionSubmit}
+          handleCancel={() => setSecurityFunctionModal(false)}
         />
       )}
     </React.Fragment>

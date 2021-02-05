@@ -16,7 +16,7 @@ import GraphEditor from "../../components/security-rules/graph-editor/GraphEdito
 import JSONEditor from "../../components/security-rules/json-editor/JSONEditor";
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { getSecurityRuleInfo, loadSecurityRules, saveSecurityRule } from '../../operations/securityRuleBuilder';
-import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage, defaultEventFilterRule } from '../../constants';
+import { securityRuleGroups, defaultDBRules, defaultPreparedQueryRule, defaultEventRule, defaultFileRule, defaultEndpointRule, defaultIngressRoutingRule, actionQueuedMessage, defaultEventFilterRule, defaultSecurityFunctionRule } from '../../constants';
 import { getCacheConfig } from '../../operations/cache';
 
 const RulesEditor = () => {
@@ -93,6 +93,9 @@ const RulesEditor = () => {
         break;
       case securityRuleGroups.INGRESS_ROUTES:
         setRule(defaultIngressRoutingRule)
+        break;
+      case securityRuleGroups.SECURITY_FUNCTIONS:
+        setRule(defaultSecurityFunctionRule)
         break;
     }
   }
@@ -175,7 +178,7 @@ const RulesEditor = () => {
                     </span>
                   </div>
                   <div className="rule-editor-holder" style={{ height: "calc(100% - 104px)", border: '1px solid #D9D9D9' }}>
-                    <GraphEditor rule={rule} setRule={setRule} ruleName={name} ruleMetaData={ruleMetaData} isCachingEnabled={cacheConfig.enabled} />
+                    <GraphEditor rule={rule} setRule={setRule} ruleName={name} ruleMetaData={ruleMetaData} isCachingEnabled={cacheConfig.enabled} projectId={projectID} />
                   </div>
                   <Button type='primary' size="large" onClick={() => onSaveChanges("builder")} block style={{ marginTop: 16 }} disabled={!rulesChanged}>Save</Button>
                 </div>

@@ -18,6 +18,7 @@ import { setEventingSecurityRule } from './operations/eventing'
 import { setFileStoreSecurityRule } from './operations/fileStore'
 import { loadClusterEnv, refreshClusterTokenIfPresent, loadPermissions, isLoggedIn, getPermisions, getLoginURL } from './operations/cluster'
 import { useSelector } from 'react-redux'
+import { setSecurityFunctionRule } from './operations/securityFunctions'
 
 const mysqlSvg = require(`./assets/mysqlSmall.svg`)
 const postgresSvg = require(`./assets/postgresSmall.svg`)
@@ -383,6 +384,8 @@ const registerSecurityRulesBroadCastListener = () => {
         case securityRuleGroups.INGRESS_ROUTES:
           setIngressRouteRule(id, rule)
           break
+        case securityRuleGroups.SECURITY_FUNCTIONS:
+          setSecurityFunctionRule(id, rule)
       }
     }
     notify("success", "Success", queued ? actionQueuedMessage : "Saved security rules successfully")
