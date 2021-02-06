@@ -9,7 +9,7 @@ const InsertRowForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array", "smallInteger", "bigInteger", "decimal", "char", "varchar", "dateTimeWithZone"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array", "smallinteger", "biginteger", "decimal", "char", "varchar", "datetimewithzone"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -132,12 +132,12 @@ const InsertRowForm = (props) => {
                             <Select.Option value='datetime'>Datetime</Select.Option>
                             <Select.Option value='json'>JSON/Object</Select.Option>
                             <Select.Option value='array'>Array</Select.Option>
-                            <Select.Option value='smallInteger'>Small Integer</Select.Option>
-                            <Select.Option value='bigInteger'>Big Integer</Select.Option>
+                            <Select.Option value='smallinteger'>Small Integer</Select.Option>
+                            <Select.Option value='biginteger'>Big Integer</Select.Option>
                             <Select.Option value='decimal'>Decimal</Select.Option>
                             <Select.Option value='char'>Char</Select.Option>
                             <Select.Option value='varchar'>Varchar</Select.Option>
-                            <Select.Option value='dateTimeWithZone'>DateTimeWithZone</Select.Option>
+                            <Select.Option value='datetimewithzone'>DateTimeWithZone</Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
@@ -184,8 +184,8 @@ const InsertRowForm = (props) => {
                       </ConditionalFormBlock>
                       <ConditionalFormBlock shouldUpdate={true} condition={() =>
                         form.getFieldValue(["rows", field.name, "datatype"]) === "integer" ||
-                        form.getFieldValue(["rows", field.name, "datatype"]) === "smallInteger" ||
-                        form.getFieldValue(["rows", field.name, "datatype"]) === "bigInteger"
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "smallinteger" ||
+                        form.getFieldValue(["rows", field.name, "datatype"]) === "biginteger"
                       }>
                         <Col span={10}>
                           <Form.Item
@@ -265,7 +265,7 @@ const InsertRowForm = (props) => {
                       <ConditionalFormBlock shouldUpdate={true}
                         condition={() => 
                           form.getFieldValue(["rows", field.name, "datatype"]) === "datetime" ||
-                          form.getFieldValue(["rows", field.name, "datatype"]) === "dateTimeWithZone"
+                          form.getFieldValue(["rows", field.name, "datatype"]) === "datetimewithzone"
                         }
                       >
                         <Col span={10}>
@@ -360,12 +360,12 @@ const InsertRowForm = (props) => {
                                             <Select.Option value='date'>Date</Select.Option>
                                             <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
-                                            <Select.Option value='smallInteger'>Small Integer</Select.Option>
-                                            <Select.Option value='bigInteger'>Big Integer</Select.Option>
+                                            <Select.Option value='smallinteger'>Small Integer</Select.Option>
+                                            <Select.Option value='biginteger'>Big Integer</Select.Option>
                                             <Select.Option value='decimal'>Decimal</Select.Option>
                                             <Select.Option value='char'>Char</Select.Option>
                                             <Select.Option value='varchar'>Varchar</Select.Option>
-                                            <Select.Option value='dateTimeWithZone'>DateTimeWithZone</Select.Option>
+                                            <Select.Option value='datetimewithzone'>DateTimeWithZone</Select.Option>
                                           </Select>
                                         </Form.Item>
                                       </Col>
@@ -415,8 +415,8 @@ const InsertRowForm = (props) => {
                                           shouldUpdate={true}
                                           condition={() =>
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer" ||
-                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "smallInteger" ||
-                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "bigInteger"
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "smallinteger" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "biginteger"
                                           }
                                         >
                                           <Form.Item
@@ -500,7 +500,7 @@ const InsertRowForm = (props) => {
                                           shouldUpdate={true}
                                           condition={() => 
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime" ||
-                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "dateTimeWithZone"
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetimewithzone"
                                           }
                                         >
                                           <Form.Item
