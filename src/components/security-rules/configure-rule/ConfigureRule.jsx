@@ -719,9 +719,9 @@ const ConfigureRule = (props) => {
                           <Input value={item} disabled />
                         </Col>
                         <Col span={12}>
-                          <Form.Item name={["fnBlockVariables", item]}>
-                            <Input placeholder="Value" />
-                          </Form.Item>
+                          <FormItem name={["fnBlockVariables", item]} rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }]}>
+                            <ObjectAutoComplete placeholder="Value" options={autoCompleteOptions} />
+                          </FormItem>
                         </Col>
                       </Row>
                     ))}
