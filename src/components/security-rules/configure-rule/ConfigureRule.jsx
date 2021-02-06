@@ -161,7 +161,7 @@ const getSecurityFunctionVariables = (securityFunctions, functionId) => {
   return index === -1 ? [] : securityFunctions[index].variables
 }
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash', 'Function'];
+const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash', 'function'];
 
 const ConfigureRule = (props) => {
   // form
@@ -222,7 +222,7 @@ const ConfigureRule = (props) => {
 
         delete values["applyTransformations"]
         break;
-      case "Function":
+      case "function":
         break;
     }
 
@@ -699,7 +699,7 @@ const ConfigureRule = (props) => {
         </ConditionalFormBlock>
         <ConditionalFormBlock
           dependency='rule'
-          condition={() => form.getFieldValue('rule') === 'Function'}
+          condition={() => form.getFieldValue('rule') === 'function'}
         >
           <FormItemLabel name="Function name" />
           <Form.Item name="securityFunctionName">

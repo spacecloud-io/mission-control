@@ -8,14 +8,13 @@ const FunctionForm = ({ handleSubmit, handleCancel, initialValues }) => {
 
   const onSubmit = e => {
     form.validateFields().then(values => {
+      values.variables = values.variables ? values.variables : []
       handleSubmit(values).then(() => {
         handleCancel();
         form.resetFields();
       })
     });
   }
-
-  const formInitialValues = initialValues ? initialValues : { variables: [""] }
 
   return (
     <Modal
@@ -25,7 +24,7 @@ const FunctionForm = ({ handleSubmit, handleCancel, initialValues }) => {
       onCancel={handleCancel}
       onOk={onSubmit}
     >
-      <Form layout="vertical" form={form} onFinish={onSubmit} initialValues={formInitialValues}>
+      <Form layout="vertical" form={form} onFinish={onSubmit} initialValues={initialValues}>
         <FormItemLabel name="Function name" />
         <Form.Item name="id" rules={[{ required: true, message: "Please enter function name!" }]}>
           <Input placeholder="e.g. create" disabled={initialValues ? true : false} />
@@ -46,12 +45,12 @@ const FunctionForm = ({ handleSubmit, handleCancel, initialValues }) => {
                       <Input placeholder="Variable name" />
                     </Form.Item>
                   </Col>
-                  {fields.length > 1 && <Col span={4}>
+                  <Col span={4}>
                     <MinusCircleFilled style={{ fontSize: 20, cursor: "pointer", marginTop: 5 }} onClick={() => remove(field.name)} />
-                  </Col>}
+                  </Col>
                 </Row>
               )))}
-              <Button onClick={() => add()}><PlusOutlined /> Add another variable</Button>
+              <Button onClick={() => add()}><PlusOutlined /> {fields.length === 0 ? "Add variable" : "Add another variable"}</Button>
             </div>
           )}
         </Form.List>

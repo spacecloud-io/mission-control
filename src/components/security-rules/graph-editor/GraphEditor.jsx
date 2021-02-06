@@ -77,7 +77,7 @@ function GraphEditor({ rule, setRule, ruleName, ruleMetaData, isCachingEnabled, 
     },
     doubleClick: function (event) {
       const nodeId = event.nodes[0];
-      if (ruleType === securityRuleGroups.SECURITY_FUNCTIONS) {
+      if (nodeId && nodeId.startsWith("root") && ruleType === securityRuleGroups.SECURITY_FUNCTIONS) {
         setSecurityFunctionModal(true);
         return;
       }
