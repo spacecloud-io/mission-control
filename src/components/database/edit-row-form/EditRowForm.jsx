@@ -11,7 +11,7 @@ const EditRowForm = (props) => {
   const [form] = Form.useForm();
   const [columnValue, setColumnValue] = useState("");
 
-  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array"]
+  const primitives = ["id", "string", "integer", "float", "boolean", "date", "time", "datetime", "json", "array", "smallinteger", "biginteger", "decimal", "char", "varchar", "datetimewithzone"]
 
   const onFinish = () => {
     form.validateFields().then(values => {
@@ -40,7 +40,7 @@ const EditRowForm = (props) => {
       return {
         column: val.name,
         datatype: !primitives.includes(dataType) ? "json" : dataType,
-        value: (val.type === "DateTime" || val.type === "Date") ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
+        value: (val.type === "DateTime" || val.type === "Date" || val.type === "DateTimeWithZone") ? props.data[val.name] ? moment(props.data[val.name]) : undefined : props.data[val.name]
       }
     } else {
       if (props.data[val.name]) {
@@ -239,6 +239,12 @@ const EditRowForm = (props) => {
                                 <Select.Option value='datetime'>Datetime</Select.Option>
                                 <Select.Option value='json'>JSON/Object</Select.Option>
                                 <Select.Option value='array'>Array</Select.Option>
+                                <Select.Option value='smallinteger'>SmallInteger</Select.Option>
+                                <Select.Option value='biginteger'>BigInteger</Select.Option>
+                                <Select.Option value='decimal'>Decimal</Select.Option>
+                                <Select.Option value='char'>Char</Select.Option>
+                                <Select.Option value='varchar'>Varchar</Select.Option>
+                                <Select.Option value='datetimewithzone'>DateTimeWithZone</Select.Option>
                               </Select>
                             </Form.Item>
                           </Col>
@@ -277,7 +283,13 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "integer"}>
+                          <ConditionalFormBlock shouldUpdate={true} 
+                            condition={() => 
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "integer" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "smallinteger" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "biginteger"
+                            }
+                          >
                             <Col span={7}>
                               <Form.Item
                                 name={[field.name, 'value']}
@@ -291,7 +303,12 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "float"}>
+                          <ConditionalFormBlock shouldUpdate={true}
+                            condition={() => 
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "float" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "decimal"
+                            }
+                          >
                             <Col span={7}>
                               <Form.Item
                                 name={[field.name, 'value']}
@@ -350,7 +367,11 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "datetime"}>
+                          <ConditionalFormBlock shouldUpdate={true} 
+                            condition={() => 
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "datetime" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "datetimewithzone"
+                            }>
                             <Col span={7}>
                               <Form.Item
                                 name={[field.name, 'value']}
@@ -445,6 +466,12 @@ const EditRowForm = (props) => {
                                             <Select.Option value='date'>Date</Select.Option>
                                             <Select.Option value='time'>Time</Select.Option>
                                             <Select.Option value='datetime'>Datetime</Select.Option>
+                                            <Select.Option value='smallinteger'>SmallInteger</Select.Option>
+                                            <Select.Option value='biginteger'>BigInteger</Select.Option>
+                                            <Select.Option value='decimal'>Decimal</Select.Option>
+                                            <Select.Option value='char'>Char</Select.Option>
+                                            <Select.Option value='varchar'>Varchar</Select.Option>
+                                            <Select.Option value='datetimewithzone'>DateTimeWithZone</Select.Option>
                                           </Select>
                                         </Form.Item>
                                       </Col>
@@ -488,7 +515,11 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "smallinteger" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "biginteger"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -503,7 +534,10 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "decimal"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -566,7 +600,10 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetimewithzone"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
