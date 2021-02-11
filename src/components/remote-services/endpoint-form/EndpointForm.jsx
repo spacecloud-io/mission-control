@@ -50,7 +50,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheOptions = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, requestPayloadFormat, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheOptions = [] } = initialValues ? initialValues : {}
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
@@ -61,6 +61,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   const formInitialValues = {
     kind: kind,
     name: name,
+    requestPayloadFormat: requestPayloadFormat ? requestPayloadFormat : "json",
     method: method ? method : "POST",
     path: path,
     timeout: timeout,
@@ -80,10 +81,11 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   const handleFinish = (values) => {
     const overrideToken = values.overrideToken
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheOptions = [] } = values
+    const { kind, name, requestPayloadFormat, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheOptions = [] } = values
     const result = {
       kind,
       name,
+      requestPayloadFormat,
       method,
       path,
       rule: rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
@@ -142,6 +144,13 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
                 disabled={initialValues ? true : false}
               />
             </Form.Item>
+            <FormItemLabel name="Payload format" />
+            <Form.Item name="requestPayloadFormat" rules={[{ required: true, message: 'Please select a request payload format!' }]}>
+              <Select placeholder="Request payload format" style={{ width: 210 }}>
+                <Select.Option value="json">JSON</Select.Option>
+                <Select.Option value="form-data">Form data</Select.Option>
+              </Select>
+            </Form.Item> 
             <FormItemLabel name="Endpoint type" />
             <Form.Item name="kind" rules={[{ required: true, message: 'Please select a endpoint type!' }]}>
               <RadioCards>
