@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider, Typography, Space } from "antd";
+import { Collapse, Divider, Typography, Space, Button } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
 import { getEnv } from '../../operations/cluster';
 import { projectModules } from '../../constants';
@@ -50,6 +50,7 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const { plan, version } = useSelector(state => getEnv(state))
+  const scLatestVersion = useSelector(state => state.scLatestVersion)
   const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
@@ -59,6 +60,8 @@ const Sidenav = (props) => {
     store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
   }
 
+  const isUpdateAvailable = scLatestVersion && scLatestVersion !== version
+  
   return (
     <div className="sidenav-container">
       <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
@@ -116,7 +119,14 @@ const Sidenav = (props) => {
             <SidenavItem name="Settings" icon="settings" active={props.selectedItem === projectModules.SETTINGS} />
           </Link>
         </div>
-        <div className="sidenav-version">
+        {isUpdateAvailable ? <React.Fragment>
+          <div style={{ backgroundColor: "#D2E0FF", padding: 16}}>
+            Upgrade to v{scLatestVersion} <Button type="primary" ghost style={{ marginLeft: 9 }}>Update</Button>
+          </div>
+          <div style={{ justifyContent: "center", display: "flex", alignItems: "center", marginTop: 10 }}>
+            <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", marginRight: 10 }} /><Typography.Text>UI Version - v{uiVersion}</Typography.Text>
+          </div>
+        </React.Fragment> : <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
           <div className="sidenav-version-content">
             <Space direction="vertical" size={4}>
@@ -125,7 +135,7 @@ const Sidenav = (props) => {
               <Typography.Text type="secondary">{planName}</Typography.Text>
             </Space>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

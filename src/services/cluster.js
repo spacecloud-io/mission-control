@@ -1,3 +1,7 @@
+import { spaceCloudClusterOrigin } from "../constants"
+import { createGraphQLClient } from "./client"
+import gql from 'graphql-tag';
+
 class Cluster {
   constructor(client) {
     this.client = client
@@ -130,6 +134,33 @@ class Cluster {
         this.client.setToken(data.token)
         resolve(data.token)
       }).catch(ex => reject({title: "Failed to login", msg: ex.message}))
+    })
+  }
+
+  fetchScLatestVersion(projectId, currentVersion, getToken) {
+    let uri = `/v1/api/${projectId}/graphql`
+    if (spaceCloudClusterOrigin) {
+      uri = spaceCloudClusterOrigin + uri;
+    }
+    const graphqlClient = createGraphQLClient(uri, getToken)
+    return new Promise((resolve, reject) => {
+      graphqlClient.query({
+        query: gql`
+        query {
+          sc_version(where: {version_no: $currentVersion},limit:1, sort:["-version_code"]) @db {
+            compatible_version
+          }
+        }
+        `,
+        variables: { currentVersion }
+      }).then(res => {
+        const { data, errors } = res
+        if (errors && errors.length > 0) {
+          reject(errors[0].message)
+          return
+        }
+        resolve(data.sc_version ? data.sc_version[0].compatible_version : "")
+      }).catch(ex => reject(ex.toString()))
     })
   }
 }
