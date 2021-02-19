@@ -8,12 +8,12 @@ class Addons {
         this.client.postJSON(`/v1/config/add-ons/${type}/${type}`, config)
         .then(({ status, data }) => {
             if (status < 200 || status >= 300) {
-              reject(data.error)
+              reject({title: data.error, msg: data.rawError})
               return
             }
             resolve()
           })
-          .catch(ex => reject(ex.toString()))
+          .catch(ex => reject({title: "Failed to set addon config", msg: ex.message}))
       })
     }
 
@@ -22,12 +22,12 @@ class Addons {
         this.client.getJSON(`/v1/config/add-ons/${type}/${type}`)
         .then(({ status, data }) => {
             if (status < 200 || status >= 300) {
-                reject(data.error)
+                reject({title: data.error, msg: data.rawError})
                 return
             }
             resolve(data.result)
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get addon config", msg: ex.message}))
       })
     }
 
@@ -36,12 +36,12 @@ class Addons {
             this.client.getJSON(`/v1/external/add-ons/${type}/${type}/connection-state`)
             .then(({ status, data }) => {
                 if (status < 200 || status >= 300) {
-                    reject(data.error)
+                    reject({title: data.error, msg: data.rawError})
                     return
                 }
                 resolve(data.result)
             })
-            .catch(ex => reject(ex.toString()))
+            .catch(ex => reject({title: "Failed to get addon connection status", msg: ex.message}))
         })
     }
 }

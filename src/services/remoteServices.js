@@ -8,12 +8,12 @@ class RemoteServices {
       this.client.getJSON(`/v1/config/projects/${projectId}/remote-service/service`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve(data.result ? data.result : [])
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to get remote-service", msg: ex.message}))
     })
   }
 
@@ -22,12 +22,12 @@ class RemoteServices {
       this.client.postJSON(`/v1/config/projects/${projectId}/remote-service/service/${serviceName}`, { id: serviceName, ...config })
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to set remote-service", msg: ex.message}))
     })
   }
 
@@ -36,12 +36,12 @@ class RemoteServices {
       this.client.delete(`/v1/config/projects/${projectId}/remote-service/service/${serviceName}`)
         .then(({ status, data }) => {
           if (status < 200 || status >= 300) {
-            reject(data.error)
+            reject({title: data.error, msg: data.rawError})
             return
           }
           resolve({ queued: status === 202 })
         })
-        .catch(ex => reject(ex.toString()))
+        .catch(ex => reject({title: "Failed to delete remote-service", msg: ex.message}))
     })
   }
 }

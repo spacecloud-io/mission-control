@@ -23,7 +23,7 @@ const ApplyLicense = () => {
         notify("success", "Success", "Applied license key to cluster successfully")
         history.goBack()
       })
-      .catch((ex) => notify("error", "Error applying license key to cluster", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cluster" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -33,7 +33,7 @@ const ApplyLicense = () => {
       notify("success", "Success", "Applied license key to cluster successfully")
       history.goBack()
     })
-    .catch((ex) => notify("error", "Error applying license key to cluster", ex))
+    .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cluster" : error.msg))
     .finally(() => decrementPendingRequests())
   }
 

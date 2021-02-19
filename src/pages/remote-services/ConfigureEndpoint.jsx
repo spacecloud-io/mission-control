@@ -29,7 +29,7 @@ const ConfigureEndpoint = () => {
         notify("success", "Success", queued ? actionQueuedMessage : `${isEndpointPresent ? "Modified" : "Added"} endpoint successfully`)
         history.goBack()
       })
-      .catch(ex => notify("error", `Error ${isEndpointPresent ? "modifying" : "adding"} endpoint`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set remote-service" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

@@ -10,7 +10,7 @@ export const loadProjects = () => {
         store.dispatch(set("projects", projects))
         resolve(projects)
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -21,7 +21,7 @@ export function loadProjectAPIToken(projectId) {
         setAPIToken(token)
         resolve()
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -36,7 +36,7 @@ export const addProject = (projectId, projectName) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -53,7 +53,7 @@ export const deleteProject = (projectId) => {
         }
         resolve({ queued, newProjects })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -70,7 +70,7 @@ const saveProjectSetting = (projectId, key, value) => {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

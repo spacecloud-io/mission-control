@@ -32,7 +32,7 @@ const AddDb = () => {
           notify("success", "Success", actionQueuedMessage)
         }
       })
-      .catch(ex => notify("error", "Error adding database", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-config" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

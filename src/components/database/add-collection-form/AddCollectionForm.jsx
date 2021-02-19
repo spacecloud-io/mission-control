@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input } from 'antd';
+import { Modal, Form, Input, Button, Popconfirm } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import FormItemLabel from "../../form-item-label/FormItemLabel"
 import 'codemirror/theme/material.css';
@@ -42,17 +42,27 @@ const AddCollectionForm = ({ editMode, dbType, handleSubmit, handleCancel, initi
     });
   };
 
-
   return (
     <div>
       <Modal
         className='add-collection-modal'
         visible={true}
         width={720}
-        okText={editMode ? "Save" : "Add"}
         title={`${editMode ? "Edit" : "Add"} ${dbType === "mongo" ? "Collection" : "Table"}`}
-        onOk={handleSubmitClick}
         onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          editMode && schema !== initialValues.schema ? <Popconfirm title="Changing the schema can cause data loss. Are you sure you want to continue?" okText="Yes" cancelText="No" onConfirm={handleSubmitClick}>
+            <Button key="submit" type="primary" >
+              {editMode ? "Save" : "Add"}
+            </Button>
+          </Popconfirm> :
+          <Button key="submit" type="primary" onClick={handleSubmitClick}>
+          {editMode ? "Save" : "Add"}
+        </Button>
+        ]}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmitClick} onValuesChange={handleChangedValues}
           initialValues={{

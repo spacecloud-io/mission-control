@@ -67,7 +67,7 @@ const RemoteService = () => {
     incrementPendingRequests()
     deleteRemoteServiceEndpoint(projectID, serviceName, name)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Removed endpoint successfully"))
-      .catch((ex) => notify("error", "Error removing endpoint", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set remote-service" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

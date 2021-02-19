@@ -46,7 +46,7 @@ const AddPreparedQueries = () => {
         }
         notify("success", "Success", actionQueuedMessage)
       })
-      .catch(ex => notify("error", `Error ${preparedQueryId ? "editing" : "adding"} prepared query`, ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set db-prepared-query" : error.msg))
   };
 
   return (

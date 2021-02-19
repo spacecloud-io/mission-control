@@ -357,6 +357,10 @@ const Browse = () => {
               style={{ width: 240, marginRight: 24 }}
               placeholder="Select a table"
               onChange={handleTableChange}
+              showSearch
+              filterOption={(input, option) =>
+                option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
               value={selectedCol ? selectedCol : collections.length > 0 ? collections[0] : undefined}
             >
               {collections.map(col => <Select.Option value={col}>{col}</Select.Option>)}

@@ -11,7 +11,7 @@ const FileStorageIndex = () => {
     if (projectID) {
       incrementPendingRequests()
       loadFileStoreConfig(projectID)
-        .catch(ex => notify("error", "Error fetching file storage config", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get filestore-config" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])

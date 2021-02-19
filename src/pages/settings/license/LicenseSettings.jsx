@@ -20,7 +20,7 @@ const LicenseSettings = () => {
   useEffect(() => {
     incrementPendingRequests()
     loadClusterSettings()
-      .catch(ex => notify("error", "Error fetching cluster settings", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get cluster" : error.msg))
       .finally(() => decrementPendingRequests())
   }, []);
 
@@ -32,7 +32,7 @@ const LicenseSettings = () => {
     incrementPendingRequests()
     removeClusterLicense()
       .then(() => notify("success", "Success", "Removed license successfully"))
-      .catch((ex) => notify("error", "Error removing license", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cluster" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

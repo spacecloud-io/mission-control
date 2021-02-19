@@ -26,7 +26,7 @@ const EventingSettings = () => {
     incrementPendingRequests()
     saveEventingConfig(projectID, config)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved eventing config successfully"))
-      .catch(ex => notify("error", "Error saving eventing config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set eventing-config" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 

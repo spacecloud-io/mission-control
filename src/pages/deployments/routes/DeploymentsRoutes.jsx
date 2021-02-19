@@ -8,7 +8,7 @@ import Topbar from "../../../components/topbar/Topbar";
 import DeploymentTabs from "../../../components/deployments/deployment-tabs/DeploymentTabs"
 import RoutingModal from "../../../components/deployments/routing-modal/RoutingModal"
 import routingSvg from "../../../assets/routing.svg";
-import { notify, incrementPendingRequests, decrementPendingRequests } from "../../../utils";
+import { notify, incrementPendingRequests, decrementPendingRequests, generateId } from "../../../utils";
 import { loadServiceRoutes, saveServiceRoutes, deleteServiceRoutes, getServices, getServiceRoutes } from "../../../operations/deployments";
 import { projectModules, actionQueuedMessage } from "../../../constants";
 import Highlighter from 'react-highlight-words';
@@ -39,6 +39,13 @@ const DeploymentsRoutes = () => {
     if (!serviceRoutes[obj.id]) {
       serviceRoutes[obj.id] = []
     }
+
+    serviceRoutes[obj.id].forEach(route => {
+      if (!route.uid) route.uid = generateId();
+      if (!route.source.protocol) route.source.protocol = 'http'
+      if (!route.requestRetries) route.requestRetries = 3
+      if (!route.requestTimeout) route.requestTimeout = 180
+    })
   })
 
   const filteredServiceRoutes = Object.entries(serviceRoutes).filter(route => {
@@ -48,6 +55,14 @@ const DeploymentsRoutes = () => {
   const noOfServices = Object.keys(serviceRoutes).length
 
   const tableColumns = [
+    {
+      title: "Protocol",
+      dataIndex: "protocol",
+      key: "protocol",
+      render: (value) => {
+        return value.toUpperCase();
+      }
+    },
     {
       title: "Port",
       dataIndex: "port",
@@ -62,12 +77,12 @@ const DeploymentsRoutes = () => {
       title: "Actions",
       key: "actions",
       className: "column-actions",
-      render: (_, { serviceId, port }) => (
+      render: (_, { serviceId, uid }) => (
         <span>
-          <a onClick={() => handleEditClick(serviceId, port)}>Edit</a>
+          <a onClick={() => handleEditClick(serviceId, uid)}>Edit</a>
           <Popconfirm
             title={`All traffic to this port will be stopped. Are you sure?`}
-            onConfirm={() => handleDelete(serviceId, port)}
+            onConfirm={() => handleDelete(serviceId, uid)}
           >
             <a style={{ color: "red" }}>Remove</a>
           </Popconfirm>
@@ -76,19 +91,33 @@ const DeploymentsRoutes = () => {
     }
   ];
 
-  const handleEditClick = (serviceId, port) => {
-    const routeConfig = serviceRoutes[serviceId].find(obj => obj.source.port === port)
-    setRouteClicked({ serviceId: serviceId, routeConfig: { port: port, targets: routeConfig.targets } });
+  const handleEditClick = (serviceId, uid) => {
+    const routeConfig = serviceRoutes[serviceId].find(obj => obj.uid === uid)
+    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
     setModalVisible(true);
   };
 
-  const handleSubmit = (serviceId, values) => {
+  const handleSubmit = (serviceId, uid, values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      const { port, targets } = values
-      const routeConfig = {
-        source: { port },
-        targets
+      const { protocol, port, requestRetries, requestTimeout, targets } = values
+      let routeConfig = {};
+      if(protocol === "http"){
+        routeConfig = {
+          uid: uid,
+          id: serviceId,
+          source: { protocol, port },
+          requestRetries: requestRetries,
+          requestTimeout: requestTimeout,
+          targets
+        }
+      }else {
+        routeConfig = {
+          uid: uid,
+          id: serviceId,
+          source: { protocol, port },
+          targets
+        }
       }
       saveServiceRoutes(projectID, serviceId, routeConfig)
         .then(({ queued }) => {
@@ -103,9 +132,9 @@ const DeploymentsRoutes = () => {
     });
   };
 
-  const handleDelete = (serviceId, port) => {
+  const handleDelete = (serviceId, uid) => {
     incrementPendingRequests()
-    deleteServiceRoutes(projectID, serviceId, port)
+    deleteServiceRoutes(projectID, serviceId, uid)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted service route successfully"))
       .catch(ex => notify("error", "Error deleting service route", ex))
       .finally(() => decrementPendingRequests());
@@ -130,8 +159,6 @@ const DeploymentsRoutes = () => {
       </React.Fragment>
     )
   }
-
-  console.log("Service Routes", serviceRoutes)
 
   return (
     <React.Fragment>
@@ -166,11 +193,11 @@ const DeploymentsRoutes = () => {
                         Add
                     </Button>
                     </div>
-                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, port: obj.source.port, targets: obj.targets.length }))} />
+                    <Table pagination={false} style={{ marginTop: 16 }} bordered={true} columns={tableColumns} dataSource={routes.map(obj => ({ serviceId, uid: obj.uid, protocol: obj.source.protocol, port: obj.source.port, targets: obj.targets.length }))} />
                   </div>
                 </Panel>))}
               </Collapse>
-              {Object.keys(serviceRoutes).length !== 0 &&
+              {Object.keys(serviceRoutes).length !== 0 && searchText &&
                 <div style={{ paddingTop: 24 }}>
                   <EmptySearchResults searchText={searchText} />
                 </div>
@@ -183,7 +210,7 @@ const DeploymentsRoutes = () => {
         <RoutingModal
           initialValues={routeClicked.routeConfig}
           handleCancel={handleCancel}
-          handleSubmit={(values) => handleSubmit(routeClicked.serviceId, values)}
+          handleSubmit={(uid, values) => handleSubmit(routeClicked.serviceId, uid, values)}
         />
       )}
     </React.Fragment>

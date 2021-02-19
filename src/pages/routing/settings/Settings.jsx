@@ -24,7 +24,7 @@ function RoutingSettings() {
     if (projectID) {
       incrementPendingRequests()
       loadIngressRoutesGlobalConfig(projectID)
-        .catch(ex => notify("error", "Error fetching global settings of ingress routes", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get ingress-global" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
@@ -33,7 +33,7 @@ function RoutingSettings() {
     incrementPendingRequests()
     saveIngressGlobalRequestHeaders(projectID, headers)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
-      .catch(ex => notify("error", "Error saving the headers config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set ingress-global" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 
@@ -41,7 +41,7 @@ function RoutingSettings() {
     incrementPendingRequests()
     saveIngressGlobalResponseHeaders(projectID, headers)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Saved the headers config successfully"))
-      .catch(ex => notify("error", "Error saving the headers config", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set ingress-global" : error.msg))
       .finally(() => decrementPendingRequests())
   }
 

@@ -39,7 +39,7 @@ function RoutingOverview() {
     if (projectID) {
       incrementPendingRequests()
       loadIngressRoutes(projectID)
-        .catch(ex => notify("error", "Error fetching ingress routes", ex))
+        .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to get ingress-route" : error.msg))
         .finally(() => decrementPendingRequests())
     }
   }, [projectID])
@@ -126,9 +126,9 @@ function RoutingOverview() {
           notify("success", "Success", queued ? actionQueuedMessage : "Saved routing config successfully");
           resolve()
         })
-        .catch(ex => {
-          notify("error", "Error saving routing config", ex)
-          reject(ex)
+        .catch(error => {
+          notify("error", error.title, error.msg.length === 0 ? "Failed to set ingress-route" : error.msg)
+          reject(error)
         })
         .finally(() => decrementPendingRequests());
     });
@@ -145,7 +145,7 @@ function RoutingOverview() {
     incrementPendingRequests()
     deleteIngressRoute(projectID, id)
       .then(({ queued }) => notify("success", "Success", queued ? actionQueuedMessage : "Deleted rule successfully"))
-      .catch(ex => notify("error", "Error", ex.toString()))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete ingress-route" : error.msg))
       .finally(() => decrementPendingRequests());
   };
 

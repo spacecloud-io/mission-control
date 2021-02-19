@@ -11,7 +11,7 @@ export function loadSupportedIntegrations() {
         setSupportedIntegrations(integraions)
         resolve()
       })
-      .catch((ex) => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -22,7 +22,7 @@ export function loadInstalledIntegrations() {
         setInstalledIntegrations(installedIntegrations)
         resolve()
       })
-      .catch((ex) => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -39,7 +39,7 @@ export function installIntegration(integrationId, useUploadedIntegration) {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 
@@ -55,7 +55,7 @@ export function deleteIntegration(integrationId) {
         }
         resolve({ queued })
       })
-      .catch(ex => reject(ex))
+      .catch(error => reject(error))
   })
 }
 

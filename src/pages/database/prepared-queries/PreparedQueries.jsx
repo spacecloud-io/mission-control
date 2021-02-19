@@ -40,7 +40,7 @@ const PreparedQueries = () => {
       .then(({ queued }) => {
         notify("success", "Success", queued ? actionQueuedMessage : "Removed prepared query successfully")
       })
-      .catch(ex => notify("error", "Error removing prepared query", ex))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to delete db-prepared-query" : error.msg))
       .finally(() => decrementPendingRequests());
   }
 
