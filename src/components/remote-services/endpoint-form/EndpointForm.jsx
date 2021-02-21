@@ -143,6 +143,9 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
                 placeholder='Example: allPayments'
                 disabled={initialValues ? true : false}
               />
+              <Alert type="info" showIcon 
+              style={{ width: '50%', marginTop: '16px' }}
+              message='Once endpoint name added cannot be changed later' />
             </Form.Item>
             <FormItemLabel name="Endpoint type" />
             <Form.Item name="kind" rules={[{ required: true, message: 'Please select a endpoint type!' }]}>

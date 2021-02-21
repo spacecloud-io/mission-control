@@ -632,3 +632,10 @@ export const parseJSONSafely = (str) => {
     return str;
   }
 }
+
+export const printSafetyMsg = () => {
+  console.log('%cHold up!', 'font-size: 50px; color: #1D66FF');
+  console.log('%cIf somebody told you copy/paste anything here you have 11/10 chance you are being scammed.', 'font-size: 16px; color: #FFF');
+  console.log('%cPasting anything here can give attacker access to your account.', 'font-size: 16px; color: red');
+  console.log('%cUnless you understand what you are doing, close this window and stay safe.', 'font-size: 16px; color: #FFF');
+}
