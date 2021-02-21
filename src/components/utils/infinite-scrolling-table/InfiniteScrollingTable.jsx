@@ -11,7 +11,7 @@ let globalState = {
 
 // Infinite scrolling wrapper over ant design table.
 // NOTE: This requires an id in prop to work
-function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...tableProps }) {
+function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, scrollWidth = 1300, ...tableProps }) {
   const [tableBody, setTableBody] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -73,7 +73,7 @@ function InfiniteScrollingTable({ id, hasMore, loadNext, scrollHeight = 720, ...
       {...restTableProps}
       id={id}
       className={finalClassName}
-      scroll={{ y: scrollHeight, scrollToFirstRowOnChange: true }}
+      scroll={{ y: scrollHeight, scrollToFirstRowOnChange: true, x: scrollWidth }}
       pagination={false}
       loading={loading} />
   )
