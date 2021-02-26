@@ -214,9 +214,8 @@ const ConfigureRule = (props) => {
         break;
       case "graphql":
         try {
-          values.graphqlVariables = JSON.parse(values.graphqlVariables);
-          if (values.generateToken) {
-            values.claims = JSON.parse(values.claims)
+          if (values.graphqlVariables) {
+            values.graphqlVariables = JSON.parse(values.graphqlVariables);
           }
           delete values["generateToken"]
         } catch (ex) {
@@ -430,7 +429,7 @@ const ConfigureRule = (props) => {
                         <Row>
                           <Col span={14}>
                             <Form.Item name="singleInputFields">
-                              <Input placeholder="Variable to load fields from" />
+                              <ObjectAutoComplete placeholder="Variables to load field from" options={autoCompleteOptions} />
                             </Form.Item>
                           </Col>
                         </Row>
@@ -779,8 +778,8 @@ const ConfigureRule = (props) => {
           <Form.Item name="graphqlQuery" rules={[{ required: true }]}>
             <JSONCodeMirror />
           </Form.Item>
-          <FormItemLabel name='Variables' style={{ border: '1px solid #D9D9D9' }} />
-          <Form.Item name="graphqlVariables" rules={[{ required: true }]}>
+          <FormItemLabel name='Variables' hint="(Optional)" style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="graphqlVariables">
             <JSONCodeMirror />
           </Form.Item>
           <FormItemLabel name="Store" hint="(Optional)" />
@@ -822,8 +821,8 @@ const ConfigureRule = (props) => {
               <Option value='json'>JSON</Option>
             </Select>
           </Form.Item>
-          <FormItemLabel name="Request template" hint="(Optional)" description="Template to generate the transformed request body" />
-          <Form.Item name='requestTemplate' >
+          <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
+          <Form.Item name='requestTemplate' rules={[{ required: true }]}>
             <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
               mode: { name: 'go' },
               lineNumbers: true,
