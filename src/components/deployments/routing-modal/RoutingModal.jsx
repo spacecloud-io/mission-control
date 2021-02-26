@@ -166,15 +166,17 @@ const RoutingRule = props => {
                                             <Input placeholder="Key" style={{ width: 300 }} />
                                           </Form.Item>
                                         </Col>
-                                        <Col>
-                                          <Form.Item
-                                            {...fieldHeaders}
-                                            name={[fieldHeaders.name, 'value']}
-                                            fieldKey={[fieldHeaders.name, 'value']}
-                                          >
-                                            <Input placeholder="Value" style={{ width: 300 }} />
-                                          </Form.Item>
-                                        </Col>
+                                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["matchers", field.name, "headers", fieldHeaders.name, "type"]) !== "checkPresence"}>
+                                          <Col>
+                                            <Form.Item
+                                              {...fieldHeaders}
+                                              name={[fieldHeaders.name, 'value']}
+                                              fieldKey={[fieldHeaders.name, 'value']}
+                                            >
+                                              <Input placeholder="Value" style={{ width: 300 }} />
+                                            </Form.Item>
+                                          </Col>
+                                        </ConditionalFormBlock>
                                         <Col>
                                           <MinusCircleFilled onClick={() => remove(field.name)} style={{ fontSize: 20, marginTop: 5 }} />
                                         </Col>
