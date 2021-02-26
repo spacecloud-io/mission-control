@@ -79,11 +79,11 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
                       key={[field.name, 'db']}
                       style={{ flexGrow: 1, width: 200, marginRight: 10 }}
                     >
-                      <Select showSearch placeholder="Select databases" onSearch={handleSearch} onChange={handleSelectDatabases}  >
+                      <AutoComplete placeholder="Select databases" onSelect={handleSelectDatabases}  >
                         {
-                          dbList.map(db => (<Option key={db} value={db}>{db}</Option>))
+                          dbList.map(db => (<AutoComplete.Option key={db} value={db}>{db}</AutoComplete.Option>))
                         }
-                      </Select>
+                      </AutoComplete>
                     </Form.Item>
                     <Form.Item
                       name={[field.name, 'col']}
