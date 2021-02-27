@@ -61,7 +61,7 @@ const Sidenav = (props) => {
   }
 
   const isUpdateAvailable = scLatestVersion && scLatestVersion !== version
-  
+
   return (
     <div className="sidenav-container">
       <div className={showSidenav ? 'overlay' : 'no-overlay'} onClick={() => store.dispatch(set("uiState.showSidenav", false))}></div>
@@ -120,7 +120,7 @@ const Sidenav = (props) => {
           </Link>
         </div>
         {isUpdateAvailable ? <React.Fragment>
-          <div style={{ backgroundColor: "#D2E0FF", padding: 16}}>
+          <div style={{ backgroundColor: "#D2E0FF", padding: 16 }}>
             Upgrade to v{scLatestVersion} <Button type="primary" ghost style={{ marginLeft: 9 }}>Update</Button>
           </div>
           <div style={{ margin: "10px 0px 20px 9px" }}>
@@ -129,15 +129,16 @@ const Sidenav = (props) => {
             </Popover>
           </div>
         </React.Fragment> : <div className="sidenav-version">
-          <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
-          <div className="sidenav-version-content">
-            <Space direction="vertical" size={4}>
-              <Typography.Text>SC Version - v{version}</Typography.Text>
-              <Typography.Text>UI Version - v{uiVersion}</Typography.Text>
-              <Typography.Text type="secondary">{planName}</Typography.Text>
-            </Space>
-          </div>
-        </div>}
+            <Popover placement="right" content={`UI Version - v${uiVersion}`}>
+              <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
+            </Popover>
+            <div className="sidenav-version-content">
+              <Space direction="vertical" size={4}>
+                <Typography.Text>SC Version - v{version}</Typography.Text>
+                <Typography.Text type="secondary">{planName}</Typography.Text>
+              </Space>
+            </div>
+          </div>}
       </div>
     </div>
   );
