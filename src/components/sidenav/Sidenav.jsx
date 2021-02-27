@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider, Typography, Space, Button } from "antd";
+import { Collapse, Divider, Typography, Space, Button, Popover } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
 import { getEnv } from '../../operations/cluster';
 import { projectModules } from '../../constants';
@@ -123,8 +123,10 @@ const Sidenav = (props) => {
           <div style={{ backgroundColor: "#D2E0FF", padding: 16}}>
             Upgrade to v{scLatestVersion} <Button type="primary" ghost style={{ marginLeft: 9 }}>Update</Button>
           </div>
-          <div style={{ justifyContent: "center", display: "flex", alignItems: "center", marginTop: 10 }}>
-            <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", marginRight: 10 }} /><Typography.Text>UI Version - v{uiVersion}</Typography.Text>
+          <div style={{ margin: "10px 0px 20px 9px" }}>
+            <Popover placement="right" content={`UI Version - v${uiVersion}`}>
+              <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
+            </Popover>
           </div>
         </React.Fragment> : <div className="sidenav-version">
           <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
