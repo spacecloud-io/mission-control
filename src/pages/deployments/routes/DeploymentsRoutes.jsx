@@ -93,7 +93,7 @@ const DeploymentsRoutes = () => {
 
   const handleEditClick = (serviceId, uid) => {
     const routeConfig = serviceRoutes[serviceId].find(obj => obj.uid === uid)
-    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
+    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets, matchers: routeConfig.matchers } });
     setModalVisible(true);
   };
 
