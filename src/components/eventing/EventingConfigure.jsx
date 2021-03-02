@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { AutoComplete, Button, Form, Checkbox, Select, Input, DatePicker } from 'antd';
 import ConditionalFormBlock from "../conditional-form-block/ConditionalFormBlock";
 import FormItemLabel from "../form-item-label/FormItemLabel";
@@ -10,13 +10,7 @@ const { Option } = AutoComplete;
 
 const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDeleteEventingLogs }) => {
   const [form] = Form.useForm()
-
-  const [value, setValue] = useState("");
-  const [selectedDbs, setSelectedDbs] = useState([]);
   const state = useSelector(state => state)
-
-  const handleSearch = value => setValue(value);
-  const handleSelectDatabases = values => setSelectedDbs([values])
 
   const handleTruncateEventLogs = () => {
     form.validateFields(["truncateSince"]).then(values => {
@@ -52,11 +46,17 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
   }
 
   if (!loading) {
-    form.setFieldsValue(initialValues)
+    const dbTables = [];
+    if (initialValues.dbTablesInclusionMap) {
+      Object.keys(initialValues.dbTablesInclusionMap).forEach(db => {
+        dbTables.push({ db, col: initialValues.dbTablesInclusionMap[db] })
+      })
+    }
+    form.setFieldsValue({ ...initialValues, dbTables })
   }
 
   return (
-    <Form form={form} >
+    <Form form={form}>
       <Form.Item name="enabled" valuePropName="checked">
         <Checkbox>
           Enable eventing module
@@ -73,33 +73,40 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
             return (
               <div>
                 {fields.map((field) => (
-                  <Input.Group compact>
+                  <Input.Group compact key={field.key}>
                     <Form.Item
                       name={[field.name, 'db']}
                       key={[field.name, 'db']}
                       style={{ flexGrow: 1, width: 200, marginRight: 10 }}
                     >
-                      <AutoComplete placeholder="Select databases" onSelect={handleSelectDatabases}  >
+                      <AutoComplete placeholder="Select databases">
                         {
                           dbList.map(db => (<AutoComplete.Option key={db} value={db}>{db}</AutoComplete.Option>))
                         }
                       </AutoComplete>
                     </Form.Item>
-                    <Form.Item
-                      name={[field.name, 'col']}
-                      key={[field.name, 'col']}
-                      style={{ flexGrow: 1, width: 200, marginRight: 10 }}
-                      shouldUpdate
-                    >
-                      <Select mode="tags" placeholder="Collections / Tables" onSearch={handleSearch} >
-                        {
-                          getCollections(form.getFieldValue(["dbTables", field.name, 'db'])).filter(data => (data.toLowerCase().indexOf(value.toLowerCase()) !== -1)).map(data => (
-                            <Option key={data} value={data}>
-                              {data}
-                            </Option>
-                          ))
-                        }
-                      </Select>
+                    <Form.Item noStyle shouldUpdate>
+                      {() => (
+                        <Form.Item
+                          name={[field.name, 'col']}
+                          key={[field.name, 'col']}
+                          style={{ flexGrow: 1, width: 200, marginRight: 10 }}
+                        >
+                          <Select
+                            mode="tags"
+                            placeholder="Collections / Tables"
+                            filterOption={(input, option) => option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          >
+                            {
+                              getCollections(form.getFieldValue(["dbTables", field.name, 'db'])).map(data => (
+                                <Option key={data} value={data}>
+                                  {data}
+                                </Option>
+                              ))
+                            }
+                          </Select>
+                        </Form.Item>
+                      )}
                     </Form.Item>
                     <Form.Item>
                       <MinusCircleFilled onClick={() => remove(field.name)} style={{ fontSize: 20, cursor: "pointer" }} />
