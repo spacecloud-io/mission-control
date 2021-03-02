@@ -119,26 +119,23 @@ const Sidenav = (props) => {
             <SidenavItem name="Settings" icon="settings" active={props.selectedItem === projectModules.SETTINGS} />
           </Link>
         </div>
-        {isUpdateAvailable ? <React.Fragment>
-          <div style={{ backgroundColor: "#D2E0FF", padding: 16 }}>
+        <div className="sidenav-bottom-content">
+        {isUpdateAvailable &&
+          <div className="sc-update">
             Upgrade to v{scLatestVersion} <Button type="primary" ghost style={{ marginLeft: 9 }}>Update</Button>
-          </div>
-          <div style={{ margin: "10px 0px 20px 9px" }}>
-            <Popover placement="right" content={`UI Version - v${uiVersion}`}>
-              <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
-            </Popover>
-          </div>
-        </React.Fragment> : <div className="sidenav-version">
-            <Popover placement="right" content={`UI Version - v${uiVersion}`}>
-              <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
-            </Popover>
-            <div className="sidenav-version-content">
-              <Space direction="vertical" size={4}>
-                <Typography.Text>SC Version - v{version}</Typography.Text>
-                <Typography.Text type="secondary">{planName}</Typography.Text>
-              </Space>
-            </div>
           </div>}
+        <div className="sidenav-version">
+          <Popover placement="right" content={`UI Version - v${uiVersion}`}>
+            <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
+          </Popover>
+          <div className="sidenav-version-content">
+            <Space direction="vertical" size={4}>
+              <Typography.Text>SC Version - v{version}</Typography.Text>
+              <Typography.Text type="secondary">{planName}</Typography.Text>
+            </Space>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   );
