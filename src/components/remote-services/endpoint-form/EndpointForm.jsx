@@ -145,7 +145,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
               />
               <Alert type="info" showIcon 
               style={{ width: '50%', marginTop: '16px' }}
-              message='Once endpoint name added cannot be changed later' />
+              message='Once an endpoint name added, It cannot be changed later' />
             </Form.Item>
             <FormItemLabel name="Endpoint type" />
             <Form.Item name="kind" rules={[{ required: true, message: 'Please select a endpoint type!' }]}>
