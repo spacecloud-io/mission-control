@@ -24,6 +24,7 @@ const RoutingRule = props => {
         values.requestRetries = Number(values.requestRetries);
         values.requestTimeout = Number(values.requestTimeout);
       }
+      values.matchers = values.matchers.filter(el => el)
       let uid = '';
       if (mode === 'add') {
         uid = generateId();
@@ -66,16 +67,14 @@ const RoutingRule = props => {
             <Col>
               <Form.Item name="port" rules={[
                 {
-                  validator: (_, value, cb) => {
+                  validator: (_, value) => {
                     if (!value) {
-                      cb("Please provide a port value!")
-                      return
+                      return Promise.reject("Please provide a port value!")
                     }
                     if (!Number.isInteger(Number(value))) {
-                      cb("Port number should be a valid Integer")
-                      return
+                      return Promise.reject("Port number should be a valid Integer")
                     }
-                    cb()
+                    return Promise.resolve()
                   }
                 }
               ]}>
@@ -108,6 +107,17 @@ const RoutingRule = props => {
                                   {...field}
                                   name={[field.name, 'url', 'type']}
                                   fieldKey={[field.fieldKey, 'url', 'type']}
+                                  rules={[{}, ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) !== undefined && !value) {
+                                        return Promise.reject("Please select a type!")
+                                      }
+                                      if (getFieldValue(["matchers", field.name, 'url', 'value']) && !value) {
+                                        return Promise.reject("Please select a type!")
+                                      }
+                                      return Promise.resolve()
+                                    }
+                                  })]}
                                 >
                                   <Select placeholder="Type" style={{ width: 300 }}>
                                     <Select.Option value="exact">Exact</Select.Option>
@@ -121,6 +131,17 @@ const RoutingRule = props => {
                                   {...field}
                                   name={[field.name, 'url', 'value']}
                                   fieldKey={[field.fieldKey, 'url', 'value']}
+                                  rules={[{}, ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) !== undefined && !value) {
+                                        return Promise.reject("Please enter a value!")
+                                      }
+                                      if (getFieldValue(["matchers", field.name, 'url', 'type']) && !value) {
+                                        return Promise.reject("Please enter a value!")
+                                      }
+                                      return Promise.resolve()
+                                    }
+                                  })]}
                                 >
                                   <Input placeholder="Value" style={{ width: 300 }} />
                                 </Form.Item>
@@ -142,18 +163,29 @@ const RoutingRule = props => {
                                 return (
                                   <React.Fragment>
                                     {fields.map((fieldHeaders, index) => (
-                                      <Row gutter={24}>
+                                      <Row key={fieldHeaders.key} gutter={24}>
                                         <Col>
                                           <Form.Item
                                             {...fieldHeaders}
                                             name={[fieldHeaders.name, 'type']}
                                             fieldKey={[fieldHeaders.name, 'type']}
+                                            rules={[{}, ({ getFieldValue }) => ({
+                                              validator(_, value) {
+                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'key']) && !value) {
+                                                  return Promise.reject("Please select a type!")
+                                                }
+                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'value']) && !value) {
+                                                  return Promise.reject("Please select a type!")
+                                                }
+                                                return Promise.resolve()
+                                              }
+                                            })]}
                                           >
                                             <Select placeholder="Type" style={{ width: 300 }}>
                                               <Select.Option value="exact">Exact</Select.Option>
                                               <Select.Option value="prefix">Prefix</Select.Option>
                                               <Select.Option value="regex">Regex</Select.Option>
-                                              <Select.Option value="checkPresence">Check presence</Select.Option>
+                                              <Select.Option value="check-presence">Check presence</Select.Option>
                                             </Select>
                                           </Form.Item>
                                         </Col>
@@ -162,16 +194,38 @@ const RoutingRule = props => {
                                             {...fieldHeaders}
                                             name={[fieldHeaders.name, 'key']}
                                             fieldKey={[fieldHeaders.name, 'key']}
+                                            rules={[{}, ({ getFieldValue }) => ({
+                                              validator(_, value) {
+                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'type']) && !value) {
+                                                  return Promise.reject("Please enter a key!")
+                                                }
+                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'value']) && !value) {
+                                                  return Promise.reject("Please enter a key!")
+                                                }
+                                                return Promise.resolve()
+                                              }
+                                            })]}
                                           >
                                             <Input placeholder="Key" style={{ width: 300 }} />
                                           </Form.Item>
                                         </Col>
-                                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["matchers", field.name, "headers", fieldHeaders.name, "type"]) !== "checkPresence"}>
+                                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["matchers", field.name, "headers", fieldHeaders.name, "type"]) !== "check-presence"}>
                                           <Col>
                                             <Form.Item
                                               {...fieldHeaders}
                                               name={[fieldHeaders.name, 'value']}
                                               fieldKey={[fieldHeaders.name, 'value']}
+                                              rules={[{}, ({ getFieldValue }) => ({
+                                                validator(_, value) {
+                                                  if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'type']) && !value) {
+                                                    return Promise.reject("Please enter a value!")
+                                                  }
+                                                  if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'key']) && !value) {
+                                                    return Promise.reject("Please enter a value!")
+                                                  }
+                                                  return Promise.resolve()
+                                                }
+                                              })]}
                                             >
                                               <Input placeholder="Value" style={{ width: 300 }} />
                                             </Form.Item>
@@ -263,16 +317,14 @@ const RoutingRule = props => {
                             validateTrigger={["onChange", "onBlur"]}
                             rules={[
                               {
-                                validator: (_, value, cb) => {
+                                validator: (_, value) => {
                                   if (!value) {
-                                    cb("Please provide a port value!")
-                                    return
+                                    return Promise.reject("Please provide a port value!")
                                   }
                                   if (!Number.isInteger(Number(value))) {
-                                    cb("Not a valid port value")
-                                    return
+                                    return Promise.reject("Not a valid port value")
                                   }
-                                  cb()
+                                  return Promise.resolve()
                                 }
                               }
                             ]}
@@ -290,17 +342,15 @@ const RoutingRule = props => {
                             validateTrigger={["onChange", "onBlur"]}
                             rules={[
                               {
-                                validator: (_, value, cb) => {
+                                validator: (_, value) => {
                                   if (!value) {
-                                    cb("Please provide a weight!")
-                                    return
+                                    return Promise.reject("Please provide a weight!")
                                   }
                                   const weightVal = Number(value)
                                   if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-                                    cb("Weight should be a number between 1 to 100")
-                                    return
+                                    return Promise.reject("Weight should be a number between 1 to 100")
                                   }
-                                  cb()
+                                  return Promise.resolve()
                                 }
                               }
                             ]}
