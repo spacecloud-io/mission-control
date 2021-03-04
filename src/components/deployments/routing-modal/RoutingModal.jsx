@@ -202,12 +202,21 @@ const RoutingRule = props => {
                                           </Col>
                                         </ConditionalFormBlock>
                                         <Col>
-                                          <MinusCircleFilled onClick={() => remove(field.name)} style={{ fontSize: 20, marginTop: 5 }} />
+                                          <MinusCircleFilled onClick={() => remove(fieldHeaders.name)} style={{ fontSize: 20, marginTop: 5 }} />
                                         </Col>
                                       </Row>
                                     ))
                                     }
-                                    <Button onClick={() => add()}><PlusOutlined /> {fields.length === 0 ? "Add a header" : "Add another header"}</Button>
+                                    <Button onClick={() => {
+                                      form.validateFields([
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "type"]), 
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "key"]),
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "value"])])
+                                      .then(() => add())
+                                      .catch(ex => console.log("Exception", ex))
+                                    }}>
+                                      <PlusOutlined /> {fields.length === 0 ? "Add a header" : "Add another header"}
+                                    </Button>
                                   </React.Fragment>
                                 )
                               }}
