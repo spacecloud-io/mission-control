@@ -269,7 +269,12 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["rows", field.name, "datatype"]) === "string"}>
+                          <ConditionalFormBlock shouldUpdate={true}
+                            condition={() => 
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "string" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "char" ||
+                              form.getFieldValue(["rows", field.name, "datatype"]) === "varchar"
+                            }>
                             <Col span={7}>
                               <Form.Item
                                 name={[field.name, 'value']}
@@ -283,8 +288,8 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} 
-                            condition={() => 
+                          <ConditionalFormBlock shouldUpdate={true}
+                            condition={() =>
                               form.getFieldValue(["rows", field.name, "datatype"]) === "integer" ||
                               form.getFieldValue(["rows", field.name, "datatype"]) === "smallinteger" ||
                               form.getFieldValue(["rows", field.name, "datatype"]) === "biginteger"
@@ -304,7 +309,7 @@ const EditRowForm = (props) => {
                             </Col>
                           </ConditionalFormBlock>
                           <ConditionalFormBlock shouldUpdate={true}
-                            condition={() => 
+                            condition={() =>
                               form.getFieldValue(["rows", field.name, "datatype"]) === "float" ||
                               form.getFieldValue(["rows", field.name, "datatype"]) === "decimal"
                             }
@@ -367,8 +372,8 @@ const EditRowForm = (props) => {
                               </Form.Item>
                             </Col>
                           </ConditionalFormBlock>
-                          <ConditionalFormBlock shouldUpdate={true} 
-                            condition={() => 
+                          <ConditionalFormBlock shouldUpdate={true}
+                            condition={() =>
                               form.getFieldValue(["rows", field.name, "datatype"]) === "datetime" ||
                               form.getFieldValue(["rows", field.name, "datatype"]) === "datetimewithzone"
                             }>
@@ -500,7 +505,11 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "string"}
+                                          condition={() => 
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "string" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "char" ||
+                                            form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "varchar"
+                                          }
                                         >
                                           <Form.Item
                                             name={[arrField.name, 'value']}
@@ -515,7 +524,7 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => 
+                                          condition={() =>
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "integer" ||
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "smallinteger" ||
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "biginteger"
@@ -534,7 +543,7 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => 
+                                          condition={() =>
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "float" ||
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "decimal"
                                           }
@@ -600,7 +609,7 @@ const EditRowForm = (props) => {
                                         </ConditionalFormBlock>
                                         <ConditionalFormBlock
                                           shouldUpdate={true}
-                                          condition={() => 
+                                          condition={() =>
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetime" ||
                                             form.getFieldValue(["rows", field.name, "arrays", arrField.name, "datatype"]) === "datetimewithzone"
                                           }
