@@ -109,7 +109,7 @@ const RoutingRule = props => {
                                   fieldKey={[field.fieldKey, 'url', 'type']}
                                   rules={[{}, ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) !== undefined && !value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) && !value) {
                                         return Promise.reject("Please select a type!")
                                       }
                                       if (getFieldValue(["matchers", field.name, 'url', 'value']) && !value) {
@@ -133,7 +133,7 @@ const RoutingRule = props => {
                                   fieldKey={[field.fieldKey, 'url', 'value']}
                                   rules={[{}, ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) !== undefined && !value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) && !value) {
                                         return Promise.reject("Please enter a value!")
                                       }
                                       if (getFieldValue(["matchers", field.name, 'url', 'type']) && !value) {
@@ -169,17 +169,7 @@ const RoutingRule = props => {
                                             {...fieldHeaders}
                                             name={[fieldHeaders.name, 'type']}
                                             fieldKey={[fieldHeaders.name, 'type']}
-                                            rules={[{}, ({ getFieldValue }) => ({
-                                              validator(_, value) {
-                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'key']) && !value) {
-                                                  return Promise.reject("Please select a type!")
-                                                }
-                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'value']) && !value) {
-                                                  return Promise.reject("Please select a type!")
-                                                }
-                                                return Promise.resolve()
-                                              }
-                                            })]}
+                                            rules={[{ required: true, message: "Please select a type!" }]}
                                           >
                                             <Select placeholder="Type" style={{ width: 300 }}>
                                               <Select.Option value="exact">Exact</Select.Option>
@@ -194,17 +184,7 @@ const RoutingRule = props => {
                                             {...fieldHeaders}
                                             name={[fieldHeaders.name, 'key']}
                                             fieldKey={[fieldHeaders.name, 'key']}
-                                            rules={[{}, ({ getFieldValue }) => ({
-                                              validator(_, value) {
-                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'type']) && !value) {
-                                                  return Promise.reject("Please enter a key!")
-                                                }
-                                                if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'value']) && !value) {
-                                                  return Promise.reject("Please enter a key!")
-                                                }
-                                                return Promise.resolve()
-                                              }
-                                            })]}
+                                            rules={[{ required: true, message: "Please enter a key!" }]}
                                           >
                                             <Input placeholder="Key" style={{ width: 300 }} />
                                           </Form.Item>
@@ -215,17 +195,7 @@ const RoutingRule = props => {
                                               {...fieldHeaders}
                                               name={[fieldHeaders.name, 'value']}
                                               fieldKey={[fieldHeaders.name, 'value']}
-                                              rules={[{}, ({ getFieldValue }) => ({
-                                                validator(_, value) {
-                                                  if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'type']) && !value) {
-                                                    return Promise.reject("Please enter a value!")
-                                                  }
-                                                  if (getFieldValue(['matchers', field.name, "headers", fieldHeaders.name, 'key']) && !value) {
-                                                    return Promise.reject("Please enter a value!")
-                                                  }
-                                                  return Promise.resolve()
-                                                }
-                                              })]}
+                                              rules={[{ required: true, message: "Please enter a value!" }]}
                                             >
                                               <Input placeholder="Value" style={{ width: 300 }} />
                                             </Form.Item>
@@ -237,7 +207,7 @@ const RoutingRule = props => {
                                       </Row>
                                     ))
                                     }
-                                    <Button onClick={() => add()}><PlusOutlined /> Add another header</Button>
+                                    <Button onClick={() => add()}><PlusOutlined /> {fields.length === 0 ? "Add a header" : "Add another header"}</Button>
                                   </React.Fragment>
                                 )
                               }}
@@ -246,7 +216,7 @@ const RoutingRule = props => {
                         ))}
                       </Collapse>
                     }
-                    <Button style={{ marginBottom: "1em" }} onClick={() => add()}><PlusOutlined /> Add another matcher</Button>
+                    <Button style={{ marginBottom: "1em" }} onClick={() => add({ url : { ignoreCase: false }})}><PlusOutlined /> {fields.length === 0 ? "Add a matcher" : "Add another matcher"}</Button>
                   </React.Fragment>
                 )
               }
