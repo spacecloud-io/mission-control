@@ -50,7 +50,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   // Router params
   const { projectID } = useParams();
 
-  const { kind = endpointTypes.INTERNAL, name, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheOptions = [] } = initialValues ? initialValues : {}
+  const { kind = endpointTypes.INTERNAL, name, requestPayloadFormat, path, method, rule, token, claims, requestTemplate, responseTemplate, graphTemplate, outputFormat, headers = [], timeout, cacheOptions = [] } = initialValues ? initialValues : {}
   const [generateTokenModal, setGenerateTokenModal] = useState(false);
   const generateTokenAllowed = useSelector(state => canGenerateToken(state, projectID))
 
@@ -61,6 +61,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   const formInitialValues = {
     kind: kind,
     name: name,
+    requestPayloadFormat: requestPayloadFormat ? requestPayloadFormat : "json",
     method: method ? method : "POST",
     path: path,
     timeout: timeout,
@@ -80,10 +81,11 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
   const handleFinish = (values) => {
     const overrideToken = values.overrideToken
     values = Object.assign({}, formInitialValues, values)
-    const { kind, name, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheOptions = [] } = values
+    const { kind, name, requestPayloadFormat, method, path, token, claims, applyTransformations, outputFormat, headers, setHeaders, timeout, requestTemplate, responseTemplate, graphTemplate, cacheOptions = [] } = values
     const result = {
       kind,
       name,
+      requestPayloadFormat: kind === endpointTypes.PREPARED ? "json" : requestPayloadFormat,
       method,
       path,
       rule: rule && Object.keys(rule).length > 0 ? rule : defaultEndpointRule,
@@ -151,18 +153,31 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
               </RadioCards>
             </Form.Item>
             <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") !== endpointTypes.PREPARED}>
-              <FormItemLabel name='Method' />
-              <Form.Item
-                name='method'
-                rules={[{ required: true, message: 'Please select a method!' }]}
-              >
-                <Select placeholder='Please select a method' style={{ width: 210 }}>
-                  <Option value='POST'>POST</Option>
-                  <Option value='PUT'>PUT</Option>
-                  <Option value='GET'>GET</Option>
-                  <Option value='DELETE'>DELETE</Option>
-                </Select>
-              </Form.Item>
+              <Row gutter={[32]}>
+                <Col>
+                  <FormItemLabel name='Method' />
+                  <Form.Item
+                    name='method'
+                    rules={[{ required: true, message: 'Please select a method!' }]}
+                  >
+                    <Select placeholder='Please select a method' style={{ width: 210 }}>
+                      <Option value='POST'>POST</Option>
+                      <Option value='PUT'>PUT</Option>
+                      <Option value='GET'>GET</Option>
+                      <Option value='DELETE'>DELETE</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col>
+                  <FormItemLabel name="Payload format" />
+                  <Form.Item name="requestPayloadFormat" rules={[{ required: true, message: 'Please select a request payload format!' }]}>
+                    <Select placeholder="Request payload format" style={{ width: 210 }}>
+                      <Select.Option value="json">JSON</Select.Option>
+                      <Select.Option value="form-data">Form data</Select.Option>
+                    </Select>
+                  </Form.Item> 
+                </Col>
+              </Row>
               <ConditionalFormBlock dependency="kind" condition={() => form.getFieldValue("kind") === endpointTypes.INTERNAL}>
                 <FormItemLabel name='Path' />
                 <Form.Item
