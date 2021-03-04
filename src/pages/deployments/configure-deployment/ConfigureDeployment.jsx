@@ -534,7 +534,7 @@ const ConfigureDeployment = props => {
                                     }}
                                     style={{ marginTop: -10 }}
                                   >
-                                    <PlusOutlined /> Add another upstream service
+                                    <PlusOutlined /> Add another whitelisting service
                           </Button>
                                 </Form.Item>
                               </div>
