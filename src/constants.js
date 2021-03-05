@@ -74,7 +74,8 @@ export const projectModules = {
   INTEGRATIONS: "integrations",
   EXPLORER: "explorer",
   SETTINGS: "settings",
-  SECURITY_RULES: "security-rules"
+  SECURITY_RULES: "security-rules",
+  SECURITY_FUNCTIONS: "security-functions"
 }
 
 export const moduleResources = {
@@ -161,7 +162,8 @@ export const securityRuleGroups = {
   EVENTING: "eventing",
   EVENTING_FILTERS: "eventing-filters",
   REMOTE_SERVICES: "remote-services",
-  INGRESS_ROUTES: "ingress-routes"
+  INGRESS_ROUTES: "ingress-routes",
+  SECURITY_FUNCTIONS: "security-functions"
 }
 
 export const defaultDBRules = {
@@ -208,6 +210,10 @@ export const defaultIngressRoutingRule = {
 }
 
 export const defaultPreparedQueryRule = {
+  rule: "allow"
+}
+
+export const defaultSecurityFunctionRule = {
   rule: "allow"
 }
 

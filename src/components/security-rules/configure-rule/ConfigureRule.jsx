@@ -24,6 +24,7 @@ import { getCollectionSchema, getDbConfigs, getTrackedCollections } from '../../
 import { securityRuleGroups } from '../../../constants';
 import JSONCodeMirror from '../../json-code-mirror/JSONCodeMirror';
 import AntCodeMirror from "../../ant-code-mirror/AntCodeMirror";
+import { getSecurityFunctions } from '../../../operations/securityFunctions';
 
 const { Option } = Select;
 
@@ -155,7 +156,12 @@ const isTypeOfFieldsString = (fields) => {
   return typeof fields === "string"
 }
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
+const getSecurityFunctionVariables = (securityFunctions, functionId) => {
+  const index = securityFunctions.findIndex(item => item.id === functionId)
+  return index === -1 ? [] : securityFunctions[index].variables
+}
+
+const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash', 'function'];
 
 const ConfigureRule = (props) => {
   // form
@@ -165,12 +171,13 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
+  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache, securityFunctionName, fnBlockVariables } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
   const data = useSelector(state => getTrackedCollections(state, selectedDb))
   const collectionSchemaString = useSelector(state => getCollectionSchema(state, props.ruleMetaData.group, props.ruleMetaData.id))
+  const securityFunctions = useSelector(state => getSecurityFunctions(state))
 
   // Handlers
   const handleSelectDatabase = (value) => setSelectedDb(value);
@@ -214,6 +221,8 @@ const ConfigureRule = (props) => {
         }
 
         delete values["applyTransformations"]
+        break;
+      case "function":
         break;
     }
 
@@ -277,6 +286,7 @@ const ConfigureRule = (props) => {
       autoCompleteOptions = { args: { data: true } }
       break;
     case securityRuleGroups.INGRESS_ROUTES:
+    case securityRuleGroups.SECURITY_FUNCTIONS:
       const query = {
         path: true,
         pathArray: true,
@@ -312,7 +322,9 @@ const ConfigureRule = (props) => {
     error,
     cacheResponse: cache ? true : false,
     cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
-    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined
+    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined,
+    securityFunctionName,
+    fnBlockVariables
   }
 
   if (formInitialValues.type === "object") {
@@ -684,6 +696,40 @@ const ConfigureRule = (props) => {
               </Form.Item>
             </ConditionalFormBlock>
           </ConditionalFormBlock>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency='rule'
+          condition={() => form.getFieldValue('rule') === 'function'}
+        >
+          <FormItemLabel name="Function name" />
+          <Form.Item name="securityFunctionName">
+            <Select placeholder="Function name">
+              {securityFunctions.map(item => <Select.Option value={item.id}>{item.id}</Select.Option>)}
+            </Select>
+          </Form.Item>
+          <Form.Item shouldUpdate>
+            {() => (
+              <React.Fragment>
+                {form.getFieldValue("securityFunctionName") && (
+                  <>
+                    <FormItemLabel name="Fields of template" />
+                    {getSecurityFunctionVariables(securityFunctions, form.getFieldValue("securityFunctionName")).map(item => (
+                      <Row gutter={24}>
+                        <Col span={12}>
+                          <Input value={item} disabled />
+                        </Col>
+                        <Col span={12}>
+                          <FormItem name={["fnBlockVariables", item]} rules={[{ required: true }, { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }]}>
+                            <ObjectAutoComplete placeholder="Value" options={autoCompleteOptions} />
+                          </FormItem>
+                        </Col>
+                      </Row>
+                    ))}
+                  </>
+                )}
+              </React.Fragment>
+            )}
+          </Form.Item>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>

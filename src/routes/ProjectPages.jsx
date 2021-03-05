@@ -59,6 +59,7 @@ import CacheOverview from '../pages/cache/overview/Overview';
 import CacheIndex from '../pages/cache/Index';
 import ConfigureRabbitMQ from "../pages/settings/add-ons/rabbit-mq/RabbitMQ";
 import ConfigureRedis from "../pages/settings/add-ons/redis/ConfigureRedis";
+import SecurityFunctions from "../pages/security-functions/SecurityFunctions";
 // import AddOns from "../pages/settings/add-ons/AddOns";
 
 
@@ -140,6 +141,7 @@ function ProjectPages() {
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/details/:integrationId`} component={IntegrationDetails} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/install/:integrationId`} component={InstallIntegration} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/permissions/:integrationId`} component={IntegrationPermissions} />
+      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECURITY_FUNCTIONS}`} component={SecurityFunctions} />
     </React.Fragment>
   )
 }

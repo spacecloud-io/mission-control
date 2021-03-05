@@ -8,6 +8,7 @@ const mergeGraph = (graph1, graph2) => {
 }
 
 const convertRuleToGraph = (rule, id, parentId) => {
+  console.log("RULEE", rule)
   let graph = { nodes: [], edges: [] }
 
   const isRootBlock = !parentId.includes(".")
@@ -17,6 +18,11 @@ const convertRuleToGraph = (rule, id, parentId) => {
       graph.nodes.push({ id: id, label: "+ Add rule", group: "add_rule" })
       graph.edges.push({ from: parentId, to: id })
     }
+    return graph
+  }
+  if (rule.rule === "function") {
+    graph.nodes.push({ id: id, label: rule.securityFunctionName, group: "rule" })
+    graph.edges.push({ from: parentId, to: id })
     return graph
   }
 

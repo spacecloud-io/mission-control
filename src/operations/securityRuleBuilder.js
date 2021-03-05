@@ -5,9 +5,10 @@ import { loadFileStoreRules, getFileStoreSecurityRule, saveFileStoreSecurityRule
 import { loadRemoteServices, getRemoteEndpointSecurityRule, saveRemoteServiceEndpointRule } from "./remoteServices"
 import { loadIngressRoutes, getIngressRouteSecurityRule, getIngressRouteURL, saveIngressRouteRule } from "./ingressRoutes"
 import { loadCacheConfig } from "./cache"
+import { getSecurityFunctionRule, loadSecurityFunctions, saveSecurityFunctionRule } from "./securityFunctions"
 
 export const loadSecurityRules = (projectId, ruleType, ruleId) => {
-  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId), loadCacheConfig()]
+  const promises = [loadDbConfig(projectId), loadDbSchemas(projectId), loadCacheConfig(), loadSecurityFunctions(projectId)]
 
   switch (ruleType) {
     case securityRuleGroups.DB_COLLECTIONS:
@@ -54,6 +55,9 @@ export const getSecurityRuleInfo = (state, ruleType, id, group) => {
       const ingressSecurityRule = getIngressRouteSecurityRule(state, id)
       const url = getIngressRouteURL(state, id)
       return { rule: ingressSecurityRule, name: url }
+    case securityRuleGroups.SECURITY_FUNCTIONS:
+      const securityFunctionRule = getSecurityFunctionRule(state, id)
+      return { rule: securityFunctionRule, name: id }
     default:
       return { rule: {}, name: "" }
   }
@@ -84,6 +88,9 @@ export const saveSecurityRule = (projectId, ruleType, id, group, rule) => {
       case securityRuleGroups.INGRESS_ROUTES:
         req = saveIngressRouteRule(projectId, id, rule)
         break
+      case securityRuleGroups.SECURITY_FUNCTIONS:
+        req = saveSecurityFunctionRule(projectId, id, rule)
+        break;
     }
 
     req

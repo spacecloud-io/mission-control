@@ -964,3 +964,17 @@ export const addonsConfig = {
     }
   }
 }
+
+export const securityFunctions = [
+  {
+    id: "Function 1",
+    variables: ["variable1", "variable2"],
+    rule: {
+      rule: "allow"
+    }
+  },
+  {
+    id: "Function 2",
+    variables: ["variable1", "variable2"]
+  }
+]
