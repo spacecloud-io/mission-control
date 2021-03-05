@@ -235,6 +235,7 @@ const EndpointForm = ({ initialValues, handleSubmit, serviceURL, isCachingEnable
               </Form.Item>
             </ConditionalFormBlock>
             <Collapse
+              className="advanced"
               style={{ background: "white" }}
               bordered={false}
               expandIcon={({ isActive }) => (
