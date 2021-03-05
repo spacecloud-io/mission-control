@@ -144,18 +144,11 @@ const parseNumber = (value) => {
   return !isNaN(value) ? Number(value) : value
 }
 
-const parseArray = (value, type) => {
-  if (!value.includes(",")) {
-    return value
-  }
-  return value.split(",").map(value => value.trim()).map(value => parseValue(value, type))
-}
-
 const isTypeOfFieldsString = (fields) => {
   return typeof fields === "string"
 }
 
-const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash'];
+const rules = ['allow', 'deny', 'authenticated', 'match', 'and', 'or', 'query', 'webhook', 'force', 'remove', 'encrypt', 'decrypt', 'hash', 'graphql', 'transform'];
 
 const ConfigureRule = (props) => {
   // form
@@ -165,7 +158,8 @@ const ConfigureRule = (props) => {
   const [col, setCol] = useState('');
 
   // Derived properties
-  const { rule, type, f1, f2, error, fields, field, value, url, store, outputFormat, claims, requestTemplate, db, cache } = props.selectedRule;
+  const { rule, type, f1, f2, error, field, value, url, store, outputFormat, claims, requestTemplate, db, cache, graphqlQuery, graphqlVariables } = props.selectedRule;
+  let { fields } = props.selectedRule;
   const dbConfigs = useSelector(state => getDbConfigs(state))
   const dbList = Object.keys(dbConfigs)
   const [selectedDb, setSelectedDb] = useState(db);
@@ -181,7 +175,10 @@ const ConfigureRule = (props) => {
     switch (values.rule) {
       case "match":
         if (values.eval === 'in' || values.eval === 'notIn') {
-          values.f2 = parseArray(values.f2, values.type)
+          values.f2 = values.loadVar ? values.singleInputFields : values.multipleInputFields
+          delete values["loadVar"]
+          delete values["singleInputFields"]
+          delete values["multipleInputFields"]
         } else {
           values.f1 = parseValue(values.f1, values.type)
           values.f2 = parseValue(values.f2, values.type)
@@ -215,6 +212,20 @@ const ConfigureRule = (props) => {
 
         delete values["applyTransformations"]
         break;
+      case "graphql":
+        try {
+          if (values.graphqlVariables) {
+            values.graphqlVariables = JSON.parse(values.graphqlVariables);
+          }
+          delete values["generateToken"]
+        } catch (ex) {
+          notify("error", "Error", ex.toString())
+          return;
+        }
+        break;
+      case "transform":
+          values.template = "go"
+        break;
     }
 
     delete values.errorMsg;
@@ -223,7 +234,7 @@ const ConfigureRule = (props) => {
       if (!props.selectedRule.clauses) values.clauses = [];
       else values.clauses = props.selectedRule.clauses
     }
-    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash") {
+    if (values.rule === "query" || values.rule === "webhook" || values.rule === "force" || values.rule === "remove" || values.rule === "encrypt" || values.rule === "decrypt" || values.rule === "hash" || values.rule === "transform") {
       values.clause = props.selectedRule.clause
       values.fields = values.loadVar ? values.singleInputFields : values.multipleInputFields
       delete values["loadVar"]
@@ -287,6 +298,7 @@ const ConfigureRule = (props) => {
   }
 
   const inheritedDataType = getTypeFromValue(value)
+  fields = rule === "match" ? f2 : fields
   const formInitialValues = {
     rule,
     type: (rule === "force") ? inheritedDataType : type,
@@ -312,7 +324,9 @@ const ConfigureRule = (props) => {
     error,
     cacheResponse: cache ? true : false,
     cacheTTL: cache && cache.ttl !== undefined && cache.ttl !== null ? cache.ttl : undefined,
-    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined
+    cacheInstantInvalidate: cache && cache.instantInvalidate !== undefined && cache.instantInvalidate !== null ? cache.instantInvalidate : undefined,
+    graphqlQuery,
+    graphqlVariables : JSON.stringify(graphqlVariables, null, 2)
   }
 
   if (formInitialValues.type === "object") {
@@ -393,9 +407,80 @@ const ConfigureRule = (props) => {
               () => {
                 const type = form.getFieldValue("type")
                 return (
-                  <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
-                    <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
-                  </Form.Item>
+                  <>
+                    <ConditionalFormBlock
+                      dependency='eval'
+                      condition={() => form.getFieldValue('eval') !== 'in' && form.getFieldValue('eval') !== 'notIn'}
+                    >
+                      <Form.Item name='f2' rules={[{ required: true }, { validator: createValueAndTypeValidator(type, true) }]}>
+                        <ObjectAutoComplete placeholder="Second operand" options={autoCompleteOptions} />
+                      </Form.Item>
+                    </ConditionalFormBlock>
+                    <ConditionalFormBlock
+                      dependency='eval'
+                      condition={() => form.getFieldValue('eval') === 'in' || form.getFieldValue('eval') === 'notIn'}
+                    >
+                      <Form.Item name="loadVar" valuePropName="checked">
+                        <Checkbox>
+                          Load fields from a variable
+                        </Checkbox>
+                      </Form.Item>
+                      <ConditionalFormBlock dependency='loadVar' condition={() => form.getFieldValue('loadVar')}>
+                        <Row>
+                          <Col span={14}>
+                            <Form.Item name="singleInputFields">
+                              <ObjectAutoComplete placeholder="Variables to load field from" options={autoCompleteOptions} />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </ConditionalFormBlock>
+                      <ConditionalFormBlock dependency='loadVar' condition={() => !form.getFieldValue('loadVar')}>
+                        <Form.List name='multipleInputFields'>
+                          {(fields, { add, remove }) => {
+                            return (
+                              <>
+                                {fields.map((field, index) => (
+                                  <Row key={field.key}>
+                                    <Col span={14}>
+                                      <Form.Item
+                                        name={[field.name]}
+                                        key={[field.name]}
+                                        rules={[
+                                          { required: true },
+                                          { validator: createValueAndTypeValidator("variable", false), validateTrigger: "onBlur" }
+                                        ]}
+                                      >
+                                        <ObjectAutoComplete placeholder="Field" options={autoCompleteOptions} />
+                                      </Form.Item>
+                                    </Col>
+                                    <Col span={2}>
+                                      <CloseOutlined
+                                        style={{ margin: '0 8px' }}
+                                        onClick={() => {
+                                          remove(field.name);
+                                        }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                ))}
+                                <Form.Item>
+                                  <Button
+                                    type='dashed'
+                                    onClick={() => {
+                                      add();
+                                    }}
+                                    style={{ width: '40%' }}
+                                  >
+                                    <PlusOutlined /> Add field
+                                  </Button>
+                                </Form.Item>
+                              </>
+                            );
+                          }}
+                        </Form.List>
+                      </ConditionalFormBlock>
+                    </ConditionalFormBlock>
+                  </>
                 )
               }
             }
@@ -684,6 +769,69 @@ const ConfigureRule = (props) => {
               </Form.Item>
             </ConditionalFormBlock>
           </ConditionalFormBlock>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency='rule'
+          condition={() => form.getFieldValue('rule') === 'graphql'}
+        >
+          <FormItemLabel name='Query' style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="graphqlQuery" rules={[{ required: true }]}>
+            <JSONCodeMirror />
+          </Form.Item>
+          <FormItemLabel name='Variables' hint="(Optional)" style={{ border: '1px solid #D9D9D9' }} />
+          <Form.Item name="graphqlVariables">
+            <JSONCodeMirror />
+          </Form.Item>
+          <FormItemLabel name="Store" hint="(Optional)" />
+          <FormItem name="store" rules={[{ required: false }]}>
+            <Input placeholder="The variable to store the query response. For example: args.res" />
+          </FormItem>
+          <Form.Item name='generateToken' valuePropName='checked'>
+            <Checkbox>
+              Generate token
+          </Checkbox>
+          </Form.Item>
+          <ConditionalFormBlock
+            dependency='generateToken'
+            condition={() => form.getFieldValue('generateToken') === true}
+          >
+            <FormItemLabel name="JWT claims" />
+            <Form.Item name="claims">
+              <JSONCodeMirror />
+            </Form.Item>
+          </ConditionalFormBlock>
+        </ConditionalFormBlock>
+        <ConditionalFormBlock
+          dependency="rule"
+          condition={() => form.getFieldValue('rule') === "transform"} >
+          <FormItemLabel name="Store" hint="(Optional)" />
+          <FormItem name="store" rules={[{ required: false }]}>
+            <Input placeholder="The variable to store the transform response. For example: args.res" />
+          </FormItem>
+          <Alert
+            message={<AlertMsgApplyTransformations />}
+            type='info'
+            showIcon
+            style={{ marginBottom: 21 }}
+          />
+          <FormItemLabel name="Template output format" description="Format for parsing the template output" />
+          <Form.Item name="outputFormat">
+            <Select style={{ width: 96 }}>
+              <Option value='yaml'>YAML</Option>
+              <Option value='json'>JSON</Option>
+            </Select>
+          </Form.Item>
+          <FormItemLabel name="Request template" description="Template to generate the transformed request body" />
+          <Form.Item name='requestTemplate' rules={[{ required: true }]}>
+            <AntCodeMirror style={{ border: "1px solid #D9D9D9" }} options={{
+              mode: { name: 'go' },
+              lineNumbers: true,
+              styleActiveLine: true,
+              matchBrackets: true,
+              autoCloseBrackets: true,
+              tabSize: 2
+            }} />
+          </Form.Item>
         </ConditionalFormBlock>
         <FormItemLabel name='Customize error message' />
         <Form.Item name='errorMsg' valuePropName='checked'>
