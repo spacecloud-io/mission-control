@@ -195,7 +195,7 @@ const AddTaskForm = props => {
                 }}
               </Form.List>
             </React.Fragment>
-            <Collapse bordered={false} style={{ background: 'white' }}>
+            <Collapse className="advanced" bordered={false} style={{ background: 'white' }}>
               <Panel header="Advanced" key="1">
                 <br />
                 <FormItemLabel name="Image pull policy" />
