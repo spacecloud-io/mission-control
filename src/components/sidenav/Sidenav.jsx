@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import store from "../../store"
 import { set } from "automate-redux"
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Divider, Typography, Space } from "antd";
+import { Collapse, Divider, Typography, Space, Button, Popover } from "antd";
 import { capitalizeFirstCharacter } from '../../utils';
 import { getEnv } from '../../operations/cluster';
 import { projectModules } from '../../constants';
@@ -50,6 +50,7 @@ const Sidenav = (props) => {
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
   const { plan, version } = useSelector(state => getEnv(state))
+  const scLatestVersion = useSelector(state => state.scLatestVersion)
   const planName = getPlanName(plan)
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
@@ -58,6 +59,8 @@ const Sidenav = (props) => {
   const setActiveKeys = (activeKeys) => {
     store.dispatch(set("uiState.sideNavActiveKeys", activeKeys))
   }
+
+  const isUpdateAvailable = scLatestVersion && scLatestVersion !== version
 
   return (
     <div className="sidenav-container">
@@ -116,15 +119,22 @@ const Sidenav = (props) => {
             <SidenavItem name="Settings" icon="settings" active={props.selectedItem === projectModules.SETTINGS} />
           </Link>
         </div>
+        <div className="sidenav-bottom-content">
+        {isUpdateAvailable &&
+          <div className="sc-update">
+            Upgrade to v{scLatestVersion} <Button type="primary" ghost style={{ marginLeft: 9 }}>Update</Button>
+          </div>}
         <div className="sidenav-version">
-          <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700" }} />
+          <Popover placement="right" content={`UI Version - v${uiVersion}`}>
+            <InfoCircleOutlined style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} />
+          </Popover>
           <div className="sidenav-version-content">
             <Space direction="vertical" size={4}>
               <Typography.Text>SC Version - v{version}</Typography.Text>
-              <Typography.Text>UI Version - v{uiVersion}</Typography.Text>
               <Typography.Text type="secondary">{planName}</Typography.Text>
             </Space>
           </div>
+        </div>
         </div>
       </div>
     </div>

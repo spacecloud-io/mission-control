@@ -407,9 +407,9 @@ export function redirectToLogin() {
 // Its intended to be called whenever the mission control is (re)loaded.
 export function performSetup() {
   return new Promise((resolve, reject) => {
-
+    const { projectId } = extractPathInfo(history.location.pathname)
     // Load cluster environment and refresh token (if present) parallely
-    const promises = [loadClusterEnv(), refreshClusterTokenIfPresent()]
+    const promises = [loadClusterEnv(projectId), refreshClusterTokenIfPresent()]
 
     Promise.all(promises)
       .then(() => {
@@ -450,7 +450,6 @@ export function performSetup() {
         })
 
       // Refresh admin token periodically (every 15 minutes)
-      const { projectId } = extractPathInfo(history.location.pathname)
       loadProjectAPIToken(projectId)
     }, 15 * 60 * 1000)
 

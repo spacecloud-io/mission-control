@@ -1,6 +1,7 @@
 import { set, get } from "automate-redux";
 import client from "../client";
 import store from "../store";
+import { getAPIToken } from "./projects";
 
 export function loadClusterSettings() {
   return new Promise((resolve, reject) => {
@@ -39,11 +40,12 @@ export function saveClusterSetting(key, value) {
   })
 }
 
-export function loadClusterEnv() {
+export function loadClusterEnv(projectId) {
   return new Promise((resolve, reject) => {
     client.cluster.fetchEnv()
       .then(env => {
         setEnv(env)
+        getScLatestVersion(projectId, env.version)
         resolve()
       })
       .catch(error => reject(error))
@@ -119,6 +121,18 @@ export function removeClusterLicense() {
   })
 }
 
+function getScLatestVersion(projectId, currentVersion) {
+  return new Promise((resolve, reject) => {
+    const internalToken = getAPIToken(store.getState())
+    client.cluster.fetchScLatestVersion(projectId, currentVersion, () => internalToken)
+    .then((latestVersion) => {
+      setScLatestVersion(latestVersion)
+      resolve()
+    })
+    .catch(error => reject(error))
+  })
+}
+
 export function getEnv(state) {
   return get(state, "env", {})
 }
@@ -172,3 +186,5 @@ export function isLoggedIn(state) {
 
   return true
 }
+
+const setScLatestVersion = (latestVersion) => store.dispatch(set("scLatestVersion", latestVersion))
