@@ -27,7 +27,7 @@ const EditBatchingConfigForm = ({ handleSubmit, handleCancel, initialValues }) =
       onCancel={handleCancel}
       okText='Save'>
       <Form form={form} initialValues={formInitialValues} onFinish={handleSubmitClick}>
-        <FormItemLabel name='Batch time' hint="(Default: 200)" />
+        <FormItemLabel name='Batch time' hint="(Default: 200 milliseconds)" />
         <Form.Item name='batchTime' rules={[{ required: true, message: 'Please input batch time' }]}>
           <Input placeholder='Batch time in milliseconds' />
         </Form.Item>
