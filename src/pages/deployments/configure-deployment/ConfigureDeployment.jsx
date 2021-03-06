@@ -422,7 +422,7 @@ const ConfigureDeployment = props => {
                     </Form.Item>
                     <FormItemLabel name="Tasks" extra={<Button style={{ float: 'right' }} onClick={onAddTaskClick}>Add task</Button>} />
                     <Table dataSource={tasksTableData} columns={tasksColumn} pagination={false} />
-                    <Collapse bordered={false} style={{ background: 'white', marginTop: 24 }}>
+                    <Collapse className="advanced" bordered={false} style={{ background: 'white', marginTop: 24 }}>
                       <Panel header="Advanced" key="1">
                         <br />
                         <FormItemLabel name='Scalers' extra={<Button style={{ float: 'right' }} onClick={onAddScalerClick}>Add scaler</Button>} />
@@ -534,7 +534,7 @@ const ConfigureDeployment = props => {
                                     }}
                                     style={{ marginTop: -10 }}
                                   >
-                                    <PlusOutlined /> Add another upstream service
+                                    <PlusOutlined /> Add another whitelisting service
                           </Button>
                                 </Form.Item>
                               </div>

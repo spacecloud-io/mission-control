@@ -379,6 +379,7 @@ const Browse = () => {
               columns={tableColumns}
               dataSource={tableData}
               scrollHeight={600}
+              scrollWidth={1300}
               style={{ marginTop: 21 }}
               bordered
             />

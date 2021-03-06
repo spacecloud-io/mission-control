@@ -93,14 +93,14 @@ const DeploymentsRoutes = () => {
 
   const handleEditClick = (serviceId, uid) => {
     const routeConfig = serviceRoutes[serviceId].find(obj => obj.uid === uid)
-    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets } });
+    setRouteClicked({ serviceId: serviceId, routeConfig: { uid: uid, protocol: routeConfig.source.protocol, port: routeConfig.source.port, requestRetries: routeConfig.requestRetries, requestTimeout: routeConfig.requestTimeout, targets: routeConfig.targets, matchers: routeConfig.matchers } });
     setModalVisible(true);
   };
 
   const handleSubmit = (serviceId, uid, values) => {
     return new Promise((resolve, reject) => {
       incrementPendingRequests()
-      const { protocol, port, requestRetries, requestTimeout, targets } = values
+      const { protocol, port, requestRetries, requestTimeout, targets, matchers } = values
       let routeConfig = {};
       if(protocol === "http"){
         routeConfig = {
@@ -109,6 +109,7 @@ const DeploymentsRoutes = () => {
           source: { protocol, port },
           requestRetries: requestRetries,
           requestTimeout: requestTimeout,
+          matchers,
           targets
         }
       }else {

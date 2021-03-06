@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from "react-redux";
 import store from "./store";
-import { performSetup, markSetupComplete } from './utils';
+import { performSetup, markSetupComplete, printSafetyMsg } from './utils';
 import App from './App';
 import { makeServer } from "./mirage/server";
 import * as serviceWorker from './serviceWorker';
@@ -31,4 +31,7 @@ serviceWorker.unregister();
 // It performs all the actions required to be done before user can start interacting with mission control.
 // This includes loading space cloud environment, refreshing token and fetching all resources that needs to be fetched.
 // A special loading page is shown untill this setup gets complete. 
-performSetup().then(() => markSetupComplete())
+performSetup().then(() => {
+  markSetupComplete()
+  printSafetyMsg()
+})

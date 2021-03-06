@@ -341,6 +341,7 @@ const IngressRoutingModal = props => {
             </Form.List>
           </React.Fragment>
           <Collapse
+            className="advanced"
             style={{ background: "white" }}
             bordered={false}
             expandIcon={({ isActive }) => (
