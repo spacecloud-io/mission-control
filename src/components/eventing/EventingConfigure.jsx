@@ -34,7 +34,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
         else {
           values.dbTables.forEach(item => {
             if (item) {
-              values.dbTablesInclusionMap[item.db] = item.col.length > 0 ? item.col : "*"
+              values.dbTablesInclusionMap[item.db] = item.col && item.col.length > 0 ? item.col : "*"
             }
           })
         }
@@ -47,12 +47,22 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
 
   if (!loading) {
     const dbTables = [];
-    if (initialValues.dbTablesInclusionMap) {
+    if (initialValues.enabled && (!initialValues.dbTablesInclusionMap || Object.keys(initialValues.dbTablesInclusionMap).length === 0)) {
+      dbTables.push({ db: "*", col: ["*"] })
+    }
+    if (initialValues.enabled && initialValues.dbTablesInclusionMap) {
       Object.keys(initialValues.dbTablesInclusionMap).forEach(db => {
         dbTables.push({ db, col: initialValues.dbTablesInclusionMap[db] })
       })
     }
     form.setFieldsValue({ ...initialValues, dbTables })
+  }
+
+  const isAddDatabaseDisabled = (fields) => {
+    if (Object.keys(fields).length === 0) {
+      return false;
+    }
+    return fields.dbTables.find(x => x.db === "*");
   }
 
   return (
@@ -67,7 +77,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
         <Form.Item name="dbAlias" rules={[{ required: true, message: 'Database is required!' }]}>
           <AutoComplete placeholder="Choose an eventing database" style={{ width: 320 }} options={dbList.map(db => ({ value: db }))} />
         </Form.Item>
-        <FormItemLabel name="Disabling eventing" description="Select the database & table on which the eventing has to be disabled" />
+        <FormItemLabel name="Enable eventing" description="Select the database & table on which the eventing has to be enabled" />
         <Form.List name="dbTables">
           {(fields, { add, remove }) => {
             return (
@@ -78,6 +88,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
                       name={[field.name, 'db']}
                       key={[field.name, 'db']}
                       style={{ flexGrow: 1, width: 200, marginRight: 10 }}
+                      rules={[{ required: true, message: "Please enter a database!" }]}
                     >
                       <AutoComplete placeholder="Select databases">
                         {
@@ -91,6 +102,7 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
                           name={[field.name, 'col']}
                           key={[field.name, 'col']}
                           style={{ flexGrow: 1, width: 200, marginRight: 10 }}
+                          rules={[{ required: true, message: "Please enter atleast 1 collection!" }]}
                         >
                           <Select
                             mode="tags"
@@ -113,7 +125,23 @@ const EventingConfigure = ({ initialValues, handleSubmit, dbList, loading, onDel
                     </Form.Item>
                   </Input.Group>
                 ))}
-                <Button style={{ marginBottom: "1em" }} onClick={() => add()}><PlusOutlined /> Add database</Button>
+                <Form.Item shouldUpdate noStyle>
+                  {() => (
+                    <Button
+                      style={{ marginBottom: "1em" }}
+                      onClick={() => {
+                        form.validateFields([
+                          ...fields.map(obj => ["dbTables", obj.name, "db"]),
+                          ...fields.map(obj => ["dbTables", obj.name, "col"])])
+                          .then(() => add())
+                          .catch(ex => console.log("Exception", ex))
+                      }}
+                      disabled={isAddDatabaseDisabled(form.getFieldsValue([...fields.map(obj => ["dbTables", obj.name, "db"])]))}
+                    >
+                      <PlusOutlined /> Add database
+                    </Button>
+                  )}
+                </Form.Item>
               </div>
             )
           }}
