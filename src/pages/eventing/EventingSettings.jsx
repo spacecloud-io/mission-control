@@ -10,6 +10,8 @@ import './event.css';
 import { saveEventingConfig, getEventingConfig } from '../../operations/eventing';
 import { getDbConfigs } from '../../operations/database';
 import { projectModules, actionQueuedMessage } from '../../constants';
+import client from "../../client";
+import { getAPIToken } from '../../operations/projects';
 
 const EventingSettings = () => {
   const { projectID } = useParams();
@@ -18,6 +20,7 @@ const EventingSettings = () => {
   const loading = useSelector(state => state.pendingRequests > 0)
   const eventingConfig = useSelector(state => getEventingConfig(state))
   const dbConfigs = useSelector(state => getDbConfigs(state));
+  const internalToken = useSelector(state => getAPIToken(state))
 
   // Derived state
   const dbList = Object.keys(dbConfigs)
@@ -29,6 +32,15 @@ const EventingSettings = () => {
       .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set eventing-config" : error.msg))
       .finally(() => decrementPendingRequests());
   };
+
+  const handleDeleteEventingLogs = (timestamp) => {
+    const dbAlias = dbConfigs.dbAlias
+    incrementPendingRequests()
+    client.eventing.deleteEventLogs(projectID, dbAlias, timestamp, () => internalToken)
+      .then(() => notify("success", "Logs truncated successfully"))
+      .catch(ex => notify("error", "Error truncating event logs", ex))
+      .finally(() => decrementPendingRequests())
+  }
 
   return (
     <div>
@@ -44,6 +56,7 @@ const EventingSettings = () => {
             dbList={dbList}
             loading={loading}
             handleSubmit={handleEventingConfig}
+            onDeleteEventingLogs={handleDeleteEventingLogs}
           />
         </div>
       </div>

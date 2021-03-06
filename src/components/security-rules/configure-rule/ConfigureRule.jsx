@@ -339,7 +339,12 @@ const ConfigureRule = (props) => {
           <Select placeholder="Rule">
             {rules
               .filter((val) => {
-                if (props.blockDepth === 1) return true
+                if (props.ruleMetaData.ruleType === securityRuleGroups.EVENTING_FILTERS) 
+                  return !["allow", "deny", "authenticated"].includes(val)
+
+                if (props.blockDepth === 1) 
+                  return true
+                  
                 return !["allow", "deny", "authenticated"].includes(val)
               })
               .map((val) => (
