@@ -1,42 +1,57 @@
 import React from "react"
-import { Form, Input, Button } from "antd"
-import { EditOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Radio } from "antd"
+import FormItemLabel from "../form-item-label/FormItemLabel";
+import RadioCards from "../radio-cards/RadioCards";
+import aws from '../../assets/aws.svg'
+import gcp from '../../assets/gcp.svg'
+import azure from "../../assets/azure.svg"
 
 export default function CreateProjectForm({ projects = [], handleSubmit }) {
   const [form] = Form.useForm()
-  const [projectName, setProjectName] = React.useState("")
-  const projectId = projectName.toLowerCase()
-  const handleValuesChange = (({ projectName }) => setProjectName(projectName))
-  const handleFormFinish = (values) => handleSubmit(values.projectName, projectId)
+  const handleFormFinish = (values) => handleSubmit(values.projectName, values.projectName.toLowerCase())
   return (
-    <Form form={form} onFinish={handleFormFinish} onValuesChange={handleValuesChange}>
-      <p style={{ fontWeight: "bold" }}><b>Name your project</b></p>
+    <Form form={form} onFinish={handleFormFinish}>
+      <FormItemLabel name="Name your project" />
       <Form.Item
         name="projectName"
         rules={[
           {
-            validator: (_, value, cb) => {
+            validator: (_, value) => {
               if (!value) {
-                cb("Please input a project name")
-                return
+                return Promise.reject("Please input a project name")
               }
               if (!(/^[0-9a-zA-Z]+$/.test(value))) {
-                cb("Project name can only contain alphanumeric characters!")
-                return
+                return Promise.reject("Project name can only contain alphanumeric characters!")
               }
               if (projects.some(project => project === value.toLowerCase())) {
-                cb("Project name already taken. Please provide a unique project name!")
-                return
+                return Promise.reject("Project name already taken. Please provide a unique project name!")
               }
-              cb()
+              return Promise.resolve()
             }
           }]}>
-        <Input placeholder="Project name" prefix={<EditOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
+        <Input placeholder="eg: MyProject" style={{ maxWidth: 600 }} />
       </Form.Item>
-      {projectId && <span className="hint">ProjectID: {projectId}</span>}
-      <Form.Item>
-        <Button type="primary" htmlType="submit" className="project-btn">Create project</Button>
+      <Form.Item shouldUpdate noStyle>
+        {() => form.getFieldValue("projectName") && <div style={{ marginBottom: 22 }} className="hint">ProjectID: {form.getFieldValue("projectName").toLowerCase()}</div>}
       </Form.Item>
+      <FormItemLabel name="Where do you want to deploy/host it" />
+      <Form.Item name="platform" rules={[{ required: true, message: "Please select a platform!" }]}>
+        <RadioCards size="large">
+          <Radio.Button value="aws" size="large">
+            <img src={aws} alt="aws" width="24px" height="24px" style={{ marginRight: 4 }} />
+            <span>AWS</span>
+          </Radio.Button>
+          <Radio.Button value="gcp">
+            <img src={gcp} alt="gcp" width="24px" height="24px" style={{ marginRight: 4 }} />
+            <span>Google Cloud</span>
+          </Radio.Button>
+          <Radio.Button value="azure">
+            <img src={azure} alt="azure" width="24px" height="24px" style={{ marginRight: 4 }} />
+            <span>MS Azure</span>
+          </Radio.Button>
+        </RadioCards>
+      </Form.Item>
+      <Button type="primary" size="large" style={{ float: "right" }} htmlType="submit">Next</Button>
     </Form>
   )
 }
