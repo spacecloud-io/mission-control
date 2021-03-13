@@ -10,7 +10,7 @@ import './create-db.css'
 import { useSelector } from 'react-redux';
 import { getDatabaseLabelFromType } from "../../../utils"
 import RadioCards from "../../radio-cards/RadioCards"
-import FormItemLabel from "../../form-item-label/FormItemLabel"
+import FormItemLabel from "../../../redesign-components/form-item-label/FormItemLabel"
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/theme/material.css';
 import 'codemirror/lib/codemirror.css';

@@ -1,6 +1,6 @@
 import React from "react"
 import { Form, Input, Button, Radio } from "antd"
-import FormItemLabel from "../form-item-label/FormItemLabel";
+import FormItemLabel from "../../redesign-components/form-item-label/FormItemLabel";
 import RadioCards from "../radio-cards/RadioCards";
 import aws from '../../assets/aws.svg'
 import gcp from '../../assets/gcp.svg'

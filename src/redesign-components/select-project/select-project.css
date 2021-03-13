@@ -1,0 +1,7 @@
+.project-selection-table .ant-table-thead > tr > th {
+    border-bottom: none;
+}
+
+.project-selection-table .ant-table-tbody > tr > td {
+    border-bottom: none;
+}

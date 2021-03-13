@@ -1,0 +1,8 @@
+.resource-since {
+    width: 100px;
+    float: right;
+}
+
+.ant-select.resource-since.ant-select-single.ant-select-show-arrow .ant-select-selector {
+    border-radius: 5px;
+}
