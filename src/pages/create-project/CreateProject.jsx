@@ -1,20 +1,22 @@
 import React, { useState } from 'react'
 import { useSelector } from "react-redux";
-import history from "../../history"
 import { notify, incrementPendingRequests, decrementPendingRequests, openProject } from '../../utils';
 import CreateDatabase from '../../components/database/create-database/CreateDatabase';
 import CreateProjectForm from "../../components/create-project-form/CreateProjectForm";
 
-import { Row, Col, Steps, Card } from 'antd';
+import { Card, Tabs } from 'antd';
 import './create-project.css'
 import { addDatabase } from "../../operations/database"
 import { addProject } from '../../operations/projects';
 import { actionQueuedMessage } from '../../constants';
+import Topbar from '../../components/topbar/Topbar';
+import { AppleOutlined, DatabaseOutlined } from '@ant-design/icons';
+
+const { TabPane } = Tabs;
 
 const CreateProject = () => {
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState("1");
 
-  const { Step } = Steps;
   const [projectId, setProjectId] = useState("");
   const projects = useSelector(state => state.projects)
   const projectIds = projects.map(obj => obj.id)
@@ -26,7 +28,7 @@ const CreateProject = () => {
     addProject(projectId, projectName)
       .then(({ queued }) => {
         if (!queued) {
-          setCurrent(current + 1);
+          setCurrent("2");
         }
         notify("success", "Success", queued ? actionQueuedMessage : "Project created successfully with suitable defaults")
       }).catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set project" : error.msg))
@@ -52,45 +54,25 @@ const CreateProject = () => {
     openProject(projectId)
   }
 
-  const steps = [{
-    title: 'Create Project',
-    content: <React.Fragment>
-      <Row>
-        <Col lg={{ span: 12, offset: 6 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <Card>
-            <CreateProjectForm projects={projectIds} handleSubmit={handleSubmit} />
-          </Card>
-          <br />
-        </Col>
-      </Row>
-      <center><a onClick={history.goBack} style={{ color: "rgba(255, 255, 255, 0.6)" }}>Cancel</a></center>
-    </React.Fragment>
-  },
-  {
-    title: 'Add Database',
-    content: <React.Fragment>
-      <Row>
-        <Col lg={{ span: 18, offset: 3 }} sm={{ span: 24 }} style={{ marginTop: "3%" }}>
-          <CreateDatabase projectId={projectId} handleSubmit={handleAddDatabase} ignoreDbAliasCheck />
-          <center style={{ marginTop: 16 }}><a style={{ color: "rgba(255, 255, 255, 0.6)" }} onClick={handleSkipAddDatabase}>Skip for now</a></center>
-        </Col>
-      </Row>
-    </React.Fragment>
-  }];
-
   return (
-    <div className="create-project">
-      <Row>
-        <Col lg={{ span: 8, offset: 8 }} sm={{ span: 24 }} >
-          <Steps current={current} className="step-display" size="small">
-            {steps.map(item => (
-              <Step key={item.title} title={item.title} />
-            ))}
-          </Steps><br />
-        </Col>
-      </Row>
-      {steps[current].content}
-    </div>
+    <React.Fragment>
+      <Topbar />
+      <div className="create-project">
+        <p style={{ fontWeight: "bold" }}><b>Create new project</b></p>
+        <Tabs className="create-project-tabs" activeKey={current}>
+          <TabPane tab={<span><AppleOutlined />  Define Project</span>} key="1">
+            <Card>
+              <CreateProjectForm projects={projectIds} handleSubmit={handleSubmit} />
+            </Card>
+          </TabPane>
+          <TabPane tab={<span><DatabaseOutlined /> Define Database</span>} key="2">
+            <Card>
+              <CreateDatabase projectId={projectId} handleOnBackClick={() => setCurrent("1")} handleSkipAddDatabase={handleSkipAddDatabase} handleSubmit={handleAddDatabase} ignoreDbAliasCheck />
+            </Card>
+          </TabPane>
+        </Tabs>
+      </div>
+    </React.Fragment>
   )
 }
 

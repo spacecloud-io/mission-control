@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { useParams, useHistory } from "react-router-dom"
 import { useSelector } from 'react-redux';
 import { dbIcons, openBillingPortal } from '../../utils'
-import { CaretDownOutlined, MenuOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Button, Menu, Popover, Row, Col, Tooltip } from 'antd';
+import { CaretDownOutlined, CaretUpOutlined, MenuOutlined, PoweroffOutlined } from '@ant-design/icons';
+import { Button, Menu, Popover, Row, Col, Tooltip, Drawer, Table } from 'antd';
 import DbSelector from '../../components/db-selector/DbSelector'
-import SelectProject from '../../components/select-project/SelectProject'
+import SelectProject from '../../redesign-components/select-project/SelectProject'
 import './topbar.css'
 import store from "../../store"
 import { set } from "automate-redux"
@@ -59,6 +59,7 @@ const Topbar = (props) => {
     localStorage.removeItem('token');
     redirectToLogin();
   }
+
   return (
     <div>
       <div className="topbar">
@@ -68,8 +69,8 @@ const Topbar = (props) => {
         <img className="logo" src={logo} alt="logo" />
         <img className="upLogo" src={upLogo} alt="logo" />
         {props.showProjectSelector && <div className="btn-position">
-          <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
-            <CaretDownOutlined />
+          <Button className="action-rounded" onClick={() => setModalVisible(!modalVisible)}>{projectName}
+            {modalVisible ? <CaretUpOutlined /> : <CaretDownOutlined />}
           </Button>
         </div>}
         {props.showDbSelector && <div className="db-btn-position">
@@ -80,7 +81,7 @@ const Topbar = (props) => {
           </Button>
         </div>}
         <DbSelector visible={visible} handleSelect={handleDBSelect} handleCancel={() => setVisible(false)} />
-        <SelectProject visible={modalVisible} handleCancel={() => setModalVisible(false)} />
+        {/* <SelectProject visible={modalVisible} handleCancel={() => setModalVisible(false)} /> */}
         <div className="right-list">
           <Menu mode="horizontal">
             <Menu.Item>
@@ -117,6 +118,7 @@ const Topbar = (props) => {
           </Menu>
         </div>
       </div>
+      {modalVisible && <SelectProject onClose={() => setModalVisible(false)} />}
     </div>
   );
 }

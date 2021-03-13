@@ -13,6 +13,7 @@ import { Row, Col } from 'antd';
 import { isClusterUpgraded } from '../../operations/cluster';
 import { openBillingPortal } from '../../utils';
 import { projectModules } from '../../constants';
+import ResourcesCards from '../../components/overview/resources-cards/ResourcesCards'
 
 function Overview() {
   const { projectID } = useParams()
@@ -25,16 +26,16 @@ function Overview() {
       <Sidenav selectedItem={projectModules.OVERVIEW} />
       <div className="page-content ">
         <Row>
-          <Col lg={{ span: 20 }} sm={{ span: 24 }}>
-            <h3>GraphQL Endpoints</h3>
+          <Col span={24}>
+            <h3 style={{ marginBottom: 24 }}>Welcome Vinay Parab to Pegasis Mission Control</h3>
 
             <EndpointCard projectId={projectID} />
-            <h3 style={{ marginTop: 24 }}>Community</h3>
-            <Row>
-              <Col lg={{ span: 11, offset: 0 }}>
+            <ResourcesCards />
+            <Row gutter={[32, 16]} style={{ marginTop: 24 }}>
+              <Col xl={7} sm={24}>
                 <DiscordCard />
               </Col>
-              <Col lg={{ span: 11, offset: 2 }} className="git-card">
+              <Col xl={7} sm={24} className="git-card">
                 <GithubCard />
               </Col>
             </Row>
