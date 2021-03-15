@@ -1,0 +1,25 @@
+.des-content {
+  background-color: #FAFAFA;
+  height: 100%;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  text-align: center;
+}
+
+.des-content .content-tagline{
+  margin-top: 72px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.des-content .tools-icon {
+  color: #15CD72;
+  margin-right: 16px;
+  margin-top: 6px;
+}
+
+.des-content .list-content{
+  display: flex;
+  margin-bottom: 16px;
+  text-align: left;
+}

@@ -1,0 +1,24 @@
+.signup-content {
+  text-align: center;
+  background-color: #ffffff;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.signup-content .signup-btn {
+  width: 100%;
+}
+
+.signup-content .title{
+  color: #1D66FF;
+  margin-bottom: 32px;
+  margin-top: 96px;
+  font-size: 22px;
+}
+
+.signup-content .divider{
+  margin: 32px 0;
+}

@@ -1,0 +1,24 @@
+.signin-content {
+  text-align: center;
+  background-color: #ffffff;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.signin-content .signin-btn {
+  width: 100%;
+}
+
+.signin-content .title{
+  color: #1D66FF;
+  margin-bottom: 32px;
+  margin-top: 96px;
+  font-size: 22px;
+}
+
+.signin-content .divider{
+  margin: 32px 0 64px 0;
+}
