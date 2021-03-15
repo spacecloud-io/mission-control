@@ -1,0 +1,27 @@
+.dark-background {
+  background-color: #1E266D;
+  position: fixed;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 32px;
+}
+
+.card-content{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+}
+
+.dark-background .ant-card-body{
+  padding: 0;
+}
+
+@media screen and (max-width:992px){
+  .dark-background{
+    padding: 8px;
+  }
+}
