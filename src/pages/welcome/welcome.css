@@ -1,90 +1,49 @@
-.welcome-page {
-    background-image: url("../../assets/Wave.svg");
-    background-size: cover;
-    height: 100vh;
-    overflow: hidden;
-    text-align: center;
+.welcome-content{
+	position: fixed;
+	top: 64px;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	text-align: center;
+	overflow-y: auto;
 }
 
-.welcome-page .outer-rectangle {
-    background: #ff6700;
-    border-radius: 60px;
-    position: absolute;
-    top: 20vh;
-    bottom: 15vh;
-    left: 34vw;
-    right: 34vw;
+.welcome-content .welcome-title{
+	font-size: 21px;
+	line-height: 31px;
+	margin-top: 48px;
+	margin-bottom: 8px;
 }
 
-.welcome-page .inner-rectangle {
-    background: #002C39;
-    border-radius: 60px;
-    position: absolute;
-    top: 22vh;
-    bottom: 17vh;
-    left: 31vw;
-    right: 31vw;
-    color: #FFF;
-    padding: 56px 0;
-}
-@media screen and (max-width:768px) {
-    .welcome-page .inner-rectangle {
-        top: 21.5vh;
-        bottom: 16.5vh;
-        left: 15vw;
-        right: 15vw;
-        padding: 16px 0;
-    }
-    .welcome-page .outer-rectangle {
-        top: 20vh;
-        bottom: 15vh;
-        left: 20vw;
-        right: 20vw;
-    }
+.welcome-content .welcome-subtitle{
+	font-size: 16px;
+	line-height: 21px;
+	margin-bottom: 24px;
 }
 
-.welcome-page .welcome {
-    font-size: 32px;
-    font-weight: 500;
+.welcome-content .welcome-ins{
+	font-size: 14px;
+	line-height: 21px;
 }
 
-.welcome-page .text {
-    margin-top: 32px;
-    padding: 0 64px;
-    font-size: 16px;
+
+.act-img{
+	margin-bottom: 16px;
 }
 
-.welcome-page .create-btn {
-    font-weight: 600;
-    margin-top: 48px;
+.res-img{
+	margin-bottom: 8px;
 }
 
-.welcome-page .content {
-    transform: translateY(26%);
-}
-@media screen and (max-width:480px) {
-    .welcome-page .content {
-        transform: translateY(6%);
-    }
-}
-@media screen and (min-width:480px) and (max-width:600px) {
-    .welcome-page .content {
-        transform: translateY(35%);
-    }
-}
-@media screen and (min-width:600px) and (max-width:1024px){
-    .welcome-page .content {
-        transform: translateY(4%);
-    }
+.act-text, .res-text{
+	color: #1D66FF;
+	text-align: center;
 }
 
-@media screen and (max-width:450px) {
-    .welcome-page .text {
-        padding: 0 32px;
-        margin-top: 24px;
-    }
-    .welcome-page .create-btn {
-        margin-top: 32px;
-    }
+.act-text{
+	font-weight: 600;
 }
 
+.res-text {
+	font-weight: 400;
+}

@@ -1,0 +1,16 @@
+.add-card .ant-card-body{
+  padding: 0;
+}
+
+.add-card{
+  margin-top: 40px;
+}
+
+.info-card{
+  background: linear-gradient(152.06deg, rgba(229, 237, 252, 0.1) -34.11%, #E5EDFC 125.15%);
+  padding: 48px 32px;
+}
+
+.form-card{
+  padding: 32px 48px;
+}
