@@ -1,0 +1,26 @@
+.success-modal{
+  padding: 64px;
+  text-align: center;
+}
+
+.success-modal .success-title{
+  font-size: 22px; 
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.success-modal .success-des{
+  margin-bottom: 48px;
+}
+
+.success-modal .button-option{
+  width: 210px;
+  height: 50px;
+}
+
+@media screen and (max-width: 992px){
+  .success-modal .button-option{
+    width: 100%;
+    height: auto;
+  }
+}
