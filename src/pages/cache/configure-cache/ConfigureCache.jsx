@@ -21,7 +21,7 @@ const ConfigureCache = () => {
     incrementPendingRequests()
     saveCacheConfig(config)
       .then(() => notify("success", "Success", "Configured cache successfully"))
-      .catch(error => notify("error", error.tile, error.msg.length === 0 ? "Failed to set cache-config" : error.msg))
+      .catch(error => notify("error", error.title, error.msg.length === 0 ? "Failed to set cache-config" : error.msg))
       .finally(() => {
         decrementPendingRequests()
         history.goBack()
