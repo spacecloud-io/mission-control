@@ -148,7 +148,7 @@ const AddSecretModal = ({ handleSubmit, handleCancel, initialValues }) => {
             <Input.TextArea rows={4} placeholder="Public key" />
           </Form.Item>
         </ConditionalFormBlock>
-        <Collapse style={{ background: "white" }} bordered={false} >
+        <Collapse className="advanced" style={{ background: "white" }} bordered={false} >
           <Collapse.Panel header="Advanced" key="advanced">
             <FormItemLabel name='Check audience' />
             <Form.Item name='checkAudience' valuePropName='checked'>

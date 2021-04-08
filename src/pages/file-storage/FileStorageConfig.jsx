@@ -194,6 +194,7 @@ const FileStorageConfig = () => {
                     />
                   </ConditionalFormBlock>
                   <Collapse
+                    className="advanced"
                     style={{ background: "white" }}
                     bordered={false}
                     expandIcon={({ isActive }) => (
