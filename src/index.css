@@ -51,19 +51,19 @@ body {
   color: rgba(0, 0, 0, 0.54);
 }
 
-.ant-form .ant-collapse-item {
+.ant-form .ant-collapse.advanced .ant-collapse-item {
   border-bottom: none !important;
 }
 
-.ant-form .ant-collapse-header {
+.ant-form .ant-collapse.advanced .ant-collapse-header {
   padding-left: 24px !important;
 }
 
-.ant-form .ant-collapse-header > .ant-collapse-arrow {
+.ant-form .ant-collapse.advanced .ant-collapse-header > .ant-collapse-arrow {
   left: 0 !important;
 }
 
-.ant-form .ant-collapse-content-box {
+.ant-form .ant-collapse.advanced .ant-collapse-content-box {
   padding: 4px 0 !important;
 }
 

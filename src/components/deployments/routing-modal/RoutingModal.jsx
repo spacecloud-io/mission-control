@@ -1,10 +1,11 @@
 import React from "react";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Modal, Input, Select, Row, Col, Button, message, Form } from "antd";
+import { DeleteOutlined, MinusCircleFilled, PlusOutlined } from '@ant-design/icons';
+import { Modal, Input, Select, Row, Col, Button, message, Form, Collapse, Checkbox } from "antd";
 import FormItemLabel from "../../form-item-label/FormItemLabel";
 import { notify, generateId } from "../../../utils";
 import ConditionalFormBlock from "../../conditional-form-block/ConditionalFormBlock";
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const RoutingRule = props => {
   const [form] = Form.useForm();
@@ -19,14 +20,15 @@ const RoutingRule = props => {
         return
       }
       values.port = Number(values.port);
-      if(values.protocol === "http"){
+      if (values.protocol === "http") {
         values.requestRetries = Number(values.requestRetries);
-        values.requestTimeout = Number(values.requestTimeout); 
+        values.requestTimeout = Number(values.requestTimeout);
       }
+      values.matchers = values.matchers.filter(el => el)
       let uid = '';
-      if(mode === 'add'){
+      if (mode === 'add') {
         uid = generateId();
-      }else{
+      } else {
         uid = initialValues.uid;
       }
       props.handleSubmit(uid, values).then(() => props.handleCancel());
@@ -45,11 +47,12 @@ const RoutingRule = props => {
       >
         <Form layout="vertical" form={form}
           initialValues={{
-            protocol: initialValues ? initialValues.protocol: "http",
+            protocol: initialValues ? initialValues.protocol : "http",
             port: initialValues ? initialValues.port : "",
             requestRetries: initialValues ? initialValues.requestRetries : 3,
             requestTimeout: initialValues ? initialValues.requestTimeout : 180,
-            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }]
+            targets: initialValues ? initialValues.targets : [{ type: "version", version: "", host: "", port: "", weight: "" }],
+            matchers: initialValues ? initialValues.matchers : []
           }}>
           <FormItemLabel name="Port" />
           <Row gutter={24}>
@@ -64,16 +67,14 @@ const RoutingRule = props => {
             <Col>
               <Form.Item name="port" rules={[
                 {
-                  validator: (_, value, cb) => {
+                  validator: (_, value) => {
                     if (!value) {
-                      cb("Please provide a port value!")
-                      return
+                      return Promise.reject("Please provide a port value!")
                     }
                     if (!Number.isInteger(Number(value))) {
-                      cb("Port number should be a valid Integer")
-                      return
+                      return Promise.reject("Port number should be a valid Integer")
                     }
-                    cb()
+                    return Promise.resolve()
                   }
                 }
               ]}>
@@ -81,7 +82,7 @@ const RoutingRule = props => {
               </Form.Item>
             </Col>
           </Row>
-          <ConditionalFormBlock dependency='protocol' condition={() => form.getFieldValue("protocol") === 'http' }>
+          <ConditionalFormBlock dependency='protocol' condition={() => form.getFieldValue("protocol") === 'http'}>
             <FormItemLabel name="Retries" />
             <Form.Item name="requestRetries" rules={[{ required: true, message: "Please input number of retries" }]}>
               <Input placeholder="Request retries" style={{ width: '30%' }} />
@@ -90,6 +91,146 @@ const RoutingRule = props => {
             <Form.Item name="requestTimeout" rules={[{ required: true, message: "Please input timeout in seconds" }]}>
               <Input placeholder="Request Timeout" style={{ width: '30%' }} />
             </Form.Item>
+            <FormItemLabel name="Matchers" />
+            <Form.List name="matchers">
+              {(fields, { add, remove }) => {
+                return (
+                  <React.Fragment>
+                    {fields.length !== 0 &&
+                      <Collapse style={{ marginBottom: "1em" }}>
+                        {fields.map((field, index) => (
+                          <Panel key={`${index}`} header={`Matcher ${index + 1}`} extra={<DeleteOutlined onClick={() => remove(field.name)} />}>
+                            <FormItemLabel name="URL" />
+                            <Row gutter={24}>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'type']}
+                                  fieldKey={[field.fieldKey, 'url', 'type']}
+                                  rules={[{}, ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) && !value) {
+                                        return Promise.reject("Please select a type!")
+                                      }
+                                      if (getFieldValue(["matchers", field.name, 'url', 'value']) && !value) {
+                                        return Promise.reject("Please select a type!")
+                                      }
+                                      return Promise.resolve()
+                                    }
+                                  })]}
+                                >
+                                  <Select placeholder="Type" style={{ width: 300 }}>
+                                    <Select.Option value="exact">Exact</Select.Option>
+                                    <Select.Option value="prefix">Prefix</Select.Option>
+                                    <Select.Option value="regex">Regex</Select.Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'value']}
+                                  fieldKey={[field.fieldKey, 'url', 'value']}
+                                  rules={[{}, ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                      if (getFieldValue(["matchers", field.name, 'url', 'ignoreCase']) && !value) {
+                                        return Promise.reject("Please enter a value!")
+                                      }
+                                      if (getFieldValue(["matchers", field.name, 'url', 'type']) && !value) {
+                                        return Promise.reject("Please enter a value!")
+                                      }
+                                      return Promise.resolve()
+                                    }
+                                  })]}
+                                >
+                                  <Input placeholder="Value" style={{ width: 300 }} />
+                                </Form.Item>
+                              </Col>
+                              <Col>
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'url', 'ignoreCase']}
+                                  fieldKey={[field.fieldKey, 'url', 'ignoreCase']}
+                                  valuePropName='checked'
+                                >
+                                  <Checkbox>Ignore case</Checkbox>
+                                </Form.Item>
+                              </Col>
+                            </Row>
+                            <FormItemLabel name="Headers" />
+                            <Form.List name={[field.name, "headers"]}>
+                              {(fields, { add, remove }) => {
+                                return (
+                                  <React.Fragment>
+                                    {fields.map((fieldHeaders, index) => (
+                                      <Row key={fieldHeaders.key} gutter={24}>
+                                        <Col>
+                                          <Form.Item
+                                            {...fieldHeaders}
+                                            name={[fieldHeaders.name, 'type']}
+                                            fieldKey={[fieldHeaders.name, 'type']}
+                                            rules={[{ required: true, message: "Please select a type!" }]}
+                                          >
+                                            <Select placeholder="Type" style={{ width: 300 }}>
+                                              <Select.Option value="exact">Exact</Select.Option>
+                                              <Select.Option value="prefix">Prefix</Select.Option>
+                                              <Select.Option value="regex">Regex</Select.Option>
+                                              <Select.Option value="check-presence">Check presence</Select.Option>
+                                            </Select>
+                                          </Form.Item>
+                                        </Col>
+                                        <Col>
+                                          <Form.Item
+                                            {...fieldHeaders}
+                                            name={[fieldHeaders.name, 'key']}
+                                            fieldKey={[fieldHeaders.name, 'key']}
+                                            rules={[{ required: true, message: "Please enter a key!" }]}
+                                          >
+                                            <Input placeholder="Key" style={{ width: 300 }} />
+                                          </Form.Item>
+                                        </Col>
+                                        <ConditionalFormBlock shouldUpdate={true} condition={() => form.getFieldValue(["matchers", field.name, "headers", fieldHeaders.name, "type"]) !== "check-presence"}>
+                                          <Col>
+                                            <Form.Item
+                                              {...fieldHeaders}
+                                              name={[fieldHeaders.name, 'value']}
+                                              fieldKey={[fieldHeaders.name, 'value']}
+                                              rules={[{ required: true, message: "Please enter a value!" }]}
+                                            >
+                                              <Input placeholder="Value" style={{ width: 300 }} />
+                                            </Form.Item>
+                                          </Col>
+                                        </ConditionalFormBlock>
+                                        <Col>
+                                          <MinusCircleFilled onClick={() => remove(fieldHeaders.name)} style={{ fontSize: 20, marginTop: 5 }} />
+                                        </Col>
+                                      </Row>
+                                    ))
+                                    }
+                                    <Button onClick={() => {
+                                      form.validateFields([
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "type"]), 
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "key"]),
+                                        ...fields.map(obj => ["matchers", field.name, "headers", obj.name, "value"])])
+                                      .then(() => add())
+                                      .catch(ex => console.log("Exception", ex))
+                                    }}>
+                                      <PlusOutlined /> {fields.length === 0 ? "Add a header" : "Add another header"}
+                                    </Button>
+                                  </React.Fragment>
+                                )
+                              }}
+                            </Form.List>
+                          </Panel>
+                        ))}
+                      </Collapse>
+                    }
+                    <Button style={{ marginBottom: "1em" }} onClick={() => add({ url : { ignoreCase: false }})}><PlusOutlined /> {fields.length === 0 ? "Add a matcher" : "Add another matcher"}</Button>
+                  </React.Fragment>
+                )
+              }
+              }
+            </Form.List>
           </ConditionalFormBlock>
           <FormItemLabel name="Targets" />
           <React.Fragment>
@@ -155,16 +296,14 @@ const RoutingRule = props => {
                             validateTrigger={["onChange", "onBlur"]}
                             rules={[
                               {
-                                validator: (_, value, cb) => {
+                                validator: (_, value) => {
                                   if (!value) {
-                                    cb("Please provide a port value!")
-                                    return
+                                    return Promise.reject("Please provide a port value!")
                                   }
                                   if (!Number.isInteger(Number(value))) {
-                                    cb("Not a valid port value")
-                                    return
+                                    return Promise.reject("Not a valid port value")
                                   }
-                                  cb()
+                                  return Promise.resolve()
                                 }
                               }
                             ]}
@@ -182,17 +321,15 @@ const RoutingRule = props => {
                             validateTrigger={["onChange", "onBlur"]}
                             rules={[
                               {
-                                validator: (_, value, cb) => {
+                                validator: (_, value) => {
                                   if (!value) {
-                                    cb("Please provide a weight!")
-                                    return
+                                    return Promise.reject("Please provide a weight!")
                                   }
                                   const weightVal = Number(value)
                                   if (!Number.isInteger(weightVal) || !(weightVal > 0 && weightVal <= 100)) {
-                                    cb("Weight should be a number between 1 to 100")
-                                    return
+                                    return Promise.reject("Weight should be a number between 1 to 100")
                                   }
-                                  cb()
+                                  return Promise.resolve()
                                 }
                               }
                             ]}

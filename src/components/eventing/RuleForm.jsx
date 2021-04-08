@@ -199,7 +199,7 @@ const RuleForm = (props) => {
         <Form.Item name="url" rules={[{ required: true, message: 'Please provide a webhook url!' }]}>
           <Input placeholder="eg: https://myapp.com/endpoint1" />
         </Form.Item>
-        <Collapse style={{ background: "white" }} bordered={false} >
+        <Collapse className="advanced" style={{ background: "white" }} bordered={false} >
           <Collapse.Panel header="Advanced settings" key="advanced">
             <FormItemLabel name="Retries" description="default: 3" />
             <Form.Item name="retries" >
