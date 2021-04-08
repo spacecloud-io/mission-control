@@ -1,6 +1,6 @@
 {
   "name": "mission-control",
-  "version": "0.21.0",
+  "version": "0.21.3",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.1.0",
