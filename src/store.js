@@ -55,10 +55,7 @@ const initialState = {
 	},
 	eventLogs: [],
 	env: {
-		version: "",
-		clusterId: null,
-		plan: "space-cloud-open--monthly",
-		quotas: { maxDatabases: 1, maxProjects: 1, integrationLevel: 0 }
+		version: ""
 	}
 };
 
