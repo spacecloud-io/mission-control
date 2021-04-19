@@ -34,23 +34,11 @@ const PanelItem = (props) => {
     </div>
   )
 }
-const getPlanName = (planId) => {
-  if (!planId) return "Opensource"
-  // Strip the monthly/yearly and inr details from the plan id
-  const temp = planId.split("--")[0]
-  // Remove the space-cloud- prefix
-  let plan = temp.replace("space-cloud-", "")
-  if (plan === "open") plan = "opensource"
-  // Make first letter of each word capital. eg my-custom -> My Custom
-  const planName = plan.split("-").map(s => capitalizeFirstCharacter(s)).join(" ")
-  return planName
-}
 const Sidenav = (props) => {
   const { projectID } = useParams()
   const showSidenav = useSelector(state => state.uiState.showSidenav)
   const sideNavActiveKeys = useSelector(state => state.uiState.sideNavActiveKeys)
-  const { plan, version } = useSelector(state => getEnv(state))
-  const planName = getPlanName(plan)
+  const { version } = useSelector(state => getEnv(state))
   const closeSidenav = () => {
     store.dispatch(set("uiState.showSidenav", false))
   }
@@ -102,9 +90,6 @@ const Sidenav = (props) => {
           <Link to={`/mission-control/projects/${projectID}/${projectModules.USER_MANAGEMENT}`} onClick={closeSidenav}>
             <SidenavItem name="Auth" icon="how_to_reg" active={props.selectedItem === projectModules.USER_MANAGEMENT} />
           </Link>
-          <Link to={`/mission-control/projects/${projectID}/${projectModules.INTEGRATIONS}`} onClick={closeSidenav}>
-            <SidenavItem name="Integrations" icon="extension" active={props.selectedItem === projectModules.INTEGRATIONS} />
-          </Link>
           <Link to={`/mission-control/projects/${projectID}/${projectModules.EXPLORER}`} onClick={closeSidenav}>
             <SidenavItem name="API Explorer" icon="explore" active={props.selectedItem === projectModules.EXPLORER} />
           </Link>
@@ -119,7 +104,6 @@ const Sidenav = (props) => {
             <Space direction="vertical" size={4}>
               <Typography.Text>SC Version - v{version}</Typography.Text>
               <Typography.Text>UI Version - v{uiVersion}</Typography.Text>
-              <Typography.Text type="secondary">{planName}</Typography.Text>
             </Space>
           </div>
         </div>

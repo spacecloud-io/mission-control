@@ -38,7 +38,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.timing = 500;
 
       // Global endpoints
-      this.get("/config/env", () => ({ isProd: false, loginURL: "/mission-control/login", version: "0.19.0", clusterName: "Cluster 1", plan: "space-cloud-pro--monthly-inr", licenseKey: "lic_21kj9kms8msls9", licenseMode: "offline", sessionId: "fb2e77d.47a0479900504cb3ab4a1f626d174d2djimHalpert1", nextRenewal: "2020-04-19T08:45:57Z", quotas: { maxDatabases: 4, maxProjects: 3, integrationLevel: 2 } }));
+      this.get("/config/env", () => ({ isProd: false, loginURL: "/mission-control/login", version: "0.19.0" }));
       this.get("/config/permissions", () => respondOk({ result: fixtures.permissions }));
       this.post("/config/login", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
       this.get("/config/refresh-token", () => respondOk({ token: "eyJhbGciOiJIUzI1NiJ9.ewogICJpZCI6ICIxIiwKICAicm9sZSI6ICJ1c2VyIiwKICAiZW1haWwiOiAidGVzdEBnbWFpbC5jb20iLAogICJuYW1lIjogIlRlc3QgdXNlciIKfQ.xzmkfIr_eDwgIBIgOP-eVpyACgtA8TeE03BMpx-WdQ0" }));
