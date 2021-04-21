@@ -38,9 +38,6 @@ function Overview() {
                 <GithubCard />
               </Col>
             </Row>
-            {!clusterUpgraded && <div style={{ marginTop: 24 }}>
-              <UpgradeCard handleClickUpgrade={openBillingPortal} />
-            </div>}
           </Col>
         </Row>
       </div>
