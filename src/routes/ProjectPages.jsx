@@ -41,19 +41,11 @@ import Graphql from "../pages/explorer/graphql/Graphql";
 import SpaceApi from "../pages/explorer/spaceApi/SpaceApi";
 import ProjectSettings from "../pages/settings/project/ProjectSettings";
 import ClusterSettings from "../pages/settings/cluster/ClusterSettings";
-import LicenseSettings from "../pages/settings/license/LicenseSettings";
-import ApplyLicense from "../pages/settings/apply-license/ApplyLicense";
 import RoutingOverview from '../pages/routing/overview/Overview';
 import RoutingSettings from '../pages/routing/settings/Settings';
 import SecretsIndex from "../pages/secrets/Index";
 import Secrets from '../pages/secrets/Secrets';
 import SecretDetails from '../pages/secrets/SecretDetails';
-import IntegrationsIndex from '../pages/integrations/Index';
-import ExploreIntegrations from '../pages/integrations/ExploreIntegrations';
-import InstalledIntegrations from '../pages/integrations/InstalledIntegrations';
-import InstallIntegration from '../pages/integrations/InstallIntegration';
-import IntegrationDetails from '../pages/integrations/IntegrationDetails';
-import IntegrationPermissions from '../pages/integrations/IntegrationPermissions';
 import ConfigureCache from '../pages/cache/configure-cache/ConfigureCache';
 import CacheOverview from '../pages/cache/overview/Overview';
 import CacheIndex from '../pages/cache/Index';
@@ -95,8 +87,6 @@ function ProjectPages() {
       {/* <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons`} component={AddOns} /> */}
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/rabbit-mq`} component={ConfigureRabbitMQ} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/add-ons/configure/redis`} component={ConfigureRedis} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/license`} component={LicenseSettings} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SETTINGS}/apply-license`} component={ApplyLicense} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}`}
         component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INGRESS_ROUTES}/overview`} />} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INGRESS_ROUTES}/overview`} component={RoutingOverview} />
@@ -132,14 +122,6 @@ function ProjectPages() {
       <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={SecretsIndex} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}`} component={Secrets} />
       <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.SECRETS}/:secretId`} component={SecretDetails} />
-      <PrivateRoute path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`} component={IntegrationsIndex} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}`}
-        component={props => <Redirect to={`/mission-control/projects/${props.match.params.projectID}/${projectModules.INTEGRATIONS}/explore`} />} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/explore`} component={ExploreIntegrations} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/installed`} component={InstalledIntegrations} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/details/:integrationId`} component={IntegrationDetails} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/install/:integrationId`} component={InstallIntegration} />
-      <PrivateRoute exact path={`/mission-control/projects/:projectID/${projectModules.INTEGRATIONS}/permissions/:integrationId`} component={IntegrationPermissions} />
     </React.Fragment>
   )
 }
