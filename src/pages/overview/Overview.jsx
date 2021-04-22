@@ -17,8 +17,6 @@ import { projectModules } from '../../constants';
 function Overview() {
   const { projectID } = useParams()
 
-  // Global state
-  const clusterUpgraded = useSelector(state => isClusterUpgraded(state))
   return (
     <div className="overview">
       <Topbar showProjectSelector />
@@ -38,9 +36,6 @@ function Overview() {
                 <GithubCard />
               </Col>
             </Row>
-            {!clusterUpgraded && <div style={{ marginTop: 24 }}>
-              <UpgradeCard handleClickUpgrade={openBillingPortal} />
-            </div>}
           </Col>
         </Row>
       </div>
