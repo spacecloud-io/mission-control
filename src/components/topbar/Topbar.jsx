@@ -99,14 +99,6 @@ const Topbar = (props) => {
                 <img src={heartIcon} />
               </Popover>
             </Menu.Item>
-            {!clusterUpgraded && <Menu.Item>
-              <Button type="primary" ghost onClick={openBillingPortal}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <span>Upgrade</span>
-                  <img style={{ marginLeft: 8 }} src={crownSvg} alt="Crown" />
-                </div>
-              </Button>
-            </Menu.Item>}
             {isProdMode(state) && (
               <Menu.Item>
                 <Tooltip title="Logout">
