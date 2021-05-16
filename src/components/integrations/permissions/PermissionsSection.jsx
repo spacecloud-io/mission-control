@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Divider, Radio, Table, Empty } from 'antd';
-import upLogo from '../../../logo.png';
+import upLogo from '../../../assets/logo.svg';
 import { CheckOutlined, CloseOutlined, SwapOutlined } from '@ant-design/icons';
 import { configResourceTypeLabels, apiResourceTypeLabels } from '../../../constants';
 

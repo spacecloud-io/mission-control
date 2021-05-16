@@ -1,6 +1,6 @@
 import React from "react"
 import "./home.css"
-import SpaceUpLogo from "../../logo.png"
+import SpaceUpLogo from "../../assets/logo.svg"
 
 export default ({ loadingPage }) => {
   return (

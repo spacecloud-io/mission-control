@@ -13,8 +13,8 @@ import githubIcon from "../../assets/githubIcon.svg"
 import heartIcon from "../../assets/heartIcon.svg"
 import githubOctocat from "../../assets/githubOctocat.svg"
 import twitterIcon from "../../assets/twitterIcon.svg"
-import logo from '../../assets/logo-black.svg';
-import upLogo from '../../logo.png';
+import logo from '../../assets/logo_with_name.svg';
+import upLogo from '../../assets/logo.svg';
 import crownSvg from "../../assets/crown.svg";
 import { isClusterUpgraded, isProdMode } from '../../operations/cluster';
 import { redirectToLogin, setLastUsedValues } from '../../utils';
@@ -65,7 +65,7 @@ const Topbar = (props) => {
         <MenuOutlined
           className="hamburger"
           onClick={() => store.dispatch(set("uiState.showSidenav", true))} />
-        <img className="logo" src={logo} alt="logo" />
+        <img className="logo" src={logo} width='182px' alt="logo" />
         <img className="upLogo" src={upLogo} alt="logo" />
         {props.showProjectSelector && <div className="btn-position">
           <Button className="action-rounded" onClick={() => setModalVisible(true)}>{projectName}
