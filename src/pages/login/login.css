@@ -25,6 +25,7 @@
 
 .login .logo {
   margin-bottom: 30px;
+  width: 200px;
 }
 
 .login .welcome {
@@ -50,7 +51,7 @@
 }
 
 .login-form .sign-in {
-  color: #1D66FF;
+  color: #1d66ff;
   font-weight: 600;
   font-size: 32px;
 }
