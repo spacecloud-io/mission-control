@@ -155,7 +155,7 @@ const Queries = () => {
                 <Alert
                   style={{ marginTop: 24 }}
                   message={<div>
-                    <b>Note:</b> These are only few sample queries. Visit <a href="https://docs.spaceuptech.com/storage/database/" target="_blank">docs of database module</a> to learn the full querying capabilities
+                    <b>Note:</b> These are only few sample queries. Visit <a href="https://docs.space-cloud.io/storage/database/" target="_blank">docs of database module</a> to learn the full querying capabilities
               </div>}
                   description=""
                   type="info"

@@ -168,7 +168,7 @@ const EventingOverview = () => {
 					{noOfRules === 0 && <div>
 						<div className="panel">
 							<img src={eventingSvg} />
-							<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.spaceuptech.com/microservices/eventing">View Docs.</a></p>
+							<p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Trigger asynchronous business logic reliably on any events via the eventing queue in Space Cloud. <a href="https://docs.space-cloud.io/microservices/eventing">View Docs.</a></p>
 							<Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setRuleModalVisibile(true)} disabled={!eventingConfigured}>Add first event trigger</Button>
 							{dbAlert()}
 						</div>

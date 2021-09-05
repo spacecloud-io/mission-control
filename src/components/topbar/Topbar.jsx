@@ -39,13 +39,13 @@ const Topbar = (props) => {
       <p style={{ marginBottom: "50px", fontWeight: "bold", fontSize: "16px" }}>Love Space Cloud? Help us spread the love!</p>
       <Row align="middle">
         <Col md={{ span: 12, offset: 0 }} >
-          <a href="https://github.com/spaceuptech/space-cloud" target="_blank">
+          <a href="https://github.com/spacecloud-io/space-cloud" target="_blank">
             <img src={githubOctocat} />
             <p style={{ marginTop: "20px", color: "rgba(0, 0, 0, 0.65)", fontWeight: "600", fontSize: "14px" }}>Star</p>
           </a>
         </Col>
         <Col md={{ span: 12, offset: 0 }}>
-          <a href=" https://twitter.com/intent/tweet?text=Just%20deployed%20%23SpaceCloud%20-%20an%20opensource%20Firebase%20%2B%20Heroku!%20by%20%40SpaceUpTech.%0Ahttps%3A//github.com/spaceuptech/space-cloud%0A%23graphql%20%23webdev"
+          <a href=" https://twitter.com/intent/tweet?text=Just%20deployed%20%40SpaceCloudIO%20-%20an%20opensource%20Firebase%20%2B%20Heroku!%20.%0Ahttps%3A//github.com/spacecloud-io/space-cloud%0A%23graphql%20%23webdev"
             target="_blank">
             <img src={twitterIcon} />
             <p style={{ marginTop: "20px", color: "rgba(0, 0, 0, 0.65)", fontWeight: "600", fontSize: "14px" }}>Tweet</p>
@@ -84,13 +84,13 @@ const Topbar = (props) => {
         <div className="right-list">
           <Menu mode="horizontal">
             <Menu.Item>
-              <a href="https://docs.spaceuptech.com/" target="_blank">Docs</a>
+              <a href="https://docs.space-cloud.io/" target="_blank">Docs</a>
             </Menu.Item>
             <Menu.Item>
-              <a href="https://learn.spaceuptech.com/" target="_blank">Learn</a>
+              <a href="https://learn.space-cloud.io/" target="_blank">Learn</a>
             </Menu.Item>
             <Menu.Item>
-              <a href="https://github.com/spaceuptech/space-cloud" target="_blank">
+              <a href="https://github.com/spacecloud-io/space-cloud" target="_blank">
                 <img src={githubIcon} />
               </a>
             </Menu.Item>

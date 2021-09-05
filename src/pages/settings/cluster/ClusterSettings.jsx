@@ -54,7 +54,7 @@ const ClusterSettings = () => {
             <Col lg={{ span: 12 }}>
               <LetsEncryptEmail letsEncryptEmail={letsEncryptEmail} loading={loading} handleSubmit={handleLetsEncryptEmail} />
               <Divider />
-              <Telemetry telemetry={telemetry} loading={loading} handleSubmit={handleTelemetry} />
+              {/* <Telemetry telemetry={telemetry} loading={loading} handleSubmit={handleTelemetry} /> */}
             </Col>
           </Row>
         </Content>

@@ -260,4 +260,3 @@ const getURL = (productionURL, developmentURL, mockURL) => {
 }
 
 export const spaceCloudClusterOrigin = getURL(undefined, "http://localhost:4122", undefined)
-export const spaceUpAPIGraphQLURL = getURL("https://api.spaceuptech.com/v1/api/spacecloud/graphql", "https://testing.spaceuptech.com/v1/api/spacecloud/graphql", "/v1/api/spacecloud/graphql")
