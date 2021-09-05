@@ -24,19 +24,19 @@
 
 .home .loading-logo {
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(255, 103, 0, 0.4);
+  box-shadow: 0 0 0 0 #1D66FF66;
   transform: scale(1);
   animation: pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 103, 0, 0.4);
+    box-shadow: 0 0 0 0 #1D66FF66;
   }
   70% {
-    box-shadow: 0 0 0 15px rgba(255, 103, 0, 0);
+    box-shadow: 0 0 0 15px #1D66FF00;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 103, 0, 0);
+    box-shadow: 0 0 0 0 #1D66FF00;
   }
 }

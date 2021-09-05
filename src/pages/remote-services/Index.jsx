@@ -125,7 +125,7 @@ const RemoteServices = () => {
         {noOfServices === 0 && <div style={{ marginTop: 24 }}>
           <div className="panel">
             <img src={remoteServicesSvg} />
-            <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access your RESTful services via the unified GraphQL APIs of Space Cloud. <a href="https://docs.spaceuptech.com/microservices/graphql">View Docs.</a></p>
+            <p className="panel__description" style={{ marginTop: 48, marginBottom: 0 }}>Access your RESTful services via the unified GraphQL APIs of Space Cloud. <a href="https://docs.space-cloud.io/microservices/graphql">View Docs.</a></p>
             <Button style={{ marginTop: 16 }} type="primary" className="action-rounded" onClick={() => setModalVisible(true)}>Add first remote service</Button>
           </div>
         </div>}

@@ -237,11 +237,6 @@ export const getSecretType = (type, defaultValue) => {
   }
   return secret
 }
-
-export function openBillingPortal() {
-  window.open("https://console.spaceuptech.com", "_blank")
-}
-
 export const openSecurityRulesPage = (projectId, ruleType, id, group) => {
   const url = `/mission-control/projects/${projectId}/security-rules?ruleType=${ruleType}&id=${id}${group ? `&group=${group}` : ""}`
   window.open(url, '_blank')

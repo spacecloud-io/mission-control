@@ -55,7 +55,7 @@ const Graphql = props => {
                 padding: "0 16px",
                 borderRight: "1px solid #f0f0f0",
                 backgroundColor: "#fafafa",
-                color: "#fd9540",
+                color: "#1D66FF",
                 fontWeight: "bold"
               }}>
                 POST

@@ -45,7 +45,7 @@ const PreparedQueries = () => {
   }
 
   const alertDesc = <React.Fragment>
-    <p><a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/">Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color: "#1890FF" }} href="https://docs.spaceuptech.com/storage/database/prepared-queries/#securing-prepared-queries">security rules</a>.</p>
+    <p><a style={{ color: "#1890FF" }} href="https://docs.space-cloud.io/storage/database/prepared-queries/">Prepared queries</a> can be used to execute raw SQL queries on your database directly via the GraphQL API of Space Cloud. You can secure the access of prepared queries with <a style={{ color: "#1890FF" }} href="https://docs.space-cloud.io/storage/database/prepared-queries/#securing-prepared-queries">security rules</a>.</p>
   </React.Fragment>
 
   const preparedQueriesColumns = [

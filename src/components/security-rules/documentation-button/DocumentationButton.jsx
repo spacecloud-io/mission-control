@@ -4,7 +4,7 @@ import { LinkOutlined } from "@ant-design/icons";
 
 function DocumentationButton() {
   return (
-    <Button onClick={() => window.open("https://docs.spaceuptech.com/")}>
+    <Button onClick={() => window.open("https://docs.space-cloud.io/")}>
       Documentation
       <LinkOutlined />
     </Button>
