@@ -14,7 +14,7 @@
     "codemirror-graphql": "^0.11.2",
     "customize-cra": "^0.2.13",
     "dot-prop-immutable": "^1.6.0",
-    "graphiql": "^0.14.2",
+    "graphiql": "^1.4.7",
     "graphql": "^14.5.4",
     "graphql-prettier": "^1.0.6",
     "graphql-tag": "^2.10.3",
